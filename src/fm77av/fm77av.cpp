@@ -1,4 +1,5 @@
 #include "fm77av.h"
+#include "fm77avdef.h"
 
 
 
@@ -45,16 +46,7 @@ unsigned int FM77AV::RunOneInstruction(void)
 	return clocksPassed;
 }
 
-std::string FM77AV::MachineTypeString(void) const
+std::string FM77AV::MachineTypeStr(void) const
 {
-	switch(state.machineType)
-	{
-	case MACHINETYPE_FM7:
-		return "FM-7";
-	case MACHINETYPE_FM77AV:
-		return "FM77AV";
-	case MACHINETYPE_FM77AV40:
-		return "FM77AV40";
-	}
-	return "Unknown";
+	return ::MachineTypeToStr(state.machineType);
 }

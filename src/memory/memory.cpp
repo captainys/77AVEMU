@@ -127,7 +127,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	//   BOOT_DOS.ROM
 	//   FBASIC30.ROM
 	//   SUBSYS_C.ROM or SUBSYS.ROM
-	if(FM77AV::MACHINETYPE_FM7==fm77av->state.machineType)
+	if(MACHINETYPE_FM7==fm77av->state.machineType)
 	{
 		std::vector <struct ToLoad> lst=
 		{
@@ -149,7 +149,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	//   SUBSYS_A.ROM
 	//   SUBSYS_B.ROM
 	//   SUBSYS_C.ROM
-	else if(FM77AV::MACHINETYPE_FM77AV==fm77av->state.machineType)
+	else if(MACHINETYPE_FM77AV==fm77av->state.machineType)
 	{
 		std::vector <struct ToLoad> lst=
 		{
@@ -177,7 +177,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	//   SUBSYS_B.ROM
 	//   SUBSYS_C.ROM
 	//   DICROM.ROM
-	else if(FM77AV::MACHINETYPE_FM77AV40==fm77av->state.machineType)
+	else if(MACHINETYPE_FM77AV40==fm77av->state.machineType)
 	{
 		std::vector <struct ToLoad> lst=
 		{
@@ -210,7 +210,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 			if(true==rom.mandatory)
 			{
 				std::cout << "Failed to load " << fullPath << std::endl;
-				std::cout << "Which is mandatory for emulating " << fm77av->MachineTypeString() << std::endl;
+				std::cout << "Which is mandatory for emulating " << fm77av->MachineTypeStr() << std::endl;
 				return false;
 			}
 			else

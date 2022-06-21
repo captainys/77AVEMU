@@ -7,6 +7,7 @@
 #include "vmbase.h"
 #include "mc6809.h"
 #include "memory.h"
+#include "fm77avdef.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -22,13 +23,6 @@ public:
 	// Devices <<
 
 
-
-	enum
-	{
-		MACHINETYPE_FM7,
-		MACHINETYPE_FM77AV,
-		MACHINETYPE_FM77AV40
-	};
 
 	class State
 	{
@@ -57,7 +51,7 @@ public:
 	void Reset(void);
 	unsigned int RunOneInstruction(void);
 
-	std::string MachineTypeString(void) const;
+	std::string MachineTypeStr(void) const;
 };
 
 /* } */
