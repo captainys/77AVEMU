@@ -1,8 +1,10 @@
 #include <memory>
 #include <iostream>
+#include <thread>
 #include "fm77avargv.h"
 #include "fm77av.h"
 #include "fm77avthread.h"
+#include "fm77avcuithread.h"
 
 
 
@@ -24,6 +26,18 @@ int main(int argc,char *argv[])
 		return 1;
 	}
 
+	FM77AVCUIThread cui;
+	std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
+
+
+	class Outside_World *outside_world=nullptr; // Tentative
+
+	FM77AVThread vm;
+	vm.VMStart(fm77av.get(),outside_world,&cui);
+	std::thread vmThread(&FM77AVThread::VMMainLoop,&vm,fm77av.get(),outside_world,&cui);
+	vm.VMEnd(fm77av.get(),outside_world,&cui);
+
+	cuiThread.join();
 
 	return 0;
 }
