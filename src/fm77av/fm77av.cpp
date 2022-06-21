@@ -1,3 +1,4 @@
+#include <iostream>
 #include "fm77av.h"
 #include "fm77avdef.h"
 
@@ -11,6 +12,17 @@ FM77AV::FM77AV() :
 	subMemAcc(this,&physMem),
 	subCPU(this)
 {
+}
+
+bool FM77AV::SetUp(FM77AVParam &param)
+{
+	state.machineType=param.machineType;
+	if(true!=LoadROMFiles(param.ROMPath))
+	{
+		std::cout << "Failed to load ROM files." << std::endl;
+		return false;
+	}
+	return true;
 }
 
 bool FM77AV::LoadROMFiles(std::string ROMPath)

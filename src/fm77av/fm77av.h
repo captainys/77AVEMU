@@ -8,6 +8,7 @@
 #include "mc6809.h"
 #include "memory.h"
 #include "fm77avdef.h"
+#include "fm77avparam.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -44,6 +45,8 @@ public:
 	virtual const char *DeviceName(void) const{return "FM77AV";}
 
 	FM77AV();
+
+	bool SetUp(FM77AVParam &param);
 
 	bool LoadROMFiles(std::string ROMPath);
 

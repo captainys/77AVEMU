@@ -198,18 +198,18 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 
 	for(auto rom : toLoad)
 	{
-		auto fullPath=cpputil::MakeFullPathName(ROMPath,rom.fName);
-		std::ifstream ifp(fullPath,std::ios::binary);
+		auto fullPath0=cpputil::MakeFullPathName(ROMPath,rom.fName);
+		std::ifstream ifp(fullPath0,std::ios::binary);
 		if(true!=ifp.is_open())
 		{
-			fullPath=cpputil::MakeFullPathName(ROMPath,rom.fNameAlt);
-			ifp.open(fullPath,std::ios::binary);
+			auto fullPath1=cpputil::MakeFullPathName(ROMPath,rom.fNameAlt);
+			ifp.open(fullPath1,std::ios::binary);
 		}
 		if(true!=ifp.is_open())
 		{
 			if(true==rom.mandatory)
 			{
-				std::cout << "Failed to load " << fullPath << std::endl;
+				std::cout << "Failed to load " << fullPath0 << std::endl;
 				std::cout << "Which is mandatory for emulating " << fm77av->MachineTypeStr() << std::endl;
 				return false;
 			}

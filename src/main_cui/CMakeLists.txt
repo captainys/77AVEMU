@@ -4,5 +4,5 @@ add_subdirectory(cuithread)
 
 
 set(TARGET_NAME Mutsu_CUI)
-add_library(${TARGET_NAME} main.cpp)
+add_executable(${TARGET_NAME} main.cpp)
 target_link_libraries(${TARGET_NAME} fm77av fm77avthread fm77avdef fm77avargv fm77avcommand fm77avcuithread)
