@@ -1,0 +1,5 @@
+#ifndef FM77AVCUITHREAD_IS_INCLUDED
+#define FM77AVCUITHREAD_IS_INCLUDED
+/* { */
+/* } */
+#endif
