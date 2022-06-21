@@ -35,6 +35,7 @@ int main(int argc,char *argv[])
 	FM77AVThread vm;
 	vm.VMStart(fm77av.get(),outside_world,&cui);
 	std::thread vmThread(&FM77AVThread::VMMainLoop,&vm,fm77av.get(),outside_world,&cui);
+	vmThread.join();
 	vm.VMEnd(fm77av.get(),outside_world,&cui);
 
 	cuiThread.join();

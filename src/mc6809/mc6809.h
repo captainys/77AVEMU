@@ -58,6 +58,8 @@ public:
 	public:
 		bool enabled=false;
 		bool stop=false;
+
+		void ClearStopFlag(void);
 	};
 	Debugger debugger;
 

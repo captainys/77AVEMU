@@ -43,6 +43,8 @@ public:
 	FM77AVThread();
 	~FM77AVThread();
 
+	void SetRunMode(unsigned int runMode);
+
 	void VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
 	void VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
 	void VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);

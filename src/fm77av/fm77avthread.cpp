@@ -10,6 +10,10 @@ FM77AVThread::FM77AVThread()
 FM77AVThread::~FM77AVThread()
 {
 }
+void FM77AVThread::SetRunMode(unsigned int runMode)
+{
+	this->runMode=runMode;
+}
 void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {
 	// In Tsugaru,

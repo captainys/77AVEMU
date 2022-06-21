@@ -5,7 +5,7 @@
 
 void FM77AVCUIThread::Run(void)
 {
-	for(;;)
+	while(true!=vmTerminated && true!=cuiQuit)
 	{
 		std::string cmd;
 		std::cout << ">";
@@ -15,4 +15,16 @@ void FM77AVCUIThread::Run(void)
 		cmdQueue.push(cmd);
 		uiLock.unlock();
 	}
+}
+
+/* virtual */ void FM77AVCUIThread::ExecCommandQueue(class FM77AVThread &fm77avThread,FM77AV &fm77av,class Outside_World *outside_world)
+{
+	if(true!=cmdQueue.empty())
+	{
+		auto cmdStr=cmdQueue.front();
+		cmdQueue.pop();
+		auto cmd=FM77AVCommandInterpreter::Interpret(cmdStr);
+		FM77AVCommandInterpreter::Execute(fm77avThread,fm77av,outside_world,cmd);
+	}
+
 }
