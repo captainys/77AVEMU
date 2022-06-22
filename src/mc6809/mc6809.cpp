@@ -1,4 +1,5 @@
 #include "mc6809.h"
+#include "mc6809util.h"
 
 
 
@@ -328,10 +329,10 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem)
 	case OPER_IDX:
 		++inst.length;
 		inst.operand[0]=mem->FetchByte(state.PC++);
+		inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 		if(0==inst.operand[0]&0x80) // 5-bit offset from REG
 		{
 			inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
-			inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 			inst.offset=(inst.operand[0]&0x1F);
 			inst.offset-=(inst.offset&0x10);
 			inst.clocks+=1;
@@ -339,76 +340,149 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem)
 		else
 		{
 			uint8_t idByte=(inst.operand[0]&0b10011111);
-			inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 			switch(idByte)
 			{
 			case 0b10000100: // No Offset Direct
+				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.offset=0;
 				break;
 			case 0b10010100: // No Offset Indirect
 				inst.clocks+=3;
+				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.offset=0;
 				break;
 			case 0b10001000: // 8-bit offset from REG Direct
 				inst.clocks+=1;
+				++inst.length;
+				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.offset=inst.operand[1];
+				inst.offset-=(inst.offset&0x80);
 				break;
 			case 0b10011000: // 8-bit offset from REG Indirect
 				inst.clocks+=4;
+				++inst.length;
+				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.offset=inst.operand[1];
+				inst.offset-=(inst.offset&0x80);
 				break;
 			case 0b10001001: // 16-bit offset from REG Direct
 				inst.clocks+=4;
+				inst.length+=2;
+				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.operand[2]=mem->FetchByte(state.PC++);
+				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
+				inst.offset-=(inst.offset&0x8000);
 				break;
 			case 0b10011001: // 16-bit offset from REG Indirect
 				inst.clocks+=7;
+				inst.length+=2;
+				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.operand[2]=mem->FetchByte(state.PC++);
+				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
+				inst.offset-=(inst.offset&0x8000);
 				break;
 			case 0b10000110: // A reg as offset Direct
 				inst.clocks+=1;
+				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.offset=REG_A;
 				break;
 			case 0b10010110: // A reg as offset Indirect
 				inst.clocks+=4;
+				inst.indexType=INDEX_INDIR_ACCUM_OFFSET_FROM_REG;
+				inst.offset=REG_A;
 				break;
 			case 0b10000101: // B reg as offset Direct
 				inst.clocks+=1;
+				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.offset=REG_B;
 				break;
 			case 0b10010101: // B reg as offset Indirect
 				inst.clocks+=4;
+				inst.indexType=INDEX_INDIR_ACCUM_OFFSET_FROM_REG;
+				inst.offset=REG_B;
 				break;
 			case 0b10001011: // D reg as offset Direct
 				inst.clocks+=4;
+				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.offset=REG_D;
 				break;
 			case 0b10011011: // D reg as offset Indirect
 				inst.clocks+=7;
+				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.offset=REG_D;
 				break;
 			case 0b10000000: // Post-Inc by 1 Direct
 				inst.clocks+=2;
+				inst.indexType=INDEX_DIR_POST_INC_1;
 				break;
 			case 0b10000001: // Post-Inc by 2 Direct
 				inst.clocks+=3;
+				inst.indexType=INDEX_DIR_POST_INC_2;
 				break;
 			case 0b10010001: // Post-Inc by 2 Indirect
 				inst.clocks+=6;
+				inst.indexType=INDEX_INDIR_POST_INC_2;
 				break;
 			case 0b10000010: // Pre-Dec by 1 Direct
 				inst.clocks+=2;
+				inst.indexType=INDEX_DIR_PRE_DEC_1;
 				break;
-			case 0b10000011: // Pre-Dec by 1 Direct
+			case 0b10000011: // Pre-Dec by 2 Direct
+				inst.indexType=INDEX_DIR_PRE_DEC_2;
 				inst.clocks+=3;
 				break;
-			case 0b10010011: // Pre-Dec by 1 Indirect
+			case 0b10010011: // Pre-Dec by 2 Indirect
 				inst.clocks+=6;
+				inst.indexType=INDEX_INDIR_PRE_DEC_2;
 				break;
 			case 0b10001100: // 8-bit offset from PC Direct
 				inst.clocks+=1;
+				++inst.length;
+				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexReg=REG_PC;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.offset=inst.operand[1];
+				inst.offset-=(inst.offset&0x80);
 				break;
 			case 0b10011100: // 8-bit offset from PC Indirect
 				inst.clocks+=4;
+				++inst.length;
+				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexReg=REG_PC;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.offset=inst.operand[1];
+				inst.offset-=(inst.offset&0x80);
 				break;
 			case 0b10001101: // 16-bit offset from PC Direct
 				inst.clocks+=5;
+				inst.length+=2;
+				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexReg=REG_PC;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.operand[2]=mem->FetchByte(state.PC++);
+				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
+				inst.offset-=(inst.offset&0x8000);
 				break;
 			case 0b10011101: // 16-bit offset from PC Indirect
 				inst.clocks+=8;
+				inst.length+=2;
+				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexReg=REG_PC;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.operand[2]=mem->FetchByte(state.PC++);
+				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
+				inst.offset-=(inst.offset&0x8000);
 				break;
 			case 0b10011111: // Extended Indirect
 				inst.clocks+=5;
+				inst.indexType=INDEX_EXTENDED_INDIR;
+				inst.operand[1]=mem->FetchByte(state.PC++);
+				inst.operand[2]=mem->FetchByte(state.PC++);
+				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				break;
 			}
 		}
