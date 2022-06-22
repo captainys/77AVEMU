@@ -6,3 +6,9 @@
 			EORA	A,X
 			ANDA	B,Y
 			STA		D,U
+			LDA		,X+
+			LDB		,Y++
+			STA		,-U
+			STX		,--U
+			JSR		[$FBFA]
+			JMP		[A,X]

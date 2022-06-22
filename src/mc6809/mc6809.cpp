@@ -1411,10 +1411,30 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 			disasm+=RegToStr(inst.indexReg);
 			break;
 		case INDEX_POST_INC_1:
+			disasm.push_back(',');
+			disasm+=RegToStr(inst.indexReg);
+			disasm.push_back('+');
+			break;
 		case INDEX_POST_INC_2:
+			disasm.push_back(',');
+			disasm+=RegToStr(inst.indexReg);
+			disasm.push_back('+');
+			disasm.push_back('+');
+			break;
 		case INDEX_PRE_DEC_1:
+			disasm.push_back(',');
+			disasm.push_back('-');
+			disasm+=RegToStr(inst.indexReg);
+			break;
 		case INDEX_PRE_DEC_2:
+			disasm.push_back(',');
+			disasm.push_back('-');
+			disasm.push_back('-');
+			disasm+=RegToStr(inst.indexReg);
+			break;
 		case INDEX_EXTENDED:
+			disasm.push_back('$');
+			disasm+=cpputil::Ustox(inst.offset);
 			break;
 		}
 		if(true==inst.indexIndir)

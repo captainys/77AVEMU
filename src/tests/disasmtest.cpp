@@ -11,8 +11,12 @@
 // 200B  A886                                    EORA    A,X
 // 200D  A4A5                                    ANDA    B,Y
 // 200F  A7CB                                    STA             D,U
-
-
+// 2011  A680                                    LDA             ,X+
+// 2013  E6A1                                    LDB             ,Y++
+// 2015  A7C2                                    STA             ,-U
+// 2017  AFC3                                    STX             ,--U
+// 2019  AD9FFBFA                                JSR             [$FBFA]
+// 201D  6E96                                    JMP             [A,X]
 
 std::string code=
 "8677"
@@ -22,6 +26,12 @@ std::string code=
 "A886"
 "A4A5"
 "A7CB"
+"A680"
+"E6A1"
+"A7C2"
+"AFC3"
+"AD9FFBFA"
+"6E96"
 ;
 
 class TestVM : public VMBase
