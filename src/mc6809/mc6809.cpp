@@ -287,6 +287,351 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 
 	instOperaType[INST_BVS_IMM]=OPER_IMM;
 	instOperaType[INST_LBVS_IMM16]=OPER_IMM16;
+
+
+
+	instClock[INST_ABX]=3;
+
+	instClock[INST_ADCA_IMM]=2;
+	instClock[INST_ADCA_DP]=4;
+	instClock[INST_ADCA_IDX]=4;
+	instClock[INST_ADCA_EXT]=5;
+
+	instClock[INST_ADCB_IMM]=2;
+	instClock[INST_ADCB_DP]=4;
+	instClock[INST_ADCB_IDX]=4;
+	instClock[INST_ADCB_EXT]=5;
+
+	instClock[INST_ADDA_IMM]=2;
+	instClock[INST_ADDA_DP]=4;
+	instClock[INST_ADDA_IDX]=4;
+	instClock[INST_ADDA_EXT]=5;
+
+	instClock[INST_ADDB_IMM]=2;
+	instClock[INST_ADDB_DP]=4;
+	instClock[INST_ADDB_IDX]=4;
+	instClock[INST_ADDB_EXT]=5;
+
+	instClock[INST_ADDD_IMM]=4;
+	instClock[INST_ADDD_DP]=6;
+	instClock[INST_ADDD_IDX]=6;
+	instClock[INST_ADDD_EXT]=7;
+
+	instClock[INST_ANDA_IMM]=2;
+	instClock[INST_ANDA_DP]=4;
+	instClock[INST_ANDA_IDX]=4;
+	instClock[INST_ANDA_EXT]=5;
+
+	instClock[INST_ANDB_IMM]=2;
+	instClock[INST_ANDB_DP]=4;
+	instClock[INST_ANDB_IDX]=4;
+	instClock[INST_ANDB_EXT]=5;
+
+	instClock[INST_ANDCC_IMM]=3;
+
+	instClock[INST_ASLA]=2;
+	instClock[INST_ASLB]=2;
+
+	instClock[INST_ASL_DP]=6;
+	instClock[INST_ASL_IDX]=6;
+	instClock[INST_ASL_EXT]=7;
+
+	instClock[INST_ASRA]=2;
+	instClock[INST_ASRB]=2;
+
+	instClock[INST_ASR_DP]=6;
+	instClock[INST_ASR_IDX]=6;
+	instClock[INST_ASR_EXT]=7;
+
+	instClock[INST_BITA_IMM]=2;
+	instClock[INST_BITA_DP]=4;
+	instClock[INST_BITA_IDX]=4;
+	instClock[INST_BITA_EXT]=5;
+
+	instClock[INST_BITB_IMM]=2;
+	instClock[INST_BITB_DP]=4;
+	instClock[INST_BITB_IDX]=4;
+	instClock[INST_BITB_EXT]=5;
+
+	instClock[INST_CLRA]=2;
+	instClock[INST_CLRB]=2;
+
+	instClock[INST_CLR_DP]=6;
+	instClock[INST_CLR_IDX]=6;
+	instClock[INST_CLR_EXT]=7;
+
+	instClock[INST_CMPA_IMM]=2;
+	instClock[INST_CMPA_DP]=4;
+	instClock[INST_CMPA_IDX]=4;
+	instClock[INST_CMPA_EXT]=5;
+
+	instClock[INST_CMPB_IMM]=2;
+	instClock[INST_CMPB_DP]=4;
+	instClock[INST_CMPB_IDX]=4;
+	instClock[INST_CMPB_EXT]=5;
+
+	instClock[INST_CMPD_IMM]=5;
+	instClock[INST_CMPD_DP]=7;
+	instClock[INST_CMPD_IDX]=7;
+	instClock[INST_CMPD_EXT]=8;
+
+	instClock[INST_CMPS_IMM]=5;
+	instClock[INST_CMPS_DP]=7;
+	instClock[INST_CMPS_IDX]=7;
+	instClock[INST_CMPS_EXT]=8;
+
+	instClock[INST_CMPU_IMM]=5;
+	instClock[INST_CMPU_DP]=7;
+	instClock[INST_CMPU_IDX]=7;
+	instClock[INST_CMPU_EXT]=8;
+
+	instClock[INST_CMPX_IMM]=4;
+	instClock[INST_CMPX_DP]=6;
+	instClock[INST_CMPX_IDX]=6;
+	instClock[INST_CMPX_EXT]=7;
+
+	instClock[INST_CMPY_IMM]=5;
+	instClock[INST_CMPY_DP]=7;
+	instClock[INST_CMPY_IDX]=7;
+	instClock[INST_CMPY_EXT]=8;
+
+	instClock[INST_COMA]=2;
+	instClock[INST_COMB]=2;
+
+	instClock[INST_COM_DP]=6;
+	instClock[INST_COM_IDX]=6;
+	instClock[INST_COM_EXT]=7;
+
+	instClock[INST_CWAI_IMM]=22;
+
+	instClock[INST_DAA]=2;
+
+	instClock[INST_DECA]=2;
+	instClock[INST_DECB]=2;
+
+	instClock[INST_DEC_DP]=6;
+	instClock[INST_DEC_IDX]=6;
+	instClock[INST_DEC_EXT]=7;
+
+	instClock[INST_EORA_IMM]=2;
+	instClock[INST_EORA_DP]=4;
+	instClock[INST_EORA_IDX]=4;
+	instClock[INST_EORA_EXT]=5;
+
+	instClock[INST_EORB_IMM]=2;
+	instClock[INST_EORB_DP]=4;
+	instClock[INST_EORB_IDX]=4;
+	instClock[INST_EORB_EXT]=5;
+
+	instClock[INST_EXG_REG]=8;
+
+	instClock[INST_INCA]=2;
+	instClock[INST_INCB]=2;
+
+	instClock[INST_INC_DP]=6;
+	instClock[INST_INC_IDX]=6;
+	instClock[INST_INC_EXT]=7;
+
+	instClock[INST_JMP_DP]=3;
+	instClock[INST_JMP_IDX]=3;
+	instClock[INST_JMP_EXT]=4;
+
+	instClock[INST_JSR_DP]=7;
+	instClock[INST_JSR_IDX]=7;
+	instClock[INST_JSR_EXT]=8;
+
+	instClock[INST_LDA_IMM]=2;
+	instClock[INST_LDA_DP]=4;
+	instClock[INST_LDA_IDX]=4;
+	instClock[INST_LDA_EXT]=5;
+
+	instClock[INST_LDB_IMM]=2;
+	instClock[INST_LDB_DP]=4;
+	instClock[INST_LDB_IDX]=4;
+	instClock[INST_LDB_EXT]=5;
+
+	instClock[INST_LDD_IMM]=3;
+	instClock[INST_LDD_DP]=5;
+	instClock[INST_LDD_IDX]=5;
+	instClock[INST_LDD_EXT]=6;
+
+	instClock[INST_LDS_IMM]=4;
+	instClock[INST_LDS_DP]=6;
+	instClock[INST_LDS_IDX]=6;
+	instClock[INST_LDS_EXT]=7;
+
+	instClock[INST_LDU_IMM]=3;
+	instClock[INST_LDU_DP]=5;
+	instClock[INST_LDU_IDX]=5;
+	instClock[INST_LDU_EXT]=6;
+
+	instClock[INST_LDX_IMM]=3;
+	instClock[INST_LDX_DP]=5;
+	instClock[INST_LDX_IDX]=5;
+	instClock[INST_LDX_EXT]=6;
+
+	instClock[INST_LDY_IMM]=4;
+	instClock[INST_LDY_DP]=6;
+	instClock[INST_LDY_IDX]=6;
+	instClock[INST_LDY_EXT]=7;
+
+	instClock[INST_LEAS_IDX]=4;
+	instClock[INST_LEAU_IDX]=4;
+	instClock[INST_LEAX_IDX]=4;
+	instClock[INST_LEAY_IDX]=4;
+
+	instClock[INST_LSLA]=2;
+	instClock[INST_LSLB]=2;
+
+	instClock[INST_LSL_DP]=6;
+	instClock[INST_LSL_IDX]=6;
+	instClock[INST_LSL_EXT]=7;
+
+	instClock[INST_LSRA]=2;
+	instClock[INST_LSRB]=2;
+
+	instClock[INST_LSR_DP]=6;
+	instClock[INST_LSR_IDX]=6;
+	instClock[INST_LSR_EXT]=7;
+
+	instClock[INST_MUL]=11;
+
+	instClock[INST_NEGA]=2;
+	instClock[INST_NEGB]=2;
+
+	instClock[INST_NEG_DP]=6;
+	instClock[INST_NEG_IDX]=6;
+	instClock[INST_NEG_EXT]=7;
+
+	instClock[INST_NOP]=2;
+
+	instClock[INST_ORA_IMM]=2;
+	instClock[INST_ORA_DP]=4;
+	instClock[INST_ORA_IDX]=4;
+	instClock[INST_ORA_EXT]=5;
+
+	instClock[INST_ORB_IMM]=2;
+	instClock[INST_ORB_DP]=4;
+	instClock[INST_ORB_IDX]=4;
+	instClock[INST_ORB_EXT]=5;
+
+	instClock[INST_ORCC_IMM]=3;
+
+	instClock[INST_PSHS_REG]=5; // Plus number of bytes transferred
+	instClock[INST_PSHU_REG]=5;
+	instClock[INST_PULS_REG]=5; // Plus number of bytes transferred
+	instClock[INST_PULU_REG]=5;
+
+	instClock[INST_ROLA]=2;
+	instClock[INST_ROLB]=2;
+
+	instClock[INST_ROL_DP]=6;
+	instClock[INST_ROL_IDX]=6;
+	instClock[INST_ROL_EXT]=7;
+
+	instClock[INST_RORA]=2;
+	instClock[INST_RORB]=2;
+
+	instClock[INST_ROR_DP]=6;
+	instClock[INST_ROR_IDX]=6;
+	instClock[INST_ROR_EXT]=7;
+
+	instClock[INST_RTI]=15; // If E=0 6 clocks, otherwise 15 clocks.
+	instClock[INST_RTS]=5;
+
+	instClock[INST_SBCA_IMM]=2;
+	instClock[INST_SBCA_DP]=4;
+	instClock[INST_SBCA_IDX]=4;
+	instClock[INST_SBCA_EXT]=5;
+
+	instClock[INST_SBCB_IMM]=2;
+	instClock[INST_SBCB_DP]=4;
+	instClock[INST_SBCB_IDX]=4;
+	instClock[INST_SBCB_EXT]=5;
+
+	instClock[INST_SEX]=2;
+
+	instClock[INST_SUBA_IMM]=2;
+	instClock[INST_SUBA_DP]=4;
+	instClock[INST_SUBA_IDX]=4;
+	instClock[INST_SUBA_EXT]=5;
+
+	instClock[INST_SUBB_IMM]=2;
+	instClock[INST_SUBB_DP]=4;
+	instClock[INST_SUBB_IDX]=4;
+	instClock[INST_SUBB_EXT]=5;
+
+	instClock[INST_SUBD_IMM]=4;
+	instClock[INST_SUBD_DP]=6;
+	instClock[INST_SUBD_IDX]=6;
+	instClock[INST_SUBD_EXT]=7;
+
+	instClock[INST_SWI]=19;
+	instClock[INST_SWI2]=20;
+	instClock[INST_SWI3]=20;
+
+	instClock[INST_SYNC]=4;
+
+	instClock[INST_TFR_REG]=6;
+
+	instClock[INST_TSTA]=2;
+	instClock[INST_TSTB]=2;
+
+	instClock[INST_TST_DP]=6;
+	instClock[INST_TST_IDX]=6;
+	instClock[INST_TST_EXT]=7;
+
+	instClock[INST_BCC_IMM]=3;
+	instClock[INST_LBCC_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BCS_IMM]=3;
+	instClock[INST_LBCS_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BEQ_IMM]=3;
+	instClock[INST_LBEQ_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BGE_IMM]=3;
+	instClock[INST_LBGE_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BGT_IMM]=3;
+	instClock[INST_LBGT_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BHI_IMM]=3;
+	instClock[INST_LBHI_IMM16]=5; // +1 clock if it jumps
+
+
+	instClock[INST_BLE_IMM]=3;
+	instClock[INST_LBLE_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BLS_IMM]=3;
+	instClock[INST_LBLS_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BLT_IMM]=3;
+	instClock[INST_LBLT_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BMI_IMM]=3;
+	instClock[INST_LBMI_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BNE_IMM]=3;
+	instClock[INST_LBNE_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BPL_IMM]=3;
+	instClock[INST_LBPL_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BRA_IMM]=3;
+	instClock[INST_LBRA_IMM16]=5;
+
+	instClock[INST_BRN_IMM]=3;
+	instClock[INST_LBRN_IMM16]=5;
+
+	instClock[INST_BSR_IMM]=7;
+	instClock[INST_LBSR_IMM16]=9;
+
+	instClock[INST_BVC_IMM]=3;
+	instClock[INST_LBVC_IMM16]=5; // +1 clock if it jumps
+
+	instClock[INST_BVS_IMM]=3;
+	instClock[INST_LBVS_IMM16]=5; // +1 clock if it jumps
 }
 
 MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem)
@@ -294,7 +639,6 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem)
 	Instruction inst;
 
 	inst.opCode=mem->FetchByte(state.PC++);
-	inst.clocks=0;
 	inst.length=1;
 	if(0x10==inst.opCode)
 	{
@@ -306,6 +650,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem)
 		inst.length=2;
 		inst.opCode=0x200|mem->FetchByte(state.PC++);
 	}
+
+	inst.clocks=instClock[inst.opCode];
 
 	switch(instOperaType[inst.opCode])
 	{
