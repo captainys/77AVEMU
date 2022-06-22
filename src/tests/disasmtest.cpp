@@ -22,6 +22,11 @@
 // 2023  3652                                    PSHU    A,X,S
 // 2025  35C8                                    PULS    DP,U,PC
 // 2027  B7FD0F                                  STA     $FD0F
+// 202A  1E89                                    EXG     A,B
+// 202C  1F01                                    TFR     D,X
+// 202E  1E83                                    EXG     A,U
+// 2030  1F40                                    TFR     S,D
+// 2032  10AE9D1FC9                              LDY     [$4000,PCR]
 
 std::string code=
 "8677"
@@ -42,7 +47,52 @@ std::string code=
 "3652"
 "35C8"
 "B7FD0F"
+"1E89"
+"1F01"
+"1E83"
+"1F40"
+"10AE9D1FC9"
 ;
+
+std::string correctOutput[]=
+{
+"LDA     #$77",
+"LDB     #$11",
+"LDD     #$1973",
+"BITA    $3000,PCR",
+"EORA    A,X",
+"ANDA    B,Y",
+"STA     D,U",
+"LDA     ,X+",
+"LDB     ,Y++",
+"STA     ,-U",
+"STX     ,--U",
+"JSR     [$FBFA]",
+"JMP     [A,X]",
+"PSHS    A,B,X,Y,U",
+"PULS    CC,DP,PC",
+"PSHU    A,X,S",
+"PULS    DP,U,PC",
+"STA     $FD0F",
+"EXG     A,B",
+"TFR     D,X",
+"EXG     A,U",
+"TFR     S,D",
+"LDY     [$4000,PCR]",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+"",
+};
+
+
 
 class TestVM : public VMBase
 {
@@ -63,19 +113,33 @@ int main(void)
 		mem.RAM[addr++]=cpputil::Xtoi(hex);
 	}
 
+	int res=0;
+
 	uint16_t PC=0x2000;
+	int i=0;
 	while(PC<addr)
 	{
 		auto nextPC=PC;
 		auto inst=cpu.FetchInstruction(&mem,nextPC);
 
-		std::cout << inst.length << " " << cpputil::Ustox(inst.opCode) << std::endl;
+		auto byteCode=cpu.FormatByteCode(inst);
+		while(byteCode.size()<11)
+		{
+			byteCode.push_back(' ');
+		}
 
 		auto disasm=cpu.Disassemble(inst,PC);
-		std::cout << cpputil::Ustox(PC) << " " << disasm << std::endl;
+		std::cout << cpputil::Ustox(PC) << " " << byteCode << " " << disasm << std::endl;
+
+		if(correctOutput[i]!=disasm)
+		{
+			std::cout << "ERROR!!" << std::endl;
+			res=1;
+		}
 
 		PC=nextPC;
+		++i;
 	}
 
-	return 0;
+	return res;
 }

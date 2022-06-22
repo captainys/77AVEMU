@@ -1068,6 +1068,23 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 
 	instLabel[INST_BVS_IMM]=      "BVS";
 	instLabel[INST_LBVS_IMM16]=   "LBVS";
+
+	regToReg[ 0]=REG_D;
+	regToReg[ 1]=REG_X;
+	regToReg[ 2]=REG_Y;
+	regToReg[ 3]=REG_U;
+	regToReg[ 4]=REG_S;
+	regToReg[ 5]=REG_PC;
+	regToReg[ 6]=REG_INVALID; // W reg if 6309
+	regToReg[ 7]=REG_INVALID; // V reg if 6309
+	regToReg[ 8]=REG_A;
+	regToReg[ 9]=REG_B;
+	regToReg[10]=REG_CC;
+	regToReg[11]=REG_DP;
+	regToReg[12]=REG_INVALID; // Always value 0 if 6309
+	regToReg[13]=REG_INVALID; // Always value 0 if 6309
+	regToReg[14]=REG_INVALID; // E reg if 6309
+	regToReg[15]=REG_INVALID; // F reg if 6309
 }
 
 MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &PC) const
@@ -1302,6 +1319,41 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 	return inst;
 }
 
+void MC6809::DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const
+{
+	reg[0]=regToReg[postByte>>4];
+	reg[1]=regToReg[postByte&0x0F];
+}
+
+std::string MC6809::FormatByteCode(Instruction inst) const
+{
+	std::string str;
+
+	int n=1;
+	if(0x200<=inst.opCode)
+	{
+		str+="11";
+		str+=cpputil::Ubtox(inst.opCode&0xFF);
+		n=2;
+	}
+	else if(0x100<=inst.opCode)
+	{
+		str+="10";
+		str+=cpputil::Ubtox(inst.opCode&0xFF);
+		n=2;
+	}
+	else
+	{
+		str+=cpputil::Ubtox(inst.opCode);
+	}
+
+	for(int i=0; i+n<inst.length; ++i)
+	{
+		str+=cpputil::Ubtox(inst.operand[i]);
+	}
+	return str;
+}
+
 std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 {
 	std::string disasm;
@@ -1463,6 +1515,15 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 		}
 		break;
 	case OPER_INHERENT:
+		break;
+	case OPER_REG:
+		{
+			uint8_t reg[2];
+			DecodeExgTfrReg(reg,inst.operand[0]);
+			disasm+=RegToStr(reg[0]);
+			disasm.push_back(',');
+			disasm+=RegToStr(reg[1]);
+		}
 		break;
 	case OPER_IMM16:
 		{

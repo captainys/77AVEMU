@@ -17,3 +17,8 @@
 			PSHU	A,X,S
 			PULS	DP,U,PC
 			STA		$FD0F
+			EXG		A,B
+			TFR		D,X
+			EXG		A,U
+			TFR		S,D
+			LDY		[$4000,PCR]

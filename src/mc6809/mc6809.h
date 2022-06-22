@@ -425,6 +425,7 @@ public:
 	unsigned char instOperaType[0x300];
 	unsigned int instClock[0x300];
 	std::string instLabel[0x300];
+	unsigned int regToReg[16];
 
 
 	class Instruction
@@ -455,6 +456,8 @@ public:
 
 		REG_PC,
 		REG_D,
+
+		REG_INVALID=0xFF
 	};
 
 	enum
@@ -523,6 +526,9 @@ public:
 	uint32_t RunOneInstruction(class MemoryAccess *mem); // Returns the number of clocks passed
 
 	Instruction FetchInstruction(class MemoryAccess *mem,uint16_t &PC) const;
+	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
+
+	std::string FormatByteCode(Instruction inst) const;
 
 	std::string Disassemble(Instruction inst,uint16_t PC) const;
 	std::string DisassembleOperand(Instruction inst,uint16_t PC) const;
