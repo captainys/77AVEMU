@@ -21,21 +21,16 @@ public:
 
 	enum
 	{
-		INDEX_DIR_CONST_OFFSET_FROM_REG,
-		INDEX_INDIR_CONST_OFFSET_FROM_REG,
-		INDEX_DIR_ACCUM_OFFSET_FROM_REG,
-		INDEX_INDIR_ACCUM_OFFSET_FROM_REG,
-		INDEX_DIR_POST_INC_1,
-		INDEX_DIR_POST_INC_2,
-		INDEX_INDIR_POST_INC_2,
-		INDEX_DIR_PRE_DEC_1,
-		INDEX_DIR_PRE_DEC_2,
-		INDEX_INDIR_PRE_DEC_2,
-		INDEX_DIR_8BIT_OFFSET,
-		INDEX_DIR_16BIT_OFFSET,
-		INDEX_INDIR_8BIT_OFFSET,
-		INDEX_INDIR_16BIT_OFFSET,
-		INDEX_EXTENDED_INDIR,
+		INDEX_UNSUPPORTED,
+		INDEX_CONST_OFFSET_FROM_REG,
+		INDEX_ACCUM_OFFSET_FROM_REG,
+		INDEX_POST_INC_1,
+		INDEX_POST_INC_2,
+		INDEX_PRE_DEC_1,
+		INDEX_PRE_DEC_2,
+		INDEX_8BIT_OFFSET,
+		INDEX_16BIT_OFFSET,
+		INDEX_EXTENDED,
 	};
 
 	enum
@@ -411,6 +406,7 @@ public:
 		unsigned int opCode;
 		unsigned int operType;
 		unsigned int indexType;
+		bool indexIndir;
 		unsigned int indexReg; // REG_X,REG_Y,REG_U,or REG_S.  Undefined if indexType is not applicable.
 		int offset;   // Can be constant offset or REG_XX depending on indexType.
 		uint8_t operand[4];

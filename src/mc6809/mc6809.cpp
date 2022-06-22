@@ -1021,7 +1021,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 		inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 		if(0==inst.operand[0]&0x80) // 5-bit offset from REG
 		{
-			inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+			inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+			inst.indexIndir=false;
 			inst.offset=(inst.operand[0]&0x1F);
 			inst.offset-=(inst.offset&0x10);
 			inst.clocks+=1;
@@ -1032,18 +1033,21 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			switch(idByte)
 			{
 			case 0b10000100: // No Offset Direct
-				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.offset=0;
 				break;
 			case 0b10010100: // No Offset Indirect
 				inst.clocks+=3;
-				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.offset=0;
 				break;
 			case 0b10001000: // 8-bit offset from REG Direct
 				inst.clocks+=1;
 				++inst.length;
-				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.offset=inst.operand[1];
 				inst.offset-=(inst.offset&0x80);
@@ -1051,7 +1055,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			case 0b10011000: // 8-bit offset from REG Indirect
 				inst.clocks+=4;
 				++inst.length;
-				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.offset=inst.operand[1];
 				inst.offset-=(inst.offset&0x80);
@@ -1059,7 +1064,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			case 0b10001001: // 16-bit offset from REG Direct
 				inst.clocks+=4;
 				inst.length+=2;
-				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.operand[2]=mem->FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
@@ -1068,7 +1074,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			case 0b10011001: // 16-bit offset from REG Indirect
 				inst.clocks+=7;
 				inst.length+=2;
-				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.operand[2]=mem->FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
@@ -1076,62 +1083,75 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 				break;
 			case 0b10000110: // A reg as offset Direct
 				inst.clocks+=1;
-				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.offset=REG_A;
 				break;
 			case 0b10010110: // A reg as offset Indirect
 				inst.clocks+=4;
-				inst.indexType=INDEX_INDIR_ACCUM_OFFSET_FROM_REG;
+				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.offset=REG_A;
 				break;
 			case 0b10000101: // B reg as offset Direct
 				inst.clocks+=1;
-				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.offset=REG_B;
 				break;
 			case 0b10010101: // B reg as offset Indirect
 				inst.clocks+=4;
-				inst.indexType=INDEX_INDIR_ACCUM_OFFSET_FROM_REG;
+				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.offset=REG_B;
 				break;
 			case 0b10001011: // D reg as offset Direct
 				inst.clocks+=4;
-				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.offset=REG_D;
 				break;
 			case 0b10011011: // D reg as offset Indirect
 				inst.clocks+=7;
-				inst.indexType=INDEX_DIR_ACCUM_OFFSET_FROM_REG;
+				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.offset=REG_D;
 				break;
 			case 0b10000000: // Post-Inc by 1 Direct
 				inst.clocks+=2;
-				inst.indexType=INDEX_DIR_POST_INC_1;
+				inst.indexType=INDEX_POST_INC_1;
+				inst.indexIndir=false;
 				break;
 			case 0b10000001: // Post-Inc by 2 Direct
 				inst.clocks+=3;
-				inst.indexType=INDEX_DIR_POST_INC_2;
+				inst.indexType=INDEX_POST_INC_2;
+				inst.indexIndir=false;
 				break;
 			case 0b10010001: // Post-Inc by 2 Indirect
 				inst.clocks+=6;
-				inst.indexType=INDEX_INDIR_POST_INC_2;
+				inst.indexType=INDEX_POST_INC_2;
+				inst.indexIndir=true;
 				break;
 			case 0b10000010: // Pre-Dec by 1 Direct
 				inst.clocks+=2;
-				inst.indexType=INDEX_DIR_PRE_DEC_1;
+				inst.indexType=INDEX_PRE_DEC_1;
+				inst.indexIndir=false;
 				break;
 			case 0b10000011: // Pre-Dec by 2 Direct
-				inst.indexType=INDEX_DIR_PRE_DEC_2;
+				inst.indexType=INDEX_PRE_DEC_2;
+				inst.indexIndir=false;
 				inst.clocks+=3;
 				break;
 			case 0b10010011: // Pre-Dec by 2 Indirect
 				inst.clocks+=6;
-				inst.indexType=INDEX_INDIR_PRE_DEC_2;
+				inst.indexType=INDEX_PRE_DEC_2;
+				inst.indexIndir=true;
 				break;
 			case 0b10001100: // 8-bit offset from PC Direct
 				inst.clocks+=1;
 				++inst.length;
-				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.offset=inst.operand[1];
@@ -1140,7 +1160,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			case 0b10011100: // 8-bit offset from PC Indirect
 				inst.clocks+=4;
 				++inst.length;
-				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.offset=inst.operand[1];
@@ -1149,7 +1170,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			case 0b10001101: // 16-bit offset from PC Direct
 				inst.clocks+=5;
 				inst.length+=2;
-				inst.indexType=INDEX_DIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.operand[2]=mem->FetchByte(PC++);
@@ -1159,7 +1181,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 			case 0b10011101: // 16-bit offset from PC Indirect
 				inst.clocks+=8;
 				inst.length+=2;
-				inst.indexType=INDEX_INDIR_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.operand[2]=mem->FetchByte(PC++);
@@ -1168,10 +1191,14 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 				break;
 			case 0b10011111: // Extended Indirect
 				inst.clocks+=5;
-				inst.indexType=INDEX_EXTENDED_INDIR;
+				inst.indexType=INDEX_EXTENDED;
+				inst.indexIndir=true;
 				inst.operand[1]=mem->FetchByte(PC++);
 				inst.operand[2]=mem->FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
+				break;
+			default:
+				inst.indexType=INDEX_UNSUPPORTED;
 				break;
 			}
 		}
