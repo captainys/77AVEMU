@@ -11,11 +11,29 @@ class MC6809 : public Device
 public:
 	enum
 	{
-		OPER_IMMEDIATE,
-		OPER_DIRECT,
-		OPER_INDEXED,
-		OPER_EXTENDED,
-		OPER_INHERENT
+		OPER_IMM,
+		OPER_DP,
+		OPER_IDX,
+		OPER_EXT,
+		OPER_INHERENT,
+		OPER_IMM16
+	};
+
+	enum
+	{
+		INDEX_DIR_CONST_OFFSET_FROM_REG,
+		INDEX_INDIR_CONST_OFFSET_FROM_REG,
+		INDEX_DIR_ACCUM_OFFSET_FROM_REG,
+		INDEX_INDIR_ACCUM_OFFSET_FROM_REG,
+		INDEX_DIR_POST_INC_1,
+		INDEX_DIR_POST_INC_2,
+		INDEX_DIR_PRE_DEC_1,
+		INDEX_DIR_PRE_DEC_2,
+		INDEX_DIR_8BIT_OFFSET,
+		INDEX_DIR_16BIT_OFFSET,
+		INDEX_INDIR_8BIT_OFFSET,
+		INDEX_INDIR_16BIT_OFFSET,
+		INDEX_EXTENDED_INDIR,
 	};
 
 	enum
@@ -378,14 +396,36 @@ public:
 		INST_LBVS_IMM16=0x129, // 10 29
 	};
 
+	unsigned char instOperaType[0x300];
+
 
 	class Instruction
 	{
 	public:
 		unsigned int length;
+		unsigned int clocks;
 		unsigned int opCode;
 		unsigned int operType;
+		unsigned int indexType;
+		unsigned int indexReg; // REG_X,REG_Y,REG_U,or REG_S.  Undefined if indexType is not applicable.
+		unsigned int offset;   // Can be constant offset or REG_XX depending on indexType.
 		uint8_t operand[4];
+	};
+
+	enum
+	{
+		REG_A,
+		REG_B,
+		REG_D,
+		REG_DP,
+		REG_CC,
+
+		REG_X, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
+		REG_Y, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
+		REG_U, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
+		REG_S, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
+
+		REG_PC
 	};
 
 	class RegisterSet
