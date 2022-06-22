@@ -400,6 +400,7 @@ public:
 
 	unsigned char instOperaType[0x300];
 	unsigned int instClock[0x300];
+	std::string instLabel[0x300];
 
 
 	class Instruction
