@@ -146,27 +146,27 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_LDB_IDX]=OPER_IDX;
 	instOperaType[INST_LDB_EXT]=OPER_EXT;
 
-	instOperaType[INST_LDD_IMM]=OPER_IMM;
+	instOperaType[INST_LDD_IMM]=OPER_IMM16;
 	instOperaType[INST_LDD_DP]=OPER_DP;
 	instOperaType[INST_LDD_IDX]=OPER_IDX;
 	instOperaType[INST_LDD_EXT]=OPER_EXT;
 
-	instOperaType[INST_LDS_IMM]=OPER_IMM;
+	instOperaType[INST_LDS_IMM]=OPER_IMM16;
 	instOperaType[INST_LDS_DP]=OPER_DP;
 	instOperaType[INST_LDS_IDX]=OPER_IDX;
 	instOperaType[INST_LDS_EXT]=OPER_EXT;
 
-	instOperaType[INST_LDU_IMM]=OPER_IMM;
+	instOperaType[INST_LDU_IMM]=OPER_IMM16;
 	instOperaType[INST_LDU_DP]=OPER_DP;
 	instOperaType[INST_LDU_IDX]=OPER_IDX;
 	instOperaType[INST_LDU_EXT]=OPER_EXT;
 
-	instOperaType[INST_LDX_IMM]=OPER_IMM;
+	instOperaType[INST_LDX_IMM]=OPER_IMM16;
 	instOperaType[INST_LDX_DP]=OPER_DP;
 	instOperaType[INST_LDX_IDX]=OPER_IDX;
 	instOperaType[INST_LDX_EXT]=OPER_EXT;
 
-	instOperaType[INST_LDY_IMM]=OPER_IMM;
+	instOperaType[INST_LDY_IMM]=OPER_IMM16;
 	instOperaType[INST_LDY_DP]=OPER_DP;
 	instOperaType[INST_LDY_IDX]=OPER_IDX;
 	instOperaType[INST_LDY_EXT]=OPER_EXT;
@@ -995,6 +995,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 	}
 
 	inst.clocks=instClock[inst.opCode];
+	inst.operType=instOperaType[inst.opCode];
 
 	switch(instOperaType[inst.opCode])
 	{
@@ -1010,7 +1011,6 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 		inst.length+=2;
 		inst.operand[0]=mem->FetchByte(PC++);
 		inst.operand[1]=mem->FetchByte(PC++);
-		PC+=2;
 		break;
 	case OPER_INHERENT:
 		// No operand.
@@ -1293,7 +1293,11 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 	case OPER_INHERENT:
 		break;
 	case OPER_IMM16:
-		disasm="OPER_IMM16 is for long branch instructions. Not supposed to be used here.";
+		{
+			int32_t imm16=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+			disasm="#$";
+			disasm+=cpputil::Ustox(imm16);
+		}
 		break;
 	}
 	return disasm;
