@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include "vmbase.h"
 #include "mc6809.h"
-#include "memory.h"
+#include "fm77avmemory.h"
 #include "fm77avdef.h"
 #include "fm77avparam.h"
 

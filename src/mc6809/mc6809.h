@@ -412,7 +412,7 @@ public:
 		unsigned int operType;
 		unsigned int indexType;
 		unsigned int indexReg; // REG_X,REG_Y,REG_U,or REG_S.  Undefined if indexType is not applicable.
-		unsigned int offset;   // Can be constant offset or REG_XX depending on indexType.
+		int offset;   // Can be constant offset or REG_XX depending on indexType.
 		uint8_t operand[4];
 	};
 
@@ -485,7 +485,10 @@ public:
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess *mem); // Returns the number of clocks passed
 
-	Instruction FetchInstruction(class MemoryAccess *mem);
+	Instruction FetchInstruction(class MemoryAccess *mem,uint16_t &PC) const;
+
+	std::string Disassemble(Instruction inst,uint16_t PC) const;
+	std::string DisassembleOperand(Instruction inst,uint16_t PC) const;
 };
 
 /* } */
