@@ -8,6 +8,9 @@
 // 2002  C611                                    LDB             #$11
 // 2004  CC1973                                  LDD             #$1973
 // 2007  A58D0FF5                                BITA    $3000,PCR
+// 200B  A886                                    EORA    A,X
+// 200D  A4A5                                    ANDA    B,Y
+// 200F  A7CB                                    STA             D,U
 
 
 
@@ -16,6 +19,9 @@ std::string code=
 "C611"
 "CC1973"
 "A58D0FF5"
+"A886"
+"A4A5"
+"A7CB"
 ;
 
 class TestVM : public VMBase
@@ -43,7 +49,7 @@ int main(void)
 		auto nextPC=PC;
 		auto inst=cpu.FetchInstruction(&mem,nextPC);
 
-		std::cout << inst.length << std::endl;
+		std::cout << inst.length << " " << cpputil::Ustox(inst.opCode) << std::endl;
 
 		auto disasm=cpu.Disassemble(inst,PC);
 		std::cout << cpputil::Ustox(PC) << " " << disasm << std::endl;

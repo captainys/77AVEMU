@@ -218,6 +218,34 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_SBCB_IDX]=OPER_IDX;
 	instOperaType[INST_SBCB_EXT]=OPER_EXT;
 
+	instOperaType[INST_STA_DP]=OPER_DP;
+	instOperaType[INST_STA_IDX]=OPER_IDX;
+	instOperaType[INST_STA_EXT]=OPER_EXT;
+
+	instOperaType[INST_STB_DP]=OPER_DP;
+	instOperaType[INST_STB_IDX]=OPER_IDX;
+	instOperaType[INST_STB_EXT]=OPER_EXT;
+
+	instOperaType[INST_STD_DP]=OPER_DP;
+	instOperaType[INST_STD_IDX]=OPER_IDX;
+	instOperaType[INST_STD_EXT]=OPER_EXT;
+
+	instOperaType[INST_STS_DP]=OPER_DP;
+	instOperaType[INST_STS_IDX]=OPER_IDX;
+	instOperaType[INST_STS_EXT]=OPER_EXT;
+
+	instOperaType[INST_STU_DP]=OPER_DP;
+	instOperaType[INST_STU_IDX]=OPER_IDX;
+	instOperaType[INST_STU_EXT]=OPER_EXT;
+
+	instOperaType[INST_STX_DP]=OPER_DP;
+	instOperaType[INST_STX_IDX]=OPER_IDX;
+	instOperaType[INST_STX_EXT]=OPER_EXT;
+
+	instOperaType[INST_STY_DP]=OPER_DP;
+	instOperaType[INST_STY_IDX]=OPER_IDX;
+	instOperaType[INST_STY_EXT]=OPER_EXT;
+
 	instOperaType[INST_SUBA_IMM]=OPER_IMM;
 	instOperaType[INST_SUBA_DP]=OPER_DP;
 	instOperaType[INST_SUBA_IDX]=OPER_IDX;
@@ -550,6 +578,34 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instClock[INST_SBCB_EXT]=5;
 
 	instClock[INST_SEX]=2;
+
+	instClock[INST_STA_DP]=4;
+	instClock[INST_STA_IDX]=4;
+	instClock[INST_STA_EXT]=5;
+
+	instClock[INST_STB_DP]=4;
+	instClock[INST_STB_IDX]=4;
+	instClock[INST_STB_EXT]=5;
+
+	instClock[INST_STD_DP]=5;
+	instClock[INST_STD_IDX]=5;
+	instClock[INST_STD_EXT]=6;
+
+	instClock[INST_STS_DP]=6;
+	instClock[INST_STS_IDX]=6;
+	instClock[INST_STS_EXT]=7;
+
+	instClock[INST_STU_DP]=5;
+	instClock[INST_STU_IDX]=5;
+	instClock[INST_STU_EXT]=6;
+
+	instClock[INST_STX_DP]=5;
+	instClock[INST_STX_IDX]=5;
+	instClock[INST_STX_EXT]=6;
+
+	instClock[INST_STY_DP]=6;
+	instClock[INST_STY_IDX]=6;
+	instClock[INST_STY_EXT]=7;
 
 	instClock[INST_SUBA_IMM]=2;
 	instClock[INST_SUBA_DP]=4;
@@ -894,6 +950,34 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 		instLabel[INST_SBCB_EXT]=     "SBCB";
 
 		instLabel[INST_SEX]=          "SEX";
+
+		instLabel[INST_STA_DP]=       "STA";
+		instLabel[INST_STA_IDX]=      "STA";
+		instLabel[INST_STA_EXT]=      "STA";
+
+		instLabel[INST_STB_DP]=       "STB";
+		instLabel[INST_STB_IDX]=      "STB";
+		instLabel[INST_STB_EXT]=      "STB";
+
+		instLabel[INST_STD_DP]=       "STD";
+		instLabel[INST_STD_IDX]=      "STD";
+		instLabel[INST_STD_EXT]=      "STD";
+
+		instLabel[INST_STS_DP]=       "STS";
+		instLabel[INST_STS_IDX]=      "STS";
+		instLabel[INST_STS_EXT]=      "STS";
+
+		instLabel[INST_STU_DP]=       "STU";
+		instLabel[INST_STU_IDX]=      "STU";
+		instLabel[INST_STU_EXT]=      "STU";
+
+		instLabel[INST_STX_DP]=       "STX";
+		instLabel[INST_STX_IDX]=      "STX";
+		instLabel[INST_STX_EXT]=      "STX";
+
+		instLabel[INST_STY_DP]=       "STY";
+		instLabel[INST_STY_IDX]=      "STY";
+		instLabel[INST_STY_EXT]=      "STY";
 
 		instLabel[INST_SUBA_IMM]=     "SUBA";
 		instLabel[INST_SUBA_DP]=      "SUBA";
@@ -1282,6 +1366,61 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 		disasm+=cpputil::Ubtox(inst.operand[0]);
 		break;
 	case OPER_IDX:
+		if(true==inst.indexIndir)
+		{
+			disasm="[";
+		}
+		switch(inst.indexType)
+		{
+		case INDEX_CONST_OFFSET_FROM_REG:
+		case INDEX_8BIT_OFFSET:
+		case INDEX_16BIT_OFFSET:
+			{
+				if(REG_PC==inst.indexReg)
+				{
+					int addr=(PC+inst.length+inst.offset)&0xFFFF;
+					disasm.push_back('$');
+					disasm+=cpputil::Ustox(addr);
+					disasm+=",PCR";
+				}
+				else
+				{
+					int offset=inst.offset;
+					if(offset<0)
+					{
+						offset=-offset;
+						disasm.push_back('-');
+					}
+					disasm.push_back('$');
+					if(-128<=inst.offset && inst.offset<128)
+					{
+						disasm+=cpputil::Ubtox(offset);
+					}
+					else
+					{
+						disasm+=cpputil::Ustox(offset);
+					}
+					disasm.push_back(',');
+					disasm+=RegToStr(inst.indexReg);
+				}
+			}
+			break;
+		case INDEX_ACCUM_OFFSET_FROM_REG:
+			disasm+=RegToStr(inst.offset);
+			disasm.push_back(',');
+			disasm+=RegToStr(inst.indexReg);
+			break;
+		case INDEX_POST_INC_1:
+		case INDEX_POST_INC_2:
+		case INDEX_PRE_DEC_1:
+		case INDEX_PRE_DEC_2:
+		case INDEX_EXTENDED:
+			break;
+		}
+		if(true==inst.indexIndir)
+		{
+			disasm+="]";
+		}
 		break;
 	case OPER_EXT:
 		{
@@ -1301,4 +1440,42 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 		break;
 	}
 	return disasm;
+}
+
+/* static */ std::string MC6809::RegToStr(unsigned int reg)
+{
+	switch(reg)
+	{
+	case REG_A:
+		return "A";
+	case REG_B:
+		return "B";
+	case REG_D:
+		return "D";
+	case REG_DP:
+		return "DP";
+	case REG_CC:
+		return "CC";
+
+	case REG_X:
+		return "X";
+	case REG_Y:
+		return "Y";
+	case REG_U:
+		return "U";
+	case REG_S:
+		return "S";
+
+	case REG_PC:
+		return "PC";
+	}
+	return "?";
+}
+/* static */ std::string MC6809::RegToStrPCR(unsigned int reg)
+{
+	if(REG_PC==reg)
+	{
+		return "PCR";
+	}
+	return RegToStr(reg);
 }

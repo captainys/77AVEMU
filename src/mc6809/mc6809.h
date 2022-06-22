@@ -303,6 +303,34 @@ public:
 
 		INST_SEX=       0x1D,
 
+		INST_STA_DP=    0x97,
+		INST_STA_IDX=   0xA7,
+		INST_STA_EXT=   0xB7,
+
+		INST_STB_DP=    0xD7,
+		INST_STB_IDX=   0xE7,
+		INST_STB_EXT=   0xF7,
+
+		INST_STD_DP=    0xDD,
+		INST_STD_IDX=   0xED,
+		INST_STD_EXT=   0xFD,
+
+		INST_STS_DP=    0x1DF, // 10 DF
+		INST_STS_IDX=   0x1EF, // 10 EF
+		INST_STS_EXT=   0x1FF, // 10 FF
+
+		INST_STU_DP=    0xDF,
+		INST_STU_IDX=   0xEF,
+		INST_STU_EXT=   0xFF,
+
+		INST_STX_DP=    0x9F,
+		INST_STX_IDX=   0xAF,
+		INST_STX_EXT=   0xBF,
+
+		INST_STY_DP=    0x19F,
+		INST_STY_IDX=   0x1AF,
+		INST_STY_EXT=   0x1BF,
+
 		INST_SUBA_IMM=  0x80,
 		INST_SUBA_DP=   0x90,
 		INST_SUBA_IDX=  0xA0,
@@ -485,6 +513,9 @@ public:
 
 	std::string Disassemble(Instruction inst,uint16_t PC) const;
 	std::string DisassembleOperand(Instruction inst,uint16_t PC) const;
+
+	static std::string RegToStr(unsigned int reg);
+	static std::string RegToStrPCR(unsigned int reg);
 };
 
 /* } */
