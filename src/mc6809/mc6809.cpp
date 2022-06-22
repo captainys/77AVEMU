@@ -124,6 +124,8 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_EORB_IDX]=OPER_IDX;
 	instOperaType[INST_EORB_EXT]=OPER_EXT;
 
+	instOperaType[INST_EXG_REG]=OPER_REG;
+
 	instOperaType[INST_INC_DP]=OPER_DP;
 	instOperaType[INST_INC_IDX]=OPER_IDX;
 	instOperaType[INST_INC_EXT]=OPER_EXT;
@@ -200,6 +202,11 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 
 	instOperaType[INST_ORCC_IMM]=OPER_IMM;
 
+	instOperaType[INST_PSHS_REG]=OPER_REG;
+	instOperaType[INST_PSHU_REG]=OPER_REG;
+	instOperaType[INST_PULS_REG]=OPER_REG;
+	instOperaType[INST_PULU_REG]=OPER_REG;
+
 	instOperaType[INST_ROL_DP]=OPER_DP;
 	instOperaType[INST_ROL_IDX]=OPER_IDX;
 	instOperaType[INST_ROL_EXT]=OPER_EXT;
@@ -260,6 +267,8 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_SUBD_DP]=OPER_DP;
 	instOperaType[INST_SUBD_IDX]=OPER_IDX;
 	instOperaType[INST_SUBD_EXT]=OPER_EXT;
+
+	instOperaType[INST_TFR_REG]=OPER_REG;
 
 	instOperaType[INST_TST_DP]=OPER_DP;
 	instOperaType[INST_TST_IDX]=OPER_IDX;
@@ -690,375 +699,375 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instClock[INST_LBVS_IMM16]=5; // +1 clock if it jumps
 
 
-		instLabel[INST_ABX]=          "ABX";
-
-		instLabel[INST_ADCA_IMM]=     "ADCA";
-		instLabel[INST_ADCA_DP]=      "ADCA";
-		instLabel[INST_ADCA_IDX]=     "ADCA";
-		instLabel[INST_ADCA_EXT]=     "ADCA";
-
-		instLabel[INST_ADCB_IMM]=     "ADCB";
-		instLabel[INST_ADCB_DP]=      "ADCB";
-		instLabel[INST_ADCB_IDX]=     "ADCB";
-		instLabel[INST_ADCB_EXT]=     "ADCB";
-
-		instLabel[INST_ADDA_IMM]=     "ADDA";
-		instLabel[INST_ADDA_DP]=      "ADDA";
-		instLabel[INST_ADDA_IDX]=     "ADDA";
-		instLabel[INST_ADDA_EXT]=     "ADDA";
-
-		instLabel[INST_ADDB_IMM]=     "ADDB";
-		instLabel[INST_ADDB_DP]=      "ADDB";
-		instLabel[INST_ADDB_IDX]=     "ADDB";
-		instLabel[INST_ADDB_EXT]=     "ADDB";
-
-		instLabel[INST_ADDD_IMM]=     "ADDD";
-		instLabel[INST_ADDD_DP]=      "ADDD";
-		instLabel[INST_ADDD_IDX]=     "ADDD";
-		instLabel[INST_ADDD_EXT]=     "ADDD";
-
-		instLabel[INST_ANDA_IMM]=     "ANDA";
-		instLabel[INST_ANDA_DP]=      "ANDA";
-		instLabel[INST_ANDA_IDX]=     "ANDA";
-		instLabel[INST_ANDA_EXT]=     "ANDA";
-
-		instLabel[INST_ANDB_IMM]=     "ANDB";
-		instLabel[INST_ANDB_DP]=      "ANDB";
-		instLabel[INST_ANDB_IDX]=     "ANDB";
-		instLabel[INST_ANDB_EXT]=     "ANDB";
-
-		instLabel[INST_ANDCC_IMM]=    "ANDCC";
-
-		instLabel[INST_ASLA]=         "ASLA";
-		instLabel[INST_ASLB]=         "ASLB";
-
-		instLabel[INST_ASL_DP]=       "ASL";
-		instLabel[INST_ASL_IDX]=      "ASL";
-		instLabel[INST_ASL_EXT]=      "ASL";
-
-		instLabel[INST_ASRA]=         "ASRA";
-		instLabel[INST_ASRB]=         "ASRB";
-
-		instLabel[INST_ASR_DP]=       "ASR";
-		instLabel[INST_ASR_IDX]=      "ASR";
-		instLabel[INST_ASR_EXT]=      "ASR";
-
-		instLabel[INST_BITA_IMM]=     "BITA";
-		instLabel[INST_BITA_DP]=      "BITA";
-		instLabel[INST_BITA_IDX]=     "BITA";
-		instLabel[INST_BITA_EXT]=     "BITA";
-
-		instLabel[INST_BITB_IMM]=     "BITB";
-		instLabel[INST_BITB_DP]=      "BITB";
-		instLabel[INST_BITB_IDX]=     "BITB";
-		instLabel[INST_BITB_EXT]=     "BITB";
-
-		instLabel[INST_CLRA]=         "CLRA";
-		instLabel[INST_CLRB]=         "CLRB";
-
-		instLabel[INST_CLR_DP]=       "CLR";
-		instLabel[INST_CLR_IDX]=      "CLR";
-		instLabel[INST_CLR_EXT]=      "CLR";
-
-		instLabel[INST_CMPA_IMM]=     "CMPA";
-		instLabel[INST_CMPA_DP]=      "CMPA";
-		instLabel[INST_CMPA_IDX]=     "CMPA";
-		instLabel[INST_CMPA_EXT]=     "CMPA";
-
-		instLabel[INST_CMPB_IMM]=     "CMPB";
-		instLabel[INST_CMPB_DP]=      "CMPB";
-		instLabel[INST_CMPB_IDX]=     "CMPB";
-		instLabel[INST_CMPB_EXT]=     "CMPB";
-
-		instLabel[INST_CMPD_IMM]=     "CMPD";
-		instLabel[INST_CMPD_DP]=      "CMPD";
-		instLabel[INST_CMPD_IDX]=     "CMPD";
-		instLabel[INST_CMPD_EXT]=     "CMPD";
-
-		instLabel[INST_CMPS_IMM]=     "CMPS";
-		instLabel[INST_CMPS_DP]=      "CMPS";
-		instLabel[INST_CMPS_IDX]=     "CMPS";
-		instLabel[INST_CMPS_EXT]=     "CMPS";
-
-		instLabel[INST_CMPU_IMM]=     "CMPU";
-		instLabel[INST_CMPU_DP]=      "CMPU";
-		instLabel[INST_CMPU_IDX]=     "CMPU";
-		instLabel[INST_CMPU_EXT]=     "CMPU";
-
-		instLabel[INST_CMPX_IMM]=     "CMPX";
-		instLabel[INST_CMPX_DP]=      "CMPX";
-		instLabel[INST_CMPX_IDX]=     "CMPX";
-		instLabel[INST_CMPX_EXT]=     "CMPX";
-
-		instLabel[INST_CMPY_IMM]=     "CMPY";
-		instLabel[INST_CMPY_DP]=      "CMPY";
-		instLabel[INST_CMPY_IDX]=     "CMPY";
-		instLabel[INST_CMPY_EXT]=     "CMPY";
+	instLabel[INST_ABX]=          "ABX";
+
+	instLabel[INST_ADCA_IMM]=     "ADCA";
+	instLabel[INST_ADCA_DP]=      "ADCA";
+	instLabel[INST_ADCA_IDX]=     "ADCA";
+	instLabel[INST_ADCA_EXT]=     "ADCA";
+
+	instLabel[INST_ADCB_IMM]=     "ADCB";
+	instLabel[INST_ADCB_DP]=      "ADCB";
+	instLabel[INST_ADCB_IDX]=     "ADCB";
+	instLabel[INST_ADCB_EXT]=     "ADCB";
+
+	instLabel[INST_ADDA_IMM]=     "ADDA";
+	instLabel[INST_ADDA_DP]=      "ADDA";
+	instLabel[INST_ADDA_IDX]=     "ADDA";
+	instLabel[INST_ADDA_EXT]=     "ADDA";
+
+	instLabel[INST_ADDB_IMM]=     "ADDB";
+	instLabel[INST_ADDB_DP]=      "ADDB";
+	instLabel[INST_ADDB_IDX]=     "ADDB";
+	instLabel[INST_ADDB_EXT]=     "ADDB";
+
+	instLabel[INST_ADDD_IMM]=     "ADDD";
+	instLabel[INST_ADDD_DP]=      "ADDD";
+	instLabel[INST_ADDD_IDX]=     "ADDD";
+	instLabel[INST_ADDD_EXT]=     "ADDD";
+
+	instLabel[INST_ANDA_IMM]=     "ANDA";
+	instLabel[INST_ANDA_DP]=      "ANDA";
+	instLabel[INST_ANDA_IDX]=     "ANDA";
+	instLabel[INST_ANDA_EXT]=     "ANDA";
+
+	instLabel[INST_ANDB_IMM]=     "ANDB";
+	instLabel[INST_ANDB_DP]=      "ANDB";
+	instLabel[INST_ANDB_IDX]=     "ANDB";
+	instLabel[INST_ANDB_EXT]=     "ANDB";
+
+	instLabel[INST_ANDCC_IMM]=    "ANDCC";
+
+	instLabel[INST_ASLA]=         "ASLA";
+	instLabel[INST_ASLB]=         "ASLB";
+
+	instLabel[INST_ASL_DP]=       "ASL";
+	instLabel[INST_ASL_IDX]=      "ASL";
+	instLabel[INST_ASL_EXT]=      "ASL";
+
+	instLabel[INST_ASRA]=         "ASRA";
+	instLabel[INST_ASRB]=         "ASRB";
+
+	instLabel[INST_ASR_DP]=       "ASR";
+	instLabel[INST_ASR_IDX]=      "ASR";
+	instLabel[INST_ASR_EXT]=      "ASR";
+
+	instLabel[INST_BITA_IMM]=     "BITA";
+	instLabel[INST_BITA_DP]=      "BITA";
+	instLabel[INST_BITA_IDX]=     "BITA";
+	instLabel[INST_BITA_EXT]=     "BITA";
+
+	instLabel[INST_BITB_IMM]=     "BITB";
+	instLabel[INST_BITB_DP]=      "BITB";
+	instLabel[INST_BITB_IDX]=     "BITB";
+	instLabel[INST_BITB_EXT]=     "BITB";
+
+	instLabel[INST_CLRA]=         "CLRA";
+	instLabel[INST_CLRB]=         "CLRB";
+
+	instLabel[INST_CLR_DP]=       "CLR";
+	instLabel[INST_CLR_IDX]=      "CLR";
+	instLabel[INST_CLR_EXT]=      "CLR";
+
+	instLabel[INST_CMPA_IMM]=     "CMPA";
+	instLabel[INST_CMPA_DP]=      "CMPA";
+	instLabel[INST_CMPA_IDX]=     "CMPA";
+	instLabel[INST_CMPA_EXT]=     "CMPA";
+
+	instLabel[INST_CMPB_IMM]=     "CMPB";
+	instLabel[INST_CMPB_DP]=      "CMPB";
+	instLabel[INST_CMPB_IDX]=     "CMPB";
+	instLabel[INST_CMPB_EXT]=     "CMPB";
+
+	instLabel[INST_CMPD_IMM]=     "CMPD";
+	instLabel[INST_CMPD_DP]=      "CMPD";
+	instLabel[INST_CMPD_IDX]=     "CMPD";
+	instLabel[INST_CMPD_EXT]=     "CMPD";
+
+	instLabel[INST_CMPS_IMM]=     "CMPS";
+	instLabel[INST_CMPS_DP]=      "CMPS";
+	instLabel[INST_CMPS_IDX]=     "CMPS";
+	instLabel[INST_CMPS_EXT]=     "CMPS";
+
+	instLabel[INST_CMPU_IMM]=     "CMPU";
+	instLabel[INST_CMPU_DP]=      "CMPU";
+	instLabel[INST_CMPU_IDX]=     "CMPU";
+	instLabel[INST_CMPU_EXT]=     "CMPU";
+
+	instLabel[INST_CMPX_IMM]=     "CMPX";
+	instLabel[INST_CMPX_DP]=      "CMPX";
+	instLabel[INST_CMPX_IDX]=     "CMPX";
+	instLabel[INST_CMPX_EXT]=     "CMPX";
+
+	instLabel[INST_CMPY_IMM]=     "CMPY";
+	instLabel[INST_CMPY_DP]=      "CMPY";
+	instLabel[INST_CMPY_IDX]=     "CMPY";
+	instLabel[INST_CMPY_EXT]=     "CMPY";
 
-		instLabel[INST_COMA]=         "COMA";
-		instLabel[INST_COMB]=         "COMB";
+	instLabel[INST_COMA]=         "COMA";
+	instLabel[INST_COMB]=         "COMB";
 
-		instLabel[INST_COM_DP]=       "COM";
-		instLabel[INST_COM_IDX]=      "COM";
-		instLabel[INST_COM_EXT]=      "COM";
+	instLabel[INST_COM_DP]=       "COM";
+	instLabel[INST_COM_IDX]=      "COM";
+	instLabel[INST_COM_EXT]=      "COM";
 
-		instLabel[INST_CWAI_IMM]=     "CWAI";
+	instLabel[INST_CWAI_IMM]=     "CWAI";
 
-		instLabel[INST_DAA]=          "DAA";
+	instLabel[INST_DAA]=          "DAA";
 
-		instLabel[INST_DECA]=         "DECA";
-		instLabel[INST_DECB]=         "DECB";
+	instLabel[INST_DECA]=         "DECA";
+	instLabel[INST_DECB]=         "DECB";
 
-		instLabel[INST_DEC_DP]=       "DEC";
-		instLabel[INST_DEC_IDX]=      "DEC";
-		instLabel[INST_DEC_EXT]=      "DEC";
+	instLabel[INST_DEC_DP]=       "DEC";
+	instLabel[INST_DEC_IDX]=      "DEC";
+	instLabel[INST_DEC_EXT]=      "DEC";
 
-		instLabel[INST_EORA_IMM]=     "EORA";
-		instLabel[INST_EORA_DP]=      "EORA";
-		instLabel[INST_EORA_IDX]=     "EORA";
-		instLabel[INST_EORA_EXT]=     "EORA";
+	instLabel[INST_EORA_IMM]=     "EORA";
+	instLabel[INST_EORA_DP]=      "EORA";
+	instLabel[INST_EORA_IDX]=     "EORA";
+	instLabel[INST_EORA_EXT]=     "EORA";
 
-		instLabel[INST_EORB_IMM]=     "EORB";
-		instLabel[INST_EORB_DP]=      "EORB";
-		instLabel[INST_EORB_IDX]=     "EORB";
-		instLabel[INST_EORB_EXT]=     "EORB";
+	instLabel[INST_EORB_IMM]=     "EORB";
+	instLabel[INST_EORB_DP]=      "EORB";
+	instLabel[INST_EORB_IDX]=     "EORB";
+	instLabel[INST_EORB_EXT]=     "EORB";
 
-		instLabel[INST_EXG_REG]=      "EXG";
+	instLabel[INST_EXG_REG]=      "EXG";
 
-		instLabel[INST_INCA]=         "INCA";
-		instLabel[INST_INCB]=         "INCB";
+	instLabel[INST_INCA]=         "INCA";
+	instLabel[INST_INCB]=         "INCB";
 
-		instLabel[INST_INC_DP]=       "INC";
-		instLabel[INST_INC_IDX]=      "INC";
-		instLabel[INST_INC_EXT]=      "INC";
+	instLabel[INST_INC_DP]=       "INC";
+	instLabel[INST_INC_IDX]=      "INC";
+	instLabel[INST_INC_EXT]=      "INC";
 
-		instLabel[INST_JMP_DP]=       "JMP";
-		instLabel[INST_JMP_IDX]=      "JMP";
-		instLabel[INST_JMP_EXT]=      "JMP";
+	instLabel[INST_JMP_DP]=       "JMP";
+	instLabel[INST_JMP_IDX]=      "JMP";
+	instLabel[INST_JMP_EXT]=      "JMP";
 
-		instLabel[INST_JSR_DP]=       "JSR";
-		instLabel[INST_JSR_IDX]=      "JSR";
-		instLabel[INST_JSR_EXT]=      "JSR";
+	instLabel[INST_JSR_DP]=       "JSR";
+	instLabel[INST_JSR_IDX]=      "JSR";
+	instLabel[INST_JSR_EXT]=      "JSR";
 
-		instLabel[INST_LDA_IMM]=      "LDA";
-		instLabel[INST_LDA_DP]=       "LDA";
-		instLabel[INST_LDA_IDX]=      "LDA";
-		instLabel[INST_LDA_EXT]=      "LDA";
+	instLabel[INST_LDA_IMM]=      "LDA";
+	instLabel[INST_LDA_DP]=       "LDA";
+	instLabel[INST_LDA_IDX]=      "LDA";
+	instLabel[INST_LDA_EXT]=      "LDA";
 
-		instLabel[INST_LDB_IMM]=      "LDB";
-		instLabel[INST_LDB_DP]=       "LDB";
-		instLabel[INST_LDB_IDX]=      "LDB";
-		instLabel[INST_LDB_EXT]=      "LDB";
+	instLabel[INST_LDB_IMM]=      "LDB";
+	instLabel[INST_LDB_DP]=       "LDB";
+	instLabel[INST_LDB_IDX]=      "LDB";
+	instLabel[INST_LDB_EXT]=      "LDB";
 
-		instLabel[INST_LDD_IMM]=      "LDD";
-		instLabel[INST_LDD_DP]=       "LDD";
-		instLabel[INST_LDD_IDX]=      "LDD";
-		instLabel[INST_LDD_EXT]=      "LDD";
+	instLabel[INST_LDD_IMM]=      "LDD";
+	instLabel[INST_LDD_DP]=       "LDD";
+	instLabel[INST_LDD_IDX]=      "LDD";
+	instLabel[INST_LDD_EXT]=      "LDD";
 
-		instLabel[INST_LDS_IMM]=      "LDS";
-		instLabel[INST_LDS_DP]=       "LDS";
-		instLabel[INST_LDS_IDX]=      "LDS";
-		instLabel[INST_LDS_EXT]=      "LDS";
+	instLabel[INST_LDS_IMM]=      "LDS";
+	instLabel[INST_LDS_DP]=       "LDS";
+	instLabel[INST_LDS_IDX]=      "LDS";
+	instLabel[INST_LDS_EXT]=      "LDS";
 
-		instLabel[INST_LDU_IMM]=      "LDU";
-		instLabel[INST_LDU_DP]=       "LDU";
-		instLabel[INST_LDU_IDX]=      "LDU";
-		instLabel[INST_LDU_EXT]=      "LDU";
+	instLabel[INST_LDU_IMM]=      "LDU";
+	instLabel[INST_LDU_DP]=       "LDU";
+	instLabel[INST_LDU_IDX]=      "LDU";
+	instLabel[INST_LDU_EXT]=      "LDU";
 
-		instLabel[INST_LDX_IMM]=      "LDX";
-		instLabel[INST_LDX_DP]=       "LDX";
-		instLabel[INST_LDX_IDX]=      "LDX";
-		instLabel[INST_LDX_EXT]=      "LDX";
+	instLabel[INST_LDX_IMM]=      "LDX";
+	instLabel[INST_LDX_DP]=       "LDX";
+	instLabel[INST_LDX_IDX]=      "LDX";
+	instLabel[INST_LDX_EXT]=      "LDX";
 
-		instLabel[INST_LDY_IMM]=      "LDY";
-		instLabel[INST_LDY_DP]=       "LDY";
-		instLabel[INST_LDY_IDX]=      "LDY";
-		instLabel[INST_LDY_EXT]=      "LDY";
+	instLabel[INST_LDY_IMM]=      "LDY";
+	instLabel[INST_LDY_DP]=       "LDY";
+	instLabel[INST_LDY_IDX]=      "LDY";
+	instLabel[INST_LDY_EXT]=      "LDY";
 
-		instLabel[INST_LEAS_IDX]=     "LEAS";
-		instLabel[INST_LEAU_IDX]=     "LEAU";
-		instLabel[INST_LEAX_IDX]=     "LEAX";
-		instLabel[INST_LEAY_IDX]=     "LEAY";
+	instLabel[INST_LEAS_IDX]=     "LEAS";
+	instLabel[INST_LEAU_IDX]=     "LEAU";
+	instLabel[INST_LEAX_IDX]=     "LEAX";
+	instLabel[INST_LEAY_IDX]=     "LEAY";
 
-		instLabel[INST_LSLA]=         "LSLA";
-		instLabel[INST_LSLB]=         "LSLB";
+	instLabel[INST_LSLA]=         "LSLA";
+	instLabel[INST_LSLB]=         "LSLB";
 
-		instLabel[INST_LSL_DP]=       "LSL";
-		instLabel[INST_LSL_IDX]=      "LSL";
-		instLabel[INST_LSL_EXT]=      "LSL";
+	instLabel[INST_LSL_DP]=       "LSL";
+	instLabel[INST_LSL_IDX]=      "LSL";
+	instLabel[INST_LSL_EXT]=      "LSL";
 
-		instLabel[INST_LSRA]=         "LSRA";
-		instLabel[INST_LSRB]=         "LSRB";
+	instLabel[INST_LSRA]=         "LSRA";
+	instLabel[INST_LSRB]=         "LSRB";
 
-		instLabel[INST_LSR_DP]=       "LSR";
-		instLabel[INST_LSR_IDX]=      "LSR";
-		instLabel[INST_LSR_EXT]=      "LSR";
+	instLabel[INST_LSR_DP]=       "LSR";
+	instLabel[INST_LSR_IDX]=      "LSR";
+	instLabel[INST_LSR_EXT]=      "LSR";
 
-		instLabel[INST_MUL]=          "MUL";
+	instLabel[INST_MUL]=          "MUL";
 
-		instLabel[INST_NEGA]=         "NEGA";
-		instLabel[INST_NEGB]=         "NEGB";
+	instLabel[INST_NEGA]=         "NEGA";
+	instLabel[INST_NEGB]=         "NEGB";
 
-		instLabel[INST_NEG_DP]=       "NEG";
-		instLabel[INST_NEG_IDX]=      "NEG";
-		instLabel[INST_NEG_EXT]=      "NEG";
+	instLabel[INST_NEG_DP]=       "NEG";
+	instLabel[INST_NEG_IDX]=      "NEG";
+	instLabel[INST_NEG_EXT]=      "NEG";
 
-		instLabel[INST_NOP]=          "NOP";
+	instLabel[INST_NOP]=          "NOP";
 
-		instLabel[INST_ORA_IMM]=      "ORA";
-		instLabel[INST_ORA_DP]=       "ORA";
-		instLabel[INST_ORA_IDX]=      "ORA";
-		instLabel[INST_ORA_EXT]=      "ORA";
+	instLabel[INST_ORA_IMM]=      "ORA";
+	instLabel[INST_ORA_DP]=       "ORA";
+	instLabel[INST_ORA_IDX]=      "ORA";
+	instLabel[INST_ORA_EXT]=      "ORA";
 
-		instLabel[INST_ORB_IMM]=      "ORB";
-		instLabel[INST_ORB_DP]=       "ORB";
-		instLabel[INST_ORB_IDX]=      "ORB";
-		instLabel[INST_ORB_EXT]=      "ORB";
+	instLabel[INST_ORB_IMM]=      "ORB";
+	instLabel[INST_ORB_DP]=       "ORB";
+	instLabel[INST_ORB_IDX]=      "ORB";
+	instLabel[INST_ORB_EXT]=      "ORB";
 
-		instLabel[INST_ORCC_IMM]=     "ORCC";
+	instLabel[INST_ORCC_IMM]=     "ORCC";
 
-		instLabel[INST_PSHS_REG]=     "PSHS";
-		instLabel[INST_PSHU_REG]=     "PSHU";
-		instLabel[INST_PULS_REG]=     "PULS";
-		instLabel[INST_PULU_REG]=     "PULU";
+	instLabel[INST_PSHS_REG]=     "PSHS";
+	instLabel[INST_PSHU_REG]=     "PSHU";
+	instLabel[INST_PULS_REG]=     "PULS";
+	instLabel[INST_PULU_REG]=     "PULU";
 
-		instLabel[INST_ROLA]=         "ROLA";
-		instLabel[INST_ROLB]=         "ROLB";
+	instLabel[INST_ROLA]=         "ROLA";
+	instLabel[INST_ROLB]=         "ROLB";
 
-		instLabel[INST_ROL_DP]=       "ROL";
-		instLabel[INST_ROL_IDX]=      "ROL";
-		instLabel[INST_ROL_EXT]=      "ROL";
+	instLabel[INST_ROL_DP]=       "ROL";
+	instLabel[INST_ROL_IDX]=      "ROL";
+	instLabel[INST_ROL_EXT]=      "ROL";
 
-		instLabel[INST_RORA]=         "RORA";
-		instLabel[INST_RORB]=         "RORB";
+	instLabel[INST_RORA]=         "RORA";
+	instLabel[INST_RORB]=         "RORB";
 
-		instLabel[INST_ROR_DP]=       "ROR";
-		instLabel[INST_ROR_IDX]=      "ROR";
-		instLabel[INST_ROR_EXT]=      "ROR";
+	instLabel[INST_ROR_DP]=       "ROR";
+	instLabel[INST_ROR_IDX]=      "ROR";
+	instLabel[INST_ROR_EXT]=      "ROR";
 
-		instLabel[INST_RTI]=          "RTI";
-		instLabel[INST_RTS]=          "RTS";
+	instLabel[INST_RTI]=          "RTI";
+	instLabel[INST_RTS]=          "RTS";
 
-		instLabel[INST_SBCA_IMM]=     "SBCA";
-		instLabel[INST_SBCA_DP]=      "SBCA";
-		instLabel[INST_SBCA_IDX]=     "SBCA";
-		instLabel[INST_SBCA_EXT]=     "SBCA";
+	instLabel[INST_SBCA_IMM]=     "SBCA";
+	instLabel[INST_SBCA_DP]=      "SBCA";
+	instLabel[INST_SBCA_IDX]=     "SBCA";
+	instLabel[INST_SBCA_EXT]=     "SBCA";
 
-		instLabel[INST_SBCB_IMM]=     "SBCB";
-		instLabel[INST_SBCB_DP]=      "SBCB";
-		instLabel[INST_SBCB_IDX]=     "SBCB";
-		instLabel[INST_SBCB_EXT]=     "SBCB";
+	instLabel[INST_SBCB_IMM]=     "SBCB";
+	instLabel[INST_SBCB_DP]=      "SBCB";
+	instLabel[INST_SBCB_IDX]=     "SBCB";
+	instLabel[INST_SBCB_EXT]=     "SBCB";
 
-		instLabel[INST_SEX]=          "SEX";
+	instLabel[INST_SEX]=          "SEX";
 
-		instLabel[INST_STA_DP]=       "STA";
-		instLabel[INST_STA_IDX]=      "STA";
-		instLabel[INST_STA_EXT]=      "STA";
+	instLabel[INST_STA_DP]=       "STA";
+	instLabel[INST_STA_IDX]=      "STA";
+	instLabel[INST_STA_EXT]=      "STA";
 
-		instLabel[INST_STB_DP]=       "STB";
-		instLabel[INST_STB_IDX]=      "STB";
-		instLabel[INST_STB_EXT]=      "STB";
+	instLabel[INST_STB_DP]=       "STB";
+	instLabel[INST_STB_IDX]=      "STB";
+	instLabel[INST_STB_EXT]=      "STB";
 
-		instLabel[INST_STD_DP]=       "STD";
-		instLabel[INST_STD_IDX]=      "STD";
-		instLabel[INST_STD_EXT]=      "STD";
+	instLabel[INST_STD_DP]=       "STD";
+	instLabel[INST_STD_IDX]=      "STD";
+	instLabel[INST_STD_EXT]=      "STD";
 
-		instLabel[INST_STS_DP]=       "STS";
-		instLabel[INST_STS_IDX]=      "STS";
-		instLabel[INST_STS_EXT]=      "STS";
+	instLabel[INST_STS_DP]=       "STS";
+	instLabel[INST_STS_IDX]=      "STS";
+	instLabel[INST_STS_EXT]=      "STS";
 
-		instLabel[INST_STU_DP]=       "STU";
-		instLabel[INST_STU_IDX]=      "STU";
-		instLabel[INST_STU_EXT]=      "STU";
+	instLabel[INST_STU_DP]=       "STU";
+	instLabel[INST_STU_IDX]=      "STU";
+	instLabel[INST_STU_EXT]=      "STU";
 
-		instLabel[INST_STX_DP]=       "STX";
-		instLabel[INST_STX_IDX]=      "STX";
-		instLabel[INST_STX_EXT]=      "STX";
+	instLabel[INST_STX_DP]=       "STX";
+	instLabel[INST_STX_IDX]=      "STX";
+	instLabel[INST_STX_EXT]=      "STX";
 
-		instLabel[INST_STY_DP]=       "STY";
-		instLabel[INST_STY_IDX]=      "STY";
-		instLabel[INST_STY_EXT]=      "STY";
+	instLabel[INST_STY_DP]=       "STY";
+	instLabel[INST_STY_IDX]=      "STY";
+	instLabel[INST_STY_EXT]=      "STY";
 
-		instLabel[INST_SUBA_IMM]=     "SUBA";
-		instLabel[INST_SUBA_DP]=      "SUBA";
-		instLabel[INST_SUBA_IDX]=     "SUBA";
-		instLabel[INST_SUBA_EXT]=     "SUBA";
+	instLabel[INST_SUBA_IMM]=     "SUBA";
+	instLabel[INST_SUBA_DP]=      "SUBA";
+	instLabel[INST_SUBA_IDX]=     "SUBA";
+	instLabel[INST_SUBA_EXT]=     "SUBA";
 
-		instLabel[INST_SUBB_IMM]=     "SUBB";
-		instLabel[INST_SUBB_DP]=      "SUBB";
-		instLabel[INST_SUBB_IDX]=     "SUBB";
-		instLabel[INST_SUBB_EXT]=     "SUBB";
+	instLabel[INST_SUBB_IMM]=     "SUBB";
+	instLabel[INST_SUBB_DP]=      "SUBB";
+	instLabel[INST_SUBB_IDX]=     "SUBB";
+	instLabel[INST_SUBB_EXT]=     "SUBB";
 
-		instLabel[INST_SUBD_IMM]=     "SUBD";
-		instLabel[INST_SUBD_DP]=      "SUBD";
-		instLabel[INST_SUBD_IDX]=     "SUBD";
-		instLabel[INST_SUBD_EXT]=     "SUBD";
+	instLabel[INST_SUBD_IMM]=     "SUBD";
+	instLabel[INST_SUBD_DP]=      "SUBD";
+	instLabel[INST_SUBD_IDX]=     "SUBD";
+	instLabel[INST_SUBD_EXT]=     "SUBD";
 
-		instLabel[INST_SWI]=          "SWI";
-		instLabel[INST_SWI2]=         "SWI2";
-		instLabel[INST_SWI3]=         "SWI3";
+	instLabel[INST_SWI]=          "SWI";
+	instLabel[INST_SWI2]=         "SWI2";
+	instLabel[INST_SWI3]=         "SWI3";
 
-		instLabel[INST_SYNC]=         "SYNC";
+	instLabel[INST_SYNC]=         "SYNC";
 
-		instLabel[INST_TFR_REG]=      "TFR";
+	instLabel[INST_TFR_REG]=      "TFR";
 
-		instLabel[INST_TSTA]=         "TSTA";
-		instLabel[INST_TSTB]=         "TSTB";
+	instLabel[INST_TSTA]=         "TSTA";
+	instLabel[INST_TSTB]=         "TSTB";
 
-		instLabel[INST_TST_DP]=       "TST";
-		instLabel[INST_TST_IDX]=      "TST";
-		instLabel[INST_TST_EXT]=      "TST";
+	instLabel[INST_TST_DP]=       "TST";
+	instLabel[INST_TST_IDX]=      "TST";
+	instLabel[INST_TST_EXT]=      "TST";
 
-		instLabel[INST_BCC_IMM]=      "BCC";
-		instLabel[INST_LBCC_IMM16]=   "LBCC";
+	instLabel[INST_BCC_IMM]=      "BCC";
+	instLabel[INST_LBCC_IMM16]=   "LBCC";
 
-		instLabel[INST_BCS_IMM]=      "BCS";
-		instLabel[INST_LBCS_IMM16]=   "LBCS";
+	instLabel[INST_BCS_IMM]=      "BCS";
+	instLabel[INST_LBCS_IMM16]=   "LBCS";
 
-		instLabel[INST_BEQ_IMM]=      "BEQ";
-		instLabel[INST_LBEQ_IMM16]=   "LBEQ";
+	instLabel[INST_BEQ_IMM]=      "BEQ";
+	instLabel[INST_LBEQ_IMM16]=   "LBEQ";
 
-		instLabel[INST_BGE_IMM]=      "BGE";
-		instLabel[INST_LBGE_IMM16]=   "LBGE";
+	instLabel[INST_BGE_IMM]=      "BGE";
+	instLabel[INST_LBGE_IMM16]=   "LBGE";
 
-		instLabel[INST_BGT_IMM]=      "BGT";
-		instLabel[INST_LBGT_IMM16]=   "LBGT";
+	instLabel[INST_BGT_IMM]=      "BGT";
+	instLabel[INST_LBGT_IMM16]=   "LBGT";
 
-		instLabel[INST_BHI_IMM]=      "BHI";
-		instLabel[INST_LBHI_IMM16]=   "LBHI";
+	instLabel[INST_BHI_IMM]=      "BHI";
+	instLabel[INST_LBHI_IMM16]=   "LBHI";
 
-		instLabel[INST_BLE_IMM]=      "BLE";
-		instLabel[INST_LBLE_IMM16]=   "LBLE";
+	instLabel[INST_BLE_IMM]=      "BLE";
+	instLabel[INST_LBLE_IMM16]=   "LBLE";
 
-		instLabel[INST_BLS_IMM]=      "BLS";
-		instLabel[INST_LBLS_IMM16]=   "LBLS";
+	instLabel[INST_BLS_IMM]=      "BLS";
+	instLabel[INST_LBLS_IMM16]=   "LBLS";
 
-		instLabel[INST_BLT_IMM]=      "BLT";
-		instLabel[INST_LBLT_IMM16]=   "LBLT";
+	instLabel[INST_BLT_IMM]=      "BLT";
+	instLabel[INST_LBLT_IMM16]=   "LBLT";
 
-		instLabel[INST_BMI_IMM]=      "BMI";
-		instLabel[INST_LBMI_IMM16]=   "LBMI";
+	instLabel[INST_BMI_IMM]=      "BMI";
+	instLabel[INST_LBMI_IMM16]=   "LBMI";
 
-		instLabel[INST_BNE_IMM]=      "BNE";
-		instLabel[INST_LBNE_IMM16]=   "LBNE";
+	instLabel[INST_BNE_IMM]=      "BNE";
+	instLabel[INST_LBNE_IMM16]=   "LBNE";
 
-		instLabel[INST_BPL_IMM]=      "BPL";
-		instLabel[INST_LBPL_IMM16]=   "LBPL";
+	instLabel[INST_BPL_IMM]=      "BPL";
+	instLabel[INST_LBPL_IMM16]=   "LBPL";
 
-		instLabel[INST_BRA_IMM]=      "BRA";
-		instLabel[INST_LBRA_IMM16]=   "LBRA";
+	instLabel[INST_BRA_IMM]=      "BRA";
+	instLabel[INST_LBRA_IMM16]=   "LBRA";
 
-		instLabel[INST_BRN_IMM]=      "BRN";
-		instLabel[INST_LBRN_IMM16]=   "LBRN";
+	instLabel[INST_BRN_IMM]=      "BRN";
+	instLabel[INST_LBRN_IMM16]=   "LBRN";
 
-		instLabel[INST_BSR_IMM]=      "BSR";
-		instLabel[INST_LBSR_IMM16]=   "LBSR";
+	instLabel[INST_BSR_IMM]=      "BSR";
+	instLabel[INST_LBSR_IMM16]=   "LBSR";
 
-		instLabel[INST_BVC_IMM]=      "BVC";
-		instLabel[INST_LBVC_IMM16]=   "LBVC";
+	instLabel[INST_BVC_IMM]=      "BVC";
+	instLabel[INST_LBVC_IMM16]=   "LBVC";
 
-		instLabel[INST_BVS_IMM]=      "BVS";
-		instLabel[INST_LBVS_IMM16]=   "LBVS";
+	instLabel[INST_BVS_IMM]=      "BVS";
+	instLabel[INST_LBVS_IMM16]=   "LBVS";
 }
 
 MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &PC) const
@@ -1085,6 +1094,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 	{
 	case OPER_IMM:
 	case OPER_DP:
+	case OPER_REG:
 		// 1-byte operand
 		++inst.length;
 		inst.operand[0]=mem->FetchByte(PC++);
@@ -1309,9 +1319,12 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 			disasm+=DisassembleOperand(inst,PC);
 			break;
 		case INST_PSHS_REG: // 0x34,
-		case INST_PSHU_REG: // 0x36,
 		case INST_PULS_REG: // 0x35,
+			disasm+=DisassemblePSHPULRegisters(inst.operand[0],'U');
+			break;
+		case INST_PSHU_REG: // 0x36,
 		case INST_PULU_REG: // 0x37,
+			disasm+=DisassemblePSHPULRegisters(inst.operand[0],'S');
 			break;
 		case INST_BCC_IMM: //   0x24,
 		case INST_LBCC_IMM16: //0x124, // 10 24
@@ -1461,6 +1474,73 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 	}
 	return disasm;
 }
+
+std::string MC6809::DisassemblePSHPULRegisters(uint8_t flags,char UorS) const
+{
+	std::string disasm;
+	if(0!=(flags&PSH_CC))
+	{
+		disasm="CC";
+	}
+	if(0!=(flags&PSH_A))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm.push_back('A');
+	}
+	if(0!=(flags&PSH_B))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm.push_back('B');
+	}
+	if(0!=(flags&PSH_DP))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm+="DP";
+	}
+	if(0!=(flags&PSH_X))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm.push_back('X');
+	}
+	if(0!=(flags&PSH_Y))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm.push_back('Y');
+	}
+	if(0!=(flags&PSH_UorS))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm.push_back(UorS);
+	}
+	if(0!=(flags&PSH_PC))
+	{
+		if(0<disasm.size())
+		{
+			disasm.push_back(',');
+		}
+		disasm+="PC";
+	}
+	return disasm;
+}
+
 
 /* static */ std::string MC6809::RegToStr(unsigned int reg)
 {

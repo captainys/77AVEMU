@@ -12,3 +12,8 @@
 			STX		,--U
 			JSR		[$FBFA]
 			JMP		[A,X]
+			PSHS	A,B,X,Y,U
+			PULS	CC,DP,PC
+			PSHU	A,X,S
+			PULS	DP,U,PC
+			STA		$FD0F

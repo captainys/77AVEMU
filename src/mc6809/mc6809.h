@@ -16,6 +16,7 @@ public:
 		OPER_IDX,
 		OPER_EXT,
 		OPER_INHERENT,
+		OPER_REG,
 		OPER_IMM16
 	};
 
@@ -442,18 +443,30 @@ public:
 
 	enum
 	{
+		REG_CC,
 		REG_A,
 		REG_B,
-		REG_D,
 		REG_DP,
-		REG_CC,
 
 		REG_X, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
 		REG_Y, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
 		REG_U, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
 		REG_S, // Don't change the order of REG_X,Y,U,S.  FetchInstruction assumes this order.
 
-		REG_PC
+		REG_PC,
+		REG_D,
+	};
+
+	enum
+	{
+		PSH_CC=0x01,
+		PSH_A=0x02,
+		PSH_B=0x04,
+		PSH_DP=0x08,
+		PSH_X=0x10,
+		PSH_Y=0x20,
+		PSH_UorS=0x40,
+		PSH_PC=0x80,
 	};
 
 	class RegisterSet
@@ -513,6 +526,7 @@ public:
 
 	std::string Disassemble(Instruction inst,uint16_t PC) const;
 	std::string DisassembleOperand(Instruction inst,uint16_t PC) const;
+	std::string DisassemblePSHPULRegisters(uint8_t flags,char UorS) const;
 
 	static std::string RegToStr(unsigned int reg);
 	static std::string RegToStrPCR(unsigned int reg);
