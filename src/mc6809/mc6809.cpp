@@ -89,27 +89,27 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_CMPB_IDX]=OPER_IDX;
 	instOperaType[INST_CMPB_EXT]=OPER_EXT;
 
-	instOperaType[INST_CMPD_IMM]=OPER_IMM;
+	instOperaType[INST_CMPD_IMM]=OPER_IMM16;
 	instOperaType[INST_CMPD_DP]=OPER_DP;
 	instOperaType[INST_CMPD_IDX]=OPER_IDX;
 	instOperaType[INST_CMPD_EXT]=OPER_EXT;
 
-	instOperaType[INST_CMPS_IMM]=OPER_IMM;
+	instOperaType[INST_CMPS_IMM]=OPER_IMM16;
 	instOperaType[INST_CMPS_DP]=OPER_DP;
 	instOperaType[INST_CMPS_IDX]=OPER_IDX;
 	instOperaType[INST_CMPS_EXT]=OPER_EXT;
 
-	instOperaType[INST_CMPU_IMM]=OPER_IMM;
+	instOperaType[INST_CMPU_IMM]=OPER_IMM16;
 	instOperaType[INST_CMPU_DP]=OPER_DP;
 	instOperaType[INST_CMPU_IDX]=OPER_IDX;
 	instOperaType[INST_CMPU_EXT]=OPER_EXT;
 
-	instOperaType[INST_CMPX_IMM]=OPER_IMM;
+	instOperaType[INST_CMPX_IMM]=OPER_IMM16;
 	instOperaType[INST_CMPX_DP]=OPER_DP;
 	instOperaType[INST_CMPX_IDX]=OPER_IDX;
 	instOperaType[INST_CMPX_EXT]=OPER_EXT;
 
-	instOperaType[INST_CMPY_IMM]=OPER_IMM;
+	instOperaType[INST_CMPY_IMM]=OPER_IMM16;
 	instOperaType[INST_CMPY_DP]=OPER_DP;
 	instOperaType[INST_CMPY_IDX]=OPER_IDX;
 	instOperaType[INST_CMPY_EXT]=OPER_EXT;
@@ -1476,7 +1476,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDD_IMM: //   0xCC,
-		Abort("Instruction not supported yet.");
+		state.A=inst.operand[0];
+		state.B=inst.operand[1];
+		Test16(state.D());
 		break;
 	case INST_LDD_DP: //    0xDC,
 		Abort("Instruction not supported yet.");
@@ -1489,7 +1491,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDS_IMM: //   0x1CE, // 10 CE
-		Abort("Instruction not supported yet.");
+		state.S=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+		Test16(state.S);
 		break;
 	case INST_LDS_DP: //    0x1DE, // 10 DE
 		Abort("Instruction not supported yet.");
@@ -1515,7 +1518,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDX_IMM: //   0x8E,
-		Abort("Instruction not supported yet.");
+		state.X=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+		Test16(state.X);
 		break;
 	case INST_LDX_DP: //    0x9E,
 		Abort("Instruction not supported yet.");
@@ -1750,7 +1754,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_STD_IDX: //   0xED,
-		Abort("Instruction not supported yet.");
+		// Question:
+		//   If, STX ,X++ is done, should the flags be set based on the value written?
+		//   Or the value of X after the post-incrementation?
+		//   Need experiment on actual hardware.
+		WriteToIndex16(mem,inst,state.D());
+		Test16(state.D());
 		break;
 	case INST_STD_EXT: //   0xFD,
 		Abort("Instruction not supported yet.");
@@ -2022,6 +2031,112 @@ void MC6809::Test8(uint8_t value)
 	}
 	state.CC&=(~VF);
 }
+void MC6809::Test16(uint16_t value)
+{
+	if(0==value)
+	{
+		state.CC|=ZF;
+	}
+	else
+	{
+		state.CC&=(~ZF);
+	}
+	if(0!=(0x8000&value))
+	{
+		state.CC|=SF;
+	}
+	else
+	{
+		state.CC&=(~SF);
+	}
+	state.CC&=(~VF);
+}
+void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
+{
+	auto &indexReg=RegisterRef16(inst.indexReg);
+	uint16_t addr=0;
+	switch(inst.indexType)
+	{
+	case INDEX_CONST_OFFSET_FROM_REG:
+	case INDEX_8BIT_OFFSET:
+	case INDEX_16BIT_OFFSET:
+		addr=indexReg+inst.offset;
+		break;
+	case INDEX_ACCUM_OFFSET_FROM_REG:
+		{
+			uint16_t accum=GetRegisterValueSigned(inst.offset);
+			addr=indexReg+accum;
+		}
+		break;
+	case INDEX_POST_INC_1:
+		addr=(indexReg++);
+		break;
+	case INDEX_POST_INC_2:
+		addr=indexReg;
+		indexReg+=2;
+		break;
+	case INDEX_PRE_DEC_1:
+		addr=(--indexReg);
+		break;
+	case INDEX_PRE_DEC_2:
+		indexReg-=2;
+		addr=indexReg;
+		break;
+	case INDEX_EXTENDED:
+		addr=inst.offset;
+		break;
+	}
+	if(true==inst.indexIndir)
+	{
+		addr=mem.FetchWord(addr);
+	}
+	mem.StoreWord(addr,value);
+}
+
+const uint16_t &MC6809::RegisterRef16(uint8_t reg) const
+{
+	switch(reg)
+	{
+	case REG_X:
+		return state.X;
+	case REG_Y:
+		return state.Y;
+	case REG_U:
+		return state.U;
+	case REG_S:
+		return state.S;
+
+	case REG_PC:
+		return state.PC;
+	}
+	std::string msg;
+	msg="Cannot do RegisterRef16 for ";
+	msg+=RegToStr(reg);
+	Abort(msg);
+	return state.X;
+}
+uint16_t &MC6809::RegisterRef16(uint8_t reg)
+{
+	switch(reg)
+	{
+	case REG_X:
+		return state.X;
+	case REG_Y:
+		return state.Y;
+	case REG_U:
+		return state.U;
+	case REG_S:
+		return state.S;
+
+	case REG_PC:
+		return state.PC;
+	}
+	std::string msg;
+	msg="Cannot do RegisterRef16 for ";
+	msg+=RegToStr(reg);
+	Abort(msg);
+	return state.X;
+}
 
 uint16_t MC6809::GetRegisterValue(uint8_t reg) const
 {
@@ -2049,6 +2164,46 @@ uint16_t MC6809::GetRegisterValue(uint8_t reg) const
 		return state.PC;
 	case REG_D:
 		return (((uint16_t)state.A)<<8)|state.B;
+	}
+	return 0;
+}
+int16_t MC6809::GetRegisterValueSigned(uint8_t reg) const
+{
+	int32_t ret;
+	switch(reg)
+	{
+	case REG_CC:
+		ret=state.CC;
+		return ret-(ret&0x80);
+	case REG_A:
+		ret=state.A;
+		return ret-(ret&0x80);
+	case REG_B:
+		ret=state.B;
+		return ret-(ret&0x80);
+	case REG_DP:
+		ret=state.DP;
+		return ret-(ret&0x80);
+
+	case REG_X:
+		ret=state.X;
+		return ret-(ret&0x8000);
+	case REG_Y:
+		ret=state.Y;
+		return ret-(ret&0x8000);
+	case REG_U:
+		ret=state.U;
+		return ret-(ret&0x8000);
+	case REG_S:
+		ret=state.S;
+		return ret-(ret&0x8000);
+
+	case REG_PC:
+		ret=state.PC;
+		return ret-(ret&0x80);
+	case REG_D:
+		ret=(((uint16_t)state.A)<<8)|state.B;
+		return ret-(ret&0x80);
 	}
 	return 0;
 }
@@ -2236,31 +2391,37 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 			case 0b10000000: // Post-Inc by 1 Direct
 				inst.clocks+=2;
 				inst.indexType=INDEX_POST_INC_1;
+				inst.offset=0;
 				inst.indexIndir=false;
 				break;
 			case 0b10000001: // Post-Inc by 2 Direct
 				inst.clocks+=3;
 				inst.indexType=INDEX_POST_INC_2;
+				inst.offset=0;
 				inst.indexIndir=false;
 				break;
 			case 0b10010001: // Post-Inc by 2 Indirect
 				inst.clocks+=6;
 				inst.indexType=INDEX_POST_INC_2;
+				inst.offset=0;
 				inst.indexIndir=true;
 				break;
 			case 0b10000010: // Pre-Dec by 1 Direct
 				inst.clocks+=2;
 				inst.indexType=INDEX_PRE_DEC_1;
+				inst.offset=0;
 				inst.indexIndir=false;
 				break;
 			case 0b10000011: // Pre-Dec by 2 Direct
 				inst.indexType=INDEX_PRE_DEC_2;
+				inst.offset=0;
 				inst.indexIndir=false;
 				inst.clocks+=3;
 				break;
 			case 0b10010011: // Pre-Dec by 2 Indirect
 				inst.clocks+=6;
 				inst.indexType=INDEX_PRE_DEC_2;
+				inst.offset=0;
 				inst.indexIndir=true;
 				break;
 			case 0b10001100: // 8-bit offset from PC Direct

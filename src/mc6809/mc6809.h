@@ -543,12 +543,18 @@ public:
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
 
+	uint16_t &RegisterRef16(uint8_t reg);
+	const uint16_t &RegisterRef16(uint8_t reg) const;
 	uint16_t GetRegisterValue(uint8_t reg) const;
+	int16_t GetRegisterValueSigned(uint8_t reg) const;
 	void SetRegisterValue(uint8_t reg,uint16_t value);
 
 	/*! Check value and set or reset SF and ZF.  VF will be zero.
 	*/
 	void Test8(uint8_t value);
+	void Test16(uint16_t value);
+
+	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
