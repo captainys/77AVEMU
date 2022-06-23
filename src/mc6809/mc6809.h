@@ -523,10 +523,12 @@ public:
 
 	virtual const char *DeviceName(void) const{return "MC6809";}
 	MC6809(VMBase *vmBase);
-	uint32_t RunOneInstruction(class MemoryAccess *mem); // Returns the number of clocks passed
+	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
 
-	Instruction FetchInstruction(class MemoryAccess *mem,uint16_t PC) const;
+	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
+
+	std::string WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
 
 	std::string FormatByteCode(Instruction inst) const;
 
@@ -536,6 +538,8 @@ public:
 
 	static std::string RegToStr(unsigned int reg);
 	static std::string RegToStrPCR(unsigned int reg);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 /* } */

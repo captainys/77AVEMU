@@ -1087,21 +1087,21 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	regToReg[15]=REG_INVALID; // F reg if 6309
 }
 
-MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC) const
+MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC) const
 {
 	Instruction inst;
 
-	inst.opCode=mem->FetchByte(PC++);
+	inst.opCode=mem.FetchByte(PC++);
 	inst.length=1;
 	if(0x10==inst.opCode)
 	{
 		inst.length=2;
-		inst.opCode=0x100|mem->FetchByte(PC++);
+		inst.opCode=0x100|mem.FetchByte(PC++);
 	}
 	else if(0x11==inst.opCode)
 	{
 		inst.length=2;
-		inst.opCode=0x200|mem->FetchByte(PC++);
+		inst.opCode=0x200|mem.FetchByte(PC++);
 	}
 
 	inst.clocks=instClock[inst.opCode];
@@ -1114,21 +1114,21 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 	case OPER_REG:
 		// 1-byte operand
 		++inst.length;
-		inst.operand[0]=mem->FetchByte(PC++);
+		inst.operand[0]=mem.FetchByte(PC++);
 		break;
 	case OPER_EXT:
 	case OPER_IMM16:
 		// 2-bytes operand
 		inst.length+=2;
-		inst.operand[0]=mem->FetchByte(PC++);
-		inst.operand[1]=mem->FetchByte(PC++);
+		inst.operand[0]=mem.FetchByte(PC++);
+		inst.operand[1]=mem.FetchByte(PC++);
 		break;
 	case OPER_INHERENT:
 		// No operand.
 		break;
 	case OPER_IDX:
 		++inst.length;
-		inst.operand[0]=mem->FetchByte(PC++);
+		inst.operand[0]=mem.FetchByte(PC++);
 		inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 		if(0==inst.operand[0]&0x80) // 5-bit offset from REG
 		{
@@ -1159,7 +1159,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				++inst.length;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
-				inst.operand[1]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
 				inst.offset-=(inst.offset&0x80);
 				break;
@@ -1168,7 +1168,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				++inst.length;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
-				inst.operand[1]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
 				inst.offset-=(inst.offset&0x80);
 				break;
@@ -1177,8 +1177,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.length+=2;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
-				inst.operand[1]=mem->FetchByte(PC++);
-				inst.operand[2]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset-=(inst.offset&0x8000);
 				break;
@@ -1187,8 +1187,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.length+=2;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
-				inst.operand[1]=mem->FetchByte(PC++);
-				inst.operand[2]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset-=(inst.offset&0x8000);
 				break;
@@ -1264,7 +1264,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
 				inst.offset-=(inst.offset&0x80);
 				break;
@@ -1274,7 +1274,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
 				inst.offset-=(inst.offset&0x80);
 				break;
@@ -1284,8 +1284,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem->FetchByte(PC++);
-				inst.operand[2]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset-=(inst.offset&0x8000);
 				break;
@@ -1295,8 +1295,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem->FetchByte(PC++);
-				inst.operand[2]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset-=(inst.offset&0x8000);
 				break;
@@ -1305,8 +1305,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC
 				inst.length+=2;
 				inst.indexType=INDEX_EXTENDED;
 				inst.indexIndir=true;
-				inst.operand[1]=mem->FetchByte(PC++);
-				inst.operand[2]=mem->FetchByte(PC++);
+				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				break;
 			default:
@@ -1324,6 +1324,22 @@ void MC6809::DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const
 {
 	reg[0]=regToReg[postByte>>4];
 	reg[1]=regToReg[postByte&0x0F];
+}
+
+std::string MC6809::WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const
+{
+	std::string disasm=cpputil::Ustox(PC);
+	disasm.push_back(' ');
+
+	auto inst=FetchInstruction(mem,PC);
+	disasm+=FormatByteCode(inst);
+	while(disasm.size()<16)
+	{
+		disasm.push_back(' ');
+	}
+
+	disasm+=Disassemble(inst,PC);
+	return disasm;
 }
 
 std::string MC6809::FormatByteCode(Instruction inst) const
@@ -1380,39 +1396,54 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 			disasm+=DisassemblePSHPULRegisters(inst.operand[0],'S');
 			break;
 		case INST_BCC_IMM: //   0x24,
-		case INST_LBCC_IMM16: //0x124, // 10 24
 		case INST_BCS_IMM: //   0x25,
-		case INST_LBCS_IMM16: //0x125, // 10 25
 		case INST_BEQ_IMM: //   0x27,
-		case INST_LBEQ_IMM16: //0x127, // 10 27
 		case INST_BGE_IMM: //   0x2C,
-		case INST_LBGE_IMM16: //0x12C, // 10 2C
 		case INST_BGT_IMM: //   0x2E,
-		case INST_LBGT_IMM16: //0x12E, // 10 2E
 		case INST_BHI_IMM: //   0x22,
-		case INST_LBHI_IMM16: //0x122, // 10 22
 		case INST_BLE_IMM: //   0x2F,
-		case INST_LBLE_IMM16: //0x12F, // 10 2F
 		case INST_BLS_IMM: //   0x23,
-		case INST_LBLS_IMM16: //0x123, // 10 23
 		case INST_BLT_IMM: //   0x2D,
-		case INST_LBLT_IMM16: //0x12D, // 10 2D
 		case INST_BMI_IMM: //   0x2B,
-		case INST_LBMI_IMM16: //0x12B, // 10 2B
 		case INST_BNE_IMM: //   0x26,
-		case INST_LBNE_IMM16: //0x126, // 10 26
 		case INST_BPL_IMM: //   0x2A,
-		case INST_LBPL_IMM16: //0x12A, // 10 2A
 		case INST_BRA_IMM: //   0x20,
-		case INST_LBRA_IMM16: //0x120, // 10 20
 		case INST_BRN_IMM: //   0x21,
-		case INST_LBRN_IMM16: //0x121, // 10 21
 		case INST_BSR_IMM: //   0x8D,
-		case INST_LBSR_IMM16: //0x18D, // 10 2D
 		case INST_BVC_IMM: //   0x28,
-		case INST_LBVC_IMM16: //0x128, // 10 28
 		case INST_BVS_IMM: //   0x29,
+			{
+				int16_t offset=inst.operand[0];
+				offset-=(offset&0x80);
+				uint16_t addr=PC+inst.length+offset;
+				disasm.push_back('$');
+				disasm+=cpputil::Ustox(addr);
+			}
+			break;
+		case INST_LBCC_IMM16: //0x124, // 10 24
+		case INST_LBCS_IMM16: //0x125, // 10 25
+		case INST_LBEQ_IMM16: //0x127, // 10 27
+		case INST_LBGE_IMM16: //0x12C, // 10 2C
+		case INST_LBGT_IMM16: //0x12E, // 10 2E
+		case INST_LBHI_IMM16: //0x122, // 10 22
+		case INST_LBLE_IMM16: //0x12F, // 10 2F
+		case INST_LBLS_IMM16: //0x123, // 10 23
+		case INST_LBLT_IMM16: //0x12D, // 10 2D
+		case INST_LBMI_IMM16: //0x12B, // 10 2B
+		case INST_LBNE_IMM16: //0x126, // 10 26
+		case INST_LBPL_IMM16: //0x12A, // 10 2A
+		case INST_LBRA_IMM16: //0x120, // 10 20
+		case INST_LBRN_IMM16: //0x121, // 10 21
+		case INST_LBSR_IMM16: //0x18D, // 10 2D
+		case INST_LBVC_IMM16: //0x128, // 10 28
 		case INST_LBVS_IMM16: //0x129, // 10 29
+			{
+				int16_t offset=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+				offset-=(offset&0x8000);
+				uint16_t addr=PC+inst.length+offset;
+				disasm.push_back('$');
+				disasm+=cpputil::Ustox(addr);
+			}
 			break;
 		}
 	}
@@ -1640,4 +1671,53 @@ std::string MC6809::DisassemblePSHPULRegisters(uint8_t flags,char UorS) const
 		return "PCR";
 	}
 	return RegToStr(reg);
+}
+
+std::vector <std::string> MC6809::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	std::string str;
+
+	str="A=";
+	str+=cpputil::Ubtox(state.A);
+	str+=" B=";
+	str+=cpputil::Ubtox(state.B);
+	str+=" DP=";
+	str+=cpputil::Ubtox(state.DP);
+	str+=" X=";
+	str+=cpputil::Ustox(state.X);
+	str+=" Y=";
+	str+=cpputil::Ustox(state.Y);
+	str+=" U=";
+	str+=cpputil::Ustox(state.U);
+	str+=" S=";
+	str+=cpputil::Ustox(state.S);
+	text.push_back((std::string &&)str);
+
+	str="EF=";
+	str.push_back((0!=(state.CC&EF)) ? '1' : '0');
+
+	str+=" FIRQMask=";
+	str.push_back((0!=(state.CC&FIRQMASK)) ? '1' : '0');
+
+	str+=" HF=";
+	str.push_back((0!=(state.CC&HF)) ? '1' : '0');
+
+	str+=" IRQMask=";
+	str.push_back((0!=(state.CC&IRQMASK)) ? '1' : '0');
+
+	str+=" SF=";
+	str.push_back((0!=(state.CC&SF)) ? '1' : '0');
+
+	str+=" ZF=";
+	str.push_back((0!=(state.CC&ZF)) ? '1' : '0');
+
+	str+=" VF=";
+	str.push_back((0!=(state.CC&VF)) ? '1' : '0');
+
+	str+=" CF=";
+	str.push_back((0!=(state.CC&CF)) ? '1' : '0');
+	text.push_back((std::string &&)str);
+
+	return text;
 }

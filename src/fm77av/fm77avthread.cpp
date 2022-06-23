@@ -203,4 +203,17 @@ void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,
 }
 void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 {
+	std::cout << "[Main CPU]" << std::endl;
+	for(auto str : fm77av.mainCPU.GetStatusText())
+	{
+		std::cout << str << std::endl;
+	}
+	std::cout << fm77av.mainCPU.WholeDisassembly(fm77av.mainMemAcc,fm77av.mainCPU.state.PC) << std::endl;
+
+	std::cout << "[Sub CPU]" << std::endl;
+	for(auto str : fm77av.subCPU.GetStatusText())
+	{
+		std::cout << str << std::endl;
+	}
+	std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
 }

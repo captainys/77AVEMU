@@ -119,7 +119,7 @@ int main(void)
 	int i=0;
 	while(PC<addr)
 	{
-		auto inst=cpu.FetchInstruction(&mem,PC);
+		auto inst=cpu.FetchInstruction(mem,PC);
 
 		auto byteCode=cpu.FormatByteCode(inst);
 		while(byteCode.size()<11)

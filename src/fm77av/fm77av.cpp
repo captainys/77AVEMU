@@ -22,6 +22,7 @@ bool FM77AV::SetUp(FM77AVParam &param)
 		std::cout << "Failed to load ROM files." << std::endl;
 		return false;
 	}
+	Reset();
 	return true;
 }
 

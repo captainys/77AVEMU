@@ -225,7 +225,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 
 // 0x3FD00 to 0x3FDFF MainCPU I/O
 // 0x1D400 to 0x1D4FF SubCPU I/O
-uint8_t PhysicalMemory::FetchByte(uint16_t addr)
+uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 {
 	switch(memType[addr])
 	{
@@ -284,11 +284,11 @@ uint8_t PhysicalMemory::FetchByte(uint16_t addr)
 	}
 	return 0xFF;
 }
-uint16_t PhysicalMemory::FetchWord(uint16_t addr0,uint16_t addr1)
+uint16_t PhysicalMemory::FetchWord(uint32_t addr0,uint32_t addr1)
 {
 	return mc6809util::FetchWord(FetchByte(addr0),FetchByte(addr1));
 }
-void PhysicalMemory::StoreByte(uint16_t addr,uint8_t d)
+void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 {
 	switch(memType[addr])
 	{
@@ -342,7 +342,7 @@ void PhysicalMemory::StoreByte(uint16_t addr,uint8_t d)
 		return;
 	}
 }
-void PhysicalMemory::StoreWord(uint16_t addr0,uint16_t addr1,uint16_t d)
+void PhysicalMemory::StoreWord(uint32_t addr0,uint32_t addr1,uint16_t d)
 {
 	StoreByte(addr0,(d>>8));
 	StoreByte(addr1,(d&0xFF));
@@ -413,6 +413,7 @@ MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : D
 
 SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Device(vmPtr)
 {
+	this->physMemPtr=physMemPtr;
 }
 /* virtual */ uint8_t SubCPUAccess::FetchByte(uint16_t addr)
 {

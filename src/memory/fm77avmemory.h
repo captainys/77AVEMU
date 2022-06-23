@@ -115,10 +115,10 @@ public:
 
 	bool LoadROMFiles(std::string ROMPath);
 
-	uint8_t FetchByte(uint16_t addr);
-	uint16_t FetchWord(uint16_t addr0,uint16_t addr1);
-	void StoreByte(uint16_t addr,uint8_t data);
-	void StoreWord(uint16_t addr0,uint16_t addr1,uint16_t data);
+	uint8_t FetchByte(uint32_t addr);
+	uint16_t FetchWord(uint32_t addr0,uint32_t addr1);
+	void StoreByte(uint32_t addr,uint8_t data);
+	void StoreWord(uint32_t addr0,uint32_t addr1,uint16_t data);
 };
 
 class MainCPUAccess : public MemoryAccess,public Device
