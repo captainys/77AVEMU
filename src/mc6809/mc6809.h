@@ -82,12 +82,13 @@ public:
 
 		INST_ANDCC_IMM= 0x1C,
 
-		INST_ASLA=      0x48,
-		INST_ASLB=      0x58,
+		// ASL is an alias for LSL
+		// INST_ASLA=      0x48,
+		// INST_ASLB=      0x58,
 
-		INST_ASL_DP=    0x08,
-		INST_ASL_IDX=   0x68,
-		INST_ASL_EXT=   0x78,
+		// INST_ASL_DP=    0x08,
+		// INST_ASL_IDX=   0x68,
+		// INST_ASL_EXT=   0x78,
 
 		INST_ASRA=      0x47,
 		INST_ASRB=      0x57,
