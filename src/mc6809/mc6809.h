@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "vmbase.h"
 #include "memory.h"
+#include "mc6809util.h"
 
 class MC6809 : public Device
 {
@@ -441,6 +442,19 @@ public:
 		unsigned int indexReg; // REG_X,REG_Y,REG_U,or REG_S.  Undefined if indexType is not applicable.
 		int offset;   // Can be constant offset or REG_XX depending on indexType.
 		uint8_t operand[4];
+
+		inline int BranchOffset8(void) const
+		{
+			int offset=operand[0];
+			offset-=(offset&0x80);
+			return offset;
+		}
+		inline int BranchOffset16(void) const
+		{
+			int offset=mc6809util::FetchWord(operand[0],operand[1]);
+			offset-=(offset&0x8000);
+			return offset;
+		}
 	};
 
 	enum
@@ -460,6 +474,7 @@ public:
 
 		REG_INVALID=0xFF
 	};
+	unsigned int regBits[10];
 
 	enum
 	{
@@ -507,6 +522,8 @@ public:
 
 	class State : public RegisterSet
 	{
+	public:
+		bool halt=false;
 	};
 	State state;
 
@@ -525,6 +542,13 @@ public:
 	virtual const char *DeviceName(void) const{return "MC6809";}
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
+
+	uint16_t GetRegisterValue(uint8_t reg) const;
+	void SetRegisterValue(uint8_t reg,uint16_t value);
+
+	/*! Check value and set or reset SF and ZF.  VF will be zero.
+	*/
+	void Test8(uint8_t value);
 
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;

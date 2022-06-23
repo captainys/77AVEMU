@@ -1,3 +1,4 @@
+#include <iostream>
 #include "mc6809.h"
 #include "mc6809util.h"
 
@@ -5,6 +6,19 @@
 
 MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 {
+	regBits[REG_CC]=8;
+	regBits[REG_A]=8;
+	regBits[REG_B]=8;
+	regBits[REG_DP]=8;
+
+	regBits[REG_X]=16;
+	regBits[REG_Y]=16;
+	regBits[REG_U]=16;
+	regBits[REG_S]=16;
+
+	regBits[REG_PC]=16;
+	regBits[REG_D]=16;
+
 	for(auto &t : instOperaType)
 	{
 		t=OPER_INHERENT; // No operand
@@ -1435,7 +1449,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDA_IMM: //   0x86,
-		Abort("Instruction not supported yet.");
+		state.A=inst.operand[0];
+		Test8(inst.operand[0]);
 		break;
 	case INST_LDA_DP: //    0x96,
 		Abort("Instruction not supported yet.");
@@ -1835,7 +1850,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_TFR_REG: //   0x1F,
-		Abort("Instruction not supported yet.");
+		{
+			uint8_t reg[2];
+			DecodeExgTfrReg(reg,inst.operand[0]);
+			if(regBits[reg[0]]!=regBits[reg[1]])
+			{
+				Abort("TFR to different size register not supported yet.");
+			}
+			SetRegisterValue(reg[1],GetRegisterValue(reg[0]));
+		}
 		break;
 
 	case INST_TSTA: //      0x4D,
@@ -1940,7 +1963,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BRA_IMM: //   0x20,
-		Abort("Instruction not supported yet.");
+		state.PC+=inst.BranchOffset8();
 		break;
 	case INST_LBRA_IMM16: //0x120, // 10 20
 		Abort("Instruction not supported yet.");
@@ -1977,6 +2000,96 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	state.PC+=inst.length;
 	return inst.clocks;
+}
+
+void MC6809::Test8(uint8_t value)
+{
+	if(0==value)
+	{
+		state.CC|=ZF;
+	}
+	else
+	{
+		state.CC&=(~ZF);
+	}
+	if(0!=(0x80&value))
+	{
+		state.CC|=SF;
+	}
+	else
+	{
+		state.CC&=(~SF);
+	}
+	state.CC&=(~VF);
+}
+
+uint16_t MC6809::GetRegisterValue(uint8_t reg) const
+{
+	switch(reg)
+	{
+	case REG_CC:
+		return state.CC;
+	case REG_A:
+		return state.A;
+	case REG_B:
+		return state.B;
+	case REG_DP:
+		return state.DP;
+
+	case REG_X:
+		return state.X;
+	case REG_Y:
+		return state.Y;
+	case REG_U:
+		return state.U;
+	case REG_S:
+		return state.S;
+
+	case REG_PC:
+		return state.PC;
+	case REG_D:
+		return (((uint16_t)state.A)<<8)|state.B;
+	}
+	return 0;
+}
+void MC6809::SetRegisterValue(uint8_t reg,uint16_t value)
+{
+	switch(reg)
+	{
+	case REG_CC:
+		state.CC=value;
+		break;
+	case REG_A:
+		state.A=value;
+		break;
+	case REG_B:
+		state.B=value;
+		break;
+	case REG_DP:
+		state.DP=value;
+		break;
+
+	case REG_X:
+		state.X=value;
+		break;
+	case REG_Y:
+		state.Y=value;
+		break;
+	case REG_U:
+		state.U=value;
+		break;
+	case REG_S:
+		state.S=value;
+		break;
+
+	case REG_PC:
+		state.PC=value;
+		break;
+	case REG_D:
+		state.A=(value>>8);
+		state.B=(value&0xFF);
+		break;
+	}
 }
 
 MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC) const

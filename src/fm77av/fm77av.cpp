@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include "fm77av.h"
 #include "fm77avdef.h"
@@ -54,9 +55,42 @@ void FM77AV::Reset(void)
 }
 unsigned int FM77AV::RunOneInstruction(void)
 {
-	unsigned int clocksPassed=0;
-	
-	return clocksPassed;
+	if(true==mainCPU.state.halt && true==subCPU.state.halt)
+	{
+		return 2; // 2 is the minimum clocks, which is the minimum time resolution.
+	}
+	else if(true==subCPU.state.halt)
+	{
+		return mainCPU.RunOneInstruction(mainMemAcc);
+	}
+	else if(true==mainCPU.state.halt)
+	{
+		return subCPU.RunOneInstruction(subMemAcc);
+	}
+	else
+	{
+		unsigned int clocksPassed=0;
+
+		if(0==state.clockBalance)
+		{
+			int mainCPUClk=mainCPU.RunOneInstruction(mainMemAcc);
+			int subCPUClk=subCPU.RunOneInstruction(subMemAcc);
+			state.clockBalance=mainCPUClk-subCPUClk;
+			return std::max(mainCPUClk,subCPUClk);
+		}
+		else if(0<state.clockBalance) // Main CPU ahead
+		{
+			state.clockBalance-=subCPU.RunOneInstruction(subMemAcc);
+			return (0<state.clockBalance ? 0 : -state.clockBalance);
+		}
+		else // if(state.clockBalance<0) // Sub CPU ahead
+		{
+			state.clockBalance+=mainCPU.RunOneInstruction(mainMemAcc);
+			return (state.clockBalance<0 ? 0 : state.clockBalance);
+		}
+
+		return clocksPassed;
+	}
 }
 
 std::string FM77AV::MachineTypeStr(void) const

@@ -25,6 +25,8 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
 	// renderingThread->DiscardRunningRenderingTask();
 
+	PrintStatus(*fm77avPtr);	
+
 	// FM77AVRender render;
 	bool terminate=false;
 	for(;true!=terminate;)
@@ -203,6 +205,21 @@ void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,
 }
 void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 {
+	if(true==fm77av.CheckAbort())
+	{
+		std::cout << "Abort" << std::endl;
+		std::cout << fm77av.vmAbortDeviceName << std::endl;
+		std::cout << fm77av.vmAbortReason << std::endl;
+	}
+
+	if(0<fm77av.state.clockBalance)
+	{
+		std::cout << "Main CPU is ahead by " << fm77av.state.clockBalance << " clocks." << std::endl;
+	}
+	else if(fm77av.state.clockBalance<0)
+	{
+		std::cout << "Sub CPU is ahead by " << -fm77av.state.clockBalance << " clocks." << std::endl;
+	}
 	std::cout << "[Main CPU]" << std::endl;
 	for(auto str : fm77av.mainCPU.GetStatusText())
 	{

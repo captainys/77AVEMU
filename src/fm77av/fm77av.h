@@ -13,14 +13,27 @@
 class FM77AV : public VMBase, public Device
 {
 public:
+	class MainCPU : public MC6809
+	{
+	public:
+		virtual const char *DeviceName(void) const{return "mainCPU";}
+		MainCPU(FM77AV *vmBase) : MC6809(vmBase){};
+	};
+	class SubCPU : public MC6809
+	{
+	public:
+		virtual const char *DeviceName(void) const{return "subCPU";}
+		SubCPU(FM77AV *vmBase) : MC6809(vmBase){};
+	};
+
 	// Devices >>
 	PhysicalMemory physMem;
 
 	MainCPUAccess mainMemAcc;
-	MC6809 mainCPU;
+	MainCPU mainCPU;
 
 	SubCPUAccess subMemAcc;
-	MC6809 subCPU;
+	SubCPU subCPU;
 	// Devices <<
 
 
@@ -30,7 +43,7 @@ public:
 	public:
 		unsigned int machineType=MACHINETYPE_FM7;
 		uint64_t fm77avTime=0;
-		unsigned int clockBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
+		int clockBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 	};
 	State state;
 
