@@ -491,20 +491,27 @@ public:
 	class RegisterSet
 	{
 	public:
-		uint8_t A,B,DP,CC;
+		uint16_t D;
+		uint8_t DP,CC;
 		uint16_t X,Y,U,S,PC;
 
-		inline uint16_t D(void) const
+		inline uint8_t A(void) const
 		{
-			uint16_t D;
-			D=A;
-			D<<=8;
-			return D|B;
+			return (D>>8);
 		}
-		inline void SetD(uint16_t D)
+		inline uint8_t B(void) const
 		{
-			A=(D>>8);
-			B=(D&0xFF);
+			return D&0xFF;
+		}
+		inline void SetA(uint16_t value)
+		{
+			D&=0xFF;
+			D|=(value<<8);
+		}
+		inline void SetB(uint16_t value)
+		{
+			D&=0xFF00;
+			D|=(value&0xFF);
 		}
 	};
 
@@ -553,6 +560,10 @@ public:
 	*/
 	void Test8(uint8_t value);
 	void Test16(uint16_t value);
+
+	/*! This function will pre-decrement or post-increment index registers.
+	*/
+	uint16_t DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem);
 
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 

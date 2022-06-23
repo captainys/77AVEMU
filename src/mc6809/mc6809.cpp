@@ -1449,7 +1449,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDA_IMM: //   0x86,
-		state.A=inst.operand[0];
+		state.SetA(inst.operand[0]);
 		Test8(inst.operand[0]);
 		break;
 	case INST_LDA_DP: //    0x96,
@@ -1476,9 +1476,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDD_IMM: //   0xCC,
-		state.A=inst.operand[0];
-		state.B=inst.operand[1];
-		Test16(state.D());
+		state.SetA(inst.operand[0]);
+		state.SetB(inst.operand[1]);
+		Test16(state.D);
 		break;
 	case INST_LDD_DP: //    0xDC,
 		Abort("Instruction not supported yet.");
@@ -1758,8 +1758,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		//   If, STX ,X++ is done, should the flags be set based on the value written?
 		//   Or the value of X after the post-incrementation?
 		//   Need experiment on actual hardware.
-		WriteToIndex16(mem,inst,state.D());
-		Test16(state.D());
+		WriteToIndex16(mem,inst,state.D);
+		Test16(state.D);
 		break;
 	case INST_STD_EXT: //   0xFD,
 		Abort("Instruction not supported yet.");
@@ -2051,7 +2051,7 @@ void MC6809::Test16(uint16_t value)
 	}
 	state.CC&=(~VF);
 }
-void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
+uint16_t MC6809::DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem)
 {
 	auto &indexReg=RegisterRef16(inst.indexReg);
 	uint16_t addr=0;
@@ -2090,6 +2090,11 @@ void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint
 	{
 		addr=mem.FetchWord(addr);
 	}
+	return addr;
+}
+void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
+{
+	uint16_t addr=DecodeIndexedAddress(inst,mem);
 	mem.StoreWord(addr,value);
 }
 
@@ -2145,9 +2150,9 @@ uint16_t MC6809::GetRegisterValue(uint8_t reg) const
 	case REG_CC:
 		return state.CC;
 	case REG_A:
-		return state.A;
+		return state.A();
 	case REG_B:
-		return state.B;
+		return state.B();
 	case REG_DP:
 		return state.DP;
 
@@ -2163,7 +2168,7 @@ uint16_t MC6809::GetRegisterValue(uint8_t reg) const
 	case REG_PC:
 		return state.PC;
 	case REG_D:
-		return (((uint16_t)state.A)<<8)|state.B;
+		return state.D;
 	}
 	return 0;
 }
@@ -2176,10 +2181,10 @@ int16_t MC6809::GetRegisterValueSigned(uint8_t reg) const
 		ret=state.CC;
 		return ret-(ret&0x80);
 	case REG_A:
-		ret=state.A;
+		ret=state.A();
 		return ret-(ret&0x80);
 	case REG_B:
-		ret=state.B;
+		ret=state.B();
 		return ret-(ret&0x80);
 	case REG_DP:
 		ret=state.DP;
@@ -2202,7 +2207,7 @@ int16_t MC6809::GetRegisterValueSigned(uint8_t reg) const
 		ret=state.PC;
 		return ret-(ret&0x80);
 	case REG_D:
-		ret=(((uint16_t)state.A)<<8)|state.B;
+		ret=state.D;
 		return ret-(ret&0x80);
 	}
 	return 0;
@@ -2215,10 +2220,10 @@ void MC6809::SetRegisterValue(uint8_t reg,uint16_t value)
 		state.CC=value;
 		break;
 	case REG_A:
-		state.A=value;
+		state.SetA(value);
 		break;
 	case REG_B:
-		state.B=value;
+		state.SetB(value);
 		break;
 	case REG_DP:
 		state.DP=value;
@@ -2241,8 +2246,7 @@ void MC6809::SetRegisterValue(uint8_t reg,uint16_t value)
 		state.PC=value;
 		break;
 	case REG_D:
-		state.A=(value>>8);
-		state.B=(value&0xFF);
+		state.D=value;
 		break;
 	}
 }
@@ -2845,9 +2849,9 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 	std::string str;
 
 	str="A=";
-	str+=cpputil::Ubtox(state.A);
+	str+=cpputil::Ubtox(state.A());
 	str+=" B=";
-	str+=cpputil::Ubtox(state.B);
+	str+=cpputil::Ubtox(state.B());
 	str+=" DP=";
 	str+=cpputil::Ubtox(state.DP);
 	str+=" X=";
