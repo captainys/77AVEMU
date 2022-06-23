@@ -227,19 +227,125 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 // 0x1D400 to 0x1D4FF SubCPU I/O
 uint8_t PhysicalMemory::FetchByte(uint16_t addr)
 {
-	return state.data[addr];
+	switch(memType[addr])
+	{
+	case MEMTYPE_RAM:
+	case MEMTYPE_SUBSYS_SHARED_RAM:
+		return state.data[addr];
+	case MEMTYPE_NOT_EXIST:
+		return 0xFF;
+	case MEMTYPE_SUBSYS_VRAM:
+		// if(different bank)
+		// {
+		//	return byte from the correct bank.
+		// }
+		return state.data[addr];
+
+	case MEMTYPE_SUBSYS_IO:
+		// Do IO.
+		return 0xFF;
+	case MEMTYPE_SUBSYS_FONT_ROM:
+		// if(subsys monitor A or B) use appropriate font bank.
+		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
+	case MEMTYPE_SUBSYS_MONITOR_ROM:
+		// if(subsys monitor A or B) use appropriate font bank.
+		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
+	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
+		//if(initiator rom is enabled)
+		//{
+		//	return ROM_INITIATOR[addr&(INITIATOR_ROM_SIZE-1)];
+		//}
+		return state.data[addr];
+	case MEMTYPE_MAINSYS_FBASIC_ROM:    // Can be Shadow RAM
+		//if(shadow ram is enabled)
+		//{
+		//return state.data[addr];
+		//}
+		return ROM_FBASIC[addr&0x7FFF];
+	case MEMTYPE_MAINSYS_SHARED_RAM:
+		//if(subCPU halt)
+		//{
+		//	return state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)];
+		//}
+		return 0xFF;
+	case MEMTYPE_MAINSYS_IO:
+		// Do IO.
+		return 0xFF;
+	case MEMTYPE_MAINSYS_BOOT_ROM:
+		//if(RAM Mode)
+		//{
+		//	return state.data[addr];
+		//}
+		//if(DOS Mode)
+		//{
+		//	return ROM_BOOT_DOS[addr&(BOOT_ROM_SIZE-1)];
+		//}
+		return ROM_BOOT_BASIC[addr&(BOOT_ROM_SIZE-1)];
+	}
+	return 0xFF;
 }
 uint16_t PhysicalMemory::FetchWord(uint16_t addr0,uint16_t addr1)
 {
-	return mc6809util::FetchWord(state.data[addr0],state.data[addr1]);
+	return mc6809util::FetchWord(FetchByte(addr0),FetchByte(addr1));
 }
 void PhysicalMemory::StoreByte(uint16_t addr,uint8_t d)
 {
-	state.data[addr]=d;
+	switch(memType[addr])
+	{
+	case MEMTYPE_RAM:
+	case MEMTYPE_SUBSYS_SHARED_RAM:
+		state.data[addr]=d;
+		return;
+	case MEMTYPE_NOT_EXIST:
+		return;
+	case MEMTYPE_SUBSYS_VRAM:
+		// if(different bank)
+		// {
+		//	write to the correct bank.
+		// }
+		state.data[addr]=d;
+		return;
+
+	case MEMTYPE_SUBSYS_IO:
+		// Do IO.
+		return;
+
+	case MEMTYPE_SUBSYS_FONT_ROM:
+	case MEMTYPE_SUBSYS_MONITOR_ROM:
+	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
+		//if(initiator rom is enabled)
+		//{
+		//	return ROM_INITIATOR[addr&(INITIATOR_ROM_SIZE-1)];
+		//}
+		state.data[addr]=d;
+		return;
+	case MEMTYPE_MAINSYS_FBASIC_ROM:    // Can be Shadow RAM
+		//if(shadow ram is enabled)
+		//{
+		//state.data[addr]=d;
+		//}
+		return;
+	case MEMTYPE_MAINSYS_SHARED_RAM:
+		//if(subCPU halt)
+		//{
+		//	state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)]=d;
+		//}
+		return;
+	case MEMTYPE_MAINSYS_IO:
+		// Do IO.
+		return;
+	case MEMTYPE_MAINSYS_BOOT_ROM:
+		//if(RAM Mode)
+		//{
+		//	state.data[addr]=d;
+		//}
+		return;
+	}
 }
 void PhysicalMemory::StoreWord(uint16_t addr0,uint16_t addr1,uint16_t d)
 {
-	mc6809util::StoreWord(state.data[addr0],state.data[addr1],d);
+	StoreByte(addr0,(d>>8));
+	StoreByte(addr1,(d&0xFF));
 }
 
 ////////////////////////////////////////////////////////////
