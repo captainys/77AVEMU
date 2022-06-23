@@ -17,5 +17,37 @@ std::string MachineTypeToStr(unsigned int machineType);
 unsigned int StrToMachineType(std::string str);
 
 
+
+enum
+{
+	FM77AVIO_KEYCODE_PRINTER_CASSETTE=0xFD00,
+	FM77AVIO_KEYCODE_PRINTER=         0xFD01,
+
+	FM77AVIO_CASSETTE_IRQMASK=        0xFD02,
+	FM77AVIO_IRQ_BEEP=                0xFD03,
+
+	FM77AVIO_SUBSYS_INTERFACE=        0xFD04,
+	FM77AVIO_SUBSYS_BUSY_HALT=        0xFD05,
+
+	FM77AVIO_RS232C_DATA=             0xFD06,
+	FM77AVIO_RS232C_COMMAND_STATUS=   0xFD07,
+
+	FM77AVIO_SHADOW_RAM_FM7ONLY=      0xFD0B,
+	FM77AVIO_BOOT_SELECT=             0xFD0B, // ?
+	FM77AVIO_RS232C_ENABLE_AV40=      0xFD0B,
+	FM77AVIO_RS232C_SPEED_AV40=       0xFD0B,
+
+	FM77AVIO_PSG_CONTROL=             0xFD0D,
+	FM77AVIO_PSG_DATA=                0xFD0E,
+
+	FM77AVIO_SHADOW_RAM=              0xFD0F,
+
+	FM77AVIO_INITIATOR_ROM=           0xFD10,
+	FM77AVIO_SUBSYS_MODE=             0xFD11,
+
+	FM77AVIO_
+};
+
+
 /* } */
 #endif
