@@ -119,8 +119,7 @@ int main(void)
 	int i=0;
 	while(PC<addr)
 	{
-		auto nextPC=PC;
-		auto inst=cpu.FetchInstruction(&mem,nextPC);
+		auto inst=cpu.FetchInstruction(&mem,PC);
 
 		auto byteCode=cpu.FormatByteCode(inst);
 		while(byteCode.size()<11)
@@ -137,7 +136,7 @@ int main(void)
 			res=1;
 		}
 
-		PC=nextPC;
+		PC+=inst.length;
 		++i;
 	}
 

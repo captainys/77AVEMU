@@ -1087,7 +1087,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	regToReg[15]=REG_INVALID; // F reg if 6309
 }
 
-MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &PC) const
+MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t PC) const
 {
 	Instruction inst;
 
@@ -1302,6 +1302,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess *mem,uint16_t &P
 				break;
 			case 0b10011111: // Extended Indirect
 				inst.clocks+=5;
+				inst.length+=2;
 				inst.indexType=INDEX_EXTENDED;
 				inst.indexIndir=true;
 				inst.operand[1]=mem->FetchByte(PC++);

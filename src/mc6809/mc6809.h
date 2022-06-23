@@ -525,7 +525,7 @@ public:
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess *mem); // Returns the number of clocks passed
 
-	Instruction FetchInstruction(class MemoryAccess *mem,uint16_t &PC) const;
+	Instruction FetchInstruction(class MemoryAccess *mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
 
 	std::string FormatByteCode(Instruction inst) const;
