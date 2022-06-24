@@ -1320,13 +1320,45 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_CMPX_IMM: //  0x8C,
-		Abort("Instruction not supported yet.");
+		{
+			auto reg=state.X;
+			SubWord(reg,mc6809util::FetchWord(inst.operand));
+		}
 		break;
 	case INST_CMPX_DP: //   0x9C,
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_CMPX_IDX: //  0xAC,
-		Abort("Instruction not supported yet.");
+		// The following code has been tested on actual FM77AV.
+		// If pre-decrementation is given, the value of X is compared
+		// after pre-decremted.
+		//				ORG		$2000
+		//				FDB		#$2000
+		//				LDX		#$2002
+		//				CMPX	,--X
+		//				BEQ		EQ
+		//				LDA		#0
+		//				STA		$1FFF
+		//				STX		$1FFC
+		//				RTS
+		//
+		//EQ				LDA		#$FF
+		//				STA		$1FFF
+		//				STX		$1FFC
+		//				RTS
+		if(INDEX_POST_INC_1!=inst.indexType &&
+		   INDEX_POST_INC_2!=inst.indexType)
+		{
+			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+			auto reg=state.X;
+			SubWord(reg,value);
+		}
+		else
+		{
+			auto reg=state.X;
+			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+			SubWord(reg,value);
+		}
 		break;
 	case INST_CMPX_EXT: //  0xBC,
 		Abort("Instruction not supported yet.");
@@ -1620,10 +1652,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LSRA: //      0x44,
-		Abort("Instruction not supported yet.");
+		{
+			auto reg=state.A();
+			state.SetA(LSR(reg));
+		}
 		break;
 	case INST_LSRB: //      0x54,
-		Abort("Instruction not supported yet.");
+		{
+			auto reg=state.B();
+			state.SetB(LSR(reg));
+		}
 		break;
 
 	case INST_LSR_DP: //    0x04,
