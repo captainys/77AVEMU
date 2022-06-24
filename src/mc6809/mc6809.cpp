@@ -1594,7 +1594,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LSR_IDX: //   0x64,
-		Abort("Instruction not supported yet.");
+		{
+			uint16_t addr=DecodeIndexedAddress(inst,mem);
+			mem.StoreByte(addr,LSR(mem.FetchByte(addr)));
+		}
 		break;
 	case INST_LSR_EXT: //   0x74,
 		Abort("Instruction not supported yet.");
@@ -1738,7 +1741,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_ROR_IDX: //   0x66,
-		Abort("Instruction not supported yet.");
+		{
+			uint16_t addr=DecodeIndexedAddress(inst,mem);
+			mem.StoreByte(addr,ROR(mem.FetchByte(addr)));
+		}
 		break;
 	case INST_ROR_EXT: //   0x76,
 		Abort("Instruction not supported yet.");
@@ -1960,10 +1966,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BCS_IMM: //   0x25,
-		Abort("Instruction not supported yet.");
+		if(0!=(state.CC&CF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBCS_IMM16: //0x125, // 10 25
-		Abort("Instruction not supported yet.");
+		if(0!=(state.CC&CF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BEQ_IMM: //   0x27,
@@ -2103,6 +2117,15 @@ uint8_t MC6809::LSL(uint8_t data)
 	RaiseZF(0==data);
 	return data;
 }
+uint8_t MC6809::LSR(uint8_t data)
+{
+	state.CC&=~(SF|ZF|CF);
+	// SF is always clear.
+	RaiseCF(0!=(data&0x01));
+	data>>=1;
+	RaiseZF(0==data);
+	return data;
+}
 uint8_t MC6809::ROL(uint8_t data)
 {
 	uint8_t carry=(0!=((state.CC&CF) ? 1 : 0));
@@ -2112,6 +2135,18 @@ uint8_t MC6809::ROL(uint8_t data)
 	data<<=1;
 	data|=carry;
 	RaiseSF(0!=(data&0x80));
+	RaiseZF(0==data);
+	return data;
+}
+uint8_t MC6809::ROR(uint8_t data)
+{
+	uint8_t carry=(0!=(state.CC&CF) ? 0x80 : 0);
+	state.CC&=~(SF|ZF|CF);
+	// SF is always clear.
+	RaiseSF(0!=carry);
+	RaiseCF(0!=(data&0x01));
+	data>>=1;
+	data|=carry;
 	RaiseZF(0==data);
 	return data;
 }

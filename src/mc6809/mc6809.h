@@ -550,7 +550,9 @@ public:
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
 	uint8_t LSL(uint8_t data);
+	uint8_t LSR(uint8_t data);
 	uint8_t ROL(uint8_t data);
+	uint8_t ROR(uint8_t data);
 
 	uint16_t &RegisterRef16(uint8_t reg);
 	const uint16_t &RegisterRef16(uint8_t reg) const;
