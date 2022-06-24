@@ -1219,7 +1219,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BITB_IMM: //  0xC5,
-		Abort("Instruction not supported yet.");
+		{
+			auto B=state.B()&inst.operand[0];
+			Test8(B);
+		}
 		break;
 	case INST_BITB_DP: //   0xD5,
 		Abort("Instruction not supported yet.");
@@ -2119,10 +2122,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BNE_IMM: //   0x26,
-		Abort("Instruction not supported yet.");
+		if(0==(state.CC&ZF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBNE_IMM16: //0x126, // 10 26
-		Abort("Instruction not supported yet.");
+		if(0==(state.CC&ZF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BPL_IMM: //   0x2A,
