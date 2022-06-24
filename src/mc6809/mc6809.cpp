@@ -1335,7 +1335,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		//				ORG		$2000
 		//				FDB		#$2000
 		//				LDX		#$2002
-		//				CMPX	,--X
+		//				CMPX	,--X	; Is $2002 compared against $2000?  Or $2000 compared against $2000?
 		//				BEQ		EQ
 		//				LDA		#0
 		//				STA		$1FFF
@@ -1581,11 +1581,31 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LDX_IDX: //   0xAE,
+		// The following code has been tested on actual FM77AV.
+		// The result was:
+		//   1FFC  FFFE
+		//   1FFF  FF
+		// In this case, post-incrementation is disregarded.
+		//				ORG		$2000
+		//				FDB		$FFFE
+		//				LDX		#$2000
+		//				LDX		,X++	; Value loaded is $FFFE, after incrementation it is 0
+		//				BEQ		EQ
+		//				STX		$1FFC
+		//				LDA		#$FF
+		//				STA		$1FFF
+		//				RTS
+		//EQ
+		//				STX		$1FFC
+		//				LDA		#$00
+		//				STA		$1FFF
+		//				RTS
 		state.X=mem.FetchWord(DecodeIndexedAddress(inst,mem));
 		Test16(state.X);
 		break;
 	case INST_LDX_EXT: //   0xBE,
-		Abort("Instruction not supported yet.");
+		state.X=mem.FetchWord(inst.ExtendedAddress());
+		Test16(state.X);
 		break;
 
 	case INST_LDY_IMM: //   0x18E, // 10 8E

@@ -455,6 +455,10 @@ public:
 			offset=(offset&0x7FFF)-(offset&0x8000);
 			return offset;
 		}
+		inline uint16_t ExtendedAddress(void) const
+		{
+			return mc6809util::FetchWord(operand[0],operand[1]);
+		}
 	};
 
 	enum
