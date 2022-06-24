@@ -1564,35 +1564,20 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LSLA: //      0x48,
-		{
-			uint8_t reg=state.A();
-			state.CC&=~(SF|ZF|VF|CF);
-			RaiseCF(0!=(reg&0x80));
-			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
-			reg<<=1;
-			RaiseSF(0!=(reg&0x80));
-			RaiseZF(0==reg);
-			state.SetA(reg);
-		}
+		state.SetA(LSL(state.A()));
 		break;
 	case INST_LSLB: //      0x58,
-		{
-			uint8_t reg=state.B();
-			state.CC&=~(SF|ZF|VF|CF);
-			RaiseCF(0!=(reg&0x80));
-			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
-			reg<<=1;
-			RaiseSF(0!=(reg&0x80));
-			RaiseZF(0==reg);
-			state.SetB(reg);
-		}
+		state.SetB(LSL(state.B()));
 		break;
 
 	case INST_LSL_DP: //    0x08,
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LSL_IDX: //   0x68,
-		Abort("Instruction not supported yet.");
+		{
+			uint16_t addr=DecodeIndexedAddress(inst,mem);
+			mem.StoreByte(addr,LSL(mem.FetchByte(addr)));
+		}
 		break;
 	case INST_LSL_EXT: //   0x78,
 		Abort("Instruction not supported yet.");
@@ -1723,39 +1708,20 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ROLA: //      0x49,
-		{
-			uint8_t reg=state.A();
-			uint8_t carry=(0!=((state.CC&CF) ? 1 : 0));
-			state.CC&=~(SF|ZF|VF|CF);
-			RaiseCF(0!=(reg&0x80));
-			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
-			reg<<=1;
-			reg|=carry;
-			RaiseSF(0!=(reg&0x80));
-			RaiseZF(0==reg);
-			state.SetA(reg);
-		}
+		state.SetA(ROL(state.A()));
 		break;
 	case INST_ROLB: //      0x59,
-		{
-			uint8_t reg=state.B();
-			uint8_t carry=(0!=((state.CC&CF) ? 1 : 0));
-			state.CC&=~(SF|ZF|VF|CF);
-			RaiseCF(0!=(reg&0x80));
-			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
-			reg<<=1;
-			reg|=carry;
-			RaiseSF(0!=(reg&0x80));
-			RaiseZF(0==reg);
-			state.SetB(reg);
-		}
+		state.SetB(ROL(state.B()));
 		break;
 
 	case INST_ROL_DP: //    0x09,
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_ROL_IDX: //   0x69,
-		Abort("Instruction not supported yet.");
+		{
+			uint16_t addr=DecodeIndexedAddress(inst,mem);
+			mem.StoreByte(addr,ROL(mem.FetchByte(addr)));
+		}
 		break;
 	case INST_ROL_EXT: //   0x79,
 		Abort("Instruction not supported yet.");
@@ -2126,6 +2092,28 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	state.PC+=inst.length;
 	return inst.clocks;
+}
+uint8_t MC6809::LSL(uint8_t data)
+{
+	state.CC&=~(SF|ZF|VF|CF);
+	RaiseCF(0!=(data&0x80));
+	RaiseVF(0!=(((data>>6)^(data>>7))&1));
+	data<<=1;
+	RaiseSF(0!=(data&0x80));
+	RaiseZF(0==data);
+	return data;
+}
+uint8_t MC6809::ROL(uint8_t data)
+{
+	uint8_t carry=(0!=((state.CC&CF) ? 1 : 0));
+	state.CC&=~(SF|ZF|VF|CF);
+	RaiseCF(0!=(data&0x80));
+	RaiseVF(0!=(((data>>6)^(data>>7))&1));
+	data<<=1;
+	data|=carry;
+	RaiseSF(0!=(data&0x80));
+	RaiseZF(0==data);
+	return data;
 }
 
 void MC6809::Test8(uint8_t value)

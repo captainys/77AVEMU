@@ -446,13 +446,13 @@ public:
 		inline int BranchOffset8(void) const
 		{
 			int offset=operand[0];
-			offset-=(offset&0x80);
+			offset=(offset&0x7f)-(offset&0x80);
 			return offset;
 		}
 		inline int BranchOffset16(void) const
 		{
 			int offset=mc6809util::FetchWord(operand[0],operand[1]);
-			offset-=(offset&0x8000);
+			offset=(offset&0x7FFF)-(offset&0x8000);
 			return offset;
 		}
 	};
@@ -549,6 +549,8 @@ public:
 	virtual const char *DeviceName(void) const{return "MC6809";}
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
+	uint8_t LSL(uint8_t data);
+	uint8_t ROL(uint8_t data);
 
 	uint16_t &RegisterRef16(uint8_t reg);
 	const uint16_t &RegisterRef16(uint8_t reg) const;
