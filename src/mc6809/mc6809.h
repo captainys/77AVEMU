@@ -575,6 +575,7 @@ public:
 	void PushS8(MemoryAccess &mem,uint8_t value);
 
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
+	void WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value);
 
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;

@@ -1776,7 +1776,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_STA_IDX: //   0xA7,
-		Abort("Instruction not supported yet.");
+		WriteToIndex8(mem,inst,state.A());
+		Test8(state.A());
 		break;
 	case INST_STA_EXT: //   0xB7,
 		Abort("Instruction not supported yet.");
@@ -1786,7 +1787,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_STB_IDX: //   0xE7,
-		Abort("Instruction not supported yet.");
+		WriteToIndex8(mem,inst,state.B());
+		Test8(state.B());
 		break;
 	case INST_STB_EXT: //   0xF7,
 		Abort("Instruction not supported yet.");
@@ -1831,7 +1833,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_STX_IDX: //   0xAF,
-		Abort("Instruction not supported yet.");
+		{
+			auto X=state.X; // Value of X may change due to auto inc/dec
+			WriteToIndex16(mem,inst,X);
+			Test16(X);
+		}
 		break;
 	case INST_STX_EXT: //   0xBF,
 		Abort("Instruction not supported yet.");
@@ -2007,7 +2013,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BPL_IMM: //   0x2A,
-		Abort("Instruction not supported yet.");
+		if(0==(state.CC&SF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBPL_IMM16: //0x12A, // 10 2A
 		Abort("Instruction not supported yet.");
@@ -2157,6 +2167,11 @@ void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint
 {
 	uint16_t addr=DecodeIndexedAddress(inst,mem);
 	mem.StoreWord(addr,value);
+}
+void MC6809::WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value)
+{
+	uint16_t addr=DecodeIndexedAddress(inst,mem);
+	mem.StoreByte(addr,value);
 }
 
 const uint16_t &MC6809::RegisterRef16(uint8_t reg) const
