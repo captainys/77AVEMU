@@ -1486,7 +1486,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LDD_IDX: //   0xEC,
-		Abort("Instruction not supported yet.");
+		state.D=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		Test16(state.D);
 		break;
 	case INST_LDD_EXT: //   0xFC,
 		Abort("Instruction not supported yet.");
@@ -2239,36 +2240,36 @@ int16_t MC6809::GetRegisterValueSigned(uint8_t reg) const
 	{
 	case REG_CC:
 		ret=state.CC;
-		return ret-(ret&0x80);
+		return (ret&0x7F)-(ret&0x80);
 	case REG_A:
 		ret=state.A();
-		return ret-(ret&0x80);
+		return (ret&0x7F)-(ret&0x80);
 	case REG_B:
 		ret=state.B();
-		return ret-(ret&0x80);
+		return (ret&0x7F)-(ret&0x80);
 	case REG_DP:
 		ret=state.DP;
-		return ret-(ret&0x80);
+		return (ret&0x7F)-(ret&0x80);
 
 	case REG_X:
 		ret=state.X;
-		return ret-(ret&0x8000);
+		return (ret&0x7FFF)-(ret&0x8000);
 	case REG_Y:
 		ret=state.Y;
-		return ret-(ret&0x8000);
+		return (ret&0x7FFF)-(ret&0x8000);
 	case REG_U:
 		ret=state.U;
-		return ret-(ret&0x8000);
+		return (ret&0x7FFF)-(ret&0x8000);
 	case REG_S:
 		ret=state.S;
-		return ret-(ret&0x8000);
+		return (ret&0x7FFF)-(ret&0x8000);
 
 	case REG_PC:
 		ret=state.PC;
-		return ret-(ret&0x80);
+		return (ret&0x7FFF)-(ret&0x8000);
 	case REG_D:
 		ret=state.D;
-		return ret-(ret&0x80);
+		return (ret&0x7FFF)-(ret&0x8000);
 	}
 	return 0;
 }
@@ -2358,8 +2359,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 		{
 			inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 			inst.indexIndir=false;
-			inst.offset=(inst.operand[0]&0x1F);
-			inst.offset-=(inst.offset&0x10);
+			inst.offset=(inst.offset&0x0F)-(inst.offset&0x10);
 			inst.clocks+=1;
 		}
 		else
@@ -2385,7 +2385,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexIndir=false;
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
-				inst.offset-=(inst.offset&0x80);
+				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
 			case 0b10011000: // 8-bit offset from REG Indirect
 				inst.clocks+=4;
@@ -2394,7 +2394,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexIndir=true;
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
-				inst.offset-=(inst.offset&0x80);
+				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
 			case 0b10001001: // 16-bit offset from REG Direct
 				inst.clocks+=4;
@@ -2404,7 +2404,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
-				inst.offset-=(inst.offset&0x8000);
+				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
 			case 0b10011001: // 16-bit offset from REG Indirect
 				inst.clocks+=7;
@@ -2414,7 +2414,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
-				inst.offset-=(inst.offset&0x8000);
+				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
 			case 0b10000110: // A reg as offset Direct
 				inst.clocks+=1;
@@ -2496,7 +2496,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
-				inst.offset-=(inst.offset&0x80);
+				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
 			case 0b10011100: // 8-bit offset from PC Indirect
 				inst.clocks+=4;
@@ -2506,7 +2506,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
-				inst.offset-=(inst.offset&0x80);
+				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
 			case 0b10001101: // 16-bit offset from PC Direct
 				inst.clocks+=5;
@@ -2517,7 +2517,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
-				inst.offset-=(inst.offset&0x8000);
+				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
 			case 0b10011101: // 16-bit offset from PC Indirect
 				inst.clocks+=8;
@@ -2528,7 +2528,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
-				inst.offset-=(inst.offset&0x8000);
+				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
 			case 0b10011111: // Extended Indirect
 				inst.clocks+=5;
