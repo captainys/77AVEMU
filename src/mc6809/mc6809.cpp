@@ -44,7 +44,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_ADDB_IDX]=OPER_IDX;
 	instOperaType[INST_ADDB_EXT]=OPER_EXT;
 
-	instOperaType[INST_ADDD_IMM]=OPER_IMM;
+	instOperaType[INST_ADDD_IMM]=OPER_IMM16;
 	instOperaType[INST_ADDD_DP]=OPER_DP;
 	instOperaType[INST_ADDD_IDX]=OPER_IDX;
 	instOperaType[INST_ADDD_EXT]=OPER_EXT;
@@ -1146,7 +1146,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ADDD_IMM: //  0xC3,
-		Abort("Instruction not supported yet.");
+		AddWord(state.D,mc6809util::FetchWord(inst.operand));
 		break;
 	case INST_ADDD_DP: //   0xD3,
 		Abort("Instruction not supported yet.");
@@ -1343,10 +1343,20 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_COMA: //      0x43,
-		Abort("Instruction not supported yet.");
+		{
+			auto reg=~state.A();
+			Test8(reg);
+			state.CC|=CF;
+			state.SetA(reg);
+		}
 		break;
 	case INST_COMB: //      0x53,
-		Abort("Instruction not supported yet.");
+		{
+			auto reg=~state.B();
+			Test8(reg);
+			state.CC|=CF;
+			state.SetB(reg);
+		}
 		break;
 
 	case INST_COM_DP: //    0x03,
@@ -1536,7 +1546,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LDX_IDX: //   0xAE,
-		Abort("Instruction not supported yet.");
+		state.X=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		Test16(state.X);
 		break;
 	case INST_LDX_EXT: //   0xBE,
 		Abort("Instruction not supported yet.");
@@ -1549,7 +1560,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LDY_IDX: //   0x1AE, // 10 AE
-		Abort("Instruction not supported yet.");
+		state.Y=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		Test16(state.Y);
 		break;
 	case INST_LDY_EXT: //   0x1BE, // 10 BE
 		Abort("Instruction not supported yet.");
@@ -1856,7 +1868,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(state.A());
 		break;
 	case INST_STA_EXT: //   0xB7,
-		Abort("Instruction not supported yet.");
+		mem.StoreByte(mc6809util::FetchWord(inst.operand),state.A());
+		Test8(state.A());
 		break;
 
 	case INST_STB_DP: //    0xD7,
@@ -2484,6 +2497,26 @@ void MC6809::SetRegisterValue(uint8_t reg,uint16_t value)
 	}
 }
 
+void MC6809::AddWord(uint16_t &value1,uint16_t value2)
+{
+	uint32_t prevValue=value1&0xffff;
+	value1=(value1+value2)&0xffff;
+	state.CC&=~(SF|ZF|VF|CF);
+	RaiseVF((prevValue&0x8000)==(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x8000));
+	RaiseZF(0==value1);
+	RaiseCF(value1<prevValue);
+}
+void MC6809::AddByte(uint8_t &value1,uint8_t value2)
+{
+	uint16_t prevValue=value1&0xff;
+	value1=(value1+value2)&0xff;
+	state.CC&=~(SF|ZF|VF|CF);
+	RaiseVF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
+	RaiseSF(0!=(value1&0x80));
+	RaiseZF(0==value1);
+	RaiseCF(value1<prevValue);
+}
 void MC6809::SubWord(uint16_t &value1,uint16_t value2)
 {
 	uint32_t prevValue=value1;

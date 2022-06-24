@@ -1,16 +1,18 @@
 #include <iostream>
 #include <string>
 #include "mc6809.h"
+#include "mc6809util.h"
 #include "plainmemory.h"
 
 std::string code=
 "10CE6000"
-"CC1388"
+"CC1388"  // 2004  CC1388                                          LDD             #5000
+"ED8C16"
+"CC0032"  // 200A  CC0032                                          LDD             #50
 "ED8C12"
-"CC0032"
-"ED8C0E"
-"8D0E"
-"EC8C07"
+"8D12"
+"AE8C0D"
+"10AE8C07"
 
 "86FF"
 "B70000"
@@ -87,7 +89,6 @@ std::string code=
 "ED8DFF7A"
 
 "35D6"
-
 "0000"
 ;
 
@@ -99,7 +100,7 @@ public:
 	virtual const char *DeviceName(void) const{return "TestVM";}
 };
 
-int main(void)
+bool Divide(int numer,int denom,bool verbose)
 {
 	TestVM vm;
 	MC6809 cpu(&vm);
@@ -112,7 +113,8 @@ int main(void)
 		mem.RAM[addr++]=cpputil::Xtoi(hex);
 	}
 
-	int res=0;
+	mc6809util::StoreWordSigned(mem.RAM+0x2005,numer);
+	mc6809util::StoreWordSigned(mem.RAM+0x200B,denom);
 
 	cpu.state.PC=0x2000;
 	mem.RAM[0]=0;
@@ -120,22 +122,55 @@ int main(void)
 	{
 		auto inst=cpu.FetchInstruction(mem,cpu.state.PC);
 
-		for(auto str : cpu.GetStatusText())
+		if(true==verbose)
 		{
-			std::cout << str << std::endl;
-		}
+			for(auto str : cpu.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
 
-		auto byteCode=cpu.FormatByteCode(inst);
-		while(byteCode.size()<11)
-		{
-			byteCode.push_back(' ');
-		}
+			auto byteCode=cpu.FormatByteCode(inst);
+			while(byteCode.size()<11)
+			{
+				byteCode.push_back(' ');
+			}
 
-		auto disasm=cpu.Disassemble(inst,cpu.state.PC);
-		std::cout << cpputil::Ustox(cpu.state.PC) << " " << byteCode << " " << disasm << std::endl;
+			auto disasm=cpu.Disassemble(inst,cpu.state.PC);
+			std::cout << cpputil::Ustox(cpu.state.PC) << " " << byteCode << " " << disasm << std::endl;
+		}
 
 		cpu.RunOneInstruction(mem);
 	}
 
-	return res;
+	int quo=cpu.state.X;
+	int rem=cpu.state.Y;
+	quo=(quo&0x7FFF)-(quo&0x8000);
+	rem=(rem&0x7FFF)-(rem&0x8000);
+
+	std::cout << numer << '/' << denom << std::endl;
+	std::cout << "Quotient  " << quo << std::endl;
+	std::cout << "Remainder " << rem << std::endl;
+	std::cout << "By C++ Quotient  " << (numer/denom) << std::endl;
+	std::cout << "By C++ Remainder " << (numer%denom) << std::endl;
+
+	if(quo!=numer/denom || rem!=numer%denom || 0==mem.RAM[0])
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
+int main(void)
+{
+	if(0!=Divide(5000,100,false) ||
+	   0!=Divide(101,100,false) ||
+	   0!=Divide(-1000,7,false) ||
+	   0!=Divide(-5000,-47,false) ||
+	   0!=Divide(12345,765,false))
+	{
+		return 1;
+	}
+	std::cout << "All Passes." << std::endl;
+	return 0;
 }

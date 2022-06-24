@@ -19,6 +19,11 @@ inline void StoreWord(uint8_t *ptr,uint16_t data)
 	ptr[0]=(data>>8);
 	ptr[1]=(data&0xFF);
 }
+inline void StoreWordSigned(uint8_t *ptr,int16_t data)
+{
+	ptr[0]=(data>>8);
+	ptr[1]=(data&0xFF);
+}
 inline void StoreWord(uint8_t &firstBytePtr,uint8_t &secondBytePtr,uint16_t data)
 {
 	firstBytePtr=(data>>8);

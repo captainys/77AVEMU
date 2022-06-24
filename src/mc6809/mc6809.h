@@ -583,6 +583,8 @@ public:
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 	void WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value);
 
+	void AddByte(uint8_t &a,uint8_t b);
+	void AddWord(uint16_t &a,uint16_t b);
 	void SubByte(uint8_t &a,uint8_t b);
 	void SubWord(uint16_t &a,uint16_t b);
 

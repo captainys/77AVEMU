@@ -6,7 +6,8 @@
 				LDD		#50
 				STD		DIV16_DENOM,PCR
 				BSR		DIV16
-				LDD		DIV16_NUMER,PCR
+				LDX		DIV16_DENOM,PCR
+				LDY		DIV16_NUMER,PCR
 
 				LDA		#$FF
 				STA		$0
