@@ -577,6 +577,8 @@ public:
 	*/
 	void PushS16(MemoryAccess &mem,uint16_t value);
 	void PushS8(MemoryAccess &mem,uint8_t value);
+	uint16_t PullS16(MemoryAccess &mem);
+	uint8_t PullS8(MemoryAccess &mem);
 
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 	void WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value);

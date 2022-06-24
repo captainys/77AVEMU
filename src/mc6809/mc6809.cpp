@@ -1391,7 +1391,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_EORA_IDX: //  0xA8,
-		Abort("Instruction not supported yet.");
+		{
+			auto reg=state.A();
+			reg^=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			Test8(reg);
+			state.SetA(reg);
+		}
 		break;
 	case INST_EORA_EXT: //  0xB8,
 		Abort("Instruction not supported yet.");
@@ -1551,16 +1556,32 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LEAS_IDX: //  0x32,
-		Abort("Instruction not supported yet.");
+		state.S=DecodeIndexedAddress(inst,mem);
 		break;
 	case INST_LEAU_IDX: //  0x33,
-		Abort("Instruction not supported yet.");
+		state.U=DecodeIndexedAddress(inst,mem);
 		break;
 	case INST_LEAX_IDX: //  0x30,
-		Abort("Instruction not supported yet.");
+		state.X=DecodeIndexedAddress(inst,mem);
+		if(0==state.X)
+		{
+			state.CC|=ZF;
+		}
+		else
+		{
+			state.CC&=(~ZF);
+		}
 		break;
 	case INST_LEAY_IDX: //  0x31,
-		Abort("Instruction not supported yet.");
+		state.Y=DecodeIndexedAddress(inst,mem);
+		if(0==state.Y)
+		{
+			state.CC|=ZF;
+		}
+		else
+		{
+			state.CC&=(~ZF);
+		}
 		break;
 
 	case INST_LSLA: //      0x48,
@@ -1704,7 +1725,47 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_PULS_REG: //	0x35,
-		Abort("Instruction not supported yet.");
+		if(0!=(inst.operand[0]&PSH_CC))
+		{
+			state.CC=PullS8(mem);
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_A))
+		{
+			state.SetA(PullS8(mem));
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_B))
+		{
+			state.SetB(PullS8(mem));
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_DP))
+		{
+			state.DP=PullS8(mem);
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_X))
+		{
+			state.X=PullS16(mem);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_Y))
+		{
+			state.Y=PullS16(mem);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_UorS))
+		{
+			state.U=PullS16(mem);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_PC))
+		{
+			state.PC=PullS16(mem);
+			inst.length=0; // Don't increment.
+			inst.clocks+=2;
+		}
 		break;
 	case INST_PULU_REG: //	0x37,
 		Abort("Instruction not supported yet.");
@@ -1901,7 +1962,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_SUBD_IDX: //  0xA3,
-		Abort("Instruction not supported yet.");
+		SubWord(state.D,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_SUBD_EXT: //  0xB3,
 		Abort("Instruction not supported yet.");
@@ -1944,7 +2005,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_TST_IDX: //   0x6D,
-		Abort("Instruction not supported yet.");
+		Test8(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_TST_EXT: //   0x7D,
 		Abort("Instruction not supported yet.");
@@ -2081,7 +2142,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BSR_IMM: //   0x8D,
-		PushS16(mem,state.PC);
+		PushS16(mem,state.PC+inst.length);
 		state.PC+=inst.BranchOffset8();
 		break;
 	case INST_LBSR_IMM16: //0x18D, // 10 2D
@@ -2248,6 +2309,16 @@ void MC6809::PushS16(MemoryAccess &mem,uint16_t value)
 void MC6809::PushS8(MemoryAccess &mem,uint8_t value)
 {
 	mem.StoreByte(--state.S,value);
+}
+uint16_t MC6809::PullS16(MemoryAccess &mem)
+{
+	auto S=state.S;
+	state.S+=2;
+	return mem.FetchWord(S);
+}
+uint8_t MC6809::PullS8(MemoryAccess &mem)
+{
+	return mem.FetchByte(state.S++);
 }
 void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
 {
