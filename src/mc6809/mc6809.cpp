@@ -1453,7 +1453,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(inst.operand[0]);
 		break;
 	case INST_LDA_DP: //    0x96,
-		Abort("Instruction not supported yet.");
+		state.SetA(mem.FetchByte(DecodeDirectPageAddress(inst)));
+		Test8(state.A());
 		break;
 	case INST_LDA_IDX: //   0xA6,
 		Abort("Instruction not supported yet.");
@@ -1466,7 +1467,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_LDB_DP: //    0xD6,
-		Abort("Instruction not supported yet.");
+		state.SetB(mem.FetchByte(DecodeDirectPageAddress(inst)));
+		Test8(state.B());
 		break;
 	case INST_LDB_IDX: //   0xE6,
 		Abort("Instruction not supported yet.");
@@ -2090,6 +2092,14 @@ uint16_t MC6809::DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem)
 	{
 		addr=mem.FetchWord(addr);
 	}
+	return addr;
+}
+uint16_t MC6809::DecodeDirectPageAddress(const Instruction &inst)
+{
+	uint16_t addr;
+	addr=state.DP;
+	addr<<=8;
+	addr|=inst.operand[0];
 	return addr;
 }
 void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)

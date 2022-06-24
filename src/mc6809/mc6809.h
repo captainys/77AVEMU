@@ -565,6 +565,10 @@ public:
 	*/
 	uint16_t DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem);
 
+	/*!
+	*/
+	uint16_t DecodeDirectPageAddress(const Instruction &inst);
+
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
