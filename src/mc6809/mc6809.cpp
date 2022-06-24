@@ -1281,7 +1281,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_CMPD_IDX: //  0x1A3, // 10 A3
-		Abort("Instruction not supported yet.");
+		{
+			auto D=state.D;
+			SubWord(D,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
+		}
 		break;
 	case INST_CMPD_EXT: //  0x1B3, // 10 B3
 		Abort("Instruction not supported yet.");
@@ -1936,10 +1939,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BCC_IMM: //   0x24,
-		Abort("Instruction not supported yet.");
+		if(0==(state.CC&CF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBCC_IMM16: //0x124, // 10 24
-		Abort("Instruction not supported yet.");
+		if(0==(state.CC&CF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BCS_IMM: //   0x25,
@@ -2020,14 +2031,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_LBPL_IMM16: //0x12A, // 10 2A
-		Abort("Instruction not supported yet.");
+		if(0==(state.CC&SF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BRA_IMM: //   0x20,
 		state.PC+=inst.BranchOffset8();
 		break;
 	case INST_LBRA_IMM16: //0x120, // 10 20
-		Abort("Instruction not supported yet.");
+		state.PC+=inst.BranchOffset16();
 		break;
 
 	case INST_BRN_IMM: //   0x21,
@@ -2325,6 +2340,27 @@ void MC6809::SetRegisterValue(uint8_t reg,uint16_t value)
 		state.D=value;
 		break;
 	}
+}
+
+void MC6809::SubWord(uint16_t &value1,uint16_t value2)
+{
+	uint32_t prevValue=value1;
+	value1=(value1-value2)&0xffff;
+	state.CC&=~(SF|ZF|VF|CF);
+	RaiseVF((prevValue&0x8000)!=(value2&0x8000) && (prevValue&0x8000)!=(value1&0x8000)); // Source values have different signs, but the sign flipped.
+	RaiseSF(0!=(value1&0x8000));
+	RaiseZF(0==value1);
+	RaiseCF(value1>prevValue);
+}
+void MC6809::SubByte(uint8_t &value1,uint8_t value2)
+{
+	uint16_t prevValue=value1;
+	value1=(value1-value2)&0xff;
+	state.CC&=~(SF|ZF|VF|CF);
+	RaiseVF((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
+	RaiseSF(0!=(value1&0x80));
+	RaiseZF(0==value1);
+	RaiseCF(value1>prevValue);
 }
 
 MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC) const

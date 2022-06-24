@@ -577,6 +577,9 @@ public:
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 	void WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value);
 
+	void SubByte(uint8_t &a,uint8_t b);
+	void SubWord(uint16_t &a,uint16_t b);
+
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
 
@@ -592,6 +595,36 @@ public:
 	static std::string RegToStrPCR(unsigned int reg);
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	inline void RaiseVF(bool cond)
+	{
+		if(cond)
+		{
+			state.CC|=VF;
+		}
+	}
+	inline void RaiseSF(bool cond)
+	{
+		if(cond)
+		{
+			state.CC|=SF;
+		}
+	}
+	inline void RaiseZF(bool cond)
+	{
+		if(cond)
+		{
+			state.CC|=ZF;
+		}
+	}
+	inline void RaiseCF(bool cond)
+	{
+		if(cond)
+		{
+			state.CC|=CF;
+		}
+	}
+
 };
 
 /* } */
