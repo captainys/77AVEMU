@@ -227,6 +227,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 // 0x1D400 to 0x1D4FF SubCPU I/O
 uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 {
+	auto fm77avPtr=(FM77AV *)vmPtr;
 	switch(memType[addr])
 	{
 	case MEMTYPE_RAM:
@@ -242,8 +243,8 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		return state.data[addr];
 
 	case MEMTYPE_SUBSYS_IO:
-		// Do IO.
-		return 0xFF;
+	case MEMTYPE_MAINSYS_IO:
+		return fm77avPtr->IORead(addr&0xFFFF);
 	case MEMTYPE_SUBSYS_FONT_ROM:
 		// if(subsys monitor A or B) use appropriate font bank.
 		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
@@ -268,9 +269,6 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		//	return state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)];
 		//}
 		return 0xFF;
-	case MEMTYPE_MAINSYS_IO:
-		// Do IO.
-		return 0xFF;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
 		//if(RAM Mode)
 		//{
@@ -290,6 +288,7 @@ uint16_t PhysicalMemory::FetchWord(uint32_t addr0,uint32_t addr1)
 }
 void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 {
+	auto fm77avPtr=(FM77AV *)vmPtr;
 	switch(memType[addr])
 	{
 	case MEMTYPE_RAM:
@@ -307,7 +306,8 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		return;
 
 	case MEMTYPE_SUBSYS_IO:
-		// Do IO.
+	case MEMTYPE_MAINSYS_IO:
+		fm77avPtr->IOWrite(addr,d);
 		return;
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
@@ -330,9 +330,6 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		//{
 		//	state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)]=d;
 		//}
-		return;
-	case MEMTYPE_MAINSYS_IO:
-		// Do IO.
 		return;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
 		//if(RAM Mode)

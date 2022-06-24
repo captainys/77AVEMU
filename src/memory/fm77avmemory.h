@@ -116,6 +116,7 @@ public:
 	bool LoadROMFiles(std::string ROMPath);
 
 	uint8_t FetchByte(uint32_t addr);
+	uint8_t NonDestructiveFetchByte(uint32_t addr) const;
 	uint16_t FetchWord(uint32_t addr0,uint32_t addr1);
 	void StoreByte(uint32_t addr,uint8_t data);
 	void StoreWord(uint32_t addr0,uint32_t addr1,uint16_t data);

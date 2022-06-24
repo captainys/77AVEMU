@@ -37,10 +37,31 @@ public:
 	// Devices <<
 
 
+	enum
+	{
+		IRQ_KEY=0x01,
+		IRQ_PRINTER=0x02,
+		IRQ_TIMER=0x04,
+		IRQ_EXT=0x08,    // RS232C
+		IRQ_YM2203C=0x20,
+	};
+	enum
+	{
+		FIRQ_SUBSYS_ATTENTION=0x1,
+		FIRQ_BREAK_KEY=0x02,
+	};
 
+
+	class SystemState
+	{
+	public:
+		uint16_t irq=0,firq=0;
+	};
 	class State
 	{
 	public:
+		SystemState main,sub;
+
 		unsigned int machineType=MACHINETYPE_FM7;
 		uint64_t fm77avTime=0;
 		int clockBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
@@ -60,6 +81,12 @@ public:
 	FM77AV();
 
 	bool SetUp(FM77AVParam &param);
+
+	void IOWrite(uint16_t ioAddr,uint8_t value);
+	uint8_t IORead(uint16_t ioAddr);
+	uint8_t NonDestructiveIORead(uint16_t ioAddr) const;
+	uint8_t NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE(void) const;
+
 
 	bool LoadROMFiles(std::string ROMPath);
 
