@@ -2547,7 +2547,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
-				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
+				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80)+inst.length;
 				break;
 			case 0b10011100: // 8-bit offset from PC Indirect
 				inst.clocks+=4;
@@ -2557,7 +2557,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexReg=REG_PC;
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.offset=inst.operand[1];
-				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
+				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80)+inst.length;
 				break;
 			case 0b10001101: // 16-bit offset from PC Direct
 				inst.clocks+=5;
@@ -2568,7 +2568,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
-				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
+				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000)+inst.length;
 				break;
 			case 0b10011101: // 16-bit offset from PC Indirect
 				inst.clocks+=8;
@@ -2579,7 +2579,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.operand[1]=mem.FetchByte(PC++);
 				inst.operand[2]=mem.FetchByte(PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
-				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
+				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000)+inst.length;
 				break;
 			case 0b10011111: // Extended Indirect
 				inst.clocks+=5;
@@ -2756,7 +2756,7 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 			{
 				if(REG_PC==inst.indexReg)
 				{
-					int addr=(PC+inst.length+inst.offset)&0xFFFF;
+					int addr=(PC+inst.offset)&0xFFFF;
 					disasm.push_back('$');
 					disasm+=cpputil::Ustox(addr);
 					disasm+=",PCR";
