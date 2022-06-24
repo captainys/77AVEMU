@@ -1564,10 +1564,28 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LSLA: //      0x48,
-		Abort("Instruction not supported yet.");
+		{
+			uint8_t reg=state.A();
+			state.CC&=~(SF|ZF|VF|CF);
+			RaiseCF(0!=(reg&0x80));
+			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
+			reg<<=1;
+			RaiseSF(0!=(reg&0x80));
+			RaiseZF(0==reg);
+			state.SetA(reg);
+		}
 		break;
 	case INST_LSLB: //      0x58,
-		Abort("Instruction not supported yet.");
+		{
+			uint8_t reg=state.B();
+			state.CC&=~(SF|ZF|VF|CF);
+			RaiseCF(0!=(reg&0x80));
+			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
+			reg<<=1;
+			RaiseSF(0!=(reg&0x80));
+			RaiseZF(0==reg);
+			state.SetB(reg);
+		}
 		break;
 
 	case INST_LSL_DP: //    0x08,
@@ -1705,10 +1723,32 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ROLA: //      0x49,
-		Abort("Instruction not supported yet.");
+		{
+			uint8_t reg=state.A();
+			uint8_t carry=(0!=((state.CC&CF) ? 1 : 0));
+			state.CC&=~(SF|ZF|VF|CF);
+			RaiseCF(0!=(reg&0x80));
+			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
+			reg<<=1;
+			reg|=carry;
+			RaiseSF(0!=(reg&0x80));
+			RaiseZF(0==reg);
+			state.SetA(reg);
+		}
 		break;
 	case INST_ROLB: //      0x59,
-		Abort("Instruction not supported yet.");
+		{
+			uint8_t reg=state.B();
+			uint8_t carry=(0!=((state.CC&CF) ? 1 : 0));
+			state.CC&=~(SF|ZF|VF|CF);
+			RaiseCF(0!=(reg&0x80));
+			RaiseVF(0!=(((reg>>6)^(reg>>7))&1));
+			reg<<=1;
+			reg|=carry;
+			RaiseSF(0!=(reg&0x80));
+			RaiseZF(0==reg);
+			state.SetB(reg);
+		}
 		break;
 
 	case INST_ROL_DP: //    0x09,
@@ -2010,10 +2050,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BMI_IMM: //   0x2B,
-		Abort("Instruction not supported yet.");
+		if(0!=(state.CC&SF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBMI_IMM16: //0x12B, // 10 2B
-		Abort("Instruction not supported yet.");
+		if(0!=(state.CC&SF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BNE_IMM: //   0x26,
