@@ -1649,7 +1649,46 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_PSHS_REG: //	0x34,
-		Abort("Instruction not supported yet.");
+		if(0!=(inst.operand[0]&PSH_PC))
+		{
+			PushS16(mem,state.PC);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_UorS))
+		{
+			PushS16(mem,state.U);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_Y))
+		{
+			PushS16(mem,state.Y);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_X))
+		{
+			PushS16(mem,state.X);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_DP))
+		{
+			PushS8(mem,state.DP);
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_B))
+		{
+			PushS8(mem,state.B());
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_A))
+		{
+			PushS8(mem,state.A());
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_CC))
+		{
+			PushS8(mem,state.CC);
+			++inst.clocks;
+		}
 		break;
 	case INST_PSHU_REG: //	0x36,
 		Abort("Instruction not supported yet.");
@@ -1988,10 +2027,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BSR_IMM: //   0x8D,
-		Abort("Instruction not supported yet.");
+		PushS16(mem,state.PC);
+		state.PC+=inst.BranchOffset8();
 		break;
 	case INST_LBSR_IMM16: //0x18D, // 10 2D
-		Abort("Instruction not supported yet.");
+		PushS16(mem,state.PC);
+		state.PC+=inst.BranchOffset16();
 		break;
 
 	case INST_BVC_IMM: //   0x28,
@@ -2101,6 +2142,15 @@ uint16_t MC6809::DecodeDirectPageAddress(const Instruction &inst)
 	addr<<=8;
 	addr|=inst.operand[0];
 	return addr;
+}
+void MC6809::PushS16(MemoryAccess &mem,uint16_t value)
+{
+	state.S-=2;
+	mem.StoreWord(state.S,value);
+}
+void MC6809::PushS8(MemoryAccess &mem,uint8_t value)
+{
+	mem.StoreByte(--state.S,value);
 }
 void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
 {
