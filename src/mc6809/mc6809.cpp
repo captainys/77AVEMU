@@ -1145,8 +1145,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ADDA_IMM: //  0x8B,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.A();
+			AddByte(reg,inst.operand[0]);
+			state.SetA(reg);
+		}
 		break;
 	case INST_ADDA_DP: //   0x9B,
 		Abort("Instruction not supported yet.");
@@ -1165,8 +1168,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ADDB_IMM: //  0xCB,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.B();
+			AddByte(reg,inst.operand[0]);
+			state.SetB(reg);
+		}
 		break;
 	case INST_ADDB_DP: //   0xDB,
 		Abort("Instruction not supported yet.");
@@ -1944,12 +1950,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_NEGA: //      0x40,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetA(NEG(state.A()));
 		break;
 	case INST_NEGB: //      0x50,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetB(NEG(state.B()));
 		break;
 
 	case INST_NEG_DP: //    0x00,
