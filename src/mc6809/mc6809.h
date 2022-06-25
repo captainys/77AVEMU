@@ -12,6 +12,11 @@ class MC6809 : public Device
 public:
 	enum
 	{
+		MEMORY_ADDRESS_SIZE=65536
+	};
+
+	enum
+	{
 		OPER_IMM,
 		OPER_DP,
 		OPER_IDX,
@@ -544,10 +549,61 @@ public:
 	class Debugger
 	{
 	public:
+		enum
+		{
+			BRKPNT_FLAG_NONE=0,
+
+			BRKPNT_FLAG_BREAK=1,
+
+			/* If BRKPNT_FLAG_MONITOR_STATUS is set, the debugger will break the execution.
+			   The Virtual Machine thread should check lastBreakPointInfo for the break-point
+			   flags, and if BRKPNT_FLAG_MONITOR_STATUS is set, print the machine state and
+			   resume execution.
+			   Since the debugger does not know all the Virtual Machine state, the debugger
+			   cannot print all the information.
+			*/
+			BRKPNT_FLAG_MONITOR_ONLY=2,
+
+			/* If BRKPNT_FLAG_MONITOR_BEFORE_PASSCOUNT is set,
+			   debugger should print the monitoring information before the pass count is reached.
+			*/
+			BRKPNT_FLAG_SILENT_UNTIL_BREAK=4,
+		};
+		class BreakPoint
+		{
+		public:
+			unsigned char flags=0;
+			unsigned int passCount=0;
+		};
+
 		bool enabled=false;
 		bool stop=false;
+		bool hitMonitorPoint=false;
+
+		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
+		BreakPoint oneTimeBreakPoints[MEMORY_ADDRESS_SIZE];
 
 		void ClearStopFlag(void);
+
+		void SetBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount=1,unsigned char flags=BRKPNT_FLAG_BREAK);
+		void ClearBreakPoint(uint16_t addrStart=0,uint16_t addrEnd=MEMORY_ADDRESS_SIZE-1);
+		void SetOneTimeBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount=1,unsigned char flags=BRKPNT_FLAG_BREAK);
+		void ClearOneTimeBreakPoint(uint16_t addrStart=0,uint16_t addrEnd=MEMORY_ADDRESS_SIZE-1);
+		void CheckBreakCondition(const MC6809 &cpu,const class MemoryAccess &mem);
+
+		inline bool OnMonitorPoint(void)
+		{
+			auto flag=hitMonitorPoint;
+			hitMonitorPoint=false;
+			return flag;
+		}
+		inline void AfterRunOneInstruction(MC6809 &cpu,const MemoryAccess &mem)
+		{
+			if(true==enabled)
+			{
+				CheckBreakCondition(cpu,mem);
+			}
+		}
 	};
 	Debugger debugger;
 

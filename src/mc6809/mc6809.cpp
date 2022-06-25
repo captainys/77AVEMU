@@ -2592,6 +2592,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	}
 
+	debugger.AfterRunOneInstruction(*this,mem);
+
 	state.PC+=inst.length;
 	return inst.clocks;
 }
