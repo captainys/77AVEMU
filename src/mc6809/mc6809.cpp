@@ -1249,7 +1249,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_CLR_IDX: //   0x6F,
-		Abort("Instruction not supported yet.");
+		mem.StoreByte(DecodeIndexedAddress(inst,mem),0);
+		state.CC&=~(SF|VF|CF);
+		state.CC|=ZF;
 		break;
 	case INST_CLR_EXT: //   0x7F,
 		Abort("Instruction not supported yet.");
@@ -1522,7 +1524,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDB_IMM: //   0xC6,
-		Abort("Instruction not supported yet.");
+		state.SetB(inst.operand[0]);
+		Test8(inst.operand[0]);
 		break;
 	case INST_LDB_DP: //    0xD6,
 		state.SetB(mem.FetchByte(DecodeDirectPageAddress(inst)));
@@ -1893,9 +1896,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_RTI: //       0x3B,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_RTS: //       0x39,
-		Abort("Instruction not supported yet.");
+		state.PC=PullS16(mem);
+		inst.length=0;
 		break;
 
 	case INST_SBCA_IMM: //  0x82,
