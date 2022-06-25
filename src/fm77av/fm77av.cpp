@@ -83,25 +83,36 @@ void FM77AV::Reset(void)
 		break;
 	}
 	state.subSysBusy=true; // Busy on reset.
+	state.subSysHalt=false;
+	state.mainToSubIRQ=false;
+}
+bool FM77AV::SubCPUHalt(void) const
+{
+	return true==subCPU.state.halt ||
+	       true==state.subSysHalt;
+	       // || (machine type==FM-7, VRAM-access is set, VSYNC=false);
+}
+bool FM77AV::ExternalDevicePresent(void) const
+{
+	return false; // Tentatively no external devices.
 }
 unsigned int FM77AV::RunOneInstruction(void)
 {
 	unsigned int clocksPassed=0;
 	uint64_t nanosec=0;
-	if(true==mainCPU.state.halt && true==subCPU.state.halt)
+	if(true==mainCPU.state.halt && true==SubCPUHalt())
 	{
 		clocksPassed=2; // 2 is the minimum clocks, which is the minimum time resolution.
 		nanosec=FM77AVTIME_MICROSEC;
 		state.timeBalance=0;
 	}
-	else if(true==subCPU.state.halt)
+	else if(true==SubCPUHalt())
 	{
 		clocksPassed=mainCPU.RunOneInstruction(mainMemAcc);
 
 		nanosec=clocksPassed;
 		nanosec*=SCALE_NANO;
 		nanosec/=mainCPU.state.freq;
-		state.timeBalance=0;
 	}
 	else if(true==mainCPU.state.halt)
 	{
@@ -110,7 +121,6 @@ unsigned int FM77AV::RunOneInstruction(void)
 		nanosec=clocksPassed;
 		nanosec*=SCALE_NANO;
 		nanosec/=mainCPU.state.freq;
-		state.timeBalance=0;
 	}
 	else
 	{

@@ -102,14 +102,14 @@ PrintStatus(*fm77avPtr);
 								//else
 								//{
 								// std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-								PrintCPUState(cpu,mem,cpuId);
+								PrintCPUState(*fm77avPtr,cpu,mem,cpuId);
 								std::cout << ">";
 								runMode=RUNMODE_PAUSE;
 								shouldBreak=true;
 							}
 							else if(true==cpu.debugger.PollMonitorPoint())
 							{
-								PrintCPUState(cpu,mem,cpuId);
+								PrintCPUState(*fm77avPtr,cpu,mem,cpuId);
 							}
 						}
 					}
@@ -237,25 +237,14 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av,bool muteMain,bool muteSub) const
 		{
 			std::cout << "Sub CPU is ahead by " << -fm77av.state.timeBalance << " nanoseconds." << std::endl;
 		}
-		std::cout << "[Main CPU]" << std::endl;
-		for(auto str : fm77av.mainCPU.GetStatusText())
-		{
-			std::cout << str << std::endl;
-		}
-		std::cout << fm77av.mainCPU.WholeDisassembly(fm77av.mainMemAcc,fm77av.mainCPU.state.PC) << std::endl;
-
-		std::cout << "[Sub CPU]" << std::endl;
-		for(auto str : fm77av.subCPU.GetStatusText())
-		{
-			std::cout << str << std::endl;
-		}
-		std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
+		PrintCPUState(fm77av,fm77av.mainCPU,fm77av.mainMemAcc,CPU_MAIN);
+		PrintCPUState(fm77av,fm77av.subCPU,fm77av.subMemAcc,CPU_SUB);
 	}
 	else if(true!=muteMain)
 	{
 		if(output.main.lastPC!=fm77av.mainCPU.state.PC)
 		{
-			PrintCPUState(fm77av.mainCPU,fm77av.mainMemAcc,CPU_MAIN);
+			PrintCPUState(fm77av,fm77av.mainCPU,fm77av.mainMemAcc,CPU_MAIN);
 			output.main.lastPC=fm77av.mainCPU.state.PC;
 		}
 	}
@@ -263,13 +252,33 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av,bool muteMain,bool muteSub) const
 	{
 		if(output.sub.lastPC!=fm77av.subCPU.state.PC)
 		{
-			PrintCPUState(fm77av.subCPU,fm77av.subMemAcc,CPU_SUB);
+			PrintCPUState(fm77av,fm77av.subCPU,fm77av.subMemAcc,CPU_SUB);
 			output.sub.lastPC=fm77av.subCPU.state.PC;
 		}
 	}}
-void FM77AVThread::PrintCPUState(MC6809 &cpu,MemoryAccess &mem,unsigned int mainOrSub) const
+void FM77AVThread::PrintCPUState(FM77AV &fm77av,MC6809 &cpu,MemoryAccess &mem,unsigned int mainOrSub) const
 {
-	std::cout << '[' << CPUToStr(mainOrSub) << " CPU]" << std::endl;
+	std::cout << '[' << CPUToStr(mainOrSub) << " CPU]";
+	if(CPU_SUB==mainOrSub)
+	{
+		if(true==fm77av.state.subSysBusy)
+		{
+			std::cout << " BUSY ";
+		}
+		else
+		{
+			std::cout << " READY";
+		}
+		if(true==fm77av.state.subSysHalt)
+		{
+			std::cout << " HALT";
+		}
+		else
+		{
+			std::cout << " RUN ";
+		}
+	}
+	std::cout << std::endl;
 	for(auto str : cpu.GetStatusText())
 	{
 		std::cout << str << std::endl;

@@ -1,3 +1,4 @@
+; 0 is written to $1FFF
 				ORG		$2000
 				FDB		$2000
 				CLRA

@@ -264,10 +264,10 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		//}
 		return ROM_FBASIC[addr&0x7FFF];
 	case MEMTYPE_MAINSYS_SHARED_RAM:
-		//if(subCPU halt)
-		//{
-		//	return state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)];
-		//}
+		if(true==fm77avPtr->state.subSysHalt)
+		{
+			return state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)];
+		}
 		return 0xFF;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
 		//if(RAM Mode)
@@ -326,10 +326,10 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		//}
 		return;
 	case MEMTYPE_MAINSYS_SHARED_RAM:
-		//if(subCPU halt)
-		//{
-		//	state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)]=d;
-		//}
+		if(true==fm77avPtr->state.subSysHalt)
+		{
+			state.data[SUBSYS_SHARED_RAM_BEGIN+(addr&0x7F)]=d;
+		}
 		return;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
 		//if(RAM Mode)

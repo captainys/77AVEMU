@@ -62,7 +62,8 @@ public:
 	public:
 		SystemState main,sub;
 
-		bool subSysBusy;
+		bool subSysBusy,subSysHalt;
+		bool mainToSubIRQ;
 
 		unsigned int machineType=MACHINETYPE_FM7;
 		uint64_t fm77avTime=0;
@@ -94,6 +95,17 @@ public:
 
 	MC6809 &CPU(unsigned int mainOrSub);
 	MemoryAccess &MemAccess(unsigned int mainOrSub);
+
+	/*! SubCPU can halt:
+	      by HLT instruction,
+	      by main CPU I/O $FD05, or
+	      in FM-7 mode between VSYNC if VRAM access flag is set.
+	*/
+	bool SubCPUHalt(void) const;
+
+	/*! Should implement this function when adding disk drive, rs232c etc.
+	*/
+	bool ExternalDevicePresent(void) const;
 
 	void PowerOn(void);
 	void Reset(void);
