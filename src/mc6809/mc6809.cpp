@@ -1235,10 +1235,14 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_CLRA: //      0x4F,
-		Abort("Instruction not supported yet.");
+		state.SetA(0);
+		state.CC&=~(SF|VF|CF);
+		state.CC|=ZF;
 		break;
 	case INST_CLRB: //      0x5F,
-		Abort("Instruction not supported yet.");
+		state.SetB(0);
+		state.CC&=~(SF|VF|CF);
+		state.CC|=ZF;
 		break;
 
 	case INST_CLR_DP: //    0x0F,
@@ -1488,7 +1492,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Abort("Instruction not supported yet.");
 		break;
 	case INST_JMP_EXT: //   0x7E,
-		Abort("Instruction not supported yet.");
+		state.PC=inst.ExtendedAddress();
+		inst.length=0;
 		break;
 
 	case INST_JSR_DP: //    0x9D,
@@ -1561,7 +1566,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDU_IMM: //   0xCE,
-		Abort("Instruction not supported yet.");
+		state.U=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+		Test16(state.U);
 		break;
 	case INST_LDU_DP: //    0xDE,
 		Abort("Instruction not supported yet.");
@@ -1609,7 +1615,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_LDY_IMM: //   0x18E, // 10 8E
-		Abort("Instruction not supported yet.");
+		state.Y=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+		Test16(state.Y);
 		break;
 	case INST_LDY_DP: //    0x19E, // 10 9E
 		Abort("Instruction not supported yet.");
@@ -1922,26 +1929,29 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_STA_DP: //    0x97,
-		Abort("Instruction not supported yet.");
+		mem.StoreByte(DecodeDirectPageAddress(inst),state.A());
+		Test8(state.A());
 		break;
 	case INST_STA_IDX: //   0xA7,
 		WriteToIndex8(mem,inst,state.A());
 		Test8(state.A());
 		break;
 	case INST_STA_EXT: //   0xB7,
-		mem.StoreByte(mc6809util::FetchWord(inst.operand),state.A());
+		mem.StoreByte(inst.ExtendedAddress(),state.A());
 		Test8(state.A());
 		break;
 
 	case INST_STB_DP: //    0xD7,
-		Abort("Instruction not supported yet.");
+		mem.StoreByte(DecodeDirectPageAddress(inst),state.B());
+		Test8(state.B());
 		break;
 	case INST_STB_IDX: //   0xE7,
 		WriteToIndex8(mem,inst,state.B());
 		Test8(state.B());
 		break;
 	case INST_STB_EXT: //   0xF7,
-		Abort("Instruction not supported yet.");
+		mem.StoreByte(inst.ExtendedAddress(),state.B());
+		Test8(state.B());
 		break;
 
 	case INST_STD_DP: //    0xDD,
@@ -2650,11 +2660,11 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 		++inst.length;
 		inst.operand[0]=mem.FetchByte(PC++);
 		inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
-		if(0==inst.operand[0]&0x80) // 5-bit offset from REG
+		if(0==(inst.operand[0]&0x80)) // 5-bit offset from REG
 		{
 			inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 			inst.indexIndir=false;
-			inst.offset=(inst.offset&0x0F)-(inst.offset&0x10);
+			inst.offset=(inst.operand[0]&0x0F)-(inst.operand[0]&0x10);
 			inst.clocks+=1;
 		}
 		else
