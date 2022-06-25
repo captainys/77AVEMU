@@ -23,6 +23,19 @@ bool FM77AV::SetUp(FM77AVParam &param)
 		std::cout << "Failed to load ROM files." << std::endl;
 		return false;
 	}
+
+	for(int i=0; i<32; ++i)
+	{
+		//	MAINSYS_BOOT_ROM_END=       0x3FFE0,
+		physMem.state.data[PhysicalMemory::MAINSYS_INT_VECTOR+i]=physMem.ROM_BOOT_BASIC[0x1E0+i];
+	}
+
+	physMem.state.data[PhysicalMemory::SUBSYS_RESET_VECTOR  ]=0xE0;
+	physMem.state.data[PhysicalMemory::SUBSYS_RESET_VECTOR+1]=0x00;
+
+	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR  ]=0xFE;
+	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR+1]=0x00;
+
 	Reset();
 	return true;
 }

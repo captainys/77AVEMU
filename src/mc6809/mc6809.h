@@ -24,6 +24,7 @@ public:
 	enum
 	{
 		INDEX_UNSUPPORTED,
+		INDEX_NO_OFFSET,
 		INDEX_CONST_OFFSET_FROM_REG,
 		INDEX_ACCUM_OFFSET_FROM_REG,
 		INDEX_POST_INC_1,
@@ -553,6 +554,7 @@ public:
 	virtual const char *DeviceName(void) const{return "MC6809";}
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
+	uint8_t DEC(uint8_t data);
 	uint8_t LSL(uint8_t data);
 	uint8_t LSR(uint8_t data);
 	uint8_t ROL(uint8_t data);

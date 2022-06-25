@@ -1091,58 +1091,75 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	{
 	case INST_ABX: //       0x3A,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ADCA_IMM: //  0x89,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADCA_DP: //   0x99,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADCA_IDX: //  0xA9,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADCA_EXT: //  0xB9,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ADCB_IMM: //  0xC9,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADCB_DP: //   0xD9,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADCB_IDX: //  0xE9,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADCB_EXT: //  0xF9,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ADDA_IMM: //  0x8B,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDA_DP: //   0x9B,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDA_IDX: //  0xAB,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDA_EXT: //  0xBB,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ADDB_IMM: //  0xCB,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDB_DP: //   0xDB,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDB_IDX: //  0xEB,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDB_EXT: //  0xFB,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ADDD_IMM: //  0xC3,
@@ -1150,72 +1167,93 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADDD_DP: //   0xD3,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDD_IDX: //  0xE3,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ADDD_EXT: //  0xF3,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ANDA_IMM: //  0x84,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ANDA_DP: //   0x94,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ANDA_IDX: //  0xA4,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ANDA_EXT: //  0xB4,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ANDB_IMM: //  0xC4,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ANDB_DP: //   0xD4,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ANDB_IDX: //  0xE4,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ANDB_EXT: //  0xF4,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ANDCC_IMM: // 0x1C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ASRA: //      0x47,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ASRB: //      0x57,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ASR_DP: //    0x07,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ASR_IDX: //   0x67,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ASR_EXT: //   0x77,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BITA_IMM: //  0x85,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_BITA_DP: //   0x95,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_BITA_IDX: //  0xA5,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_BITA_EXT: //  0xB5,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BITB_IMM: //  0xC5,
@@ -1226,12 +1264,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_BITB_DP: //   0xD5,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_BITB_IDX: //  0xE5,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_BITB_EXT: //  0xF5,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CLRA: //      0x4F,
@@ -1247,6 +1288,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_CLR_DP: //    0x0F,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CLR_IDX: //   0x6F,
 		mem.StoreByte(DecodeIndexedAddress(inst,mem),0);
@@ -1255,39 +1297,50 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_CLR_EXT: //   0x7F,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPA_IMM: //  0x81,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPA_DP: //   0x91,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPA_IDX: //  0xA1,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPA_EXT: //  0xB1,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPB_IMM: //  0xC1,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPB_DP: //   0xD1,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPB_IDX: //  0xE1,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPB_EXT: //  0xF1,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPD_IMM: //  0x183, // 10 83
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPD_DP: //   0x193, // 10 93
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPD_IDX: //  0x1A3, // 10 A3
 		{
@@ -1297,32 +1350,41 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_CMPD_EXT: //  0x1B3, // 10 B3
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPS_IMM: //  0x28C, // 11 8C
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPS_DP: //   0x29C, // 11 9C
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPS_IDX: //  0x2AC, // 11 AC
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPS_EXT: //  0x2BC, // 11 BC
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPU_IMM: //  0x283, // 11 83
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPU_DP: //   0x293, // 11 93
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPU_IDX: //  0x2A3, // 11 A3
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPU_EXT: //  0x2B3, // 11 B3
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPX_IMM: //  0x8C,
@@ -1333,6 +1395,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_CMPX_DP: //   0x9C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPX_IDX: //  0xAC,
 		// The following code has been tested on actual FM77AV.
@@ -1368,19 +1431,24 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_CMPX_EXT: //  0xBC,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CMPY_IMM: //  0x18C, // 10 8C
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPY_DP: //   0x19C, // 10 9C
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPY_IDX: //  0x1AC, // 10 AC
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_CMPY_EXT: //  0x1BC, // 10 BC
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_COMA: //      0x43,
@@ -1402,44 +1470,54 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_COM_DP: //    0x03,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_COM_IDX: //   0x63,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_COM_EXT: //   0x73,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_CWAI_IMM: //  0x3C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_DAA: //       0x19,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_DECA: //      0x4A,
-		Abort("Instruction not supported yet.");
+		state.SetA(DEC(state.A()));
 		break;
 	case INST_DECB: //      0x5A,
-		Abort("Instruction not supported yet.");
+		state.SetB(DEC(state.B()));
 		break;
 
 	case INST_DEC_DP: //    0x0A,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_DEC_IDX: //   0x6A,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_DEC_EXT: //   0x7A,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_EORA_IMM: //  0x88,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_EORA_DP: //   0x98,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_EORA_IDX: //  0xA8,
 		{
@@ -1451,47 +1529,60 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_EORA_EXT: //  0xB8,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_EORB_IMM: //  0xC8,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_EORB_DP: //   0xD8,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_EORB_IDX: //  0xE8,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_EORB_EXT: //  0xF8,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_EXG_REG: //   0x1E,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_INCA: //      0x4C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_INCB: //      0x5C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_INC_DP: //    0x0C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_INC_IDX: //   0x6C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_INC_EXT: //   0x7C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_JMP_DP: //    0x0E,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_JMP_IDX: //   0x6E,
-		Abort("Instruction not supported yet.");
+		state.PC=DecodeIndexedAddress(inst,mem);
+		inst.length=0;
 		break;
 	case INST_JMP_EXT: //   0x7E,
 		state.PC=inst.ExtendedAddress();
@@ -1500,12 +1591,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_JSR_DP: //    0x9D,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_JSR_IDX: //   0xAD,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_JSR_EXT: //   0xBD,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LDA_IMM: //   0x86,
@@ -1518,9 +1612,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDA_IDX: //   0xA6,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDA_EXT: //   0xB6,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LDB_IMM: //   0xC6,
@@ -1533,9 +1629,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDB_IDX: //   0xE6,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDB_EXT: //   0xF6,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LDD_IMM: //   0xCC,
@@ -1545,6 +1643,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDD_DP: //    0xDC,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDD_IDX: //   0xEC,
 		state.D=mem.FetchWord(DecodeIndexedAddress(inst,mem));
@@ -1552,6 +1651,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDD_EXT: //   0xFC,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LDS_IMM: //   0x1CE, // 10 CE
@@ -1560,12 +1660,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDS_DP: //    0x1DE, // 10 DE
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDS_IDX: //   0x1EE, // 10 EE
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDS_EXT: //   0x1FE, // 10 FE
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LDU_IMM: //   0xCE,
@@ -1574,12 +1677,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDU_DP: //    0xDE,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDU_IDX: //   0xEE,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDU_EXT: //   0xFE,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LDX_IMM: //   0x8E,
@@ -1588,6 +1694,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDX_DP: //    0x9E,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDX_IDX: //   0xAE,
 		// The following code has been tested on actual FM77AV.
@@ -1623,6 +1730,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDY_DP: //    0x19E, // 10 9E
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LDY_IDX: //   0x1AE, // 10 AE
 		state.Y=mem.FetchWord(DecodeIndexedAddress(inst,mem));
@@ -1630,6 +1738,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDY_EXT: //   0x1BE, // 10 BE
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LEAS_IDX: //  0x32,
@@ -1670,6 +1779,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_LSL_DP: //    0x08,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LSL_IDX: //   0x68,
 		{
@@ -1679,6 +1789,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LSL_EXT: //   0x78,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_LSRA: //      0x44,
@@ -1696,6 +1807,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_LSR_DP: //    0x04,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LSR_IDX: //   0x64,
 		{
@@ -1705,61 +1817,77 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LSR_EXT: //   0x74,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_MUL: //       0x3D,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_NEGA: //      0x40,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_NEGB: //      0x50,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_NEG_DP: //    0x00,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_NEG_IDX: //   0x60,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_NEG_EXT: //   0x70,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_NOP: //       0x12,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ORA_IMM: //   0x8A,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ORA_DP: //    0x9A,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ORA_IDX: //   0xAA,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ORA_EXT: //   0xBA,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ORB_IMM: //   0xCA,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ORB_DP: //    0xDA,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ORB_IDX: //   0xEA,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ORB_EXT: //   0xFA,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ORCC_IMM: //  0x1A,
-		Abort("Instruction not supported yet.");
+		state.CC|=inst.operand[0];
 		break;
 
 	case INST_PSHS_REG: //	0x34,
@@ -1806,6 +1934,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_PSHU_REG: //	0x36,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_PULS_REG: //	0x35,
 		if(0!=(inst.operand[0]&PSH_CC))
@@ -1852,6 +1981,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_PULU_REG: //	0x37,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ROLA: //      0x49,
@@ -1863,6 +1993,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_ROL_DP: //    0x09,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ROL_IDX: //   0x69,
 		{
@@ -1872,17 +2003,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ROL_EXT: //   0x79,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_RORA: //      0x46,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_RORB: //      0x56,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_ROR_DP: //    0x06,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_ROR_IDX: //   0x66,
 		{
@@ -1892,10 +2027,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ROR_EXT: //   0x76,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_RTI: //       0x3B,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		inst.length=0;
 		break;
 	case INST_RTS: //       0x39,
@@ -1905,32 +2042,41 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_SBCA_IMM: //  0x82,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SBCA_DP: //   0x92,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SBCA_IDX: //  0xA2,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SBCA_EXT: //  0xB2,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SBCB_IMM: //  0xC2,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SBCB_DP: //   0xD2,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SBCB_IDX: //  0xE2,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SBCB_EXT: //  0xF2,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SEX: //       0x1D,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_STA_DP: //    0x97,
@@ -1961,6 +2107,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_STD_DP: //    0xDD,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STD_IDX: //   0xED,
 		// Question:
@@ -1972,30 +2119,38 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_STD_EXT: //   0xFD,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_STS_DP: //    0x1DF, // 10 DF
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STS_IDX: //   0x1EF, // 10 EF
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STS_EXT: //   0x1FF, // 10 FF
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_STU_DP: //    0xDF,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STU_IDX: //   0xEF,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STU_EXT: //   0xFF,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_STX_DP: //    0x9F,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STX_IDX: //   0xAF,
 		{
@@ -2006,69 +2161,88 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_STX_EXT: //   0xBF,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_STY_DP: //    0x19F,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STY_IDX: //   0x1AF,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_STY_EXT: //   0x1BF,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SUBA_IMM: //  0x80,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBA_DP: //   0x90,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBA_IDX: //  0xA0,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBA_EXT: //  0xB0,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SUBB_IMM: //  0xC0,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBB_DP: //   0xD0,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBB_IDX: //  0xE0,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBB_EXT: //  0xF0,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SUBD_IMM: //  0x83,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBD_DP: //   0x93,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SUBD_IDX: //  0xA3,
 		SubWord(state.D,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_SUBD_EXT: //  0xB3,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SWI: //       0x3F,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SWI2: //      0x13F,  // 10 3F
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_SWI3: //      0x23F,  // 11 3F
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_SYNC: //      0x13,   // Is it HLT?
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_TFR_REG: //   0x1F,
@@ -2078,26 +2252,30 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			if(regBits[reg[0]]!=regBits[reg[1]])
 			{
 				Abort("TFR to different size register not supported yet.");
+				inst.length=0;
 			}
 			SetRegisterValue(reg[1],GetRegisterValue(reg[0]));
 		}
 		break;
 
 	case INST_TSTA: //      0x4D,
-		Abort("Instruction not supported yet.");
+		Test8(state.A());
 		break;
 	case INST_TSTB: //      0x5D,
-		Abort("Instruction not supported yet.");
+		Test8(state.B());
+		inst.length=0;
 		break;
 
 	case INST_TST_DP: //    0x0D,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_TST_IDX: //   0x6D,
 		Test8(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_TST_EXT: //   0x7D,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BCC_IMM: //   0x24,
@@ -2132,51 +2310,65 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_BEQ_IMM: //   0x27,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBEQ_IMM16: //0x127, // 10 27
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BGE_IMM: //   0x2C,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBGE_IMM16: //0x12C, // 10 2C
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BGT_IMM: //   0x2E,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBGT_IMM16: //0x12E, // 10 2E
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BHI_IMM: //   0x22,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBHI_IMM16: //0x122, // 10 22
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BLE_IMM: //   0x2F,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBLE_IMM16: //0x12F, // 10 2F
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BLS_IMM: //   0x23,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBLS_IMM16: //0x123, // 10 23
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BLT_IMM: //   0x2D,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBLT_IMM16: //0x12D, // 10 2D
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BMI_IMM: //   0x2B,
@@ -2233,9 +2425,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_BRN_IMM: //   0x21,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBRN_IMM16: //0x121, // 10 21
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BSR_IMM: //   0x8D,
@@ -2249,21 +2443,34 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_BVC_IMM: //   0x28,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBVC_IMM16: //0x128, // 10 28
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 
 	case INST_BVS_IMM: //   0x29,
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	case INST_LBVS_IMM16: //0x129, // 10 29
 		Abort("Instruction not supported yet.");
+		inst.length=0;
 		break;
 	}
 
 	state.PC+=inst.length;
 	return inst.clocks;
+}
+uint8_t MC6809::DEC(uint8_t data)
+{
+	state.CC&=~(SF|ZF|VF);
+	RaiseVF(0x80==data);
+	--data;
+	RaiseSF(0!=(0x80&data));
+	RaiseZF(0==data);
+	return data;
 }
 uint8_t MC6809::LSL(uint8_t data)
 {
@@ -2355,6 +2562,9 @@ uint16_t MC6809::DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem)
 	uint16_t addr=0;
 	switch(inst.indexType)
 	{
+	case INDEX_NO_OFFSET:
+		addr=indexReg;
+		break;
 	case INDEX_CONST_OFFSET_FROM_REG:
 	case INDEX_8BIT_OFFSET:
 	case INDEX_16BIT_OFFSET:
@@ -2678,9 +2888,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 			switch(idByte)
 			{
 			case 0b10000100: // No Offset Direct
-				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
+				inst.indexType=INDEX_NO_OFFSET;
 				inst.indexIndir=false;
-				inst.offset=0;
 				break;
 			case 0b10010100: // No Offset Indirect
 				inst.clocks+=3;
@@ -2954,7 +3163,7 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 		case INST_BVS_IMM: //   0x29,
 			{
 				int16_t offset=inst.operand[0];
-				offset-=(offset&0x80);
+				offset=(offset&0x7f)-(offset&0x80);
 				uint16_t addr=PC+inst.length+offset;
 				disasm.push_back('$');
 				disasm+=cpputil::Ustox(addr);
@@ -2978,8 +3187,8 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 		case INST_LBVC_IMM16: //0x128, // 10 28
 		case INST_LBVS_IMM16: //0x129, // 10 29
 			{
-				int16_t offset=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
-				offset-=(offset&0x8000);
+				int32_t offset=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+				offset=(offset&0x7FFF)-(offset&0x8000);
 				uint16_t addr=PC+inst.length+offset;
 				disasm.push_back('$');
 				disasm+=cpputil::Ustox(addr);
@@ -3009,6 +3218,10 @@ std::string MC6809::DisassembleOperand(Instruction inst,uint16_t PC) const
 		}
 		switch(inst.indexType)
 		{
+		case INDEX_NO_OFFSET:
+			disasm.push_back(',');
+			disasm+=RegToStr(inst.indexReg);
+			break;
 		case INDEX_CONST_OFFSET_FROM_REG:
 		case INDEX_8BIT_OFFSET:
 		case INDEX_16BIT_OFFSET:
