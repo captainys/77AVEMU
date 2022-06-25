@@ -27,6 +27,9 @@ public:
 		CMD_RUN,
 		CMD_RUN_ONE_INSTRUCTION,
 		CMD_PAUSE,
+
+		CMD_MUTE,
+		CMD_UNMUTE,
 	};
 
 	class Command
@@ -42,6 +45,9 @@ public:
 	FM77AVCommandInterpreter();
 
 	void PrintHelp(void) const;
+	void Error_Common(const Command &cmd);
+	void Error_TooFewArgs(const Command &cmd);
+	void Error_UnknownCPU(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
 

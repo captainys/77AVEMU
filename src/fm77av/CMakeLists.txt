@@ -7,6 +7,7 @@ target_link_libraries(${TARGET_NAME} fm77avdef fm77avmemory device cpputil mc680
 
 add_library(fm77avdef fm77avdef.cpp fm77avdef.h)
 target_include_directories(fm77avdef PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(fm77avdef cpputil)
 
 
 

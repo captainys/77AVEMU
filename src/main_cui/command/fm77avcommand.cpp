@@ -15,6 +15,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["PAUSE"]=CMD_PAUSE;
 	primaryCmdMap["PAU"]=CMD_PAUSE;
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
+	primaryCmdMap["MUTE"]=CMD_MUTE;
+	primaryCmdMap["UNMUTE"]=CMD_UNMUTE;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -30,6 +32,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
+	std::cout << "MUTE MAIN|SUB" << std::endl;
+	std::cout << "UNMUTE MAIN|SUB" << std::endl;
+	std::cout << "  Mute/Unmute state output of main/sub CPU." << std::endl;
+	std::cout << "  If no parameter is given to UNMUTE, unmutes both CPUs." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -52,6 +58,21 @@ FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std:
 	}
 
 	return cmd;
+}
+
+void FM77AVCommandInterpreter::Error_Common(const Command &cmd)
+{
+	std::cout << "% " << cmd.cmdline << std::endl;
+}
+void FM77AVCommandInterpreter::Error_TooFewArgs(const Command &cmd)
+{
+	std::cout << "Too few arguments." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_UnknownCPU(const Command &cmd)
+{
+	std::cout << "Unknown CPU." << std::endl;
+	Error_Common(cmd);
 }
 
 void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
@@ -91,6 +112,54 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_RUN_ONE_INSTRUCTION:
 		thr.SetRunMode(FM77AVThread::RUNMODE_ONE_INSTRUCTION);
+		break;
+	case CMD_MUTE:
+		if(cmd.argv.size()<2)
+		{
+			Error_TooFewArgs(cmd);
+		}
+		else
+		{
+			switch(StrToCPU(cmd.argv[1]))
+			{
+			case CPU_MAIN:
+				thr.output.main.mute=true;
+				std::cout << "Muted Main CPU" << std::endl;
+				break;
+			case CPU_SUB:
+				thr.output.sub.mute=true;
+				std::cout << "Muted Sub CPU" << std::endl;
+				break;
+			default:
+				Error_UnknownCPU(cmd);
+				break;
+			}
+		}
+		break;
+	case CMD_UNMUTE:
+		if(cmd.argv.size()<2)
+		{
+			thr.output.main.mute=true;
+			thr.output.sub.mute=true;
+			std::cout << "Unmuted Main and Sub CPU" << std::endl;
+		}
+		else
+		{
+			switch(StrToCPU(cmd.argv[1]))
+			{
+			case CPU_MAIN:
+				thr.output.main.mute=false;
+				std::cout << "Unmuted Main CPU" << std::endl;
+				break;
+			case CPU_SUB:
+				thr.output.sub.mute=false;
+				std::cout << "Unmuted Sub CPU" << std::endl;
+				break;
+			default:
+				Error_UnknownCPU(cmd);
+				break;
+			}
+		}
 		break;
 	}
 }

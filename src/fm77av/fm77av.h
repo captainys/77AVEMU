@@ -64,7 +64,7 @@ public:
 
 		unsigned int machineType=MACHINETYPE_FM7;
 		uint64_t fm77avTime=0;
-		int clockBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
+		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 	};
 	State state;
 

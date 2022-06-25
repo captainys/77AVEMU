@@ -39,6 +39,20 @@ public:
 		RUNMODE_EXIT,
 	};
 
+	class OutputControl
+	{
+	public:
+		class CPUOutputControl
+		{
+		public:
+			bool mute=false;
+			mutable uint16_t lastPC=0;
+		};
+		CPUOutputControl main,sub;
+	};
+
+	OutputControl output;
+
 public:
 	FM77AVThread();
 	~FM77AVThread();

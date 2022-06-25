@@ -536,6 +536,7 @@ public:
 	{
 	public:
 		bool halt=false;
+		unsigned int freq=2000000; // 2MHz
 	};
 	State state;
 

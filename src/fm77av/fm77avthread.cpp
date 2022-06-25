@@ -208,25 +208,54 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 		std::cout << fm77av.vmAbortReason << std::endl;
 	}
 
-	if(0<fm77av.state.clockBalance)
+	if(true!=output.main.mute && true!=output.sub.mute)
 	{
-		std::cout << "Main CPU is ahead by " << fm77av.state.clockBalance << " clocks." << std::endl;
-	}
-	else if(fm77av.state.clockBalance<0)
-	{
-		std::cout << "Sub CPU is ahead by " << -fm77av.state.clockBalance << " clocks." << std::endl;
-	}
-	std::cout << "[Main CPU]" << std::endl;
-	for(auto str : fm77av.mainCPU.GetStatusText())
-	{
-		std::cout << str << std::endl;
-	}
-	std::cout << fm77av.mainCPU.WholeDisassembly(fm77av.mainMemAcc,fm77av.mainCPU.state.PC) << std::endl;
+		if(0<fm77av.state.timeBalance)
+		{
+			std::cout << "Main CPU is ahead by " << fm77av.state.timeBalance << " nanoseconds." << std::endl;
+		}
+		else if(fm77av.state.timeBalance<0)
+		{
+			std::cout << "Sub CPU is ahead by " << -fm77av.state.timeBalance << " nanoseconds." << std::endl;
+		}
+		std::cout << "[Main CPU]" << std::endl;
+		for(auto str : fm77av.mainCPU.GetStatusText())
+		{
+			std::cout << str << std::endl;
+		}
+		std::cout << fm77av.mainCPU.WholeDisassembly(fm77av.mainMemAcc,fm77av.mainCPU.state.PC) << std::endl;
 
-	std::cout << "[Sub CPU]" << std::endl;
-	for(auto str : fm77av.subCPU.GetStatusText())
-	{
-		std::cout << str << std::endl;
+		std::cout << "[Sub CPU]" << std::endl;
+		for(auto str : fm77av.subCPU.GetStatusText())
+		{
+			std::cout << str << std::endl;
+		}
+		std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
 	}
-	std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
+	else if(true!=output.main.mute)
+	{
+		if(output.main.lastPC!=fm77av.mainCPU.state.PC)
+		{
+			std::cout << "[Main CPU]" << std::endl;
+			for(auto str : fm77av.mainCPU.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
+			std::cout << fm77av.mainCPU.WholeDisassembly(fm77av.mainMemAcc,fm77av.mainCPU.state.PC) << std::endl;
+			output.main.lastPC=fm77av.mainCPU.state.PC;
+		}
+	}
+	else if(true!=output.sub.mute)
+	{
+		if(output.sub.lastPC!=fm77av.subCPU.state.PC)
+		{
+			std::cout << "[Sub CPU]" << std::endl;
+			for(auto str : fm77av.subCPU.GetStatusText())
+			{
+				std::cout << str << std::endl;
+			}
+			std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
+			output.sub.lastPC=fm77av.subCPU.state.PC;
+		}
+	}
 }

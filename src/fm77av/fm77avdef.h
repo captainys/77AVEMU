@@ -8,6 +8,14 @@
 
 enum
 {
+	SCALE_NANO=1000000000,
+
+	FM77AVTIME_NANOSEC=1,
+	FM77AVTIME_MICROSEC=1000,
+	FM77AVTIME_MILLISEC=1000000,
+};
+enum
+{
 	MACHINETYPE_UNKNOWN,
 	MACHINETYPE_FM7,
 	MACHINETYPE_FM77AV,
@@ -16,6 +24,15 @@ enum
 std::string MachineTypeToStr(unsigned int machineType);
 unsigned int StrToMachineType(std::string str);
 
+
+enum
+{
+	CPU_MAIN,     // Keep CPU_MAIN=0
+	CPU_SUB,      // Keep CPU_SUB=1
+	CPU_UNKNOWN,
+};
+std::string CPUToStr(unsigned int cpuMainOrSub);
+unsigned int StrToCPU(std::string str);
 
 
 enum

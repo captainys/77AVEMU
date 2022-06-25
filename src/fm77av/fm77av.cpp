@@ -68,42 +68,66 @@ void FM77AV::Reset(void)
 }
 unsigned int FM77AV::RunOneInstruction(void)
 {
+	unsigned int clocksPassed=0;
+	uint64_t nanosec=0;
 	if(true==mainCPU.state.halt && true==subCPU.state.halt)
 	{
-		return 2; // 2 is the minimum clocks, which is the minimum time resolution.
+		clocksPassed=2; // 2 is the minimum clocks, which is the minimum time resolution.
+		nanosec=FM77AVTIME_MICROSEC;
+		state.timeBalance=0;
 	}
 	else if(true==subCPU.state.halt)
 	{
-		return mainCPU.RunOneInstruction(mainMemAcc);
+		clocksPassed=mainCPU.RunOneInstruction(mainMemAcc);
+
+		nanosec=clocksPassed;
+		nanosec*=SCALE_NANO;
+		nanosec/=mainCPU.state.freq;
+		state.timeBalance=0;
 	}
 	else if(true==mainCPU.state.halt)
 	{
-		return subCPU.RunOneInstruction(subMemAcc);
+		clocksPassed=subCPU.RunOneInstruction(subMemAcc);
+
+		nanosec=clocksPassed;
+		nanosec*=SCALE_NANO;
+		nanosec/=mainCPU.state.freq;
+		state.timeBalance=0;
 	}
 	else
 	{
 		unsigned int clocksPassed=0;
 
-		if(0==state.clockBalance)
+		if(0==state.timeBalance)
 		{
-			int mainCPUClk=mainCPU.RunOneInstruction(mainMemAcc);
-			int subCPUClk=subCPU.RunOneInstruction(subMemAcc);
-			state.clockBalance=mainCPUClk-subCPUClk;
-			return std::max(mainCPUClk,subCPUClk);
-		}
-		else if(0<state.clockBalance) // Main CPU ahead
-		{
-			state.clockBalance-=subCPU.RunOneInstruction(subMemAcc);
-			return (0<state.clockBalance ? 0 : -state.clockBalance);
-		}
-		else // if(state.clockBalance<0) // Sub CPU ahead
-		{
-			state.clockBalance+=mainCPU.RunOneInstruction(mainMemAcc);
-			return (state.clockBalance<0 ? 0 : state.clockBalance);
-		}
+			int64_t mainCPUClk=mainCPU.RunOneInstruction(mainMemAcc);
+			int64_t subCPUClk=subCPU.RunOneInstruction(subMemAcc);
 
-		return clocksPassed;
+			int64_t mainCPUTime=(mainCPUClk*SCALE_NANO)/mainCPU.state.freq;
+			int64_t subCPUTime=(subCPUClk*SCALE_NANO)/subCPU.state.freq;
+
+			state.timeBalance=mainCPUTime-subCPUTime;
+			nanosec=std::max(mainCPUTime,subCPUTime);
+		}
+		else if(0<state.timeBalance) // Main CPU ahead
+		{
+			int64_t subCPUClk=subCPU.RunOneInstruction(subMemAcc);
+			int64_t subCPUTime=(subCPUClk*SCALE_NANO)/subCPU.state.freq;
+			state.timeBalance-=subCPUTime;
+			nanosec=(0<state.timeBalance ? 0 : -state.timeBalance);
+		}
+		else // if(state.timeBalance<0) // Sub CPU ahead
+		{
+			int64_t mainCPUClk=mainCPU.RunOneInstruction(mainMemAcc);
+			int64_t mainCPUTime=(mainCPUClk*SCALE_NANO)/mainCPU.state.freq;
+			state.timeBalance+=mainCPUTime;
+			nanosec=(state.timeBalance<0 ? 0 : state.timeBalance);
+		}
 	}
+
+	state.fm77avTime+=nanosec;
+
+	return nanosec;
 }
 
 std::string FM77AV::MachineTypeStr(void) const
