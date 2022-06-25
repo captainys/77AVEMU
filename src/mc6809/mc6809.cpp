@@ -1707,11 +1707,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_JSR_DP: //    0x9D,
-		Abort("Instruction not supported yet.");
+		PushS16(mem,state.PC+inst.length);
+		state.PC=DecodeDirectPageAddress(inst);
 		inst.length=0;
 		break;
 	case INST_JSR_IDX: //   0xAD,
-		Abort("Instruction not supported yet.");
+		PushS16(mem,state.PC+inst.length);
+		state.PC=DecodeIndexedAddress(inst,mem);
 		inst.length=0;
 		break;
 	case INST_JSR_EXT: //   0xBD,
