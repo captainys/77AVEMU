@@ -1408,17 +1408,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_CMPS_IDX: //  0x2AC, // 11 AC
-		if(INDEX_POST_INC_1!=inst.indexType &&
-		   INDEX_POST_INC_2!=inst.indexType)
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.S;
-			SubWord(reg,value);
-		}
-		else
-		{
-			auto reg=state.S;
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
 			SubWord(reg,value);
 		}
 		break;
@@ -1440,17 +1432,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_CMPU_IDX: //  0x2A3, // 11 A3
-		if(INDEX_POST_INC_1!=inst.indexType &&
-		   INDEX_POST_INC_2!=inst.indexType)
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.U;
-			SubWord(reg,value);
-		}
-		else
-		{
-			auto reg=state.U;
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
 			SubWord(reg,value);
 		}
 		break;
@@ -1489,17 +1473,22 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		//				STA		$1FFF
 		//				STX		$1FFC
 		//				RTS
-		if(INDEX_POST_INC_1!=inst.indexType &&
-		   INDEX_POST_INC_2!=inst.indexType)
+
+		//; 0 is written to $1FFF
+		//				ORG		$2000
+		//				FDB		$2000
+		//				CLRA
+		//				LDX		#$2000
+		//				CMPX	,X++
+		//				BEQ		EQ
+		//				STA		$1FFF	; A=0 Comes to this line.  Comparison is done after post-incrementation.
+		//				RTS
+		//EQ				COMA
+		//				STA		$1FFF	; A=FF
+		//				RTS
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.X;
-			SubWord(reg,value);
-		}
-		else
-		{
-			auto reg=state.X;
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
 			SubWord(reg,value);
 		}
 		break;
@@ -1521,17 +1510,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_CMPY_IDX: //  0x1AC, // 10 AC
-		if(INDEX_POST_INC_1!=inst.indexType &&
-		   INDEX_POST_INC_2!=inst.indexType)
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.Y;
-			SubWord(reg,value);
-		}
-		else
-		{
-			auto reg=state.Y;
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem));
 			SubWord(reg,value);
 		}
 		break;
@@ -1836,6 +1817,17 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		//				LDA		#$00
 		//				STA		$1FFF
 		//				RTS
+		//; The following code wrote 100 to $1ffC and $1FFE.
+		//; Even with post-incrementation, the value is what read from the memory.
+		//					ORG		$2000
+		//					FDB		100
+		//					LDU		#$2000
+		//					LDU		,U++
+		//					STU		$1FFC
+		//					LDU		#$2002
+		//					LDU		,--U
+		//					STU		$1FFE
+		//					RTS
 		state.X=mem.FetchWord(DecodeIndexedAddress(inst,mem));
 		Test16(state.X);
 		break;
@@ -2282,10 +2274,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.D);
 		break;
 	case INST_STD_IDX: //   0xED,
-		// Question:
-		//   If, STX ,X++ is done, should the flags be set based on the value written?
-		//   Or the value of X after the post-incrementation?
-		//   Need experiment on actual hardware.
 		WriteToIndex16(mem,inst,state.D);
 		Test16(state.D);
 		break;
@@ -2299,8 +2287,30 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.S);
 		break;
 	case INST_STS_IDX: //   0x1EF, // 10 EF
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		// Question:
+		//   If, STX ,X++ is done, should the flags be set based on the value written?
+		//   Or the value of X after the post-incrementation?
+		//   Need experiment on actual hardware.
+		// Answer:
+		//   Most likely the value of X written to the data bus.
+		//   Also, even post-inc, the value written is after incrementation.
+		// ; This code writes:
+		// ;   $20 $20 to $1FFE
+		// ;   $1F $FC to $1FFC
+		// ; Regardless of pre-decrementation or post-incrementation,
+		// ; the value stored is after the pre-dec or post-inc.
+		// 
+		// 				ORG		$2000
+		// 				LDX		#$1FFE
+		// 				STX		,X++
+		// 				LDX		#$1FFE
+		// 				STX		,--X
+		// 				RTS
+		{
+			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
+			mem.StoreWord(addr,state.S);
+			Test16(state.S);
+		}
 		break;
 	case INST_STS_EXT: //   0x1FF, // 10 FF
 		mem.StoreWord(inst.ExtendedAddress(),state.S);
@@ -2312,8 +2322,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.U);
 		break;
 	case INST_STU_IDX: //   0xEF,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
+			mem.StoreWord(addr,state.U);
+			Test16(state.U);
+		}
 		break;
 	case INST_STU_EXT: //   0xFF,
 		mem.StoreWord(inst.ExtendedAddress(),state.U);
@@ -2326,9 +2339,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_STX_IDX: //   0xAF,
 		{
-			auto X=state.X; // Value of X may change due to auto inc/dec
-			WriteToIndex16(mem,inst,X);
-			Test16(X);
+			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
+			mem.StoreWord(addr,state.X);
+			Test16(state.X);
 		}
 		break;
 	case INST_STX_EXT: //   0xBF,
@@ -2341,8 +2354,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.Y);
 		break;
 	case INST_STY_IDX: //   0x1AF,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
+			mem.StoreWord(addr,state.Y);
+			Test16(state.Y);
+		}
 		break;
 	case INST_STY_EXT: //   0x1BF,
 		mem.StoreWord(inst.ExtendedAddress(),state.Y);
