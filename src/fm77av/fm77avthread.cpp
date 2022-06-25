@@ -133,7 +133,7 @@ PrintStatus(*fm77avPtr);
 			//fm77avPtr->eventLog.Interval(*fm77avPtr);
 			if(true==fm77avPtr->CheckAbort())//  || outside_world->PauseKeyPressed())
 			{
-				PrintStatus(*fm77avPtr);
+				PrintStatus(*fm77avPtr,false,false); // In case of Abort, disregard mute flags.
 				std::cout << ">";
 				runMode=RUNMODE_PAUSE;
 			}
@@ -216,6 +216,10 @@ void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,
 }
 void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 {
+	PrintStatus(fm77av,output.main.mute,output.sub.mute);
+}
+void FM77AVThread::PrintStatus(FM77AV &fm77av,bool muteMain,bool muteSub) const
+{
 	if(true==fm77av.CheckAbort())
 	{
 		std::cout << "Abort" << std::endl;
@@ -223,7 +227,7 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 		std::cout << fm77av.vmAbortReason << std::endl;
 	}
 
-	if(true!=output.main.mute && true!=output.sub.mute)
+	if(true!=muteMain && true!=muteSub)
 	{
 		if(0<fm77av.state.timeBalance)
 		{
@@ -247,7 +251,7 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 		}
 		std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
 	}
-	else if(true!=output.main.mute)
+	else if(true!=muteMain)
 	{
 		if(output.main.lastPC!=fm77av.mainCPU.state.PC)
 		{
@@ -255,15 +259,14 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 			output.main.lastPC=fm77av.mainCPU.state.PC;
 		}
 	}
-	else if(true!=output.sub.mute)
+	else if(true!=muteSub)
 	{
 		if(output.sub.lastPC!=fm77av.subCPU.state.PC)
 		{
 			PrintCPUState(fm77av.subCPU,fm77av.subMemAcc,CPU_SUB);
 			output.sub.lastPC=fm77av.subCPU.state.PC;
 		}
-	}
-}
+	}}
 void FM77AVThread::PrintCPUState(MC6809 &cpu,MemoryAccess &mem,unsigned int mainOrSub) const
 {
 	std::cout << '[' << CPUToStr(mainOrSub) << " CPU]" << std::endl;

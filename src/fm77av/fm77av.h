@@ -62,6 +62,8 @@ public:
 	public:
 		SystemState main,sub;
 
+		bool subSysBusy;
+
 		unsigned int machineType=MACHINETYPE_FM7;
 		uint64_t fm77avTime=0;
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.

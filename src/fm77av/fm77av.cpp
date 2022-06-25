@@ -82,6 +82,7 @@ void FM77AV::Reset(void)
 		subCPU.state.PC=0xE000;
 		break;
 	}
+	state.subSysBusy=true; // Busy on reset.
 }
 unsigned int FM77AV::RunOneInstruction(void)
 {

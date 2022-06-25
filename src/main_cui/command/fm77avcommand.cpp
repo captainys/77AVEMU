@@ -39,7 +39,7 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "MUTE M|S" << std::endl;
 	std::cout << "UNMUTE M|S" << std::endl;
 	std::cout << "  Mute/Unmute state output of main/sub CPU." << std::endl;
-	std::cout << "  If no parameter is given to UNMUTE, unmutes both CPUs." << std::endl;
+	std::cout << "  If no parameter is given, mute/unmutes both CPUs." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -134,7 +134,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_MUTE:
 		if(cmd.argv.size()<2)
 		{
-			Error_TooFewArgs(cmd);
+			thr.output.main.mute=true;
+			thr.output.sub.mute=true;
+			std::cout << "Muted Main and Sub CPU" << std::endl;
 		}
 		else
 		{

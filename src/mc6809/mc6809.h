@@ -612,9 +612,12 @@ public:
 	virtual const char *DeviceName(void) const{return "MC6809";}
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
+	uint8_t AND(uint8_t a,uint8_t b);
+	uint8_t INC(uint8_t data);
 	uint8_t DEC(uint8_t data);
 	uint8_t LSL(uint8_t data);
 	uint8_t LSR(uint8_t data);
+	uint8_t OR(uint8_t a,uint8_t b);
 	uint8_t NEG(uint8_t data);
 	uint8_t ROL(uint8_t data);
 	uint8_t ROR(uint8_t data);
@@ -674,6 +677,13 @@ public:
 
 	std::vector <std::string> GetStatusText(void) const;
 
+	inline void RaiseHF(bool cond)
+	{
+		if(cond)
+		{
+			state.CC|=HF;
+		}
+	}
 	inline void RaiseVF(bool cond)
 	{
 		if(cond)
