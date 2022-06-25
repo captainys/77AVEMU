@@ -557,6 +557,7 @@ public:
 	uint8_t DEC(uint8_t data);
 	uint8_t LSL(uint8_t data);
 	uint8_t LSR(uint8_t data);
+	uint8_t NEG(uint8_t data);
 	uint8_t ROL(uint8_t data);
 	uint8_t ROR(uint8_t data);
 
