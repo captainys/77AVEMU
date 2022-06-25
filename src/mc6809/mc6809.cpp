@@ -2011,42 +2011,42 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_PSHU_REG: //	0x36,
 		if(0!=(inst.operand[0]&PSH_PC))
 		{
-			PushS16(mem,state.PC);
+			PushU16(mem,state.PC);
 			inst.clocks+=2;
 		}
 		if(0!=(inst.operand[0]&PSH_UorS))
 		{
-			PushS16(mem,state.S);
+			PushU16(mem,state.S);
 			inst.clocks+=2;
 		}
 		if(0!=(inst.operand[0]&PSH_Y))
 		{
-			PushS16(mem,state.Y);
+			PushU16(mem,state.Y);
 			inst.clocks+=2;
 		}
 		if(0!=(inst.operand[0]&PSH_X))
 		{
-			PushS16(mem,state.X);
+			PushU16(mem,state.X);
 			inst.clocks+=2;
 		}
 		if(0!=(inst.operand[0]&PSH_DP))
 		{
-			PushS8(mem,state.DP);
+			PushU8(mem,state.DP);
 			++inst.clocks;
 		}
 		if(0!=(inst.operand[0]&PSH_B))
 		{
-			PushS8(mem,state.B());
+			PushU8(mem,state.B());
 			++inst.clocks;
 		}
 		if(0!=(inst.operand[0]&PSH_A))
 		{
-			PushS8(mem,state.A());
+			PushU8(mem,state.A());
 			++inst.clocks;
 		}
 		if(0!=(inst.operand[0]&PSH_CC))
 		{
-			PushS8(mem,state.CC);
+			PushU8(mem,state.CC);
 			++inst.clocks;
 		}
 		break;
@@ -2784,6 +2784,27 @@ uint8_t MC6809::PullS8(MemoryAccess &mem)
 {
 	return mem.FetchByte(state.S++);
 }
+
+void MC6809::PushU16(MemoryAccess &mem,uint16_t value)
+{
+	state.U-=2;
+	mem.StoreWord(state.U,value);
+}
+void MC6809::PushU8(MemoryAccess &mem,uint8_t value)
+{
+	mem.StoreByte(--state.U,value);
+}
+uint16_t MC6809::PullU16(MemoryAccess &mem)
+{
+	auto U=state.U;
+	state.U+=2;
+	return mem.FetchWord(U);
+}
+uint8_t MC6809::PullU8(MemoryAccess &mem)
+{
+	return mem.FetchByte(state.U++);
+}
+
 void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
 {
 	uint16_t addr=DecodeIndexedAddress(inst,mem);

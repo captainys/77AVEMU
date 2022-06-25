@@ -14,6 +14,12 @@ void FM77AVCUIThread::Run(void)
 		uiLock.lock();
 		cmdQueue.push(cmd);
 		uiLock.unlock();
+
+		auto CMD=Interpret(cmd);
+		if(CMD_QUIT==CMD.primaryCmd || CMD_FORCE_QUIT==CMD.primaryCmd)
+		{
+			break;
+		}
 	}
 }
 

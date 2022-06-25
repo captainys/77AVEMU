@@ -30,6 +30,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Run." << std::endl;
 	std::cout << "RUN M:addr/S:addr" << std::endl;
 	std::cout << "  Run to specified address." << std::endl;
+	std::cout << "RUN M:addr/S:addr addr" << std::endl;
+	std::cout << "  Run to specified address range (RUN S:0000 DFFF)." << std::endl;
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
@@ -182,7 +184,24 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 
 void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
 {
-	if(1<cmd.argv.size())
+	if(3<=cmd.argv.size())
+	{
+		unsigned int cpu;
+		uint16_t startAddr,endAddr;
+		if(true==DecomposeCPUandAddress(cpu,startAddr,cmd.argv[1]))
+		{
+			endAddr=cpputil::Xtoi(cmd.argv[1].data());
+			fm77av.CPU(cpu).debugger.SetOneTimeBreakPoint(startAddr,endAddr);
+			fm77av.mainCPU.debugger.ClearStopFlag();
+			fm77av.subCPU.debugger.ClearStopFlag();
+			thr.SetRunMode(FM77AVThread::RUNMODE_RUN);
+		}
+		else
+		{
+			Error_CPUOrAddress(cmd);
+		}
+	}
+	else if(2<=cmd.argv.size())
 	{
 		unsigned int cpu;
 		uint16_t addr;
