@@ -28,12 +28,14 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Quit." << std::endl;
 	std::cout << "RUN" << std::endl;
 	std::cout << "  Run." << std::endl;
+	std::cout << "RUN M:addr/S:addr" << std::endl;
+	std::cout << "  Run to specified address." << std::endl;
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
 	std::cout << "  Pause VM." << std::endl;
-	std::cout << "MUTE MAIN|SUB" << std::endl;
-	std::cout << "UNMUTE MAIN|SUB" << std::endl;
+	std::cout << "MUTE M|S" << std::endl;
+	std::cout << "UNMUTE M|S" << std::endl;
 	std::cout << "  Mute/Unmute state output of main/sub CPU." << std::endl;
 	std::cout << "  If no parameter is given to UNMUTE, unmutes both CPUs." << std::endl;
 }
@@ -74,6 +76,31 @@ void FM77AVCommandInterpreter::Error_UnknownCPU(const Command &cmd)
 	std::cout << "Unknown CPU." << std::endl;
 	Error_Common(cmd);
 }
+void FM77AVCommandInterpreter::Error_CPUOrAddress(const Command &cmd)
+{
+	std::cout << "Error in CPU or Address." << std::endl;
+	Error_Common(cmd);
+}
+
+/* static */ bool FM77AVCommandInterpreter::DecomposeCPUandAddress(unsigned int &cpu,uint16_t &addr,std::string arg)
+{
+	std::string cpuStr;
+	for(int i=0; i<arg.size(); ++i)
+	{
+		if(':'==arg[i])
+		{
+			std::string addrStr=arg.substr(i+1);
+			cpu=StrToCPU(cpuStr);
+			addr=cpputil::Xtoi(addrStr.data());
+			return true;
+		}
+		else
+		{
+			cpuStr.push_back(arg[i]);
+		}
+	}
+	return false;
+}
 
 void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
 {
@@ -93,18 +120,7 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		exit(0);
 		break;
 	case CMD_RUN:
-		fm77av.mainCPU.debugger.ClearStopFlag();
-		fm77av.subCPU.debugger.ClearStopFlag();
-		thr.SetRunMode(FM77AVThread::RUNMODE_RUN);
-		// if(1<cmd.argv.size())
-		//{
-		//	auto farPtr=cmdutil::MakeFarPointer(cmd.argv[1],FM77AV.cpu);
-		//	if(farPtr.SEG==i486DX::FarPointer::NO_SEG)
-		//	{
-		//		farPtr.SEG=FM77AV.cpu.state.CS().value;
-		//	}
-		//	FM77AV.debugger.oneTimeBreakPoint=farPtr;
-		//}
+		Execute_Run(thr,fm77av,outside_world,cmd);
 		break;
 	case CMD_PAUSE:
 		thr.SetRunMode(FM77AVThread::RUNMODE_PAUSE);
@@ -139,8 +155,8 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_UNMUTE:
 		if(cmd.argv.size()<2)
 		{
-			thr.output.main.mute=true;
-			thr.output.sub.mute=true;
+			thr.output.main.mute=false;
+			thr.output.sub.mute=false;
 			std::cout << "Unmuted Main and Sub CPU" << std::endl;
 		}
 		else
@@ -161,5 +177,31 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			}
 		}
 		break;
+	}
+}
+
+void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	if(1<cmd.argv.size())
+	{
+		unsigned int cpu;
+		uint16_t addr;
+		if(true==DecomposeCPUandAddress(cpu,addr,cmd.argv[1]))
+		{
+			fm77av.CPU(cpu).debugger.SetOneTimeBreakPoint(addr,addr);
+			fm77av.mainCPU.debugger.ClearStopFlag();
+			fm77av.subCPU.debugger.ClearStopFlag();
+			thr.SetRunMode(FM77AVThread::RUNMODE_RUN);
+		}
+		else
+		{
+			Error_CPUOrAddress(cmd);
+		}
+	}
+	else
+	{
+		fm77av.mainCPU.debugger.ClearStopFlag();
+		fm77av.subCPU.debugger.ClearStopFlag();
+		thr.SetRunMode(FM77AVThread::RUNMODE_RUN);
 	}
 }

@@ -71,35 +71,50 @@ PrintStatus(*fm77avPtr);
 					//fm77avPtr->state.fm77avTime+=payBack;
 					//timeDeficit-=payBack;
 
-					if(true==fm77avPtr->mainCPU.debugger.stop ||
-					   true==fm77avPtr->subCPU.debugger.stop)
+					bool shouldBreak=false;
+					for(int cpuId=0; cpuId<2; ++cpuId)
 					{
-						// if(fm77avPtr->cpu.state.CS().value==fm77avPtr->var.powerOffAt.SEG &&
-						//    fm77avPtr->cpu.state.EIP==fm77avPtr->var.powerOffAt.OFFSET)
-						// {
-						// 	std::cout << "Break at the power-off point." << std::endl;
-						// 	std::cout << "Normal termination of a unit testing." << std::endl;
-						// 	fm77avPtr->var.powerOff=true;
-						// 	break;
-						// }
-						//if(true!=fm77avPtr->debugger.lastBreakPointInfo.ShouldBreak())
-						//{
-						//	if(0!=(fm77avPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
-						//	   0==(fm77avPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
-						//	{
-						//		std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-						//		PrintStatus(*fm77avPtr);
-						//	}
-						//	fm77avPtr->debugger.ClearStopFlag();
-						//	this->SetRunMode(RUNMODE_RUN);
-						//}
-						//else
-						//{
-						//	std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-						//	PrintStatus(*fm77avPtr);
-						//	std::cout << ">";
-						//	runMode=RUNMODE_PAUSE;
-						//}
+						auto &cpu=fm77avPtr->CPU(cpuId);
+						auto &mem=fm77avPtr->MemAccess(cpuId);
+						if(true==cpu.debugger.enabled)
+						{
+							if(true==cpu.debugger.stop)
+							{
+								// if(fm77avPtr->cpu.state.CS().value==fm77avPtr->var.powerOffAt.SEG &&
+								//    fm77avPtr->cpu.state.EIP==fm77avPtr->var.powerOffAt.OFFSET)
+								// {
+								// 	std::cout << "Break at the power-off point." << std::endl;
+								// 	std::cout << "Normal termination of a unit testing." << std::endl;
+								// 	fm77avPtr->var.powerOff=true;
+								// 	break;
+								// }
+								//if(true!=fm77avPtr->debugger.lastBreakPointInfo.ShouldBreak())
+								//{
+								//	if(0!=(fm77avPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
+								//	   0==(fm77avPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
+								//	{
+								//		std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
+								//		PrintStatus(*fm77avPtr);
+								//	}
+								//	fm77avPtr->debugger.ClearStopFlag();
+								//	this->SetRunMode(RUNMODE_RUN);
+								//}
+								//else
+								//{
+								// std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
+								PrintCPUState(cpu,mem,cpuId);
+								std::cout << ">";
+								runMode=RUNMODE_PAUSE;
+								shouldBreak=true;
+							}
+							else if(true==cpu.debugger.PollMonitorPoint())
+							{
+								PrintCPUState(cpu,mem,cpuId);
+							}
+						}
+					}
+					if(true==shouldBreak)
+					{
 						break;
 					}
 				}
@@ -236,12 +251,7 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 	{
 		if(output.main.lastPC!=fm77av.mainCPU.state.PC)
 		{
-			std::cout << "[Main CPU]" << std::endl;
-			for(auto str : fm77av.mainCPU.GetStatusText())
-			{
-				std::cout << str << std::endl;
-			}
-			std::cout << fm77av.mainCPU.WholeDisassembly(fm77av.mainMemAcc,fm77av.mainCPU.state.PC) << std::endl;
+			PrintCPUState(fm77av.mainCPU,fm77av.mainMemAcc,CPU_MAIN);
 			output.main.lastPC=fm77av.mainCPU.state.PC;
 		}
 	}
@@ -249,13 +259,17 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 	{
 		if(output.sub.lastPC!=fm77av.subCPU.state.PC)
 		{
-			std::cout << "[Sub CPU]" << std::endl;
-			for(auto str : fm77av.subCPU.GetStatusText())
-			{
-				std::cout << str << std::endl;
-			}
-			std::cout << fm77av.subCPU.WholeDisassembly(fm77av.subMemAcc,fm77av.subCPU.state.PC) << std::endl;
+			PrintCPUState(fm77av.subCPU,fm77av.subMemAcc,CPU_SUB);
 			output.sub.lastPC=fm77av.subCPU.state.PC;
 		}
 	}
+}
+void FM77AVThread::PrintCPUState(MC6809 &cpu,MemoryAccess &mem,unsigned int mainOrSub) const
+{
+	std::cout << '[' << CPUToStr(mainOrSub) << " CPU]" << std::endl;
+	for(auto str : cpu.GetStatusText())
+	{
+		std::cout << str << std::endl;
+	}
+	std::cout << cpu.WholeDisassembly(mem,cpu.state.PC) << std::endl;
 }

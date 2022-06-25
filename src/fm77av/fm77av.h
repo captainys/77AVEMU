@@ -90,6 +90,9 @@ public:
 
 	bool LoadROMFiles(std::string ROMPath);
 
+	MC6809 &CPU(unsigned int mainOrSub);
+	MemoryAccess &MemAccess(unsigned int mainOrSub);
+
 	void PowerOn(void);
 	void Reset(void);
 	unsigned int RunOneInstruction(void);

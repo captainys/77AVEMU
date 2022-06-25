@@ -47,11 +47,11 @@ std::string CPUToStr(unsigned int cpuMainOrSub)
 unsigned int StrToCPU(std::string str)
 {
 	cpputil::Capitalize(str);
-	if("MAIN"==str)
+	if("MAIN"==str || "M"==str)
 	{
 		return CPU_MAIN;
 	}
-	else if("SUB"==str)
+	else if("SUB"==str || "S"==str)
 	{
 		return CPU_SUB;
 	}

@@ -573,13 +573,14 @@ public:
 		{
 		public:
 			unsigned char flags=0;
-			unsigned int passCount=0;
+			unsigned int passed=0,passCount=0;
 		};
 
-		bool enabled=false;
+		bool enabled=true;
 		bool stop=false;
 		bool hitMonitorPoint=false;
 
+		BreakPoint lastBreakPointInfo;
 		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
 		BreakPoint oneTimeBreakPoints[MEMORY_ADDRESS_SIZE];
 
@@ -591,7 +592,7 @@ public:
 		void ClearOneTimeBreakPoint(uint16_t addrStart=0,uint16_t addrEnd=MEMORY_ADDRESS_SIZE-1);
 		void CheckBreakCondition(const MC6809 &cpu,const class MemoryAccess &mem);
 
-		inline bool OnMonitorPoint(void)
+		inline bool PollMonitorPoint(void)
 		{
 			auto flag=hitMonitorPoint;
 			hitMonitorPoint=false;

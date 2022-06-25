@@ -48,13 +48,17 @@ public:
 	void Error_Common(const Command &cmd);
 	void Error_TooFewArgs(const Command &cmd);
 	void Error_UnknownCPU(const Command &cmd);
+	void Error_CPUOrAddress(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
+
+	static bool DecomposeCPUandAddress(unsigned int &cpu,uint16_t &addr,std::string arg);
 
 	/*! Executes a command.
 	    VM must be locked before calling.
 	*/
 	void Execute(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
+	void Execute_Run(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 };
 
 /* } */

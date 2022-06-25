@@ -7,30 +7,32 @@ void MC6809::Debugger::ClearStopFlag(void)
 
 void MC6809::Debugger::SetBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount,unsigned char flags)
 {
-	for(auto addr=addrStart; addr<addrEnd; ++addr)
+	for(auto addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		breakPoints[addr].flags=flags;
+		breakPoints[addr].passed=0;
 		breakPoints[addr].passCount=passCount;
 	}
 }
 void MC6809::Debugger::ClearBreakPoint(uint16_t addrStart,uint16_t addrEnd)
 {
-	for(auto addr=addrStart; addr<addrEnd; ++addr)
+	for(auto addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		breakPoints[addr].flags=0;
 	}
 }
 void MC6809::Debugger::SetOneTimeBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount,unsigned char flags)
 {
-	for(auto addr=addrStart; addr<addrEnd; ++addr)
+	for(auto addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		oneTimeBreakPoints[addr].flags=flags;
+		oneTimeBreakPoints[addr].passed=0;
 		oneTimeBreakPoints[addr].passCount=passCount;
 	}
 }
 void MC6809::Debugger::ClearOneTimeBreakPoint(uint16_t addrStart,uint16_t addrEnd)
 {
-	for(auto addr=addrStart; addr<addrEnd; ++addr)
+	for(auto addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		oneTimeBreakPoints[addr].flags=0;
 	}
@@ -40,9 +42,10 @@ void MC6809::Debugger::CheckBreakCondition(const MC6809 &cpu,const MemoryAccess 
 {
 	if(0!=breakPoints[cpu.state.PC].flags)
 	{
-		if(1<breakPoints[cpu.state.PC].passCount)
+		++breakPoints[cpu.state.PC].passed;
+		lastBreakPointInfo=breakPoints[cpu.state.PC];
+		if(breakPoints[cpu.state.PC].passed<breakPoints[cpu.state.PC].passCount)
 		{
-			--breakPoints[cpu.state.PC].passCount;
 			if(0==(breakPoints[cpu.state.PC].flags&BRKPNT_FLAG_SILENT_UNTIL_BREAK))
 			{
 				hitMonitorPoint=true;
@@ -59,9 +62,10 @@ void MC6809::Debugger::CheckBreakCondition(const MC6809 &cpu,const MemoryAccess 
 	}
 	if(0!=oneTimeBreakPoints[cpu.state.PC].flags)
 	{
-		if(1<oneTimeBreakPoints[cpu.state.PC].passCount)
+		++oneTimeBreakPoints[cpu.state.PC].passed;
+		lastBreakPointInfo=oneTimeBreakPoints[cpu.state.PC];
+		if(oneTimeBreakPoints[cpu.state.PC].passed<oneTimeBreakPoints[cpu.state.PC].passCount)
 		{
-			--oneTimeBreakPoints[cpu.state.PC].passCount;
 			if(0==(oneTimeBreakPoints[cpu.state.PC].flags&BRKPNT_FLAG_SILENT_UNTIL_BREAK))
 			{
 				hitMonitorPoint=true;

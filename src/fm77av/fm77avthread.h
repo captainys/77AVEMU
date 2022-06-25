@@ -67,6 +67,7 @@ private:
 
 public:
 	void PrintStatus(FM77AV &fm77av) const;
+	void PrintCPUState(MC6809 &cpu,MemoryAccess &mem,unsigned int mainOrSub) const;
 };
 
 /* } */

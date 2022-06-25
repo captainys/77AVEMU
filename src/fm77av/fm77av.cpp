@@ -45,6 +45,23 @@ bool FM77AV::LoadROMFiles(std::string ROMPath)
 	return physMem.LoadROMFiles(ROMPath);
 }
 
+MC6809 &FM77AV::CPU(unsigned int mainOrSub)
+{
+	if(CPU_SUB==mainOrSub)
+	{
+		return subCPU;
+	}
+	return mainCPU;
+}
+MemoryAccess &FM77AV::MemAccess(unsigned int mainOrSub)
+{
+	if(CPU_SUB==mainOrSub)
+	{
+		return subMemAcc;
+	}
+	return mainMemAcc;
+}
+
 void FM77AV::PowerOn(void)
 {
 	Reset();
