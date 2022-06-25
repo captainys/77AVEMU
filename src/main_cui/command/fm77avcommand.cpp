@@ -11,6 +11,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["QUIT"]=CMD_QUIT;
 	primaryCmdMap["Q"]=CMD_QUIT;
 	primaryCmdMap["FORCEQUIT"]=CMD_FORCE_QUIT;
+	primaryCmdMap["R"]=CMD_RUN;
 	primaryCmdMap["RUN"]=CMD_RUN;
 	primaryCmdMap["PAUSE"]=CMD_PAUSE;
 	primaryCmdMap["PAU"]=CMD_PAUSE;

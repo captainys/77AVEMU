@@ -60,6 +60,8 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 				auto nextTimeSync=fm77avPtr->state.fm77avTime+NANOSECONDS_PER_TIME_SYNC;
 				while(fm77avPtr->state.fm77avTime<nextTimeSync && true!=fm77avPtr->CheckAbort())
 				{
+PrintStatus(*fm77avPtr);
+
 					fm77avPtr->RunOneInstruction();
 					// fm77avPtr->ProcessIRQ(fm77avPtr->cpu,fm77avPtr->mem);
 					// fm77avPtr->RunFastDevicePolling();
@@ -100,12 +102,6 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 						//}
 						break;
 					}
-
-
-					// For the time being, stop after every step. >>
-					runMode=RUNMODE_PAUSE;
-					break;
-					// For the time being, stop after every step. <<
 				}
 			}
 			// fm77avPtr->ProcessSound(outside_world);
@@ -120,12 +116,12 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			//	fm77avPtr->state.nextDevicePollingTime=fm77avPtr->state.fm77avTime+FMfm77av::DEVICE_POLLING_INTERVAL;
 			//}
 			//fm77avPtr->eventLog.Interval(*fm77avPtr);
-			//if(true==fm77avPtr->CheckAbort() || outside_world->PauseKeyPressed())
-			//{
-			//	PrintStatus(*fm77avPtr);
-			//	std::cout << ">";
-			//	runMode=RUNMODE_PAUSE;
-			//}
+			if(true==fm77avPtr->CheckAbort())//  || outside_world->PauseKeyPressed())
+			{
+				PrintStatus(*fm77avPtr);
+				std::cout << ">";
+				runMode=RUNMODE_PAUSE;
+			}
 			break;
 		case RUNMODE_ONE_INSTRUCTION:
 			if(true!=fm77avPtr->CheckAbort())
