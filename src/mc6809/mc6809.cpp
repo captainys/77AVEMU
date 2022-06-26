@@ -1645,8 +1645,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_COM_EXT: //   0x73,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto addr=inst.ExtendedAddress();
+			auto reg=~mem.FetchByte(addr);
+			Test8(reg);
+			state.CC|=CF;
+			mem.StoreByte(addr,reg);
+		}
 		break;
 
 	case INST_CWAI_IMM: //  0x3C,

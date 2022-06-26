@@ -78,6 +78,7 @@ public:
 		bool justLoadedState=false;
 		bool monitorIOReadMain[256],monitorIOReadSub[256];
 		bool monitorIOWriteMain[256],monitorIOWriteSub[256];
+		bool monitorSubSysCmd=false;
 		
 	};
 	Variable var;
@@ -115,6 +116,7 @@ public:
 	unsigned int RunOneInstruction(void);
 
 	std::string MachineTypeStr(void) const;
+	void PrintSubSystemCommand(void) const;
 };
 
 /* } */

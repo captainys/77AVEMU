@@ -162,3 +162,99 @@ std::string FM77AV::MachineTypeStr(void) const
 {
 	return ::MachineTypeToStr(state.machineType);
 }
+
+void FM77AV::PrintSubSystemCommand(void) const
+{
+	std::cout << "SubSysCmd($FC80):";
+	for(int i=0; i<8; ++i)
+	{
+		std::cout << cpputil::Ubtox(physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+i]) << " ";
+	}
+	if(0x80!=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN])
+	{
+		switch(physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+2])
+		{
+		case FM7_SUBCMD_INKEY://                 0x29,
+			break;
+		case FM7_SUBCMD_DEFINE_PFKEY://          0x2A,
+			break;
+		case FM7_SUBCMD_GET_PFKEY_STR://         0x2B,
+			break;
+		case FM7_SUBCMD_INT_CTRL://              0x2C,
+			break;
+		case FM7_SUBCMD_SET_TIMER://             0x3D,
+			break;
+		case FM7_SUBCMD_READ_TIMER://            0x3E,
+			break;
+		case FM7_SUBCMD_TEST://                  0x3F,
+			break;
+		case FM7_SUBCMD_INIT://                  0x01,
+			break;
+		case FM7_SUBCMD_ERASE://                 0x02,
+			break;
+		case FM7_SUBCMD_PUT://                   0x03,
+			{
+				auto n=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+3];
+				for(int i=0; i<n; ++i)
+				{
+					auto chr=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+4+i];
+					if(0x20<=chr && chr<0x80)
+					{
+						std::cout << '\'' << chr << '\'';
+					}
+					else
+					{
+						std::cout << "($" << cpputil::Ubtox(chr) << ")";
+					}
+				}
+				std::cout << std::endl;
+			}
+			break;
+		case FM7_SUBCMD_GET://                   0x04,
+			break;
+		case FM7_SUBCMD_GETC://                  0x05,
+			break;
+		case FM7_SUBCMD_GET_CHAR_BLOCK1://       0x06,
+			break;
+		case FM7_SUBCMD_PUT_CHAR_BLOCK1://       0x07,
+			break;
+		case FM7_SUBCMD_GET_CHAR_BLOCK2://       0x08,
+			break;
+		case FM7_SUBCMD_PUT_CHAR_BLOCK2://       0x09,
+			break;
+		case FM7_SUBCMD_GET_BUFFER_ADDR://       0x0A,
+			break;
+		case FM7_SUBCMD_TABSET://                0x0B,
+			break;
+		case FM7_SUBCMD_CONSOLE_CONTROL://       0x0C,
+			break;
+		case FM7_SUBCMD_ERASE2://                0x0D,
+			break;
+		case FM7_SUBCMD_LINE://                  0x15,
+			break;
+		case FM7_SUBCMD_CHAIN://                 0x16,
+			break;
+		case FM7_SUBCMD_POINT://                 0x17,
+			break;
+		case FM7_SUBCMD_PAINT://                 0x18,
+			break;
+		case FM7_SUBCMD_SYMBOL://                0x19,
+			break;
+		case FM7_SUBCMD_CHANGE_COLOR://          0x1A,
+			break;
+		case FM7_SUBCMD_GET_BLOCK1://            0x1B,
+			break;
+		case FM7_SUBCMD_PUT_BLOCK1://            0x1C,
+			break;
+		case FM7_SUBCMD_GET_BLOCK2://            0x1D,
+			break;
+		case FM7_SUBCMD_PUT_BLOCK2://            0x1E,
+			break;
+		case FM7_SUBCMD_GCURSOR://               0x1F,
+			break;
+		case FM7_SUBCMD_CHAR_LINE://             0x20,
+			break;
+		}
+	}
+	std::cout << std::endl;
+}

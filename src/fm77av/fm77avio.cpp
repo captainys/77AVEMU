@@ -55,6 +55,10 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		else
 		{
+			if(true==state.subSysHalt && true==var.monitorSubSysCmd)
+			{
+				PrintSubSystemCommand();
+			}
 			state.subSysHalt=false;
 		}
 		break;

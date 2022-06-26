@@ -38,6 +38,7 @@ public:
 	enum
 	{
 		ENABLE_IOMONITOR,
+		ENABLE_SUBSYSCMD_MONITOR,
 	};
 
 	class Command

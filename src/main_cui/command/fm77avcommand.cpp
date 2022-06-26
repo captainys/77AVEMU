@@ -23,6 +23,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["DIS"]=CMD_DISABLE;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
+	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -57,6 +58,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  IO Monitor." << std::endl;
 	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
 	std::cout << "  Can specify multiple range by enabling IOMON multiple times." << std::endl;
+	std::cout << "SUBCMDMON" << std::endl;
+	std::cout << "  Monitor sub-system command when sub-CPU is unhalted." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -148,7 +151,7 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_PAUSE:
 		thr.SetRunMode(FM77AVThread::RUNMODE_PAUSE);
-		thr.PrintStatus(fm77av);
+		thr.PrintStatus(fm77av,false,false);
 		break;
 	case CMD_RUN_ONE_INSTRUCTION:
 		thr.SetRunMode(FM77AVThread::RUNMODE_ONE_INSTRUCTION);
@@ -290,6 +293,10 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 				std::cout << "Enabled IO Monitor All IO Addresses Read and Write" << std::endl;
 			}
 			break;
+		case ENABLE_SUBSYSCMD_MONITOR:
+			fm77av.var.monitorSubSysCmd=true;
+			std::cout << "Enabled Sub-System Command Monitor." << std::endl;
+			break;
 		}
 	}
 	else
@@ -332,6 +339,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 				}
 				std::cout << "Disabled IO Monitor All IO Addresses Read and Write" << std::endl;
 			}
+			break;
+		case ENABLE_SUBSYSCMD_MONITOR:
+			fm77av.var.monitorSubSysCmd=false;
+			std::cout << "Disabled Sub-System Command Monitor." << std::endl;
 			break;
 		}
 	}

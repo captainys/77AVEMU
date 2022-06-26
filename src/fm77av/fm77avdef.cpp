@@ -57,3 +57,75 @@ unsigned int StrToCPU(std::string str)
 	}
 	return CPU_UNKNOWN;
 }
+
+std::string SubCmdToStr(unsigned int subCmd)
+{
+	switch(subCmd)
+	{
+	case FM7_SUBCMD_INKEY:
+		return "INKEY";
+	case FM7_SUBCMD_DEFINE_PFKEY:
+		return "DEFINE_PFKEY";
+	case FM7_SUBCMD_GET_PFKEY_STR:
+		return "GET_PFKEY_STR";
+	case FM7_SUBCMD_INT_CTRL:
+		return "INT_CTRL";
+	case FM7_SUBCMD_SET_TIMER:
+		return "SET_TIMER";
+	case FM7_SUBCMD_READ_TIMER:
+		return "READ_TIMER";
+	case FM7_SUBCMD_TEST:
+		return "TEST";
+	case FM7_SUBCMD_INIT:
+		return "INIT";
+	case FM7_SUBCMD_ERASE:
+		return "ERASE";
+	case FM7_SUBCMD_PUT:
+		return "PUT";
+	case FM7_SUBCMD_GET:
+		return "GET";
+	case FM7_SUBCMD_GETC:
+		return "GETC";
+	case FM7_SUBCMD_GET_CHAR_BLOCK1:
+		return "GET_CHAR_BLOCK1";
+	case FM7_SUBCMD_PUT_CHAR_BLOCK1:
+		return "PUT_CHAR_BLOCK1";
+	case FM7_SUBCMD_GET_CHAR_BLOCK2:
+		return "GET_CHAR_BLOCK2";
+	case FM7_SUBCMD_PUT_CHAR_BLOCK2:
+		return "PUT_CHAR_BLOCK2";
+	case FM7_SUBCMD_GET_BUFFER_ADDR:
+		return "GET_BUFFER_ADDR";
+	case FM7_SUBCMD_TABSET:
+		return "TABSET";
+	case FM7_SUBCMD_CONSOLE_CONTROL:
+		return "CONSOLE_CONTROL";
+	case FM7_SUBCMD_ERASE2:
+		return "ERASE2";
+	case FM7_SUBCMD_LINE:
+		return "LINE";
+	case FM7_SUBCMD_CHAIN:
+		return "CHAIN";
+	case FM7_SUBCMD_POINT:
+		return "POINT";
+	case FM7_SUBCMD_PAINT:
+		return "PAINT";
+	case FM7_SUBCMD_SYMBOL:
+		return "SYMBOL";
+	case FM7_SUBCMD_CHANGE_COLOR:
+		return "CHANGE_COLOR";
+	case FM7_SUBCMD_GET_BLOCK1:
+		return "GET_BLOCK1";
+	case FM7_SUBCMD_PUT_BLOCK1:
+		return "PUT_BLOCK1";
+	case FM7_SUBCMD_GET_BLOCK2:
+		return "GET_BLOCK2";
+	case FM7_SUBCMD_PUT_BLOCK2:
+		return "PUT_BLOCK2";
+	case FM7_SUBCMD_GCURSOR:
+		return "GCURSOR";
+	case FM7_SUBCMD_CHAR_LINE:
+		return "CHAR_LINE";
+	}
+	return "?";
+}

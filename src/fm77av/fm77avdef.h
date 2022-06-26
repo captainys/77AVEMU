@@ -208,5 +208,43 @@ enum
 	FM77AVIO_ENCODER_STATUS=          0xD432,
 };
 
+enum
+{
+	FM7_SUBCMD_INKEY=                 0x29,
+	FM7_SUBCMD_DEFINE_PFKEY=          0x2A,
+	FM7_SUBCMD_GET_PFKEY_STR=         0x2B,
+	FM7_SUBCMD_INT_CTRL=              0x2C,
+	FM7_SUBCMD_SET_TIMER=             0x3D,
+	FM7_SUBCMD_READ_TIMER=            0x3E,
+	FM7_SUBCMD_TEST=                  0x3F,
+	FM7_SUBCMD_INIT=                  0x01,
+	FM7_SUBCMD_ERASE=                 0x02,
+	FM7_SUBCMD_PUT=                   0x03,
+	FM7_SUBCMD_GET=                   0x04,
+	FM7_SUBCMD_GETC=                  0x05,
+	FM7_SUBCMD_GET_CHAR_BLOCK1=       0x06,
+	FM7_SUBCMD_PUT_CHAR_BLOCK1=       0x07,
+	FM7_SUBCMD_GET_CHAR_BLOCK2=       0x08,
+	FM7_SUBCMD_PUT_CHAR_BLOCK2=       0x09,
+	FM7_SUBCMD_GET_BUFFER_ADDR=       0x0A,
+	FM7_SUBCMD_TABSET=                0x0B,
+	FM7_SUBCMD_CONSOLE_CONTROL=       0x0C,
+	FM7_SUBCMD_ERASE2=                0x0D,
+	FM7_SUBCMD_LINE=                  0x15,
+	FM7_SUBCMD_CHAIN=                 0x16,
+	FM7_SUBCMD_POINT=                 0x17,
+	FM7_SUBCMD_PAINT=                 0x18,
+	FM7_SUBCMD_SYMBOL=                0x19,
+	FM7_SUBCMD_CHANGE_COLOR=          0x1A,
+	FM7_SUBCMD_GET_BLOCK1=            0x1B,
+	FM7_SUBCMD_PUT_BLOCK1=            0x1C,
+	FM7_SUBCMD_GET_BLOCK2=            0x1D,
+	FM7_SUBCMD_PUT_BLOCK2=            0x1E,
+	FM7_SUBCMD_GCURSOR=               0x1F,
+	FM7_SUBCMD_CHAR_LINE=             0x20,
+};
+
+std::string SubCmdToStr(unsigned int subCmd);
+
 /* } */
 #endif
