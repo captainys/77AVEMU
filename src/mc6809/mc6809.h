@@ -613,6 +613,7 @@ public:
 	MC6809(VMBase *vmBase);
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
 	uint8_t AND(uint8_t a,uint8_t b);
+	uint8_t ASR(uint8_t data);
 	uint8_t INC(uint8_t data);
 	uint8_t DEC(uint8_t data);
 	uint8_t LSL(uint8_t data);
