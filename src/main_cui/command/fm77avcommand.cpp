@@ -17,6 +17,12 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["T"]=CMD_RUN_ONE_INSTRUCTION;
 	primaryCmdMap["MUTE"]=CMD_MUTE;
 	primaryCmdMap["UNMUTE"]=CMD_UNMUTE;
+	primaryCmdMap["ENABLE"]=CMD_ENABLE;
+	primaryCmdMap["ENA"]=CMD_ENABLE;
+	primaryCmdMap["DISABLE"]=CMD_DISABLE;
+	primaryCmdMap["DIS"]=CMD_DISABLE;
+
+	featureMap["IOMON"]=ENABLE_IOMONITOR;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -40,6 +46,17 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "UNMUTE M|S" << std::endl;
 	std::cout << "  Mute/Unmute state output of main/sub CPU." << std::endl;
 	std::cout << "  If no parameter is given, mute/unmutes both CPUs." << std::endl;
+	std::cout << "ENA feature|ENABLE feature" << std::endl;
+	std::cout << "  Enable a feature." << std::endl;
+	std::cout << "DIS feature|DISABLE feature" << std::endl;
+	std::cout << "  Disable a feature." << std::endl;
+
+
+	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
+	std::cout << "IOMON iopotMin ioportMax" << std::endl;
+	std::cout << "  IO Monitor." << std::endl;
+	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
+	std::cout << "  Can specify multiple range by enabling IOMON multiple times." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -81,6 +98,11 @@ void FM77AVCommandInterpreter::Error_UnknownCPU(const Command &cmd)
 void FM77AVCommandInterpreter::Error_CPUOrAddress(const Command &cmd)
 {
 	std::cout << "Error in CPU or Address." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_UnknownFeature(const Command &cmd)
+{
+	std::cout << "Unknown Feature." << std::endl;
 	Error_Common(cmd);
 }
 
@@ -181,6 +203,12 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			}
 		}
 		break;
+	case CMD_ENABLE:
+		Execute_Enable(thr,fm77av,outside_world,cmd);
+		break;
+	case CMD_DISABLE:
+		Execute_Disable(thr,fm77av,outside_world,cmd);
+		break;
 	}
 }
 
@@ -224,5 +252,91 @@ void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,clas
 		fm77av.mainCPU.debugger.ClearStopFlag();
 		fm77av.subCPU.debugger.ClearStopFlag();
 		thr.SetRunMode(FM77AVThread::RUNMODE_RUN);
+	}
+}
+void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		cpputil::Capitalize(cmd.argv[1]);
+		auto foundFeature=featureMap.find(cmd.argv[1]);
+		if(featureMap.end()==foundFeature)
+		{
+			Error_UnknownFeature(cmd);
+			return;
+		}
+		switch(foundFeature->second)
+		{
+		case ENABLE_IOMONITOR:
+			if(2==cmd.argv.size())
+			{
+				// All IO Port Read/Write
+				for(auto &b : fm77av.var.monitorIOReadMain)
+				{
+					b=true;
+				}
+				for(auto &b : fm77av.var.monitorIOReadSub)
+				{
+					b=true;
+				}
+				for(auto &b : fm77av.var.monitorIOWriteMain)
+				{
+					b=true;
+				}
+				for(auto &b : fm77av.var.monitorIOWriteSub)
+				{
+					b=true;
+				}
+				std::cout << "Enabled IO Monitor All IO Addresses Read and Write" << std::endl;
+			}
+			break;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		cpputil::Capitalize(cmd.argv[1]);
+		auto foundFeature=featureMap.find(cmd.argv[1]);
+		if(featureMap.end()==foundFeature)
+		{
+			Error_UnknownFeature(cmd);
+			return;
+		}
+		switch(foundFeature->second)
+		{
+		case ENABLE_IOMONITOR:
+			if(2==cmd.argv.size())
+			{
+				// All IO Port Read/Write
+				for(auto &b : fm77av.var.monitorIOReadMain)
+				{
+					b=false;
+				}
+				for(auto &b : fm77av.var.monitorIOReadSub)
+				{
+					b=false;
+				}
+				for(auto &b : fm77av.var.monitorIOWriteMain)
+				{
+					b=false;
+				}
+				for(auto &b : fm77av.var.monitorIOWriteSub)
+				{
+					b=false;
+				}
+				std::cout << "Disabled IO Monitor All IO Addresses Read and Write" << std::endl;
+			}
+			break;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }

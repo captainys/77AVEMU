@@ -1,9 +1,26 @@
+#include <iostream>
 #include "fm77av.h"
 
 
 
 void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 {
+	if((0xFD00==(ioAddr&0xFF00) && true==var.monitorIOWriteMain[ioAddr&0xFF]) ||
+	   (0xD400==(ioAddr&0xFF00) && true==var.monitorIOWriteSub[ioAddr&0xFF]))
+	{
+		std::cout << "IOWRITE ";
+		if(0xFD00==(ioAddr&0xFF00))
+		{
+			std::cout << "MAIN:" << cpputil::Ustox(mainCPU.state.PC) << " ";
+		}
+		else
+		{
+			std::cout << "SUB: " << cpputil::Ustox(subCPU.state.PC) << " ";
+		}
+		std::cout << "IO:" << cpputil::Ustox(ioAddr) << " ";
+		std::cout << "VALUE:" << cpputil::Ubtox(value) << std::endl;
+	}
+
 	switch(ioAddr)
 	{
 	// Main-CPU I/O
@@ -15,6 +32,14 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			// Question: What's going to happen if the main CPU writes $80 to $FD05
 			//           while the busy flag is true?  Does it halt the sub-CPU anyway?
 			//           Or, is it ignored?
+			// F-BASIC Analysis Manual Phase III Sub-System, pp.38 tells,
+			// (2) BUSY Flag
+			// This flag tells main CPU that sub-system is not in a good timing to halt
+			// eg. executing a command.  It is controlled by sub-system I/O $D40A read/write.
+			// It also goes HI when sub-CPU accepted HALT request from main CPU automatically
+			// (by hardware level).  It serves as HALT acknowledge as well.
+			// So, there are two things: Sub-System BUSY and Sub-System Halt.
+			// Should I make sub-system busy upon 0x80 write to 0xFD05?
 		}
 		else
 		{
@@ -31,6 +56,23 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 uint8_t FM77AV::IORead(uint16_t ioAddr)
 {
 	uint8_t byteData=NonDestructiveIORead(ioAddr);
+
+	if((0xFD00==(ioAddr&0xFF00) && true==var.monitorIOReadMain[ioAddr&0xFF]) ||
+	   (0xD400==(ioAddr&0xFF00) && true==var.monitorIOReadSub[ioAddr&0xFF]))
+	{
+		std::cout << "IOREAD  ";
+		if(0xFD00==(ioAddr&0xFF00))
+		{
+			std::cout << "MAIN:" << cpputil::Ustox(mainCPU.state.PC) << " ";
+		}
+		else
+		{
+			std::cout << "SUB: " << cpputil::Ustox(subCPU.state.PC) << " ";
+		}
+		std::cout << "IO:" << cpputil::Ustox(ioAddr) << " ";
+		std::cout << "VALUE:" << cpputil::Ubtox(byteData) << std::endl;
+	}
+
 	switch(ioAddr)
 	{
 	// Main-CPU I/O

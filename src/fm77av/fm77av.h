@@ -76,6 +76,9 @@ public:
 	public:
 		bool forceQuitOnPowerOff=false;
 		bool justLoadedState=false;
+		bool monitorIOReadMain[256],monitorIOReadSub[256];
+		bool monitorIOWriteMain[256],monitorIOWriteSub[256];
+		
 	};
 	Variable var;
 
