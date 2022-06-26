@@ -28,18 +28,30 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		if(0x80==value)
 		{
 			state.subSysHalt=true;
-			state.subSysBusy=true;
+			//state.subSysBusy=true;
 			// Question: What's going to happen if the main CPU writes $80 to $FD05
 			//           while the busy flag is true?  Does it halt the sub-CPU anyway?
 			//           Or, is it ignored?
 			// F-BASIC Analysis Manual Phase III Sub-System, pp.38 tells,
-			// (2) BUSY Flag
-			// This flag tells main CPU that sub-system is not in a good timing to halt
-			// eg. executing a command.  It is controlled by sub-system I/O $D40A read/write.
-			// It also goes HI when sub-CPU accepted HALT request from main CPU automatically
-			// (by hardware level).  It serves as HALT acknowledge as well.
-			// So, there are two things: Sub-System BUSY and Sub-System Halt.
-			// Should I make sub-system busy upon 0x80 write to 0xFD05?
+			//   (2) BUSY Flag
+			//   This flag tells main CPU that sub-system is not in a good timing to halt
+			//   eg. executing a command.  It is controlled by sub-system I/O $D40A read/write.
+			//   It also goes HI when sub-CPU accepted HALT request from main CPU automatically
+			//   (by hardware level).  It serves as HALT acknowledge as well.
+			//   So, there are two things: Sub-System BUSY and Sub-System Halt.
+			//   Should I make sub-system busy upon 0x80 write to 0xFD05?
+
+			// This description is questionable.  FM-7 Schematic on FM-7/8 Utilization Research
+			// does not indicate that BUSY flag has anything to do with HALT status.
+
+			// BUSY signal comes out of M44 8pin (pp.300) then comes into M72 15pin and goes 
+			// out to DB7 from 11pin (pp.294).
+
+			// BUSY signal latches to SRWB on *SBUSYSET on M44.  SRWB is read/write signal
+			// from the sub-CPU (6809), which makes sense.  However, BUSY signal doesn't seem
+			// to have anything to do with sub-CPU HALT status.
+
+			// If my understanding is correct, subSysBusy should not be set here.
 		}
 		else
 		{
