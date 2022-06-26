@@ -1109,16 +1109,40 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ADCA_DP: //   0x99,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto add=mem.FetchByte(DecodeDirectPageAddress(inst));
+			if(0!=(state.CC&CF))
+			{
+				++add;
+			}
+			auto reg=state.A();
+			AddByte(reg,add);
+			state.SetA(reg);
+		}
 		break;
 	case INST_ADCA_IDX: //  0xA9,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto add=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			if(0!=(state.CC&CF))
+			{
+				++add;
+			}
+			auto reg=state.A();
+			AddByte(reg,add);
+			state.SetA(reg);
+		}
 		break;
 	case INST_ADCA_EXT: //  0xB9,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto add=mem.FetchByte(inst.ExtendedAddress());
+			if(0!=(state.CC&CF))
+			{
+				++add;
+			}
+			auto reg=state.A();
+			AddByte(reg,add);
+			state.SetA(reg);
+		}
 		break;
 
 	case INST_ADCB_IMM: //  0xC9,
@@ -1134,16 +1158,40 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ADCB_DP: //   0xD9,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto add=mem.FetchByte(DecodeDirectPageAddress(inst));
+			if(0!=(state.CC&CF))
+			{
+				++add;
+			}
+			auto reg=state.B();
+			AddByte(reg,add);
+			state.SetB(reg);
+		}
 		break;
 	case INST_ADCB_IDX: //  0xE9,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto add=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			if(0!=(state.CC&CF))
+			{
+				++add;
+			}
+			auto reg=state.B();
+			AddByte(reg,add);
+			state.SetB(reg);
+		}
 		break;
 	case INST_ADCB_EXT: //  0xF9,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto add=mem.FetchByte(inst.ExtendedAddress());
+			if(0!=(state.CC&CF))
+			{
+				++add;
+			}
+			auto reg=state.B();
+			AddByte(reg,add);
+			state.SetB(reg);
+		}
 		break;
 
 	case INST_ADDA_IMM: //  0x8B,
@@ -2263,8 +2311,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ROR_DP: //    0x06,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint16_t addr=DecodeDirectPageAddress(inst);
+			mem.StoreByte(addr,ROR(mem.FetchByte(addr)));
+		}
 		break;
 	case INST_ROR_IDX: //   0x66,
 		{
@@ -2273,8 +2323,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ROR_EXT: //   0x76,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint16_t addr=inst.ExtendedAddress();
+			mem.StoreByte(addr,ROR(mem.FetchByte(addr)));
+		}
 		break;
 
 	case INST_RTI: //       0x3B,
@@ -2449,12 +2501,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_SUBA_IMM: //  0x80,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.A();
+			SubByte(reg,inst.operand[0]);
+			state.SetA(reg);
+		}
 		break;
 	case INST_SUBA_DP: //   0x90,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.A();
+			SubByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			state.SetA(reg);
+		}
 		break;
 	case INST_SUBA_IDX: //  0xA0,
 		{
@@ -2472,12 +2530,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_SUBB_IMM: //  0xC0,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.B();
+			SubByte(reg,inst.operand[0]);
+			state.SetB(reg);
+		}
 		break;
 	case INST_SUBB_DP: //   0xD0,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.B();
+			SubByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			state.SetB(reg);
+		}
 		break;
 	case INST_SUBB_IDX: //  0xE0,
 		{
@@ -2603,21 +2667,33 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BGE_IMM: //   0x2C,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if((0!=(state.CC&SF))==(0!=(state.CC&VF)))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBGE_IMM16: //0x12C, // 10 2C
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if((0!=(state.CC&SF))==(0!=(state.CC&VF)))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BGT_IMM: //   0x2E,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if((0!=(state.CC&SF))==(0!=(state.CC&VF)) && 0==(state.CC&ZF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBGT_IMM16: //0x12E, // 10 2E
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if((0!=(state.CC&SF))==(0!=(state.CC&VF)) && 0==(state.CC&ZF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BHI_IMM: //   0x22,
@@ -2747,21 +2823,33 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BVC_IMM: //   0x28,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if(0==(state.CC&VF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBVC_IMM16: //0x128, // 10 28
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if(0==(state.CC&VF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 
 	case INST_BVS_IMM: //   0x29,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if(0!=(state.CC&VF))
+		{
+			state.PC+=inst.BranchOffset8();
+			++inst.clocks;
+		}
 		break;
 	case INST_LBVS_IMM16: //0x129, // 10 29
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if(0!=(state.CC&VF))
+		{
+			state.PC+=inst.BranchOffset16();
+			++inst.clocks;
+		}
 		break;
 	}
 
