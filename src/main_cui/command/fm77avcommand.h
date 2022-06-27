@@ -42,6 +42,9 @@ public:
 		CMD_DISASM,
 		CMD_DISASM_MAIN,
 		CMD_DISASM_SUB,
+
+		CMD_DUMP,
+		CMD_MEMDUMP,
 	};
 
 	enum
@@ -85,6 +88,8 @@ public:
 	void Execute_Disassemble(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Main(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
+	void Execute_Dump(FM77AV &av,Command &cmd);
+	void Execute_MemoryDump(FM77AV &av,Command &cmd);
 };
 
 /* } */

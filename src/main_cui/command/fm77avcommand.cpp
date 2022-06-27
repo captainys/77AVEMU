@@ -1,6 +1,7 @@
 #include <iostream>
-#include "fm77avcommand.h"
 #include "cpputil.h"
+#include "miscutil.h"
+#include "fm77avcommand.h"
 #include "fm77avlineparser.h"
 
 
@@ -25,6 +26,13 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["U"]=CMD_DISASM;
 	primaryCmdMap["UM"]=CMD_DISASM_MAIN;
 	primaryCmdMap["US"]=CMD_DISASM_SUB;
+	primaryCmdMap["PRINT"]=CMD_DUMP;
+	primaryCmdMap["PRI"]=CMD_DUMP;
+	primaryCmdMap["P"]=CMD_DUMP;
+	primaryCmdMap["DUMP"]=CMD_DUMP;
+	primaryCmdMap["DM"]=CMD_DUMP;
+	primaryCmdMap["MEMDUMP"]=CMD_MEMDUMP;
+	primaryCmdMap["MD"]=CMD_MEMDUMP;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -63,6 +71,15 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  from the last disassembly address." << std::endl;
 	std::cout << "  U command takes MAIN or SUB as cpu." << std::endl;
 	std::cout << "  UM disassembles main CPU memory, US sub-CPU memory." << std::endl;
+	std::cout << "PRINT info|PRI info|P info" << std::endl;
+	std::cout << "DUMP info|DM info" << std::endl;
+	std::cout << "  Print/Dump information." << std::endl;
+	std::cout << "MEMDUMP or MD seg:address" << std::endl;
+	std::cout << "MEMDUMP or MD seg:address wid hei step" << std::endl;
+	std::cout << "MEMDUMP or MD seg:address wid hei step 1/0" << std::endl;
+	std::cout << "  Memory Dump.  If you enter wid,hei,step it will dump non-16x16 columns." << std::endl;
+	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
+
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
@@ -260,6 +277,12 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DISASM_SUB:
 		Execute_Disassemble_Sub(thr,fm77av,outside_world,cmd);
+		break;
+	case CMD_MEMDUMP:
+		Execute_MemoryDump(fm77av,cmd);
+		break;
+	case CMD_DUMP:
+		Execute_Dump(fm77av,cmd);
 		break;
 	}
 }
@@ -483,4 +506,56 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 		PC+=inst.length;
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
+}
+void FM77AVCommandInterpreter::Execute_Dump(FM77AV &fm77av,Command &cmd)
+{
+}
+void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		std::cout << "Need address." << std::endl;
+		Error_TooFewArgs(cmd);
+	}
+	else
+	{
+		int wid=16,hei=16,skip=1;
+		bool ascii=true;
+		if(3<=cmd.argv.size())
+		{
+			wid=cpputil::Atoi(cmd.argv[2].c_str());
+		}
+		if(4<=cmd.argv.size())
+		{
+			hei=cpputil::Atoi(cmd.argv[3].c_str());
+		}
+		if(5<=cmd.argv.size())
+		{
+			skip=cpputil::Atoi(cmd.argv[4].c_str());
+			if(skip<=0)
+			{
+				skip=1;
+			}
+		}
+		if(6<=cmd.argv.size())
+		{
+			ascii=(0!=cpputil::Atoi(cmd.argv[5].c_str()));
+		}
+
+		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		if(CPU_UNKNOWN!=ptr.cpu)
+		{
+			auto &cpu=fm77av.CPU(ptr.cpu);
+			auto &mem=fm77av.MemAccess(ptr.cpu);
+			for(auto str : miscutil::MakeMemDump2(cpu,mem,ptr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
+			{
+				std::cout << str << std::endl;
+			}
+		}
+		else
+		{
+			Error_CPUOrAddress(cmd);
+			return;
+		}
+	}
 }

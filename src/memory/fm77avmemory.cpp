@@ -355,7 +355,7 @@ void PhysicalMemory::StoreWord(uint32_t addr0,uint32_t addr1,uint16_t d)
 	StoreByte(addr0,(d>>8));
 	StoreByte(addr1,(d&0xFF));
 }
-uint8_t PhysicalMemory::NonDestructiveFetchByte(uint16_t addr) const
+uint8_t PhysicalMemory::NonDestructiveFetchByte(uint32_t addr) const
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	switch(memType[addr])
@@ -366,7 +366,7 @@ uint8_t PhysicalMemory::NonDestructiveFetchByte(uint16_t addr) const
 	}
 	return FetchByteConst(addr);
 }
-uint16_t PhysicalMemory::NonDestructiveFetchWord(uint16_t addr) const
+uint16_t PhysicalMemory::NonDestructiveFetchWord(uint32_t addr) const
 {
 	uint16_t hiByte=NonDestructiveFetchByte(addr);
 	uint16_t loByte=NonDestructiveFetchByte(addr+1);

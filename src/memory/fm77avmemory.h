@@ -126,8 +126,8 @@ public:
 	uint16_t FetchWord(uint32_t addr0,uint32_t addr1);
 	void StoreByte(uint32_t addr,uint8_t data);
 	void StoreWord(uint32_t addr0,uint32_t addr1,uint16_t data);
-	uint8_t NonDestructiveFetchByte(uint16_t addr) const;
-	uint16_t NonDestructiveFetchWord(uint16_t addr) const;
+	uint8_t NonDestructiveFetchByte(uint32_t addr) const;
+	uint16_t NonDestructiveFetchWord(uint32_t addr) const;
 };
 
 class MainCPUAccess : public MemoryAccess,public Device
