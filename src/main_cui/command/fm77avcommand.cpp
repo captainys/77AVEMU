@@ -22,6 +22,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["ENA"]=CMD_ENABLE;
 	primaryCmdMap["DISABLE"]=CMD_DISABLE;
 	primaryCmdMap["DIS"]=CMD_DISABLE;
+	primaryCmdMap["U"]=CMD_DISASM;
+	primaryCmdMap["UM"]=CMD_DISASM_MAIN;
+	primaryCmdMap["US"]=CMD_DISASM_SUB;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -52,8 +55,13 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Enable a feature." << std::endl;
 	std::cout << "DIS feature|DISABLE feature" << std::endl;
 	std::cout << "  Disable a feature." << std::endl;
-
-
+	std::cout << "U cpu:addr" << std::endl;
+	std::cout << "UM addr" << std::endl;
+	std::cout << "US addr" << std::endl;
+	std::cout << "  Disassemble.  If no address is given, it continues to disassemble" << std::endl;
+	std::cout << "  from the last disassembly address." << std::endl;
+	std::cout << "  U command takes MAIN or SUB as cpu." << std::endl;
+	std::cout << "  UM disassembles main CPU memory, US sub-CPU memory." << std::endl;
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
@@ -144,6 +152,19 @@ void FM77AVCommandInterpreter::Error_UnknownFeature(const Command &cmd)
 	}
 	return ptr;
 }
+/* static */ uint16_t FM77AVCommandInterpreter::MakeAddressForCPU(const MC6809 &cpu,std::string arg)
+{
+	FM77AVLineParserHexadecimal parser(&cpu);
+	if(true==parser.Analyze(arg))
+	{
+		return parser.Evaluate();
+	}
+	else
+	{
+		std::cout << "Error in offset description." << std::endl;
+		return 0;
+	}
+}
 
 void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
 {
@@ -227,6 +248,15 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DISABLE:
 		Execute_Disable(thr,fm77av,outside_world,cmd);
+		break;
+	case CMD_DISASM:
+		Execute_Disassemble(thr,fm77av,outside_world,cmd);
+		break;
+	case CMD_DISASM_MAIN:
+		Execute_Disassemble_Main(thr,fm77av,outside_world,cmd);
+		break;
+	case CMD_DISASM_SUB:
+		Execute_Disassemble_Sub(thr,fm77av,outside_world,cmd);
 		break;
 	}
 }
@@ -366,4 +396,80 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 	{
 		Error_TooFewArgs(cmd);
 	}
+}
+void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		if(CPU_UNKNOWN!=ptr.cpu)
+		{
+			fm77av.var.lastDisassemblyCPU=ptr.cpu;
+			auto &cpu=fm77av.CPU(ptr.cpu);
+			auto &mem=fm77av.MemAccess(ptr.cpu);
+			auto PC=ptr.addr;
+			for(int i=0; i<DISASM_NUM_LINES; ++i)
+			{
+				auto inst=cpu.FetchInstruction(mem,PC);
+				std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+				PC+=inst.length;
+			}
+			cpu.debugger.nextDisassemblyAddr=PC;
+		}
+	}
+	else if(CPU_UNKNOWN!=fm77av.var.lastDisassemblyCPU)
+	{
+		auto &cpu=fm77av.CPU(fm77av.var.lastDisassemblyCPU);
+		auto &mem=fm77av.MemAccess(fm77av.var.lastDisassemblyCPU);
+		auto PC=cpu.debugger.nextDisassemblyAddr;
+		for(int i=0; i<DISASM_NUM_LINES; ++i)
+		{
+			auto inst=cpu.FetchInstruction(mem,PC);
+			std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+			PC+=inst.length;
+		}
+		cpu.debugger.nextDisassemblyAddr=PC;
+	}
+}
+void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	auto &cpu=fm77av.mainCPU;
+	auto &mem=fm77av.mainMemAcc;
+	uint16_t PC;
+	if(cmd.argv.size()<2)
+	{
+		PC=cpu.debugger.nextDisassemblyAddr;
+	}
+	else
+	{
+		PC=MakeAddressForCPU(cpu,cmd.argv[1]);
+	}
+	for(int i=0; i<DISASM_NUM_LINES; ++i)
+	{
+		auto inst=cpu.FetchInstruction(mem,PC);
+		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+		PC+=inst.length;
+	}
+	cpu.debugger.nextDisassemblyAddr=PC;
+}
+void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	auto &cpu=fm77av.subCPU;
+	auto &mem=fm77av.subMemAcc;
+	uint16_t PC;
+	if(cmd.argv.size()<2)
+	{
+		PC=cpu.debugger.nextDisassemblyAddr;
+	}
+	else
+	{
+		PC=MakeAddressForCPU(cpu,cmd.argv[1]);
+	}
+	for(int i=0; i<DISASM_NUM_LINES; ++i)
+	{
+		auto inst=cpu.FetchInstruction(mem,PC);
+		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+		PC+=inst.length;
+	}
+	cpu.debugger.nextDisassemblyAddr=PC;
 }

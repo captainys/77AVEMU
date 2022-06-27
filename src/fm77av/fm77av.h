@@ -79,7 +79,7 @@ public:
 		bool monitorIOReadMain[256],monitorIOReadSub[256];
 		bool monitorIOWriteMain[256],monitorIOWriteSub[256];
 		bool monitorSubSysCmd=false;
-		
+		unsigned int lastDisassemblyCPU=CPU_MAIN;
 	};
 	Variable var;
 

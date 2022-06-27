@@ -17,6 +17,11 @@ private:
 public:
 	enum
 	{
+		DISASM_NUM_LINES=16,
+	};
+
+	enum
+	{
 		CMD_NONE,
 
 		CMD_QUIT,
@@ -33,6 +38,10 @@ public:
 
 		CMD_ENABLE,
 		CMD_DISABLE,
+
+		CMD_DISASM,
+		CMD_DISASM_MAIN,
+		CMD_DISASM_SUB,
 	};
 
 	enum
@@ -63,6 +72,7 @@ public:
 	Command Interpret(const std::string &cmdline) const;
 
 	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AV &fm77av,std::string arg);
+	static uint16_t MakeAddressForCPU(const MC6809 &cpu,std::string arg);
 
 	/*! Executes a command.
 	    VM must be locked before calling.
@@ -71,6 +81,9 @@ public:
 	void Execute_Run(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
+	void Execute_Disassemble(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
+	void Execute_Disassemble_Main(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
+	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 };
 
 /* } */

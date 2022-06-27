@@ -579,6 +579,7 @@ public:
 		bool enabled=true;
 		bool stop=false;
 		bool hitMonitorPoint=false;
+		uint16_t nextDisassemblyAddr=0;
 
 		BreakPoint lastBreakPointInfo;
 		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
@@ -603,6 +604,7 @@ public:
 			if(true==enabled)
 			{
 				CheckBreakCondition(cpu,mem);
+				nextDisassemblyAddr=cpu.state.PC;
 			}
 		}
 	};

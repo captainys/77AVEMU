@@ -1841,11 +1841,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDA_IDX: //   0xA6,
 		state.SetA(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
-		Test16(state.A());
+		Test8(state.A());
 		break;
 	case INST_LDA_EXT: //   0xB6,
 		state.SetA(mem.FetchByte(inst.ExtendedAddress()));
-		Test16(state.A());
+		Test8(state.A());
 		break;
 
 	case INST_LDB_IMM: //   0xC6,
@@ -1858,11 +1858,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_LDB_IDX: //   0xE6,
 		state.SetB(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
-		Test16(state.B());
+		Test8(state.B());
 		break;
 	case INST_LDB_EXT: //   0xF6,
 		state.SetB(mem.FetchByte(inst.ExtendedAddress()));
-		Test16(state.B());
+		Test8(state.B());
 		break;
 
 	case INST_LDD_IMM: //   0xCC,
