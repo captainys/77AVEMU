@@ -28,7 +28,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		if(0x80==value)
 		{
 			state.subSysHalt=true;
-			//state.subSysBusy=true;
+			state.subSysBusy=true;
 			// Question: What's going to happen if the main CPU writes $80 to $FD05
 			//           while the busy flag is true?  Does it halt the sub-CPU anyway?
 			//           Or, is it ignored?
@@ -52,6 +52,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			// to have anything to do with sub-CPU HALT status.
 
 			// If my understanding is correct, subSysBusy should not be set here.
+
+			// OK. my bad.  *SHALTAC & *SRESET is given to CLR pin of M44.
+			// So, HALTAC (presumably Halt Acknowledge) has same effect as RESET, which should
+			// raise the busy flag.  Then, the description of F-BASIC Analysis Manual Phase III
+			// should be correct.
 		}
 		else
 		{
