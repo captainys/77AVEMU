@@ -48,6 +48,7 @@ public:
 	{
 		ENABLE_IOMONITOR,
 		ENABLE_SUBSYSCMD_MONITOR,
+		ENABLE_BIOSCMD_MONITOR,
 	};
 
 	class Command

@@ -28,6 +28,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
+	featureMap["BIOSMON"]=ENABLE_BIOSCMD_MONITOR;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -69,6 +70,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Can specify multiple range by enabling IOMON multiple times." << std::endl;
 	std::cout << "SUBCMDMON" << std::endl;
 	std::cout << "  Monitor sub-system command when sub-CPU is unhalted." << std::endl;
+	std::cout << "BIOSMON" << std::endl;
+	std::cout << "  Monitor BIOS Call." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -343,6 +346,10 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.var.monitorSubSysCmd=true;
 			std::cout << "Enabled Sub-System Command Monitor." << std::endl;
 			break;
+		case ENABLE_BIOSCMD_MONITOR:
+			fm77av.var.monitorBIOSCall=true;
+			std::cout << "Enabled BIOS Monitor." << std::endl;
+			break;
 		}
 	}
 	else
@@ -389,6 +396,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		case ENABLE_SUBSYSCMD_MONITOR:
 			fm77av.var.monitorSubSysCmd=false;
 			std::cout << "Disabled Sub-System Command Monitor." << std::endl;
+			break;
+		case ENABLE_BIOSCMD_MONITOR:
+			fm77av.var.monitorBIOSCall=false;
+			std::cout << "Disabled BIOS Monitor." << std::endl;
 			break;
 		}
 	}

@@ -129,3 +129,67 @@ std::string SubCmdToStr(unsigned int subCmd)
 	}
 	return "?";
 }
+
+std::string BIOSCmdToStr(unsigned int biosCmd)
+{
+	switch(biosCmd)
+	{
+	case FM7_BIOSCMD_ANALOGP: //0x00,
+		return "ANALOGP";
+	case FM7_BIOSCMD_MOTOR: //0x01,
+		return "MOTOR";
+	case FM7_BIOSCMD_CTBWRT: //0x02,
+		return "CTBWRT";
+	case FM7_BIOSCMD_CTBRED: //0x03,
+		return "CTBRED";
+	case FM7_BIOSCMD_INTBBL: //0x04,
+		return "INTBBL";
+	case FM7_BIOSCMD_SCREEN: //0x05,
+		return "SCREEN";
+	case FM7_BIOSCMD_WRTBBL: //0x06,
+		return "WRTBBL";
+	case FM7_BIOSCMD_REDBBL: //0x07,
+		return "REDBBL";
+	case FM7_BIOSCMD_RESTOR: //0x08,
+		return "RESTOR";
+	case FM7_BIOSCMD_DWRITE: //0x09,
+		return "DWRITE";
+	case FM7_BIOSCMD_DREAD: //0x0A,
+		return "DREAD";
+	case FM7_BIOSCMD_UNUSED1: //0x0B,
+		return "UNUSED1";
+	case FM7_BIOSCMD_BEEPON: //0x0C,
+		return "BEEPON";
+	case FM7_BIOSCMD_BEEPOF: //0x0D,
+		return "BEEPOF";
+	case FM7_BIOSCMD_LPOUT: //0x0E,
+		return "LPOUT";
+	case FM7_BIOSCMD_HDCOPY: //0x0F,
+		return "HDCOPY";
+	case FM7_BIOSCMD_SUBOUT: //0x10,
+		return "SUBOUT";
+	case FM7_BIOSCMD_SUBIN: //0x11,
+		return "SUBIN";
+	case FM7_BIOSCMD_INPUT: //0x12,
+		return "INPUT";
+	case FM7_BIOSCMD_INPUTC: //0x13,
+		return "INPUTC";
+	case FM7_BIOSCMD_OUTPUT: //0x14,
+		return "OUTPUT";
+	case FM7_BIOSCMD_KEYIN: //0x15,
+		return "KEYIN";
+	case FM7_BIOSCMD_KANJIR: //0x16,
+		return "KANJIR";
+	case FM7_BIOSCMD_LPCHK: //0x17,
+		return "LPCHK";
+	case FM7_BIOSCMD_BIINIT: //0x18,
+		return "BIINIT";
+	case FM7_BIOSCMD_UNUSED2: //0x19,
+		return "UNUSED2";
+	case FM7_BIOSCMD_UNUSED3: //0x1A,
+		return "UNUSED3";
+	case FM7_BIOSCMD_UNUSED4: //0x1B,
+		return "UNUSED4";
+	}
+	return "?";
+}

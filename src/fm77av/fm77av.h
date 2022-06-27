@@ -79,6 +79,7 @@ public:
 		bool monitorIOReadMain[256],monitorIOReadSub[256];
 		bool monitorIOWriteMain[256],monitorIOWriteSub[256];
 		bool monitorSubSysCmd=false;
+		bool monitorBIOSCall=false;
 		unsigned int lastDisassemblyCPU=CPU_MAIN;
 	};
 	Variable var;
@@ -122,6 +123,8 @@ public:
 	void PowerOn(void);
 	void Reset(void);
 	unsigned int RunOneInstruction(void);
+
+	void DetectMainCPUBIOSCall(void);
 
 	std::string MachineTypeStr(void) const;
 	void PrintSubSystemCommand(void) const;

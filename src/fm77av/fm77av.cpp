@@ -117,6 +117,10 @@ unsigned int FM77AV::RunOneInstruction(void)
 	else if(true==SubCPUHalt())
 	{
 		clocksPassed=mainCPU.RunOneInstruction(mainMemAcc);
+		if(FM7_BIOS_ENTRY_ADDR==mainCPU.state.PC)
+		{
+			DetectMainCPUBIOSCall();
+		}
 
 		nanosec=clocksPassed;
 		nanosec*=SCALE_NANO;
@@ -144,6 +148,11 @@ unsigned int FM77AV::RunOneInstruction(void)
 
 			state.timeBalance=mainCPUTime-subCPUTime;
 			nanosec=std::max(mainCPUTime,subCPUTime);
+
+			if(FM7_BIOS_ENTRY_ADDR==mainCPU.state.PC)
+			{
+				DetectMainCPUBIOSCall();
+			}
 		}
 		else if(0<state.timeBalance) // Main CPU ahead
 		{
@@ -158,6 +167,11 @@ unsigned int FM77AV::RunOneInstruction(void)
 			int64_t mainCPUTime=(mainCPUClk*SCALE_NANO)/mainCPU.state.freq;
 			state.timeBalance+=mainCPUTime;
 			nanosec=(state.timeBalance<0 ? 0 : state.timeBalance);
+
+			if(FM7_BIOS_ENTRY_ADDR==mainCPU.state.PC)
+			{
+				DetectMainCPUBIOSCall();
+			}
 		}
 	}
 
@@ -180,7 +194,9 @@ void FM77AV::PrintSubSystemCommand(void) const
 	}
 	if(0x80!=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN])
 	{
-		switch(physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+2])
+		auto cmd=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+2];
+		std::cout << SubCmdToStr(cmd) << " ";
+		switch(cmd)
 		{
 		case FM7_SUBCMD_INKEY://                 0x29,
 			break;
@@ -265,4 +281,17 @@ void FM77AV::PrintSubSystemCommand(void) const
 		}
 	}
 	std::cout << std::endl;
+}
+
+void FM77AV::DetectMainCPUBIOSCall(void)
+{
+	if(true==var.monitorBIOSCall)
+	{
+		std::cout << "BIOS Call:";
+		for(uint16_t i=0; i<10; ++i)
+		{
+			std::cout << " " << cpputil::Ubtox(mainMemAcc.FetchByte(mainCPU.state.X+i));
+		}
+		std::cout << " " << BIOSCmdToStr(mainMemAcc.FetchByte(mainCPU.state.X)) << std::endl;
+	}
 }

@@ -1338,45 +1338,29 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BITA_IMM: //  0x85,
-		{
-			auto A=state.A()&inst.operand[0];
-			Test8(A);
-		}
+		Test8(state.A()&inst.operand[0]);
 		break;
 	case INST_BITA_DP: //   0x95,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		Test8(state.A()&mem.FetchByte(DecodeDirectPageAddress(inst)));
 		break;
 	case INST_BITA_IDX: //  0xA5,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		Test8(state.A()&mem.FetchByte(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_BITA_EXT: //  0xB5,
-		{
-			auto A=state.A()&mem.FetchByte(inst.ExtendedAddress());;
-			Test8(A);
-		}
+		Test8(state.A()&mem.FetchByte(inst.ExtendedAddress()));
 		break;
 
 	case INST_BITB_IMM: //  0xC5,
-		{
-			auto B=state.B()&inst.operand[0];
-			Test8(B);
-		}
+		Test8(state.B()&inst.operand[0]);
 		break;
 	case INST_BITB_DP: //   0xD5,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		Test8(state.B()&mem.FetchByte(DecodeDirectPageAddress(inst)));
 		break;
 	case INST_BITB_IDX: //  0xE5,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		Test8(state.B()&mem.FetchByte(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_BITB_EXT: //  0xF5,
-		{
-			auto B=state.B()&mem.FetchByte(inst.ExtendedAddress());;
-			Test8(B);
-		}
+		Test8(state.B()&mem.FetchByte(inst.ExtendedAddress()));
 		break;
 
 	case INST_CLRA: //      0x4F,
@@ -2278,8 +2262,47 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_PULU_REG: //	0x37,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if(0!=(inst.operand[0]&PSH_CC))
+		{
+			state.CC=PullU8(mem);
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_A))
+		{
+			state.SetA(PullU8(mem));
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_B))
+		{
+			state.SetB(PullU8(mem));
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_DP))
+		{
+			state.DP=PullU8(mem);
+			++inst.clocks;
+		}
+		if(0!=(inst.operand[0]&PSH_X))
+		{
+			state.X=PullU16(mem);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_Y))
+		{
+			state.Y=PullU16(mem);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_UorS))
+		{
+			state.S=PullU16(mem);
+			inst.clocks+=2;
+		}
+		if(0!=(inst.operand[0]&PSH_PC))
+		{
+			state.PC=PullU16(mem);
+			inst.length=0; // Don't increment.
+			inst.clocks+=2;
+		}
 		break;
 
 	case INST_ROLA: //      0x49,
@@ -2564,8 +2587,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_SUBD_IMM: //  0x83,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		SubWord(state.D,mc6809util::FetchWord(inst.operand));
 		break;
 	case INST_SUBD_DP: //   0x93,
 		SubWord(state.D,mem.FetchWord(DecodeDirectPageAddress(inst)));
