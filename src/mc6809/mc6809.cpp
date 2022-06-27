@@ -273,7 +273,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_SUBB_IDX]=OPER_IDX;
 	instOperaType[INST_SUBB_EXT]=OPER_EXT;
 
-	instOperaType[INST_SUBD_IMM]=OPER_IMM;
+	instOperaType[INST_SUBD_IMM]=OPER_IMM16;
 	instOperaType[INST_SUBD_DP]=OPER_DP;
 	instOperaType[INST_SUBD_IDX]=OPER_IDX;
 	instOperaType[INST_SUBD_EXT]=OPER_EXT;
