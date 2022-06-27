@@ -1071,16 +1071,16 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	regToReg[ 3]=REG_U;
 	regToReg[ 4]=REG_S;
 	regToReg[ 5]=REG_PC;
-	regToReg[ 6]=REG_INVALID; // W reg if 6309
-	regToReg[ 7]=REG_INVALID; // V reg if 6309
+	regToReg[ 6]=REG_NULL; // W reg if 6309
+	regToReg[ 7]=REG_NULL; // V reg if 6309
 	regToReg[ 8]=REG_A;
 	regToReg[ 9]=REG_B;
 	regToReg[10]=REG_CC;
 	regToReg[11]=REG_DP;
-	regToReg[12]=REG_INVALID; // Always value 0 if 6309
-	regToReg[13]=REG_INVALID; // Always value 0 if 6309
-	regToReg[14]=REG_INVALID; // E reg if 6309
-	regToReg[15]=REG_INVALID; // F reg if 6309
+	regToReg[12]=REG_NULL; // Always value 0 if 6309
+	regToReg[13]=REG_NULL; // Always value 0 if 6309
+	regToReg[14]=REG_NULL; // E reg if 6309
+	regToReg[15]=REG_NULL; // F reg if 6309
 }
 
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
@@ -3904,6 +3904,47 @@ std::string MC6809::DisassemblePSHPULRegisters(uint8_t flags,char UorS) const
 		return "PCR";
 	}
 	return RegToStr(reg);
+}
+
+/* static */ unsigned int MC6809::StrToReg(std::string str)
+{
+	if("PC"==str || "pc"==str)
+	{
+		return REG_PC;
+	}
+	if("A"==str || "a"==str)
+	{
+		return REG_A;
+	}
+	if("B"==str || "b"==str)
+	{
+		return REG_B;
+	}
+	if("D"==str || "d"==str)
+	{
+		return REG_D;
+	}
+	if("DP"==str || "dp"==str)
+	{
+		return REG_DP;
+	}
+	if("CC"==str || "cc"==str)
+	{
+		return REG_CC;
+	}
+	if("Y"==str || "y"==str)
+	{
+		return REG_Y;
+	}
+	if("U"==str || "u"==str)
+	{
+		return REG_U;
+	}
+	if("S"==str || "s"==str)
+	{
+		return REG_S;
+	}
+	return REG_NULL;
 }
 
 std::vector <std::string> MC6809::GetStatusText(void) const

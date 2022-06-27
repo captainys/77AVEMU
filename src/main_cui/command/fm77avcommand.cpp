@@ -1,6 +1,7 @@
 #include <iostream>
 #include "fm77avcommand.h"
 #include "cpputil.h"
+#include "fm77avlineparser.h"
 
 
 FM77AVCommandInterpreter::FM77AVCommandInterpreter()
@@ -109,24 +110,39 @@ void FM77AVCommandInterpreter::Error_UnknownFeature(const Command &cmd)
 	Error_Common(cmd);
 }
 
-/* static */ bool FM77AVCommandInterpreter::DecomposeCPUandAddress(unsigned int &cpu,uint16_t &addr,std::string arg)
+/* static */ FM77AV::CPUAddr FM77AVCommandInterpreter::MakeCPUandAddress(const FM77AV &fm77av,std::string arg)
 {
+	FM77AV::CPUAddr ptr;
+	ptr.cpu=CPU_UNKNOWN;
+
 	std::string cpuStr;
 	for(int i=0; i<arg.size(); ++i)
 	{
 		if(':'==arg[i])
 		{
 			std::string addrStr=arg.substr(i+1);
-			cpu=StrToCPU(cpuStr);
-			addr=cpputil::Xtoi(addrStr.data());
-			return true;
+			ptr.cpu=StrToCPU(cpuStr);
+			if(CPU_UNKNOWN!=ptr.cpu)
+			{
+				FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
+				if(true==parser.Analyze(addrStr))
+				{
+					ptr.addr=parser.Evaluate();
+				}
+				else
+				{
+					std::cout << "Error in offset description." << std::endl;
+					ptr.cpu=CPU_UNKNOWN;
+					ptr.addr=0;
+				}
+			}
 		}
 		else
 		{
 			cpuStr.push_back(arg[i]);
 		}
 	}
-	return false;
+	return ptr;
 }
 
 void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
@@ -219,12 +235,13 @@ void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,clas
 {
 	if(3<=cmd.argv.size())
 	{
-		unsigned int cpu;
-		uint16_t startAddr,endAddr;
-		if(true==DecomposeCPUandAddress(cpu,startAddr,cmd.argv[1]))
+		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		if(CPU_UNKNOWN!=ptr.cpu)
 		{
-			endAddr=cpputil::Xtoi(cmd.argv[1].data());
-			fm77av.CPU(cpu).debugger.SetOneTimeBreakPoint(startAddr,endAddr);
+			FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
+			parser.Analyze(cmd.argv[2].data());
+			auto endAddr=parser.Evaluate();
+			fm77av.CPU(ptr.cpu).debugger.SetOneTimeBreakPoint(ptr.addr,endAddr);
 			fm77av.mainCPU.debugger.ClearStopFlag();
 			fm77av.subCPU.debugger.ClearStopFlag();
 			thr.SetRunMode(FM77AVThread::RUNMODE_RUN);
@@ -236,11 +253,10 @@ void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,clas
 	}
 	else if(2<=cmd.argv.size())
 	{
-		unsigned int cpu;
-		uint16_t addr;
-		if(true==DecomposeCPUandAddress(cpu,addr,cmd.argv[1]))
+		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		if(CPU_UNKNOWN!=ptr.cpu)
 		{
-			fm77av.CPU(cpu).debugger.SetOneTimeBreakPoint(addr,addr);
+			fm77av.CPU(ptr.cpu).debugger.SetOneTimeBreakPoint(ptr.addr,ptr.addr);
 			fm77av.mainCPU.debugger.ClearStopFlag();
 			fm77av.subCPU.debugger.ClearStopFlag();
 			thr.SetRunMode(FM77AVThread::RUNMODE_RUN);

@@ -7,7 +7,7 @@ void MC6809::Debugger::ClearStopFlag(void)
 
 void MC6809::Debugger::SetBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount,unsigned char flags)
 {
-	for(auto addr=addrStart; addr<=addrEnd; ++addr)
+	for(uint32_t addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		breakPoints[addr].flags=flags;
 		breakPoints[addr].passed=0;
@@ -16,14 +16,14 @@ void MC6809::Debugger::SetBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigne
 }
 void MC6809::Debugger::ClearBreakPoint(uint16_t addrStart,uint16_t addrEnd)
 {
-	for(auto addr=addrStart; addr<=addrEnd; ++addr)
+	for(uint32_t addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		breakPoints[addr].flags=0;
 	}
 }
 void MC6809::Debugger::SetOneTimeBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount,unsigned char flags)
 {
-	for(auto addr=addrStart; addr<=addrEnd; ++addr)
+	for(uint32_t addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		oneTimeBreakPoints[addr].flags=flags;
 		oneTimeBreakPoints[addr].passed=0;
@@ -32,7 +32,7 @@ void MC6809::Debugger::SetOneTimeBreakPoint(uint16_t addrStart,uint16_t addrEnd,
 }
 void MC6809::Debugger::ClearOneTimeBreakPoint(uint16_t addrStart,uint16_t addrEnd)
 {
-	for(auto addr=addrStart; addr<=addrEnd; ++addr)
+	for(uint32_t addr=addrStart; addr<=addrEnd; ++addr)
 	{
 		oneTimeBreakPoints[addr].flags=0;
 	}

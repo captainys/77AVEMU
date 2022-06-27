@@ -53,6 +53,14 @@ MC6809 &FM77AV::CPU(unsigned int mainOrSub)
 	}
 	return mainCPU;
 }
+const MC6809 &FM77AV::CPU(unsigned int mainOrSub) const
+{
+	if(CPU_SUB==mainOrSub)
+	{
+		return subCPU;
+	}
+	return mainCPU;
+}
 MemoryAccess &FM77AV::MemAccess(unsigned int mainOrSub)
 {
 	if(CPU_SUB==mainOrSub)

@@ -83,6 +83,13 @@ public:
 	};
 	Variable var;
 
+	class CPUAddr
+	{
+	public:
+		uint16_t cpu;
+		uint16_t addr;
+	};
+
 	virtual const char *DeviceName(void) const{return "FM77AV";}
 
 	FM77AV();
@@ -98,6 +105,7 @@ public:
 	bool LoadROMFiles(std::string ROMPath);
 
 	MC6809 &CPU(unsigned int mainOrSub);
+	const MC6809 &CPU(unsigned int mainOrSub) const;
 	MemoryAccess &MemAccess(unsigned int mainOrSub);
 
 	/*! SubCPU can halt:

@@ -482,7 +482,7 @@ public:
 		REG_PC,
 		REG_D,
 
-		REG_INVALID=0xFF
+		REG_NULL=0xFF
 	};
 	unsigned int regBits[10];
 
@@ -675,6 +675,7 @@ public:
 
 	static std::string RegToStr(unsigned int reg);
 	static std::string RegToStrPCR(unsigned int reg);
+	static unsigned int StrToReg(std::string str);
 
 	std::vector <std::string> GetStatusText(void) const;
 

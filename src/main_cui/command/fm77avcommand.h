@@ -62,7 +62,7 @@ public:
 
 	Command Interpret(const std::string &cmdline) const;
 
-	static bool DecomposeCPUandAddress(unsigned int &cpu,uint16_t &addr,std::string arg);
+	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AV &fm77av,std::string arg);
 
 	/*! Executes a command.
 	    VM must be locked before calling.
