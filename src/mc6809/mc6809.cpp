@@ -6,7 +6,6 @@
 
 MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 {
-printf("%s %d\n",__FUNCTION__,__LINE__);
 	regBits[REG_CC]=8;
 	regBits[REG_A]=8;
 	regBits[REG_B]=8;
@@ -1082,7 +1081,6 @@ printf("%s %d\n",__FUNCTION__,__LINE__);
 	regToReg[13]=REG_NULL; // Always value 0 if 6309
 	regToReg[14]=REG_NULL; // E reg if 6309
 	regToReg[15]=REG_NULL; // F reg if 6309
-printf("%s %d\n",__FUNCTION__,__LINE__);
 }
 
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
