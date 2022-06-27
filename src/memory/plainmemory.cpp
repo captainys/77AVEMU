@@ -24,3 +24,11 @@ PlainMemoryAccess::PlainMemoryAccess()
 	RAM[addr]=(data>>8);
 	RAM[addr+1]=(data&0xFF);
 }
+/* virtual */ uint8_t PlainMemoryAccess::NonDestructiveFetchByte(uint16_t addr) const
+{
+	return RAM[addr];
+}
+/* virtual */ uint16_t PlainMemoryAccess::NonDestructiveFetchWord(uint16_t addr) const
+{
+	return (RAM[addr]<<8)|RAM[addr+1];
+}

@@ -223,9 +223,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	return true;
 }
 
-// 0x3FD00 to 0x3FDFF MainCPU I/O
-// 0x1D400 to 0x1D4FF SubCPU I/O
-uint8_t PhysicalMemory::FetchByte(uint32_t addr)
+uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	switch(memType[addr])
@@ -242,9 +240,6 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		// }
 		return state.data[addr];
 
-	case MEMTYPE_SUBSYS_IO:
-	case MEMTYPE_MAINSYS_IO:
-		return fm77avPtr->IORead(addr&0xFFFF);
 	case MEMTYPE_SUBSYS_FONT_ROM:
 		// if(subsys monitor A or B) use appropriate font bank.
 		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
@@ -279,8 +274,24 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		//	return ROM_BOOT_DOS[addr&(BOOT_ROM_SIZE-1)];
 		//}
 		return ROM_BOOT_BASIC[addr&(BOOT_ROM_SIZE-1)];
+
+	case MEMTYPE_SUBSYS_IO:
+	case MEMTYPE_MAINSYS_IO:
+		Abort("Not supposed to come here.");
+		return 0;
 	}
-	return 0xFF;
+}
+
+uint8_t PhysicalMemory::FetchByte(uint32_t addr)
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	switch(memType[addr])
+	{
+	case MEMTYPE_SUBSYS_IO:
+	case MEMTYPE_MAINSYS_IO:
+		return fm77avPtr->IORead(addr&0xFFFF);
+	}
+	return FetchByteConst(addr);
 }
 uint16_t PhysicalMemory::FetchWord(uint32_t addr0,uint32_t addr1)
 {
@@ -344,6 +355,23 @@ void PhysicalMemory::StoreWord(uint32_t addr0,uint32_t addr1,uint16_t d)
 	StoreByte(addr0,(d>>8));
 	StoreByte(addr1,(d&0xFF));
 }
+uint8_t PhysicalMemory::NonDestructiveFetchByte(uint16_t addr) const
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	switch(memType[addr])
+	{
+	case MEMTYPE_SUBSYS_IO:
+	case MEMTYPE_MAINSYS_IO:
+		return fm77avPtr->NonDestructiveIORead(addr&0xFFFF);
+	}
+	return FetchByteConst(addr);
+}
+uint16_t PhysicalMemory::NonDestructiveFetchWord(uint16_t addr) const
+{
+	uint16_t hiByte=NonDestructiveFetchByte(addr);
+	uint16_t loByte=NonDestructiveFetchByte(addr+1);
+	return (hiByte<<8)|loByte;
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -405,6 +433,32 @@ MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : D
 			data);
 	}
 }
+/* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
+{
+	if(true==MMREnabled)
+	{
+		return physMemPtr->NonDestructiveFetchByte(CPUAddrToPhysicalAddr(addr));
+	}
+	else
+	{
+		return physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr);
+	}
+}
+/* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
+{
+	if(true==MMREnabled)
+	{
+		return mc6809util::FetchWord(
+			physMemPtr->NonDestructiveFetchByte(CPUAddrToPhysicalAddr(addr)),
+			physMemPtr->NonDestructiveFetchByte(CPUAddrToPhysicalAddr(addr+1)));
+	}
+	else
+	{
+		return mc6809util::FetchWord(
+			physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr),
+			physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr+1));
+	}
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -432,4 +486,14 @@ SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Dev
 		SUBCPU_ADDR_BASE+addr,
 		SUBCPU_ADDR_BASE+((addr+1)&0xFFFF),
 		data);
+}
+/* virtual */ uint8_t SubCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
+{
+	return physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr);
+}
+/* virtual */ uint16_t SubCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
+{
+	return mc6809util::FetchWord(
+		physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr),
+		physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+((addr+1)&0xFFFF)));
 }

@@ -15,6 +15,8 @@ public:
 	virtual uint16_t FetchWord(uint16_t addr);
 	virtual void StoreByte(uint16_t addr,uint8_t data);
 	virtual void StoreWord(uint16_t addr,uint16_t data);
+	virtual uint8_t NonDestructiveFetchByte(uint16_t addr) const;
+	virtual uint16_t NonDestructiveFetchWord(uint16_t addr) const;
 };
 
 /* } */
