@@ -6,6 +6,7 @@
 
 MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 	regBits[REG_CC]=8;
 	regBits[REG_A]=8;
 	regBits[REG_B]=8;
@@ -1081,6 +1082,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	regToReg[13]=REG_NULL; // Always value 0 if 6309
 	regToReg[14]=REG_NULL; // E reg if 6309
 	regToReg[15]=REG_NULL; // F reg if 6309
+printf("%s %d\n",__FUNCTION__,__LINE__);
 }
 
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
@@ -3334,21 +3336,46 @@ void MC6809::SubByte(uint8_t &value1,uint8_t value2)
 	RaiseCF(value1>prevValue);
 }
 
-MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC) const
+class DestructiveMemoryFetch
+{
+public:
+	inline static uint8_t FetchByte(MemoryAccess &mem,uint16_t addr)
+	{
+		return mem.FetchByte(addr);
+	}
+	inline static uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
+	{
+		return mem.FetchWord(addr);
+	}
+};
+class NonDestructiveMemoryFetch
+{
+public:
+	inline static uint8_t FetchByte(const MemoryAccess &mem,uint16_t addr)
+	{
+		return mem.NonDestructiveFetchByte(addr);
+	}
+	inline static uint16_t FetchWord(const MemoryAccess &mem,uint16_t addr)
+	{
+		return mem.NonDestructiveFetchWord(addr);
+	}
+};
+template <class ConstOrNonConstMemoryAccess,class MemoryFetch>
+MC6809::Instruction MC6809::FetchInstructionTemplate(ConstOrNonConstMemoryAccess &mem,uint16_t PC) const
 {
 	Instruction inst;
 
-	inst.opCode=mem.FetchByte(PC++);
+	inst.opCode=MemoryFetch::FetchByte(mem,PC++);
 	inst.length=1;
 	if(0x10==inst.opCode)
 	{
 		inst.length=2;
-		inst.opCode=0x100|mem.FetchByte(PC++);
+		inst.opCode=0x100|MemoryFetch::FetchByte(mem,PC++);
 	}
 	else if(0x11==inst.opCode)
 	{
 		inst.length=2;
-		inst.opCode=0x200|mem.FetchByte(PC++);
+		inst.opCode=0x200|MemoryFetch::FetchByte(mem,PC++);
 	}
 
 	inst.clocks=instClock[inst.opCode];
@@ -3361,21 +3388,21 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 	case OPER_REG:
 		// 1-byte operand
 		++inst.length;
-		inst.operand[0]=mem.FetchByte(PC++);
+		inst.operand[0]=MemoryFetch::FetchByte(mem,PC++);
 		break;
 	case OPER_EXT:
 	case OPER_IMM16:
 		// 2-bytes operand
 		inst.length+=2;
-		inst.operand[0]=mem.FetchByte(PC++);
-		inst.operand[1]=mem.FetchByte(PC++);
+		inst.operand[0]=MemoryFetch::FetchByte(mem,PC++);
+		inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
 		break;
 	case OPER_INHERENT:
 		// No operand.
 		break;
 	case OPER_IDX:
 		++inst.length;
-		inst.operand[0]=mem.FetchByte(PC++);
+		inst.operand[0]=MemoryFetch::FetchByte(mem,PC++);
 		inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 		if(0==(inst.operand[0]&0x80)) // 5-bit offset from REG
 		{
@@ -3404,7 +3431,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				++inst.length;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
-				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
@@ -3413,7 +3440,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				++inst.length;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
-				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
@@ -3422,8 +3449,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.length+=2;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
-				inst.operand[1]=mem.FetchByte(PC++);
-				inst.operand[2]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
@@ -3432,8 +3459,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.length+=2;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
-				inst.operand[1]=mem.FetchByte(PC++);
-				inst.operand[2]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
@@ -3515,7 +3542,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80)+inst.length;
 				break;
@@ -3525,7 +3552,7 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80)+inst.length;
 				break;
@@ -3535,8 +3562,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem.FetchByte(PC++);
-				inst.operand[2]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000)+inst.length;
 				break;
@@ -3546,8 +3573,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=mem.FetchByte(PC++);
-				inst.operand[2]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000)+inst.length;
 				break;
@@ -3556,8 +3583,8 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 				inst.length+=2;
 				inst.indexType=INDEX_EXTENDED;
 				inst.indexIndir=true;
-				inst.operand[1]=mem.FetchByte(PC++);
-				inst.operand[2]=mem.FetchByte(PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				break;
 			default:
@@ -3569,6 +3596,14 @@ MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC
 	}
 
 	return inst;
+}
+MC6809::Instruction MC6809::FetchInstruction(class MemoryAccess &mem,uint16_t PC) const
+{
+	return FetchInstructionTemplate<MemoryAccess,DestructiveMemoryFetch>(mem,PC);
+}
+MC6809::Instruction MC6809::NonDestructiveFetchInstruction(const class MemoryAccess &mem,uint16_t PC) const
+{
+	return FetchInstructionTemplate<const MemoryAccess,NonDestructiveMemoryFetch>(mem,PC);
 }
 
 void MC6809::DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const
@@ -3582,7 +3617,7 @@ std::string MC6809::WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const
 	std::string disasm=cpputil::Ustox(PC);
 	disasm.push_back(' ');
 
-	auto inst=FetchInstruction(mem,PC);
+	auto inst=NonDestructiveFetchInstruction(mem,PC);
 	disasm+=FormatByteCode(inst);
 	while(disasm.size()<16)
 	{

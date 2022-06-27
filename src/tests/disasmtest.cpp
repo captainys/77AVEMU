@@ -102,9 +102,9 @@ public:
 
 int main(void)
 {
-	TestVM vm;
-	MC6809 cpu(&vm);
-	PlainMemoryAccess mem;
+	static TestVM vm;
+	static MC6809 cpu(&vm); // Debugger takes up stack.  Make it static.
+	static PlainMemoryAccess mem;
 
 	unsigned int addr=0x2000;
 	for(int i=0; i<code.size(); i+=2)
@@ -132,13 +132,41 @@ int main(void)
 
 		if(correctOutput[i]!=disasm)
 		{
-			std::cout << "ERROR!!" << std::endl;
+			std::cout << "ERROR(DestructiveFetch)!!" << std::endl;
 			res=1;
 		}
 
 		PC+=inst.length;
 		++i;
 	}
+
+
+
+	PC=0x2000;
+	i=0;
+	while(PC<addr)
+	{
+		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
+
+		auto byteCode=cpu.FormatByteCode(inst);
+		while(byteCode.size()<11)
+		{
+			byteCode.push_back(' ');
+		}
+
+		auto disasm=cpu.Disassemble(inst,PC);
+		std::cout << cpputil::Ustox(PC) << " " << byteCode << " " << disasm << std::endl;
+
+		if(correctOutput[i]!=disasm)
+		{
+			std::cout << "ERROR(NonDestructiveFetch)!!" << std::endl;
+			res=1;
+		}
+
+		PC+=inst.length;
+		++i;
+	}
+
 
 	return res;
 }

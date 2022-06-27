@@ -421,7 +421,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 			auto PC=ptr.addr;
 			for(int i=0; i<DISASM_NUM_LINES; ++i)
 			{
-				auto inst=cpu.FetchInstruction(mem,PC);
+				auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
 				std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
 				PC+=inst.length;
 			}
@@ -435,7 +435,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 		auto PC=cpu.debugger.nextDisassemblyAddr;
 		for(int i=0; i<DISASM_NUM_LINES; ++i)
 		{
-			auto inst=cpu.FetchInstruction(mem,PC);
+			auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
 			std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
 			PC+=inst.length;
 		}
@@ -457,7 +457,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV
 	}
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
-		auto inst=cpu.FetchInstruction(mem,PC);
+		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
 		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
 		PC+=inst.length;
 	}
@@ -478,7 +478,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 	}
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
-		auto inst=cpu.FetchInstruction(mem,PC);
+		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
 		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
 		PC+=inst.length;
 	}

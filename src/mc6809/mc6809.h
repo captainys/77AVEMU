@@ -665,6 +665,9 @@ public:
 	void SubWord(uint16_t &a,uint16_t b);
 
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
+	Instruction NonDestructiveFetchInstruction(const class MemoryAccess &mem,uint16_t PC) const;
+	template <class ConstOrNonConstMemoryAccess,class MemoryFetch>
+	Instruction FetchInstructionTemplate(ConstOrNonConstMemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
 
 	std::string WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
