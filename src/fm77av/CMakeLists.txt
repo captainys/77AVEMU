@@ -1,7 +1,7 @@
 set(TARGET_NAME fm77av)
 add_library(${TARGET_NAME} fm77av.h fm77av.cpp fm77avio.cpp)
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${TARGET_NAME} fm77avdef fm77avmemory device cpputil mc6809 mc6809util vmbase)
+target_link_libraries(${TARGET_NAME} fm77avdef fm77avmemory fm77avkey ym2612 device cpputil mc6809 mc6809util vmbase)
 
 
 
@@ -26,3 +26,8 @@ target_include_directories(fm77avparam PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(fm77avrender fm77avrender.h fm77avrender.cpp)
 target_link_libraries(fm77avrender fm77av memory cpputil fm77avdef)
 target_include_directories(fm77avrender PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+
+add_library(fm77avkey fm77avkey.h fm77avkey.cpp)
+target_link_libraries(fm77avkey cpputil)

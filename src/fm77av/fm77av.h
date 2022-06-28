@@ -26,6 +26,9 @@ public:
 		SubCPU(FM77AV *vmBase) : MC6809(vmBase){};
 	};
 
+	class CRTC;
+	class Palette;
+
 	// Devices >>
 	PhysicalMemory physMem;
 
