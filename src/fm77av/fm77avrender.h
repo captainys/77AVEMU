@@ -11,6 +11,8 @@ private:
 	unsigned int wid,hei;
 	std::vector <unsigned char> rgba;
 
+	unsigned int scrnMode;
+
 public:
 	class Image
 	{
@@ -39,7 +41,7 @@ public:
 
 	/*!
 	*/
-	void FlipUpsideDown(void) const;
+	void FlipUpsideDown(void);
 };
 
 /* } */

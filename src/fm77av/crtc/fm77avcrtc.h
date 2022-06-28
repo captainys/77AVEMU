@@ -5,6 +5,7 @@
 
 
 #include "device.h"
+#include "fm77avdef.h"
 
 class FM77AVCRTC : public Device
 {
@@ -30,6 +31,7 @@ public:
 	{
 	public:
 		Palette palette;
+		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
 	};
 	FM77AVCRTC(VMBase *vmBase);
 	State state;
