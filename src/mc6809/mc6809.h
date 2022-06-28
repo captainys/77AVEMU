@@ -636,6 +636,8 @@ public:
 	void Reset(void);
 
 	void NMI(class MemoryAccess &mem);
+	void IRQ(class MemoryAccess &mem);
+	void FIRQ(class MemoryAccess &mem);
 
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
 	uint8_t AND(uint8_t a,uint8_t b);

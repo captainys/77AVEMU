@@ -273,7 +273,7 @@ typedef struct KeyTranslationTableStruct
 	FM77AVKeyCombination comb;
 } KeyTranslationTable;
 
-static KeyTranslationTable keyTranslationTableSource[]=
+static const KeyTranslationTable keyTranslationTableSource[]=
 {
 	{'\t',{AVKEY_TAB,           false,false,false}},
 	{' ', {AVKEY_MID_SPACE,     false,false,false}},		// 32
@@ -377,7 +377,92 @@ static KeyTranslationTable keyTranslationTableSource[]=
 	{'', {AVKEY_,             false,false,false}},
 */
 };
+static const KeyTranslationTable keyTranslationTableSourceAdditional[]= // Additional table for reverse mapping.
+{
+	{0x01,{AVKEY_A,             false,true,false}},
+	{0x02,{AVKEY_B,             false,true,false}},
+	{0x03,{AVKEY_C,             false,true,false}},
+	{0x04,{AVKEY_D,             false,true,false}},
+	{0x05,{AVKEY_E,             false,true,false}},
+	{0x06,{AVKEY_F,             false,true,false}},
+	{0x07,{AVKEY_G,             false,true,false}},
+	{0x08,{AVKEY_H,             false,true,false}},
+	{0x09,{AVKEY_I,             false,true,false}},
+	{0x0A,{AVKEY_J,             false,true,false}},
+	{0x0B,{AVKEY_K,             false,true,false}},
+	{0x0C,{AVKEY_L,             false,true,false}},
+	{0x0D,{AVKEY_M,             false,true,false}},
+	{0x0E,{AVKEY_N,             false,true,false}},
+	{0x0F,{AVKEY_O,             false,true,false}},
+	{0x10,{AVKEY_P,             false,true,false}},
+	{0x11,{AVKEY_Q,             false,true,false}},
+	{0x12,{AVKEY_R,             false,true,false}},
+	{0x13,{AVKEY_S,             false,true,false}},
+	{0x14,{AVKEY_T,             false,true,false}},
+	{0x15,{AVKEY_U,             false,true,false}},
+	{0x16,{AVKEY_V,             false,true,false}},
+	{0x17,{AVKEY_W,             false,true,false}},
+	{0x18,{AVKEY_X,             false,true,false}},
+	{0x19,{AVKEY_Y,             false,true,false}},
+	{0x1A,{AVKEY_Z,             false,true,false}},
 
+	{'0', {AVKEY_NUM_0,         true ,false,false}},
+	{'1', {AVKEY_NUM_1,         true ,false,false}},
+	{'2', {AVKEY_NUM_2,         true ,false,false}},
+	{'3', {AVKEY_NUM_3,         true ,false,false}},
+	{'4', {AVKEY_NUM_4,         true ,false,false}},
+	{'5', {AVKEY_NUM_5,         true ,false,false}},
+	{'6', {AVKEY_NUM_6,         true ,false,false}},
+	{'7', {AVKEY_NUM_7,         true ,false,false}},
+	{'8', {AVKEY_NUM_8,         true ,false,false}},
+	{'9', {AVKEY_NUM_9,         true ,false,false}},
+
+	{',', {AVKEY_COMMA,         false,false,false}},
+	{'\"',{AVKEY_2,             true ,false,false}},
+	{'*', {AVKEY_COLON,         true ,false,false}},
+	{'+', {AVKEY_SEMICOLON,     true ,false,false}},
+	{'-', {AVKEY_MINUS,         false,false,false}},
+	{'=', {AVKEY_MINUS,         true ,false,false}},
+	{'/', {AVKEY_SLASH,         false,false,false}},
+	{'?', {AVKEY_SLASH,         true ,false,false}},
+	{'0', {AVKEY_0,             false,false,false}},
+	{'1', {AVKEY_1,             false,false,false}},
+	{'2', {AVKEY_2,             false,false,false}},
+	{'3', {AVKEY_3,             false,false,false}},
+	{'4', {AVKEY_4,             false,false,false}},
+	{'5', {AVKEY_5,             false,false,false}},
+	{'6', {AVKEY_6,             false,false,false}},
+	{'7', {AVKEY_7,             false,false,false}},
+	{'8', {AVKEY_8,             false,false,false}},
+	{'9', {AVKEY_9,             false,false,false}},
+
+	{0x05,{AVKEY_EL,            false,false,false}},
+	{0x05,{AVKEY_EL,            true ,false,false}},
+	{0x0B,{AVKEY_HOME,          false,false,false}},
+	{0x0B,{AVKEY_HOME,          true ,false,false}},
+	{0x0C,{AVKEY_CLS,           false,false,false}},
+	{0x0C,{AVKEY_CLS,           true ,false,false}},
+	{0x11,{AVKEY_DUP,           false,false,false}},
+	{0x11,{AVKEY_DUP,           true ,false,false}},
+	{0x12,{AVKEY_INS,           false,false,false}},
+	{0x12,{AVKEY_INS,           true ,false,false}},
+	{0x7F,{AVKEY_DEL,           false,false,false}},
+	{0x7F,{AVKEY_DEL,           true ,false,false}},
+	{0x1B,{AVKEY_ESC,           false,false,false}},
+	{0x1B,{AVKEY_ESC,           true ,false,false}},
+	{0x1C,{AVKEY_RIGHT,         false,false,false}},
+	{0x1D,{AVKEY_LEFT,          false,false,false}},
+	{0x1E,{AVKEY_UP,            false,false,false}},
+	{0x1F,{AVKEY_DOWN,          false,false,false}},
+	{0x06,{AVKEY_RIGHT,         true ,false,false}},
+	{0x02,{AVKEY_LEFT,          true ,false,false}},
+	{0x19,{AVKEY_UP,            true ,false,false}},
+	{0x1A,{AVKEY_DOWN,          true ,false,false}},
+	{0x08,{AVKEY_BACKSPACE,     false,false,false}},
+	{0x08,{AVKEY_BACKSPACE,     true ,false,false}},
+	{0x0D,{AVKEY_RETURN,        false,false,false}},
+	{0x0D,{AVKEY_RETURN,        true ,false,false}},
+};
 static bool ForwardTableMade=false;
 static FM77AVKeyCombination keyForwardTranslationTable[256];
 
@@ -407,7 +492,28 @@ FM77AVKeyCombination FM77AVTranslateCharToCode(unsigned char c)
 static bool ReverseTableMade=false;
 static unsigned char keyReverseTranslationTable[AVKEY_NUM_KEYCODE];
 static unsigned char keyReverseTranslationTableShift[AVKEY_NUM_KEYCODE];
+static unsigned char keyReverseTranslationTableCtrl[AVKEY_NUM_KEYCODE];
 static unsigned char keyReverseTranslationTableGraph[AVKEY_NUM_KEYCODE];
+
+static void RegisterKeyReverseMapping(struct KeyTranslationTableStruct x)
+{
+	if(true==x.comb.shift)
+	{
+		keyReverseTranslationTableShift[x.comb.keyCode]=x.c;
+	}
+	else if(true==x.comb.ctrl)
+	{
+		keyReverseTranslationTableCtrl[x.comb.keyCode]=x.c;
+	}
+	else if(true==x.comb.graph)
+	{
+		keyReverseTranslationTableGraph[x.comb.keyCode]=x.c;
+	}
+	else
+	{
+		keyReverseTranslationTable[x.comb.keyCode]=x.c;
+	}
+}
 
 uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb)
 {
@@ -417,24 +523,18 @@ uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb)
 		{
 			keyReverseTranslationTable[k]=0;
 			keyReverseTranslationTableShift[k]=0;
+			keyReverseTranslationTableCtrl[k]=0;
 			keyReverseTranslationTableGraph[k]=0;
 		}
-		for(auto &tab : keyTranslationTableSource)
+		for(int i=0; i<2; ++i)
 		{
-			if(true==tab.comb.shift)
+			for(auto x : keyTranslationTableSource)
 			{
-				keyReverseTranslationTableShift[tab.comb.keyCode]=tab.c;
+				RegisterKeyReverseMapping(x);
 			}
-			else if(true==tab.comb.ctrl)
+			for(auto x : keyTranslationTableSourceAdditional)
 			{
-			}
-			else if(true==tab.comb.graph)
-			{
-				keyReverseTranslationTableGraph[tab.comb.keyCode]=tab.c;
-			}
-			else
-			{
-				keyReverseTranslationTable[tab.comb.keyCode]=tab.c;
+				RegisterKeyReverseMapping(x);
 			}
 		}
 		ReverseTableMade=true;
@@ -445,11 +545,7 @@ uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb)
 	}
 	else if(true==keyComb.ctrl)
 	{
-		if(AVKEY_A<=keyComb.keyCode && keyComb.keyCode<=AVKEY_Z)
-		{
-			return keyComb.keyCode+1-AVKEY_A;
-		}
-		return 0;
+		return keyReverseTranslationTableCtrl[keyComb.keyCode];
 	}
 	else if(true==keyComb.shift)
 	{

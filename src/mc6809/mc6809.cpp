@@ -1110,7 +1110,33 @@ void MC6809::NMI(class MemoryAccess &mem)
 		state.PC=mem.FetchWord(NMI_VECTOR_ADDR);
 	}
 }
-
+void MC6809::IRQ(class MemoryAccess &mem)
+{
+	if(0==(state.CC&IRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
+	{
+		PushS16(mem,state.PC);
+		PushS16(mem,state.U);
+		PushS16(mem,state.Y);
+		PushS16(mem,state.X);
+		PushS8(mem,state.DP);
+		PushS8(mem,state.B());
+		PushS8(mem,state.A());
+		PushS8(mem,state.CC);
+		state.CC|=(EF|IRQMASK|FIRQMASK);
+		state.PC=mem.FetchWord(IRQ_VECTOR_ADDR);
+	}
+}
+void MC6809::FIRQ(class MemoryAccess &mem)
+{
+	if(0==(state.CC&FIRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
+	{
+		PushS16(mem,state.PC);
+		PushS8(mem,state.CC);
+		state.CC|=(IRQMASK|FIRQMASK);
+		state.CC&=~EF;
+		state.PC=mem.FetchWord(FIRQ_VECTOR_ADDR);
+	}
+}
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 {
 	auto inst=FetchInstruction(mem,state.PC);

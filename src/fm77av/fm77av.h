@@ -155,11 +155,30 @@ public:
 		{
 			state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
 			subCPU.NMI(subMemAcc);
-			//if(true==state.mainTimerIRQEnabled)
-			//{
-			// state.mainTimerIRQ=true;
-			// mainCPU.IRQ();
-			//}
+			if(0!=(state.main.irqEnableBits&SystemState::MAIN_IRQ_ENABLE_TIMER))
+			{
+				state.main.irqSource|=SystemState::MAIN_IRQ_SOURCE_TIMER;
+			}
+		}
+		else
+		{
+			state.main.irqSource&=~SystemState::MAIN_IRQ_SOURCE_TIMER;
+		}
+		if(0!=state.main.irqSource)
+		{
+			mainCPU.IRQ(mainMemAcc);
+		}
+		if(0!=state.sub.irqSource)
+		{
+			subCPU.IRQ(subMemAcc);
+		}
+		if(0!=state.main.firqSource)
+		{
+			mainCPU.FIRQ(mainMemAcc);
+		}
+		if(0!=state.sub.firqSource)
+		{
+			subCPU.FIRQ(subMemAcc);
 		}
 	}
 	bool KeyIRQFlagSet(void) const;
