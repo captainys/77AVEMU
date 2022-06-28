@@ -3,6 +3,7 @@
 /* { */
 
 #include "fm77av.h"
+#include "fm77avcrtc.h"
 
 class FM77AVRender
 {
@@ -30,11 +31,11 @@ public:
 
 	/*! 
 	*/
-	void Prepare(const FM77AV::CRTC &crtc);
+	void Prepare(const FM77AVCRTC &crtc);
 
 	/*! 
 	*/
-	void BuildImage(const unsigned char VRAM[],const class FM77AV::Palette &palette);
+	void BuildImage(const unsigned char VRAM[],const class FM77AVCRTC::Palette &palette);
 
 	/*!
 	*/

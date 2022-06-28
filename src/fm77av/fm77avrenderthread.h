@@ -31,7 +31,7 @@ public:
 
 	FM77AVRender *rendererPtr;
 	unsigned char VRAMCopy[FM77AV40_VRAM_SIZE];
-	FM77AV::Palette paletteCopy;
+	FM77AVCRTC::Palette paletteCopy;
 
 	bool imageReady=false;
 	unsigned int command=NO_COMMAND;
