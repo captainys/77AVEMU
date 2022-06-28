@@ -66,7 +66,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 PrintStatus(*fm77avPtr);
 
 					fm77avPtr->RunOneInstruction();
-					// fm77avPtr->ProcessIRQ(fm77avPtr->cpu,fm77avPtr->mem);
+					fm77avPtr->ProcessInterrupts();
 					// fm77avPtr->RunFastDevicePolling();
 					// fm77avPtr->RunScheduledTasks();
 

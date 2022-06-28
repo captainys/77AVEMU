@@ -62,7 +62,33 @@ public:
 	class SystemState
 	{
 	public:
-		uint16_t irq=0,firq=0;
+		enum
+		{
+			// Write to $FD02
+			MAIN_IRQ_ENABLE_KEY=0x01,
+			MAIN_IRQ_ENABLE_PRINTER=0x02,
+			MAIN_IRQ_ENABLE_TIMER=0x04,
+			MAIN_IRQ_ENABLE_FDC=0x10,
+			MAIN_IRQ_ENABLE_TXRDY=0x20,
+			MAIN_IRQ_ENABLE_RXRDY=0x40,
+			MAIN_IRQ_ENABLE_SYNDET=0x80,
+		};
+		enum
+		{
+			// Read $FD03
+			MAIN_IRQ_SOURCE_KEY=0x01,
+			MAIN_IRQ_SOURCE_PRINTER=0x02,
+			MAIN_IRQ_SOURCE_TIMER=0x04,
+			MAIN_IRQ_SOURCE_EXT=0x08,   // FDC, RS232C
+		};
+		enum
+		{
+			// Read $FD04
+			MAIN_FIRQ_SOURCE_ATTENTION=0x01,
+			MAIN_FIRQ_SOURCE_BREAK_KEY=0x02,
+		};
+		uint16_t irqEnableBits=0;
+		uint16_t irqSource=0,firqSource=0;
 	};
 	class State
 	{
@@ -73,9 +99,11 @@ public:
 		bool mainToSubIRQ;
 
 		unsigned int machineType=MACHINETYPE_FM7;
+		unsigned int keyboardIRQHandler=CPU_SUB; // Controlled by $FD02 bit 0.  FM-Techknow pp.151.
 		uint64_t fm77avTime=0;
 		uint64_t nextDevicePollingTime=0;
 		uint64_t nextRenderingTime=0;
+		uint64_t next20msTimer=FM77AVTIME_MILLISEC*20;
 
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 	};
@@ -115,6 +143,19 @@ public:
 	uint8_t NonDestructiveIORead(uint16_t ioAddr) const;
 	uint8_t NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE(void) const;
 
+	inline void ProcessInterrupts(void)
+	{
+		if(state.next20msTimer<=state.fm77avTime)
+		{
+			state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
+			subCPU.NMI(subMemAcc);
+			//if(true==state.mainTimerIRQEnabled)
+			//{
+			// state.mainTimerIRQ=true;
+			// mainCPU.IRQ();
+			//}
+		}
+	}
 
 	bool LoadROMFiles(std::string ROMPath);
 

@@ -101,6 +101,18 @@ void FM77AV::Reset(void)
 	state.subSysBusy=true; // Busy on reset.
 	state.subSysHalt=false;
 	state.mainToSubIRQ=false;
+	state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
+
+	state.main.irqEnableBits=0;
+	state.main.irqSource=0;
+	state.main.firqSource=0;
+
+	state.sub.irqEnableBits=0;
+	state.sub.irqSource=0;
+	state.sub.firqSource=0;
+
+	mainCPU.Reset();
+	subCPU.Reset();
 }
 bool FM77AV::SubCPUHalt(void) const
 {

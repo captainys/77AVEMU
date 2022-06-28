@@ -17,6 +17,17 @@ public:
 
 	enum
 	{
+		RESET_VECTOR_ADDR=0xFFFE,
+		NMI_VECTOR_ADDR=0xFFFC,
+		SWI_VECTOR_ADDR=0xFFFA,
+		IRQ_VECTOR_ADDR=0xFFF8,
+		FIRQ_VECTOR_ADDR=0xFFF6,
+		SWI2_VECTOR_ADDR=0xFFF4,
+		SWI3_VECTOR_ADDR=0xFFF2,
+	};
+
+	enum
+	{
 		OPER_IMM,
 		OPER_DP,
 		OPER_IDX,
@@ -541,6 +552,10 @@ public:
 	{
 	public:
 		bool halt=false;
+		bool nmiEnabled=false;     
+		// After power-on/reset, turns true when S is set.
+		// Motorola MC6809 MC6809E Programming Manual
+		// 1.11.10.1 Non-Maskable Interrupt
 		unsigned int freq=2000000; // 2.016MHz to be strict.
 	};
 	State state;
@@ -616,6 +631,12 @@ public:
 
 	virtual const char *DeviceName(void) const{return "MC6809";}
 	MC6809(VMBase *vmBase);
+
+	void PowerOn(void);
+	void Reset(void);
+
+	void NMI(class MemoryAccess &mem);
+
 	uint32_t RunOneInstruction(class MemoryAccess &mem); // Returns the number of clocks passed
 	uint8_t AND(uint8_t a,uint8_t b);
 	uint8_t ASR(uint8_t data);

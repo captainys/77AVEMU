@@ -1081,6 +1081,34 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	regToReg[13]=REG_NULL; // Always value 0 if 6309
 	regToReg[14]=REG_NULL; // E reg if 6309
 	regToReg[15]=REG_NULL; // F reg if 6309
+
+	PowerOn();
+}
+
+void MC6809::PowerOn(void)
+{
+	Reset();
+}
+void MC6809::Reset(void)
+{
+	state.halt=false;
+	state.nmiEnabled=false;     
+}
+void MC6809::NMI(class MemoryAccess &mem)
+{
+	if(true==state.nmiEnabled)
+	{
+		PushS16(mem,state.PC);
+		PushS16(mem,state.U);
+		PushS16(mem,state.Y);
+		PushS16(mem,state.X);
+		PushS8(mem,state.DP);
+		PushS8(mem,state.B());
+		PushS8(mem,state.A());
+		PushS8(mem,state.CC);
+		state.CC|=(EF|IRQMASK|FIRQMASK);
+		state.PC=mem.FetchWord(NMI_VECTOR_ADDR);
+	}
 }
 
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
@@ -1749,6 +1777,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			};
 			SetRegisterValue(reg[1],value[0]);
 			SetRegisterValue(reg[0],value[1]);
+
+			if(REG_S==reg[1] || REG_S==reg[1])
+			{
+				state.nmiEnabled=true;
+			}
 		}
 		break;
 
@@ -1869,18 +1902,22 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_LDS_IMM: //   0x1CE, // 10 CE
 		state.S=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
 	case INST_LDS_DP: //    0x1DE, // 10 DE
 		state.S=mem.FetchWord(DecodeDirectPageAddress(inst));
+		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
 	case INST_LDS_IDX: //   0x1EE, // 10 EE
 		state.S=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
 	case INST_LDS_EXT: //   0x1FE, // 10 FE
 		state.S=mem.FetchWord(inst.ExtendedAddress());
+		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
 
@@ -1967,6 +2004,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_LEAS_IDX: //  0x32,
 		state.S=DecodeIndexedAddress(inst,mem);
+		state.nmiEnabled=true;
 		break;
 	case INST_LEAU_IDX: //  0x33,
 		state.U=DecodeIndexedAddress(inst,mem);
@@ -2285,6 +2323,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(inst.operand[0]&PSH_UorS))
 		{
 			state.S=PullU16(mem);
+			state.nmiEnabled=true;
 			inst.clocks+=2;
 		}
 		if(0!=(inst.operand[0]&PSH_PC))
@@ -2348,8 +2387,22 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_RTI: //       0x3B,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		if(0!=(state.CC&EF))
+		{
+			state.CC=PullS8(mem);
+			state.SetA(PullS8(mem));
+			state.SetB(PullS8(mem));
+			state.DP=PullS8(mem);
+			state.X=PullS16(mem);
+			state.Y=PullS16(mem);
+			state.U=PullS16(mem);
+			inst.clocks=15;
+		}
+		else
+		{
+			state.CC=PullS8(mem);
+		}
+		state.PC=PullS16(mem);
 		inst.length=0;
 		break;
 	case INST_RTS: //       0x39,
@@ -2618,6 +2671,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				inst.length=0;
 			}
 			SetRegisterValue(reg[1],GetRegisterValue(reg[0]));
+			if(REG_S==reg[1])
+			{
+				state.nmiEnabled=true;
+			}
 		}
 		break;
 
