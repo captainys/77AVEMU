@@ -172,30 +172,30 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	// unless bitmaps are ready.  Do it before FsResizeWindow.
 
 	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
-	PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
-	MENUicon.resize(4*MENU_wid*MENU_hei);
-	for(int y=0; y<PAUSE_hei; ++y)
-	{
-		int Y=PAUSE_hei-1-y;
-		for(int x=0; x<PAUSE_wid; ++x)
-		{
-			PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
-			PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
-			PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
-			PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
-		}
-	}
-	for(int y=0; y<MENU_hei; ++y)
-	{
-		int Y=MENU_hei-1-y;
-		for(int x=0; x<MENU_wid; ++x)
-		{
-			MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
-			MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
-			MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
-			MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
-		}
-	}
+	// PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
+	// MENUicon.resize(4*MENU_wid*MENU_hei);
+	// for(int y=0; y<PAUSE_hei; ++y)
+	// {
+	// 	int Y=PAUSE_hei-1-y;
+	// 	for(int x=0; x<PAUSE_wid; ++x)
+	// 	{
+	// 		PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
+	// 		PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
+	// 		PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
+	// 		PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
+	// 	}
+	// }
+	// for(int y=0; y<MENU_hei; ++y)
+	// {
+	// 	int Y=MENU_hei-1-y;
+	// 	for(int x=0; x<MENU_wid; ++x)
+	// 	{
+	// 		MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
+	// 		MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
+	// 		MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
+	// 		MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
+	// 	}
+	// }
 
 
 
@@ -241,21 +241,16 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	mainTexId=GenTexture();
 	statusTexId=GenTexture();
 
-	pauseIconTexId=GenTexture();
-	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
-	menuIconTexId=GenTexture();
-	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
+	// pauseIconTexId=GenTexture();
+	// UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
+	// menuIconTexId=GenTexture();
+	// UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
 
 	// Make initial status bitmap
-	Put16x16Invert(0,15,CD_IDLE);
-	for(int fd=0; fd<2; ++fd)
-	{
-		Put16x16Invert(16+16*fd,15,FD_IDLE);
-	}
-	for(int hdd=0; hdd<6; ++hdd)
-	{
-		Put16x16Invert(48+16*hdd,15,HDD_IDLE);
-	}
+	// for(int fd=0; fd<2; ++fd)
+	// {
+	// 	Put16x16Invert(16+16*fd,15,FD_IDLE);
+	// }
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
@@ -288,14 +283,14 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		{
 		case LOWER_RIGHT_NONE:
 			break;
-		case LOWER_RIGHT_PAUSE:
-			iconWid=PAUSE_wid;
-			iconHei=PAUSE_hei;
-			break;
-		case LOWER_RIGHT_MENU:
-			iconWid=MENU_wid;
-			iconHei=MENU_hei;
-			break;
+		// case LOWER_RIGHT_PAUSE:
+		// 	iconWid=PAUSE_wid;
+		// 	iconHei=PAUSE_hei;
+		// 	break;
+		// case LOWER_RIGHT_MENU:
+		// 	iconWid=MENU_wid;
+		// 	iconHei=MENU_hei;
+		// 	break;
 		}
 		if(wid-iconWid<mx && hei-iconHei<my)
 		{
@@ -1078,15 +1073,15 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 		break;
 	case LOWER_RIGHT_PAUSE:
 		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
-		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
+		// DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
 		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
 		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
 		break;
 	case LOWER_RIGHT_MENU:
 		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
-		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
+		// DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
 		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
-		glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
+		// glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
 		break;
 	}
 

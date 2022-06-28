@@ -6,6 +6,8 @@
 #include "fm77avthread.h"
 #include "fm77avcuithread.h"
 
+#include "fssimplewindow_connection.h"
+
 
 
 int main(int argc,char *argv[])
@@ -30,7 +32,7 @@ int main(int argc,char *argv[])
 	std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
 
 
-	class Outside_World *outside_world=nullptr; // Tentative
+	class Outside_World *outside_world=new FsSimpleWindowConnection;
 
 	FM77AVThread vm;
 	vm.VMStart(fm77av.get(),outside_world,&cui);

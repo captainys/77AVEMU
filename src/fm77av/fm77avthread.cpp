@@ -1,4 +1,5 @@
 #include "fm77avthread.h"
+#include "outside_world.h"
 #include <chrono>
 #include <iostream>
 
@@ -19,6 +20,7 @@ void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,
 	// In Tsugaru,
 	//   Set imageNeedsFlip flag
 	//   Set outside_world pointers to devices
+	outside_world->Start();
 }
 void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {
@@ -203,7 +205,7 @@ void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM
 
 	// Save dictionary RAM?
 
-	// outside_world->Stop();
+	outside_world->Stop();
 
 	if(true==fm77avPtr->var.forceQuitOnPowerOff)
 	{
