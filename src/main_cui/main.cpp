@@ -5,6 +5,7 @@
 #include "fm77av.h"
 #include "fm77avthread.h"
 #include "fm77avcuithread.h"
+#include "outside_world.h"
 
 #include "fssimplewindow_connection.h"
 
@@ -23,7 +24,9 @@ int main(int argc,char *argv[])
 	std::cout << "http://www.ysflight.com" << std::endl;
 
 	std::unique_ptr <FM77AV> fm77av(new FM77AV);
-	if(true!=fm77av->SetUp(fm77avargv))
+	std::unique_ptr <Outside_World> outside_world(new FsSimpleWindowConnection);
+
+	if(true!=fm77av->SetUp(fm77avargv,outside_world.get()))
 	{
 		return 1;
 	}
@@ -31,14 +34,11 @@ int main(int argc,char *argv[])
 	FM77AVCUIThread cui;
 	std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
 
-
-	class Outside_World *outside_world=new FsSimpleWindowConnection;
-
-	FM77AVThread vm;
-	vm.VMStart(fm77av.get(),outside_world,&cui);
-	std::thread vmThread(&FM77AVThread::VMMainLoop,&vm,fm77av.get(),outside_world,&cui);
+	static FM77AVThread vm;
+	vm.VMStart(fm77av.get(),outside_world.get(),&cui);
+	std::thread vmThread(&FM77AVThread::VMMainLoop,&vm,fm77av.get(),outside_world.get(),&cui);
 	vmThread.join();
-	vm.VMEnd(fm77av.get(),outside_world,&cui);
+	vm.VMEnd(fm77av.get(),outside_world.get(),&cui);
 
 	cuiThread.join();
 

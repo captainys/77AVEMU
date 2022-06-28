@@ -120,6 +120,10 @@ public:
 
 	bool LoadROMFiles(std::string ROMPath);
 
+	const uint8_t *GetVRAMBank(int bank) const;
+	uint8_t *GetVRAMBank(int bank);
+	uint32_t GetVRAMBankSize(int bank) const;
+
 	uint8_t FetchByteConst(uint32_t addr) const;
 
 	uint8_t FetchByte(uint32_t addr);

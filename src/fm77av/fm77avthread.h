@@ -5,6 +5,7 @@
 #include <thread>
 #include <mutex>
 #include "fm77av.h"
+#include "fm77avrenderthread.h"
 
 class FM77AVUIThread
 {
@@ -17,8 +18,8 @@ public:
 class FM77AVThread
 {
 private:
-	FM77AV *townsPtr;
-	// std::unique_ptr <TownsRenderingThread> renderingThread;
+	FM77AV *fm77avPtr;
+	std::unique_ptr <FM77AVRenderingThread> renderingThread;
 	int runMode=RUNMODE_PAUSE;
 	bool returnOnPause=false;
 

@@ -15,10 +15,14 @@ public:
 	{
 	public:
 		unsigned int wid,hei;
-		unsigned char *rgba;
+		const unsigned char *rgba;
 	};
 
 	FM77AVRender();
+
+	/*!
+	*/
+	Image GetImage(void) const;
 
 	/*! Create a bitmap image.
 	*/
@@ -31,6 +35,10 @@ public:
 	/*! 
 	*/
 	void BuildImage(const unsigned char VRAM[],const class FM77AV::Palette &palette);
+
+	/*!
+	*/
+	void FlipUpsideDown(void) const;
 };
 
 /* } */

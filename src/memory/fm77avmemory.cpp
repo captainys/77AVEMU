@@ -223,6 +223,31 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	return true;
 }
 
+const uint8_t *PhysicalMemory::GetVRAMBank(int bank) const
+{
+	switch(bank)
+	{
+	case 0:
+		return state.data+SUBSYS_VRAM_BEGIN;
+	}
+	std::cout << "Bank not supported." << std::endl;
+	return nullptr;
+}
+uint8_t *PhysicalMemory::GetVRAMBank(int bank)
+{
+	switch(bank)
+	{
+	case 0:
+		return state.data+SUBSYS_VRAM_BEGIN;
+	}
+	std::cout << "Bank not supported." << std::endl;
+	return nullptr;
+}
+uint32_t PhysicalMemory::GetVRAMBankSize(int bank) const
+{
+	return 0xC000;
+}
+
 uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;

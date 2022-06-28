@@ -5,7 +5,7 @@
 
 
 
-FM77AVThread::FM77AVThread()
+FM77AVThread::FM77AVThread() : renderingThread(new FM77AVRenderingThread)
 {
 }
 FM77AVThread::~FM77AVThread()
@@ -17,19 +17,20 @@ void FM77AVThread::SetRunMode(unsigned int runMode)
 }
 void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {
+	this->fm77avPtr=fm77avPtr;
+	renderingThread->imageNeedsFlip=outside_world->ImageNeedsFlip();
 	// In Tsugaru,
-	//   Set imageNeedsFlip flag
 	//   Set outside_world pointers to devices
 	outside_world->Start();
 }
 void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
-	// renderingThread->DiscardRunningRenderingTask();
+	renderingThread->DiscardRunningRenderingTask();
 
 	PrintStatus(*fm77avPtr);	
 
-	// FM77AVRender render;
+	FM77AVRender render;
 	bool terminate=false;
 	for(;true!=terminate;)
 	{
@@ -47,9 +48,9 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			// renderingThread->WaitIdle();
+			renderingThread->WaitIdle();
 			// fm77avPtr->ForceRender(render,*outside_world);
-			// outside_world->DevicePolling(*fm77avPtr);
+			outside_world->DevicePolling(*fm77avPtr);
 			//if(true==outside_world->PauseKeyPressed())
 			//{
 			//	runMode=RUNMODE_RUN;
@@ -123,15 +124,15 @@ PrintStatus(*fm77avPtr);
 			}
 			// fm77avPtr->ProcessSound(outside_world);
 
-			// renderingThread->CheckRenderingTimer(*fm77avPtr,render);
-			// renderingThread->CheckImageReady(*fm77avPtr,*outside_world);
+			renderingThread->CheckRenderingTimer(*fm77avPtr,render);
+			renderingThread->CheckImageReady(*fm77avPtr,*outside_world);
 
 			// outside_world->ProcessAppSpecific(*fm77avPtr);
-			//if(fm77avPtr->state.nextDevicePollingTime<fm77avPtr->state.fm77avTime)
-			//{
-			//	outside_world->DevicePolling(*fm77avPtr);
-			//	fm77avPtr->state.nextDevicePollingTime=fm77avPtr->state.fm77avTime+FMfm77av::DEVICE_POLLING_INTERVAL;
-			//}
+			if(fm77avPtr->state.nextDevicePollingTime<fm77avPtr->state.fm77avTime)
+			{
+				outside_world->DevicePolling(*fm77avPtr);
+				fm77avPtr->state.nextDevicePollingTime=fm77avPtr->state.fm77avTime+FM77AV::DEVICE_POLLING_INTERVAL;
+			}
 			//fm77avPtr->eventLog.Interval(*fm77avPtr);
 			if(true==fm77avPtr->CheckAbort())//  || outside_world->PauseKeyPressed())
 			{
@@ -182,7 +183,7 @@ PrintStatus(*fm77avPtr);
 		uiThread->uiLock.unlock();
 		if(true==fm77avPtr->var.justLoadedState)
 		{
-		//	renderingThread->DiscardRunningRenderingTask();
+			renderingThread->DiscardRunningRenderingTask();
 		}
 		else if(true==clockTicking)
 		{
@@ -192,7 +193,7 @@ PrintStatus(*fm77avPtr);
 
 	// Rendering thread may be working on local fm77avRender.
 	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
-	// renderingThread->DiscardRunningRenderingTask();
+	renderingThread->DiscardRunningRenderingTask();
 }
 void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {

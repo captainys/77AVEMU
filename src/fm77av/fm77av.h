@@ -26,8 +26,47 @@ public:
 		SubCPU(FM77AV *vmBase) : MC6809(vmBase){};
 	};
 
-	class CRTC;
-	class Palette;
+	class Palette
+	{
+	};
+	class CRTC : public Device
+	{
+	public:
+		virtual const char *DeviceName(void) const{return "CRTC";}
+
+		enum
+		{
+			// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
+			VSYNC_CYCLE=         0x1000000,
+			// Measurement taken from actual FM TOWNS II MX hardware tells VSYNC lasts for 60us.
+			CRT_VERTICAL_DURATION=0x1000000-60000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
+			// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
+			HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
+			CRT_HORIZONTAL_DURATION= 30000,
+		};
+
+		class State
+		{
+		public:
+			Palette palette;
+		};
+		CRTC(VMBase *vmBase);
+		State state;
+		Palette &GetPalette(void);
+		const Palette &GetPalette(void) const;
+		bool InVSYNC(uint64_t fm77avTime) const;
+		bool InHSYNC(uint64_t fm77avTime) const;
+
+		/*
+		VSYNC Cycle        |<----------------->|
+		Vertical Duration  |<------------->|
+		VSYNC              000000000000000001111
+	                                           |
+	                                    NextVSYNCEndTime
+		*/
+		uint64_t NextVSYNCRisingEdge(uint64_t fm77avTime) const;
+		uint64_t NextVSYNCEndTime(uint64_t fm77avTime) const;
+	};
 
 	// Devices >>
 	PhysicalMemory physMem;
@@ -37,9 +76,15 @@ public:
 
 	SubCPUAccess subMemAcc;
 	SubCPU subCPU;
+
+	CRTC crtc;
 	// Devices <<
 
-
+	enum
+	{
+		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
+		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
+	};
 	enum
 	{
 		IRQ_KEY=0x01,
@@ -70,6 +115,9 @@ public:
 
 		unsigned int machineType=MACHINETYPE_FM7;
 		uint64_t fm77avTime=0;
+		uint64_t nextDevicePollingTime=0;
+		uint64_t nextRenderingTime=0;
+
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 	};
 	State state;
@@ -101,7 +149,7 @@ public:
 
 	FM77AV();
 
-	bool SetUp(FM77AVParam &param);
+	bool SetUp(FM77AVParam &param,class Outside_World *outside_world);
 
 	void IOWrite(uint16_t ioAddr,uint8_t value);
 	uint8_t IORead(uint16_t ioAddr);
