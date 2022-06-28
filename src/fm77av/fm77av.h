@@ -10,6 +10,7 @@
 #include "fm77avdef.h"
 #include "fm77avparam.h"
 #include "fm77avcrtc.h"
+#include "fm77avkeyboard.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -37,6 +38,7 @@ public:
 	SubCPU subCPU;
 
 	FM77AVCRTC crtc;
+	FM77AVKeyboard keyboard;
 	// Devices <<
 
 	enum
@@ -86,6 +88,10 @@ public:
 			// Read $FD04
 			MAIN_FIRQ_SOURCE_ATTENTION=0x01,
 			MAIN_FIRQ_SOURCE_BREAK_KEY=0x02,
+		};
+		enum
+		{
+			SUB_FIRQ_SOURCE_KEY=0x01
 		};
 		uint16_t irqEnableBits=0;
 		uint16_t irqSource=0,firqSource=0;
@@ -156,6 +162,10 @@ public:
 			//}
 		}
 	}
+	bool KeyIRQFlagSet(void) const;
+	void SetKeyIRQFlag(void);
+	void ClearKeyIRQFlag(void);
+
 
 	bool LoadROMFiles(std::string ROMPath);
 

@@ -50,7 +50,7 @@ public:
 	{
 	public:
 		bool inUse=false;
-		bool ctrl=false,shift=false;
+		bool ctrl=false,shift=false,graph=false;
 		std::string cmdStr;
 	};
 
@@ -60,6 +60,7 @@ public:
 
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
+	unsigned int GRAPH_KEY_CODE=FSKEY_NULL;
 
 	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoFM77AVKEY=nullptr;

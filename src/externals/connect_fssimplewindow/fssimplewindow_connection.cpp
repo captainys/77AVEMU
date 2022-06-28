@@ -34,6 +34,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "ysgamepad.h"
 #include "fm77avparam.h"
 #include "fm77avkey.h"
+#include "fm77avkeyboard.h"
 #include "ym2612.h"
 
 
@@ -267,6 +268,12 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	FsPollDevice();
 	bool ctrlKey=(0!=FsGetKeyState(FSKEY_CTRL));
 	bool shiftKey=(0!=FsGetKeyState(FSKEY_SHIFT));
+	bool graphKey=(0!=FsGetKeyState(GRAPH_KEY_CODE));
+
+	uint16_t keyFlags=
+	    (ctrlKey==true ? FM77AVKeyboard::KEYFLAG_CTRL : 0)|
+	    (shiftKey==true ? FM77AVKeyboard::KEYFLAG_SHIFT : 0)|
+	    (graphKey==true ? FM77AVKeyboard::KEYFLAG_GRAPH : 0);
 
 	PollGamePads();
 
@@ -322,11 +329,11 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			{
 				if(0!=gamePads[vk.physicalId].buttons[vk.button])
 				{
-					// fm77av.keyboard.Press(vk.fm77avKey);
+					fm77av.keyboard.Press(keyFlags,vk.fm77avKey);
 				}
 				else
 				{
-					// fm77av.keyboard.Release(vk.fm77avKey);
+					fm77av.keyboard.Release(keyFlags,vk.fm77avKey);
 				}
 			}
 		}
@@ -343,12 +350,16 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			{
 				if(' '<=c)
 				{
-					//unsigned char byteData[2]={0,0};
-					//if(0<FM77AVKeyboard::TranslateChar(byteData,c))
-					//{
-					//	fm77av.keyboard.Press(byteData[1]);
-					//	fm77av.keyboard.Release(byteData[1]);
-					//}
+					auto keyComb=FM77AVTranslateCharToCode(c);
+					if(AVKEY_NULL!=keyComb.keyCode)
+					{
+						uint16_t keyFlags=
+						    (keyComb.ctrl==true ? FM77AVKeyboard::KEYFLAG_CTRL : 0)|
+						    (keyComb.shift==true ? FM77AVKeyboard::KEYFLAG_SHIFT : 0)|
+						    (keyComb.graph==true ? FM77AVKeyboard::KEYFLAG_GRAPH : 0);
+						fm77av.keyboard.Press(keyFlags,keyComb.keyCode);
+						fm77av.keyboard.Release(keyFlags,keyComb.keyCode);
+					}
 				}
 			}
 		}
@@ -365,7 +376,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			}
 
 			this->ProcessInkey(fm77av,FSKEYtoFM77AVKEY[c]);
-			unsigned char keyFlags=0;
 			switch(c)
 			{
 			default:
@@ -374,34 +384,27 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 				{
 					// Can take Ctrl+? and Ctrl+Shift+?, but Shift+? is taken by FsInkeyChar() already.
 					// Therefore this block should only process only if Ctrl key is held down.
-					// keyFlags=FM77AV_KEYFLAG_CTRL;
-					// if(shiftKey)
-					// {
-					// 	keyFlags=FM77AV_KEYFLAG_SHIFT;
-					// }
-					// fm77av.keyboard.Press(FSKEYtoFM77AVKEY[c]);
-					// fm77av.keyboard.Release(FSKEYtoFM77AVKEY[c]);
+					fm77av.keyboard.Press(keyFlags,FSKEYtoFM77AVKEY[c]);
+					fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[c]);
 				}
 				break;
 			case FSKEY_ESC:
-				// keyFlags|=(ctrlKey ? FM77AV_KEYFLAG_CTRL : 0);
-				// keyFlags|=(shiftKey ? FM77AV_KEYFLAG_SHIFT : 0);
 				if(FM77AV_KEYBOARD_MODE_TRANSLATION1==keyboardMode)
 				{
-					// fm77av.keyboard.Press(keyFlags,  AVKEY_BREAK);
-					// fm77av.keyboard.Release(keyFlags,AVKEY_BREAK);
-					// fm77av.keyboard.Press(keyFlags,  AVKEY_ESC);
-					// fm77av.keyboard.Release(keyFlags,AVKEY_ESC);
+					fm77av.keyboard.Press(keyFlags,  AVKEY_BREAK);
+					fm77av.keyboard.Release(keyFlags,AVKEY_BREAK);
+					fm77av.keyboard.Press(keyFlags,  AVKEY_ESC);
+					fm77av.keyboard.Release(keyFlags,AVKEY_ESC);
 				}
 				else if(FM77AV_KEYBOARD_MODE_TRANSLATION2==keyboardMode)
 				{
-					// fm77av.keyboard.Press(keyFlags,  AVKEY_ESC);
-					// fm77av.keyboard.Release(keyFlags,AVKEY_ESC);
+					fm77av.keyboard.Press(keyFlags,  AVKEY_ESC);
+					fm77av.keyboard.Release(keyFlags,AVKEY_ESC);
 				}
 				else if(FM77AV_KEYBOARD_MODE_TRANSLATION3==keyboardMode)
 				{
-					// fm77av.keyboard.Press(keyFlags,  AVKEY_BREAK);
-					// fm77av.keyboard.Release(keyFlags,AVKEY_BREAK);
+					fm77av.keyboard.Press(keyFlags,  AVKEY_BREAK);
+					fm77av.keyboard.Release(keyFlags,AVKEY_BREAK);
 				}
 				break;
 			case FSKEY_ENTER:
@@ -440,10 +443,8 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			case FSKEY_DOWN:
 			case FSKEY_LEFT:
 			case FSKEY_RIGHT:
-				// keyFlags|=(ctrlKey ? FM77AV_KEYFLAG_CTRL : 0);
-				// keyFlags|=(shiftKey ? FM77AV_KEYFLAG_SHIFT : 0);
-				// fm77av.keyboard.Press(keyFlags,  FSKEYtoFM77AVKEY[c]);
-				// fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[c]);
+				fm77av.keyboard.Press(keyFlags,  FSKEYtoFM77AVKEY[c]);
+				fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[c]);
 				break;
 			}
 		}
@@ -496,17 +497,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 					break;
 				}
 
-				// byteData|=(ctrlKey ? FM77AV_KEYFLAG_CTRL : 0);
-				// byteData|=(shiftKey ? FM77AV_KEYFLAG_SHIFT : 0);
-				// if(0!=FSKEYState[c])
-				// {
-				// 	byteData|=0xF0; // Typamatic==Repeat?
-				// }
-				// else
-				// {
-				// 	byteData|=FM77AV_KEYFLAG_JIS_PRESS;
-				// }
-				// fm77av.keyboard.PushFifo(byteData,FSKEYtoFM77AVKEY[c]);
+				fm77av.keyboard.Press(keyFlags,FSKEYtoFM77AVKEY[c]);
 
 				// There is a possibility that FsGetKeyState turns 1 before FsInkey catches a keycode.
 				// If so, the first inkey may make a typamatic (repeat) code, which may be disregarded
@@ -551,10 +542,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 			auto sta=FsGetKeyState(key);
 			if(0!=FSKEYtoFM77AVKEY[key] && 0!=FSKEYState[key] && 0==sta)
 			{
-				// byteData|=(ctrlKey ? FM77AV_KEYFLAG_CTRL : 0);
-				// byteData|=(shiftKey ? FM77AV_KEYFLAG_SHIFT : 0);
-				// byteData|=FM77AV_KEYFLAG_JIS_RELEASE;
-				// fm77av.keyboard.PushFifo(byteData,FSKEYtoFM77AVKEY[key]);
+				fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[key]);
 			}
 			// See comment above regarding the timing of FsGetKeyState and FsInkey.
 			if(0==sta)
@@ -1224,6 +1212,14 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	FSKEYtoFM77AVKEY[FSKEY_RIGHT_SHIFT]= AVKEY_RIGHT_SHIFT;
 	FSKEYtoFM77AVKEY[FSKEY_LEFT_ALT]=    AVKEY_NULL;
 	FSKEYtoFM77AVKEY[FSKEY_RIGHT_ALT]=   AVKEY_NULL;
+
+	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	{
+		if(AVKEY_GRAPH==FSKEYtoFM77AVKEY[i])
+		{
+			GRAPH_KEY_CODE=i;
+		}
+	}
 }
 
 /* virtual */ void FsSimpleWindowConnection::RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr)

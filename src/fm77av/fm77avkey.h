@@ -2,6 +2,7 @@
 #define FM77AVKEY_IS_INCLUDED
 /* { */
 
+#include <stdint.h>
 #include <vector>
 #include <string>
 
@@ -145,7 +146,9 @@ int FM77AVKeyLabelToKeyCode(std::string str);
 
 std::string FM77AVKeyCodeToKeyLabel(int fm77avkey);
 
-FM77AVKeyCombination FM77AVTranslateCharToCode(char c);
+FM77AVKeyCombination FM77AVTranslateCharToCode(unsigned char c);
+
+uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb);
 
 const char *FM77AVGetKeyPress30BitPattern(int fm77avkey);
 std::string FM77AVGetKeyRelease30BitPattern(int fm77avkey);

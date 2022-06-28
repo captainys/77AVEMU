@@ -13,7 +13,8 @@ FM77AV::FM77AV() :
 	mainCPU(this),
 	subMemAcc(this,&physMem),
 	subCPU(this),
-	crtc(this)
+	crtc(this),
+	keyboard(this)
 {
 	for(auto &b : var.breakOnSubCmd)
 	{

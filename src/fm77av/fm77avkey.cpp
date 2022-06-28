@@ -269,11 +269,11 @@ std::string FM77AVKeyCodeToKeyLabel(int fm77avkey)
 
 typedef struct KeyTranslationTableStruct
 {
-	char c;
+	unsigned char c;
 	FM77AVKeyCombination comb;
 } KeyTranslationTable;
 
-static KeyTranslationTable keyTranslationTable[]=
+static KeyTranslationTable keyTranslationTableSource[]=
 {
 	{'\t',{AVKEY_TAB,           false,false,false}},
 	{' ', {AVKEY_MID_SPACE,     false,false,false}},		// 32
@@ -378,24 +378,88 @@ static KeyTranslationTable keyTranslationTable[]=
 */
 };
 
+static bool ForwardTableMade=false;
+static FM77AVKeyCombination keyForwardTranslationTable[256];
 
-FM77AVKeyCombination FM77AVTranslateCharToCode(char c)
+FM77AVKeyCombination FM77AVTranslateCharToCode(unsigned char c)
 {
+	if(true!=ForwardTableMade)
+	{
+		for(auto &k : keyForwardTranslationTable)
+		{
+			k.keyCode=AVKEY_NULL;
+		}
+		for(auto &tab : keyTranslationTableSource)
+		{
+			keyForwardTranslationTable[tab.c]=tab.comb;
+		}
+		ForwardTableMade=true;
+	}
+
 	if(0!=c)
 	{
 		printf("Translateing: %c\n",c);
 	}
 
-	for(auto &i : keyTranslationTable)
+	return keyForwardTranslationTable[c];
+}
+
+static bool ReverseTableMade=false;
+static unsigned char keyReverseTranslationTable[AVKEY_NUM_KEYCODE];
+static unsigned char keyReverseTranslationTableShift[AVKEY_NUM_KEYCODE];
+static unsigned char keyReverseTranslationTableGraph[AVKEY_NUM_KEYCODE];
+
+uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb)
+{
+	if(true!=ReverseTableMade)
 	{
-		if(i.c==c)
+		for(int k=0; k<AVKEY_NUM_KEYCODE; ++k)
 		{
-			return i.comb;
+			keyReverseTranslationTable[k]=0;
+			keyReverseTranslationTableShift[k]=0;
+			keyReverseTranslationTableGraph[k]=0;
 		}
+		for(auto &tab : keyTranslationTableSource)
+		{
+			if(true==tab.comb.shift)
+			{
+				keyReverseTranslationTableShift[tab.comb.keyCode]=tab.c;
+			}
+			else if(true==tab.comb.ctrl)
+			{
+			}
+			else if(true==tab.comb.graph)
+			{
+				keyReverseTranslationTableGraph[tab.comb.keyCode]=tab.c;
+			}
+			else
+			{
+				keyReverseTranslationTable[tab.comb.keyCode]=tab.c;
+			}
+		}
+		ReverseTableMade=true;
 	}
-	FM77AVKeyCombination comb;
-	comb.keyCode=AVKEY_NULL;
-	return comb;
+	if(AVKEY_PF1<=keyComb.keyCode && keyComb.keyCode<=AVKEY_PF10)
+	{
+		return 0x100|(keyComb.keyCode-AVKEY_PF1);
+	}
+	else if(true==keyComb.ctrl)
+	{
+		if(AVKEY_A<=keyComb.keyCode && keyComb.keyCode<=AVKEY_Z)
+		{
+			return keyComb.keyCode+1-AVKEY_A;
+		}
+		return 0;
+	}
+	else if(true==keyComb.shift)
+	{
+		return keyReverseTranslationTableShift[keyComb.keyCode];
+	}
+	else if(true==keyComb.graph)
+	{
+		return keyReverseTranslationTableGraph[keyComb.keyCode];
+	}
+	return keyReverseTranslationTable[keyComb.keyCode];
 }
 
 const char *FM77AVGetKeyPress30BitPattern(int fm77avkey)

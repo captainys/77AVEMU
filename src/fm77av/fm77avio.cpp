@@ -109,15 +109,23 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	switch(ioAddr)
 	{
 	// Main-CPU I/O
+	case FM77AVIO_KEYCODE_PRINTER: //=         0xFD01,
+		ClearKeyIRQFlag();
+		keyboard.ProcessKeyCodeInQueue();
+		break;
 	case FM77AVIO_SUBSYS_INTERFACE: // =        0xFD04,
 		byteData=NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE();
 		// FIRQ flag must be cleared upon reading $FD04
 		// F-BASIC Analysis Manual Phase III Sub-System, Shuwa System Trading, pp.45
-		state.main.firq=0;
+		state.main.firqSource=0;
 		break;
 
 
 	// Sub-CPU I/O
+	case FM77AVIO_KEY_LOW: //=                 0xD401,
+		ClearKeyIRQFlag();
+		keyboard.ProcessKeyCodeInQueue();
+		break;
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=false;
 		break;
@@ -131,6 +139,16 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	switch(ioAddr)
 	{
 	// Main-CPU I/O
+	case FM77AVIO_KEYCODE_PRINTER_CASSETTE: // =0xFD00,
+		byteData=0x7F;
+		if(keyboard.state.lastKeyCode&0x100)
+		{
+			byteData|=0x80;
+		}
+		break;
+	case FM77AVIO_KEYCODE_PRINTER: // =         0xFD01,
+		byteData=keyboard.state.lastKeyCode&0xFF;
+		break;
 	case FM77AVIO_SUBSYS_BUSY_HALT:
 		byteData=0x7E; // Bit0=0 means has disk, RS232C, or ext device.
 		if(true!=ExternalDevicePresent())
@@ -148,6 +166,16 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 
 
 	// Sub-CPU I/O
+	case FM77AVIO_KEY_HIGH: // =                0xD400,
+		byteData=0x7F;
+		if(keyboard.state.lastKeyCode&0x100)
+		{
+			byteData|=0x80;
+		}
+		break;
+	case FM77AVIO_KEY_LOW: //=                 0xD401,
+		byteData=keyboard.state.lastKeyCode&0xFF;
+		break;
 	}
 	return byteData;
 }
@@ -163,7 +191,7 @@ uint8_t FM77AV::NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE(void) const
 	//{
 	//	byteData&=(~2);
 	//}
-	if(0!=(state.main.firq&FIRQ_SUBSYS_ATTENTION))
+	if(0!=(state.main.firqSource&FIRQ_SUBSYS_ATTENTION))
 	{
 		byteData&=(~1);
 	}
