@@ -20,3 +20,9 @@ target_include_directories(fm77avthread PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(fm77avparam fm77avparam.cpp fm77avparam.h)
 target_link_libraries(fm77avparam fm77avdef fm77av)
 target_include_directories(fm77avparam PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+
+
+add_library(fm77avrender fm77avrender.h fm77avrender.cpp)
+target_link_libraries(fm77avrender fm77av memory cpputil fm77avdef)
+target_include_directories(fm77avrender PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
