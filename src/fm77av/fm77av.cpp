@@ -13,6 +13,10 @@ FM77AV::FM77AV() :
 	subMemAcc(this,&physMem),
 	subCPU(this)
 {
+	for(auto &b : var.breakOnSubCmd)
+	{
+		b=0;
+	}
 }
 
 bool FM77AV::SetUp(FM77AVParam &param)

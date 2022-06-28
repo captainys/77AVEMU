@@ -244,6 +244,7 @@ enum
 	FM7_SUBCMD_PUT_BLOCK2=            0x1E,
 	FM7_SUBCMD_GCURSOR=               0x1F,
 	FM7_SUBCMD_CHAR_LINE=             0x20,
+FM7_MAX_SUB_CMD=0x40,
 };
 
 std::string SubCmdToStr(unsigned int subCmd);

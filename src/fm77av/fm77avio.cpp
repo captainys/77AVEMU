@@ -64,6 +64,18 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			{
 				PrintSubSystemCommand();
 			}
+			if(true==state.subSysHalt && true==var.breakOnUnhaltSubCPU)
+			{
+				mainCPU.debugger.ExternalBreak("Sub-CPU Unhalt.");
+			}
+			auto subCmd=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+2];
+			if(subCmd<FM7_MAX_SUB_CMD && 0!=(var.breakOnSubCmd[subCmd]&MC6809::Debugger::BRKPNT_FLAG_BREAK))
+			{
+				std::string str;
+				str="Sub-CPU Command";
+				str+=SubCmdToStr(subCmd);
+				mainCPU.debugger.ExternalBreak(str);
+			}
 			state.subSysHalt=false;
 		}
 		break;

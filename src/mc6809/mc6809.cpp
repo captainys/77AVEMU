@@ -2086,8 +2086,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_NOP: //       0x12,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
 		break;
 
 	case INST_ORA_IMM: //   0x8A,
@@ -2097,17 +2095,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ORA_DP: //    0x9A,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetA(OR(state.A(),mem.FetchByte(DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ORA_IDX: //   0xAA,
-		{
-			auto reg=OR(state.A(),mem.FetchByte(DecodeIndexedAddress(inst,mem)));
-			state.SetA(reg);
-		}
+		state.SetA(OR(state.A(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ORA_EXT: //   0xBA,
-		state.SetA(OR(state.A(),inst.ExtendedAddress()));
+		state.SetA(OR(state.A(),mem.FetchByte(inst.ExtendedAddress())));
 		break;
 
 	case INST_ORB_IMM: //   0xCA,
@@ -2117,17 +2111,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ORB_DP: //    0xDA,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetB(OR(state.B(),mem.FetchByte(DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ORB_IDX: //   0xEA,
-		{
-			auto reg=OR(state.B(),mem.FetchByte(DecodeIndexedAddress(inst,mem)));
-			state.SetB(reg);
-		}
+		state.SetB(OR(state.B(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ORB_EXT: //   0xFA,
-		state.SetB(OR(state.B(),inst.ExtendedAddress()));
+		state.SetB(OR(state.B(),mem.FetchByte(inst.ExtendedAddress())));
 		break;
 
 	case INST_ORCC_IMM: //  0x1A,
@@ -3986,6 +3976,10 @@ std::string MC6809::DisassemblePSHPULRegisters(uint8_t flags,char UorS) const
 	if("CC"==str || "cc"==str)
 	{
 		return REG_CC;
+	}
+	if("X"==str || "x"==str)
+	{
+		return REG_X;
 	}
 	if("Y"==str || "y"==str)
 	{

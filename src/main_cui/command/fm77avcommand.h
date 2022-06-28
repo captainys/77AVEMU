@@ -45,6 +45,9 @@ public:
 
 		CMD_DUMP,
 		CMD_MEMDUMP,
+
+		CMD_BREAK_ON,
+		CMD_DONT_BREAK_ON,
 	};
 
 	enum
@@ -52,6 +55,13 @@ public:
 		ENABLE_IOMONITOR,
 		ENABLE_SUBSYSCMD_MONITOR,
 		ENABLE_BIOSCMD_MONITOR,
+	};
+
+	enum
+	{
+		BREAK_ON_NULL,
+		BREAK_ON_SUBCPU_UNHALT,
+		BREAK_ON_SUBCMD,
 	};
 
 	class Command
@@ -72,6 +82,8 @@ public:
 	void Error_UnknownCPU(const Command &cmd);
 	void Error_CPUOrAddress(const Command &cmd);
 	void Error_UnknownFeature(const Command &cmd);
+	void Error_UnknownEvent(const Command &cmd);
+	void Error_IllegalSubCommand(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
 
@@ -90,6 +102,8 @@ public:
 	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Dump(FM77AV &av,Command &cmd);
 	void Execute_MemoryDump(FM77AV &av,Command &cmd);
+	void Execute_BreakOn(FM77AV &av,Command &cmd);
+	void Execute_DontBreakOn(FM77AV &av,Command &cmd);
 };
 
 /* } */

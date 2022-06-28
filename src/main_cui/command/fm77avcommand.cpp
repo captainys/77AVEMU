@@ -33,10 +33,16 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["DM"]=CMD_DUMP;
 	primaryCmdMap["MEMDUMP"]=CMD_MEMDUMP;
 	primaryCmdMap["MD"]=CMD_MEMDUMP;
+	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
+	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
 	featureMap["BIOSMON"]=ENABLE_BIOSCMD_MONITOR;
+
+	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
+	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
+	breakEventMap["SUBCMD"]=BREAK_ON_SUBCMD;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -79,6 +85,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "MEMDUMP or MD seg:address wid hei step 1/0" << std::endl;
 	std::cout << "  Memory Dump.  If you enter wid,hei,step it will dump non-16x16 columns." << std::endl;
 	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
+	std::cout << "BRKON event" << std::endl;
+	std::cout << "  Break on event." << std::endl;
+	std::cout << "CBRKON event" << std::endl;
+	std::cout << "  Don't break on event." << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
@@ -89,6 +99,13 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor sub-system command when sub-CPU is unhalted." << std::endl;
 	std::cout << "BIOSMON" << std::endl;
 	std::cout << "  Monitor BIOS Call." << std::endl;
+
+	std::cout << "<< Event that can break >>" << std::endl;
+	std::cout << "SUBUNHALT | UNHALTSUB" << std::endl;
+	std::cout << "  Sub-CPU Unhalted." << std::endl;
+	std::cout << "SUBCMD ##" << std::endl;
+	std::cout << "  Break on Sub-CPU command.  ## is a number in hexadecimal." << std::endl;
+	std::cout << "  Break timing is same as SUBUNHALT/UNHALTSUB" << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -135,6 +152,16 @@ void FM77AVCommandInterpreter::Error_CPUOrAddress(const Command &cmd)
 void FM77AVCommandInterpreter::Error_UnknownFeature(const Command &cmd)
 {
 	std::cout << "Unknown Feature." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_UnknownEvent(const Command &cmd)
+{
+	std::cout << "Unknown Event." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_IllegalSubCommand(const Command &cmd)
+{
+	std::cout << "Illegal Sub-CPU Command." << std::endl;
 	Error_Common(cmd);
 }
 
@@ -283,6 +310,12 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DUMP:
 		Execute_Dump(fm77av,cmd);
+		break;
+	case CMD_BREAK_ON:
+		Execute_BreakOn(fm77av,cmd);
+		break;
+	case CMD_DONT_BREAK_ON:
+		Execute_DontBreakOn(fm77av,cmd);
 		break;
 	}
 }
@@ -557,5 +590,100 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)
 			Error_CPUOrAddress(cmd);
 			return;
 		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_BreakOn(FM77AV &av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto EVT=cmd.argv[1];
+		cpputil::Capitalize(EVT);
+		auto found=breakEventMap.find(EVT);
+		if(breakEventMap.end()!=found)
+		{
+			switch(found->second)
+			{
+			case BREAK_ON_SUBCPU_UNHALT:
+				av.var.breakOnUnhaltSubCPU=true;
+				std::cout << "Break on Sub-CPU Unhalt." << std::endl;
+				break;
+			case BREAK_ON_SUBCMD:
+				if(3<=cmd.argv.size())
+				{
+					auto num=cpputil::Xtoi(cmd.argv[2].data());
+					if(num<FM7_MAX_SUB_CMD)
+					{
+						av.var.breakOnSubCmd[num]=MC6809::Debugger::BRKPNT_FLAG_BREAK;
+						std::cout << "Break On Sub-CPU Command " << cpputil::Ubtox(num) << " " << SubCmdToStr(num) << std::endl;
+					}
+					else
+					{
+						Error_IllegalSubCommand(cmd);
+					}
+				}
+				else
+				{
+					Error_TooFewArgs(cmd);
+				}
+				break;
+			}
+		}
+		else
+		{
+			Error_UnknownEvent(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AV &av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto EVT=cmd.argv[1];
+		cpputil::Capitalize(EVT);
+		auto found=breakEventMap.find(EVT);
+		if(breakEventMap.end()!=found)
+		{
+			switch(found->second)
+			{
+			case BREAK_ON_SUBCPU_UNHALT:
+				av.var.breakOnUnhaltSubCPU=false;
+				std::cout << "Don't Break on Sub-CPU Unhalt." << std::endl;
+				break;
+			case BREAK_ON_SUBCMD:
+				if(3<=cmd.argv.size())
+				{
+					auto num=cpputil::Xtoi(cmd.argv[2].data());
+					if(num<FM7_MAX_SUB_CMD)
+					{
+						av.var.breakOnSubCmd[num]=0;
+						std::cout << "Don't Break On Sub-CPU Command " << cpputil::Ubtox(num) << " " << SubCmdToStr(num) << std::endl;
+					}
+					else
+					{
+						Error_IllegalSubCommand(cmd);
+					}
+				}
+				else
+				{
+					for(auto &b : av.var.breakOnSubCmd)
+					{
+						b=0;
+					}
+				}
+				break;
+			}
+		}
+		else
+		{
+			Error_UnknownEvent(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }

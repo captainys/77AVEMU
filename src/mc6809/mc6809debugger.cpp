@@ -5,6 +5,12 @@ void MC6809::Debugger::ClearStopFlag(void)
 	stop=false;
 }
 
+void MC6809::Debugger::ExternalBreak(std::string reason)
+{
+	externalBreakReason=reason;
+	stop=true;
+}
+
 void MC6809::Debugger::SetBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount,unsigned char flags)
 {
 	for(uint32_t addr=addrStart; addr<=addrEnd; ++addr)

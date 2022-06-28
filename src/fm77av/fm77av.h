@@ -81,6 +81,9 @@ public:
 		bool monitorSubSysCmd=false;
 		bool monitorBIOSCall=false;
 		unsigned int lastDisassemblyCPU=CPU_MAIN;
+
+		bool breakOnUnhaltSubCPU=false;
+		uint8_t breakOnSubCmd[FM7_MAX_SUB_CMD];
 	};
 	Variable var;
 

@@ -580,12 +580,15 @@ public:
 		bool stop=false;
 		bool hitMonitorPoint=false;
 		uint16_t nextDisassemblyAddr=0;
+		std::string externalBreakReason;
 
 		BreakPoint lastBreakPointInfo;
 		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
 		BreakPoint oneTimeBreakPoints[MEMORY_ADDRESS_SIZE];
 
 		void ClearStopFlag(void);
+
+		void ExternalBreak(std::string reason);
 
 		void SetBreakPoint(uint16_t addrStart,uint16_t addrEnd,unsigned int passCount=1,unsigned char flags=BRKPNT_FLAG_BREAK);
 		void ClearBreakPoint(uint16_t addrStart=0,uint16_t addrEnd=MEMORY_ADDRESS_SIZE-1);

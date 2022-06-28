@@ -5,10 +5,10 @@
 
 void FM77AVCUIThread::Run(void)
 {
+	std::cout << ">";
 	while(true!=vmTerminated && true!=cuiQuit)
 	{
 		std::string cmd;
-		std::cout << ">";
 		std::getline(std::cin,cmd);
 
 		uiLock.lock();
@@ -31,6 +31,7 @@ void FM77AVCUIThread::Run(void)
 		cmdQueue.pop();
 		auto cmd=FM77AVCommandInterpreter::Interpret(cmdStr);
 		FM77AVCommandInterpreter::Execute(fm77avThread,fm77av,outside_world,cmd);
+		std::cout << ">";
 	}
 
 }
