@@ -54,6 +54,7 @@ public:
 		FM77AVTape t77;
 		FM77AVTape::TapePointer ptr;
 	};
+	State state;
 
 	void Reset(void);  // Don't rewind
 };

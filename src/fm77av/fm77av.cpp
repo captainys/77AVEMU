@@ -31,6 +31,19 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		return false;
 	}
 
+	if(""!=param.t77Path)
+	{
+		if(true==dataRecorder.state.t77.Load(param.t77Path))
+		{
+			std::cout << "Loaded Cassette: " << param.t77Path << std::endl;
+		}
+		else
+		{
+			std::cout << "Failed to load: " << param.t77Path << std::endl;
+			return false;
+		}
+	}
+
 	for(int i=0; i<32; ++i)
 	{
 		//	MAINSYS_BOOT_ROM_END=       0x3FFE0,

@@ -7,6 +7,7 @@
 class FM77AVArgv : public FM77AVParam
 {
 public:
+	void Help(void);
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
 };
 

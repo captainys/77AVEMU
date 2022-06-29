@@ -42,6 +42,8 @@ public:
 
 	unsigned int machineType=MACHINETYPE_FM7;
 	std::string ROMPath;
+
+	std::string t77Path;
 };
 
 
