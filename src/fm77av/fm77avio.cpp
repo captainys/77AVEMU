@@ -88,6 +88,14 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
 		break;
+	case FM77AVIO_VRAM_OFFSET_HIGH:// =        0xD40E,
+		crtc.state.VRAMOffset&=0xFF;
+		crtc.state.VRAMOffset|=(value<<8);
+		break;
+	case FM77AVIO_VRAM_OFFSET_LOW: // =         0xD40F,
+		crtc.state.VRAMOffset&=0xFF00;
+		crtc.state.VRAMOffset|=value;
+		break;
 	}
 }
 uint8_t FM77AV::IORead(uint16_t ioAddr)

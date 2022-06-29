@@ -259,6 +259,7 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 	case MEMTYPE_NOT_EXIST:
 		return 0xFF;
 	case MEMTYPE_SUBSYS_VRAM:
+		addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
 		// if(different bank)
 		// {
 		//	return byte from the correct bank.
@@ -334,6 +335,7 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 	case MEMTYPE_NOT_EXIST:
 		return;
 	case MEMTYPE_SUBSYS_VRAM:
+		addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
 		// if(different bank)
 		// {
 		//	write to the correct bank.

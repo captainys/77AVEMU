@@ -12,6 +12,7 @@ private:
 	std::vector <unsigned char> rgba;
 
 	unsigned int scrnMode;
+	unsigned int VRAMOffset;
 
 public:
 	class Image

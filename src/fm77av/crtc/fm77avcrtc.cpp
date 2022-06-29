@@ -6,6 +6,11 @@
 FM77AVCRTC::FM77AVCRTC(VMBase *vmBase) : Device(vmBase)
 {
 }
+void FM77AVCRTC::Reset(void)
+{
+	state.scrnMode=SCRNMODE_640X200_SINGLE;
+	state.VRAMOffset=0;
+}
 FM77AVCRTC::Palette &FM77AVCRTC::GetPalette(void)
 {
 	return state.palette;

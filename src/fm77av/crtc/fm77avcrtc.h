@@ -32,13 +32,32 @@ public:
 	public:
 		Palette palette;
 		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
+		uint16_t VRAMOffset=0;
 	};
 	FM77AVCRTC(VMBase *vmBase);
+	void Reset(void);
 	State state;
 	Palette &GetPalette(void);
 	const Palette &GetPalette(void) const;
 	bool InVSYNC(uint64_t fm77avTime) const;
 	bool InHSYNC(uint64_t fm77avTime) const;
+
+	static inline uint32_t TransformVRAMAddress(uint32_t addr,unsigned int scrnMode,uint16_t VRAMOffset)
+	{
+		uint32_t addrHI,addrLO;
+		switch(scrnMode)
+		{
+		case SCRNMODE_640X200_SINGLE:
+			addrHI=addr&~0x3FFF;
+			addrLO=(addr+VRAMOffset)&0x3FFF;
+			return addrHI|addrLO;
+		}
+		return addr;
+	}
+	inline uint32_t TransformVRAMAddress(uint32_t addr) const
+	{
+		return TransformVRAMAddress(addr,state.scrnMode,state.VRAMOffset);
+	}
 
 	/*
 	VSYNC Cycle        |<----------------->|

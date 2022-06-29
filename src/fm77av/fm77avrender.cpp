@@ -25,6 +25,7 @@ FM77AVRender::Image FM77AVRender::GetImage(void) const
 void FM77AVRender::Prepare(const FM77AVCRTC &crtc)
 {
 	this->scrnMode=crtc.state.scrnMode;
+	this->VRAMOffset=crtc.state.VRAMOffset;
 	switch(crtc.state.scrnMode)
 	{
 	case SCRNMODE_640X200_SINGLE:
@@ -53,7 +54,7 @@ void FM77AVRender::BuildImage(const unsigned char VRAM[],const class FM77AVCRTC:
 				for(unsigned int x=0; x<640; x+=8)
 				{
 					unsigned int addr=y*80+(x>>3);
-					// addr=(addr+VRAMOffset)%0x4000;
+					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset);
 					unsigned int B=VRAM[addr];
 					unsigned int R=VRAM[addr+0x4000];
 					unsigned int G=VRAM[addr+0x8000];
