@@ -63,8 +63,6 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 				auto nextTimeSync=fm77avPtr->state.fm77avTime+NANOSECONDS_PER_TIME_SYNC;
 				while(fm77avPtr->state.fm77avTime<nextTimeSync && true!=fm77avPtr->CheckAbort())
 				{
-PrintStatus(*fm77avPtr);
-
 					fm77avPtr->RunOneInstruction();
 					fm77avPtr->ProcessInterrupts();
 					// fm77avPtr->RunFastDevicePolling();
