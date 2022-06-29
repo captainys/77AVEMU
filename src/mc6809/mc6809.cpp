@@ -2935,8 +2935,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS16(mem,state.PC+inst.length);
 		state.PC+=inst.BranchOffset8();
 		break;
-	case INST_LBSR_IMM16: //0x18D, // 10 2D
-		PushS16(mem,state.PC);
+	case INST_LBSR_IMM16: // 0x17
+		PushS16(mem,state.PC+inst.length);
 		state.PC+=inst.BranchOffset16();
 		break;
 
@@ -2968,6 +2968,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			state.PC+=inst.BranchOffset16();
 			++inst.clocks;
 		}
+		break;
+	default:
+		Abort("Undefined instruction.");
+		inst.length=0;
 		break;
 	}
 
