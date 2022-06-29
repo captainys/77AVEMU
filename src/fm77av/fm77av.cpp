@@ -112,8 +112,13 @@ void FM77AV::Reset(void)
 	state.sub.irqSource=0;
 	state.sub.firqSource=0;
 
+	physMem.Reset();
+	mainMemAcc.Reset();
 	mainCPU.Reset();
+	subMemAcc.Reset();
 	subCPU.Reset();
+	crtc.Reset();
+	keyboard.Reset();
 }
 bool FM77AV::SubCPUHalt(void) const
 {

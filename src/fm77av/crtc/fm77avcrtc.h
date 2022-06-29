@@ -14,6 +14,10 @@ public:
 
 	class Palette
 	{
+	public:
+		uint8_t digitalPalette[8];
+		uint16_t analogPalette[4096];
+		void Reset(void);
 	};
 
 	enum

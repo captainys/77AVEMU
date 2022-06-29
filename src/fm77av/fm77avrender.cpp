@@ -61,10 +61,16 @@ void FM77AVRender::BuildImage(const unsigned char VRAM[],const class FM77AVCRTC:
 
 					for(int dx=0; dx<8; ++dx)
 					{
+						uint8_t code=
+							(0!=(G&0x80) ? 4 : 0) |
+							(0!=(R&0x80) ? 2 : 0) |
+							(0!=(B&0x80) ? 1 : 0);
+						code=palette.digitalPalette[code];
+
 						// Tentative.  Must consider palette.
-						rgba0[0]=((R&0x80) ? 0xFF : 0);
-						rgba0[1]=((G&0x80) ? 0xFF : 0);
-						rgba0[2]=((B&0x80) ? 0xFF : 0);
+						rgba0[0]=((code&2) ? 0xFF : 0);
+						rgba0[1]=((code&4) ? 0xFF : 0);
+						rgba0[2]=((code&1) ? 0xFF : 0);
 						rgba0[3]=0xFF;
 						rgba1[0]=rgba0[0];
 						rgba1[1]=rgba0[1];

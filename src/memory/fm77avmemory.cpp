@@ -126,7 +126,7 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	//   BOOT_DOS.ROM
 	//   FBASIC30.ROM
 	//   SUBSYS_C.ROM or SUBSYS.ROM
-	if(MACHINETYPE_FM7==fm77av->state.machineType)
+	if(fm77av->state.machineType<MACHINETYPE_FM77AV)
 	{
 		std::vector <struct ToLoad> lst=
 		{

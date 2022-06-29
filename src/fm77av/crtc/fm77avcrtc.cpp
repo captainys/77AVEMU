@@ -3,11 +3,24 @@
 
 
 
+void FM77AVCRTC::Palette::Reset(void)
+{
+	for(int i=0; i<8; ++i)
+	{
+		digitalPalette[i]=i;
+	}
+	for(int i=0; i<4096; ++i)
+	{
+		analogPalette[i]=i;
+	}
+}
+
 FM77AVCRTC::FM77AVCRTC(VMBase *vmBase) : Device(vmBase)
 {
 }
 void FM77AVCRTC::Reset(void)
 {
+	state.palette.Reset();
 	state.scrnMode=SCRNMODE_640X200_SINGLE;
 	state.VRAMOffset=0;
 }

@@ -12,7 +12,6 @@ target_link_libraries(${TARGET_NAME} outside_world fm77avdef fm77avmemory fm77av
 
 add_library(fm77avdef fm77avdef.cpp fm77avdef.h)
 target_include_directories(fm77avdef PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(fm77avdef cpputil)
 
 
 

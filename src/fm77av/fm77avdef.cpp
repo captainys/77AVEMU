@@ -1,5 +1,4 @@
 #include "fm77avdef.h"
-#include "cpputil.h"
 
 
 
@@ -20,6 +19,8 @@ std::string MachineTypeToStr(unsigned int machineType)
 	{
 	case MACHINETYPE_FM7:
 		return "FM-7";
+	case MACHINETYPE_FM77:
+		return "FM-77";
 	case MACHINETYPE_FM77AV:
 		return "FM77AV";
 	case MACHINETYPE_FM77AV40:
@@ -29,7 +30,12 @@ std::string MachineTypeToStr(unsigned int machineType)
 }
 unsigned int StrToMachineType(std::string str)
 {
+	Capitalize(str);
 	if("FM7"==str || "FM-7"==str)
+	{
+		return MACHINETYPE_FM7;
+	}
+	if("FM77"==str || "FM-77"==str)
 	{
 		return MACHINETYPE_FM7;
 	}
@@ -57,7 +63,7 @@ std::string CPUToStr(unsigned int cpuMainOrSub)
 }
 unsigned int StrToCPU(std::string str)
 {
-	cpputil::Capitalize(str);
+	Capitalize(str);
 	if("MAIN"==str || "M"==str)
 	{
 		return CPU_MAIN;

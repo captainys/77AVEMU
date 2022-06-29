@@ -84,6 +84,20 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		break;
 
+	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
+	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,
+	case FM77AVIO_DIGITAL_PALETTE_2: //=       0xFD3A,
+	case FM77AVIO_DIGITAL_PALETTE_3: //=       0xFD3B,
+	case FM77AVIO_DIGITAL_PALETTE_4: //=       0xFD3C,
+	case FM77AVIO_DIGITAL_PALETTE_5: //=       0xFD3D,
+	case FM77AVIO_DIGITAL_PALETTE_6: //=       0xFD3E,
+	case FM77AVIO_DIGITAL_PALETTE_7: //=       0xFD3F,
+		crtc.state.palette.digitalPalette[ioAddr-FM77AVIO_DIGITAL_PALETTE_0]=(value&7);
+		break;
+
+
+
+
 	// Sub-CPU I/O
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
@@ -95,6 +109,10 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_VRAM_OFFSET_LOW: // =         0xD40F,
 		crtc.state.VRAMOffset&=0xFF00;
 		crtc.state.VRAMOffset|=value;
+		if(state.machineType<MACHINETYPE_FM77AV)
+		{
+			crtc.state.VRAMOffset&=~0x1F;
+		}
 		break;
 	}
 }
@@ -188,7 +206,16 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 			byteData|=0x80;
 		}
 		break;
-
+	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
+	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,
+	case FM77AVIO_DIGITAL_PALETTE_2: //=       0xFD3A,
+	case FM77AVIO_DIGITAL_PALETTE_3: //=       0xFD3B,
+	case FM77AVIO_DIGITAL_PALETTE_4: //=       0xFD3C,
+	case FM77AVIO_DIGITAL_PALETTE_5: //=       0xFD3D,
+	case FM77AVIO_DIGITAL_PALETTE_6: //=       0xFD3E,
+	case FM77AVIO_DIGITAL_PALETTE_7: //=       0xFD3F,
+		byteData=0xF8|crtc.state.palette.digitalPalette[ioAddr-FM77AVIO_DIGITAL_PALETTE_0];
+		break;
 
 	// Sub-CPU I/O
 	case FM77AVIO_KEY_HIGH: // =                0xD400,
