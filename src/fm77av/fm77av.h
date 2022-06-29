@@ -11,6 +11,7 @@
 #include "fm77avparam.h"
 #include "fm77avcrtc.h"
 #include "fm77avkeyboard.h"
+#include "fm77avtape.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -39,6 +40,7 @@ public:
 
 	FM77AVCRTC crtc;
 	FM77AVKeyboard keyboard;
+	FM77AVDataRecorder dataRecorder;
 	// Devices <<
 
 	enum

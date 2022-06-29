@@ -119,6 +119,7 @@ void FM77AV::Reset(void)
 	subCPU.Reset();
 	crtc.Reset();
 	keyboard.Reset();
+	dataRecorder.Reset();
 }
 bool FM77AV::SubCPUHalt(void) const
 {
