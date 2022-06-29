@@ -34,7 +34,7 @@ bool FM77AVTape::SaveAs(std::string fName) const
 void FM77AVTape::Rewind(TapePointer &ptr) const
 {
 	ptr.dataPtr=16;
-	ptr.milliSecLeft=0;
+	ptr.microSecLeft=0;
 	ptr.fm77avTime=0;
 	ptr.eot=false;
 }
@@ -47,7 +47,7 @@ void FM77AVTape::Seek(TapePointer &ptr,unsigned int dataPtr) const
 	else if(ptr.dataPtr!=dataPtr)
 	{
 		ptr.dataPtr=dataPtr;
-		ptr.milliSecLeft=0;
+		ptr.microSecLeft=0;
 		ptr.fm77avTime=0;
 		ptr.eot=false;
 	}
@@ -61,7 +61,7 @@ void FM77AVTape::MotorOn(TapePointer &ptr,uint64_t fm77avTime) const
 	}
 	else
 	{
-		ptr.milliSecLeft=data[ptr.dataPtr+1];
+		ptr.microSecLeft=data[ptr.dataPtr+1]*MICROSEC_PER_T77_ONE;
 		ptr.eot=false;
 	}
 	
@@ -71,39 +71,36 @@ void FM77AVTape::MoveTapePointer(TapePointer &ptr,uint64_t fm77avTime) const
 	if(ptr.fm77avTime<fm77avTime)
 	{
 		auto nanoSecPassed=fm77avTime-ptr.fm77avTime;
-		nanoSecPassed/=1000000;
-		unsigned int milliSecPassed=nanoSecPassed;
+		nanoSecPassed/=1000;
+		unsigned int microSecPassed=nanoSecPassed;
 
-		if(milliSecPassed<ptr.milliSecLeft)
+		if(microSecPassed<ptr.microSecLeft)
 		{
-			ptr.milliSecLeft-=milliSecPassed;
+			ptr.microSecLeft-=microSecPassed;
 			return;
 		}
 
 		ptr.fm77avTime=fm77avTime;
 
-		milliSecPassed-=ptr.milliSecLeft;
+		microSecPassed-=ptr.microSecLeft;
 		ptr.dataPtr+=2;
 
-		for(;;)
+		while(ptr.dataPtr+1<data.size())
 		{
-			if(data.size()<=ptr.dataPtr+1)
+			unsigned int microSecForSegment=data[ptr.dataPtr+1];
+			microSecForSegment*=MICROSEC_PER_T77_ONE;
+			if(microSecPassed<microSecForSegment)
 			{
-				ptr.eot=true;
+				ptr.microSecLeft=microSecForSegment-microSecPassed;
 				return;
-			}
-
-			if(milliSecPassed<data[ptr.dataPtr+1])
-			{
-				ptr.milliSecLeft=data[ptr.dataPtr+1]-milliSecPassed;
-				break;
 			}
 			else
 			{
-				milliSecPassed-=data[ptr.dataPtr+1];
+				microSecPassed-=microSecForSegment;
 				ptr.dataPtr+=2;
 			}
 		}
+		ptr.eot=true;
 	}
 }
 uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
@@ -114,7 +111,7 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 	}
 	else
 	{
-		if(data[ptr.dataPtr]<0x40)
+		if(data[ptr.dataPtr]<0x40 || (data[ptr.dataPtr]==0x7F && data[ptr.dataPtr]==0xFF))
 		{
 			return 0;
 		}

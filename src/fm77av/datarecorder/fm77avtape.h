@@ -22,11 +22,16 @@ public:
 	bool Save(void) const;
 	bool SaveAs(std::string fName) const;
 
+	enum
+	{
+		MICROSEC_PER_T77_ONE=9
+	};
+
 	class TapePointer
 	{
 	public:
 		unsigned int dataPtr=16;           // First byte=16.
-		unsigned int milliSecLeft=0; // Milli seconds left for this byte pair.
+		unsigned int microSecLeft=0; // Micro seconds left for this byte pair.
 		uint64_t fm77avTime=0;   // In nano sec.
 		bool eot=false;
 	};
