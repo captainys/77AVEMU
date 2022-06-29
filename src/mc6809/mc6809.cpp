@@ -1098,6 +1098,7 @@ void MC6809::NMI(class MemoryAccess &mem)
 {
 	if(true==state.nmiEnabled)
 	{
+		state.CC|=EF;
 		PushS16(mem,state.PC);
 		PushS16(mem,state.U);
 		PushS16(mem,state.Y);
@@ -1106,7 +1107,7 @@ void MC6809::NMI(class MemoryAccess &mem)
 		PushS8(mem,state.B());
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
-		state.CC|=(EF|IRQMASK|FIRQMASK);
+		state.CC|=(IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(NMI_VECTOR_ADDR);
 	}
 }
@@ -1114,6 +1115,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 {
 	if(0==(state.CC&IRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
 	{
+		state.CC|=EF;
 		PushS16(mem,state.PC);
 		PushS16(mem,state.U);
 		PushS16(mem,state.Y);
@@ -1122,7 +1124,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 		PushS8(mem,state.B());
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
-		state.CC|=(EF|IRQMASK|FIRQMASK);
+		state.CC|=(IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(IRQ_VECTOR_ADDR);
 		debugger.OnIRQ(*this,mem);
 	}
@@ -1131,10 +1133,10 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 {
 	if(0==(state.CC&FIRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
 	{
+		state.CC&=~EF;
 		PushS16(mem,state.PC);
 		PushS8(mem,state.CC);
 		state.CC|=(IRQMASK|FIRQMASK);
-		state.CC&=~EF;
 		state.PC=mem.FetchWord(FIRQ_VECTOR_ADDR);
 		debugger.OnFIRQ(*this,mem);
 	}
@@ -2415,9 +2417,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_RTI: //       0x3B,
+		state.CC=PullS8(mem);
 		if(0!=(state.CC&EF))
 		{
-			state.CC=PullS8(mem);
 			state.SetA(PullS8(mem));
 			state.SetB(PullS8(mem));
 			state.DP=PullS8(mem);
@@ -2425,10 +2427,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			state.Y=PullS16(mem);
 			state.U=PullS16(mem);
 			inst.clocks=15;
-		}
-		else
-		{
-			state.CC=PullS8(mem);
 		}
 		state.PC=PullS16(mem);
 		inst.length=0;
