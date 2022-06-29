@@ -1124,6 +1124,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 		PushS8(mem,state.CC);
 		state.CC|=(EF|IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(IRQ_VECTOR_ADDR);
+		debugger.OnIRQ(*this,mem);
 	}
 }
 void MC6809::FIRQ(class MemoryAccess &mem)
@@ -1135,6 +1136,7 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 		state.CC|=(IRQMASK|FIRQMASK);
 		state.CC&=~EF;
 		state.PC=mem.FetchWord(FIRQ_VECTOR_ADDR);
+		debugger.OnFIRQ(*this,mem);
 	}
 }
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
@@ -2441,8 +2443,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_SBCA_DP: //   0x92,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=mem.FetchByte(DecodeDirectPageAddress(inst));
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.A();
+			SubByte(reg,value);
+			state.SetA(reg);
+		}
 		break;
 	case INST_SBCA_IDX: //  0xA2,
 		Abort("Instruction not supported yet.");
@@ -2458,8 +2468,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_SBCB_DP: //   0xD2,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=mem.FetchByte(DecodeDirectPageAddress(inst));
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.B();
+			SubByte(reg,value);
+			state.SetB(reg);
+		}
 		break;
 	case INST_SBCB_IDX: //  0xE2,
 		Abort("Instruction not supported yet.");

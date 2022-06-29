@@ -625,6 +625,22 @@ public:
 				nextDisassemblyAddr=cpu.state.PC;
 			}
 		}
+		inline void OnIRQ(MC6809 &cpu,const MemoryAccess &mem)
+		{
+			if(true==enabled)
+			{
+				CheckBreakCondition(cpu,mem);
+				nextDisassemblyAddr=cpu.state.PC;
+			}
+		}
+		inline void OnFIRQ(MC6809 &cpu,const MemoryAccess &mem)
+		{
+			if(true==enabled)
+			{
+				CheckBreakCondition(cpu,mem);
+				nextDisassemblyAddr=cpu.state.PC;
+			}
+		}
 	};
 	Debugger debugger;
 

@@ -30,6 +30,11 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 	case ENCODING_JIS:
 	case ENCODING_FM16BETA:
 		{
+			if(AVKEY_BREAK==keyCode)
+			{
+				fm77av->SetBreakKeyFIRQFlag();
+			}
+
 			FM77AVKeyCombination keyComb;
 			keyComb.shift=(0!=(keyFlags&KEYFLAG_SHIFT));
 			keyComb.ctrl=(0!=(keyFlags&KEYFLAG_CTRL));
@@ -53,11 +58,18 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 }
 void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 {
+	FM77AV *fm77av=(FM77AV *)vmPtr;
+
 	switch(state.encodingMode)
 	{
 	case ENCODING_JIS:
 	case ENCODING_FM16BETA:
-		// Nothing to do
+		{
+			if(AVKEY_BREAK==keyCode)
+			{
+				fm77av->ClearBreakKeyFIRQFlag();
+			}
+		}
 		break;
 	case ENCODING_SCANCODE:
 		break;

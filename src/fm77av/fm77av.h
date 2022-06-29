@@ -147,7 +147,6 @@ public:
 	void IOWrite(uint16_t ioAddr,uint8_t value);
 	uint8_t IORead(uint16_t ioAddr);
 	uint8_t NonDestructiveIORead(uint16_t ioAddr) const;
-	uint8_t NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE(void) const;
 
 	inline void ProcessInterrupts(void)
 	{
@@ -184,6 +183,8 @@ public:
 	bool KeyIRQFlagSet(void) const;
 	void SetKeyIRQFlag(void);
 	void ClearKeyIRQFlag(void);
+	void SetBreakKeyFIRQFlag(void);
+	void ClearBreakKeyFIRQFlag(void);
 
 
 	bool LoadROMFiles(std::string ROMPath);

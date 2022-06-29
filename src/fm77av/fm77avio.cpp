@@ -113,11 +113,15 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		ClearKeyIRQFlag();
 		keyboard.ProcessKeyCodeInQueue();
 		break;
-	case FM77AVIO_SUBSYS_INTERFACE: // =        0xFD04,
-		byteData=NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE();
+	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
+		// From FM-7 schematic, RFD03 seems to clear timer and printer irq.
+		state.main.irqSource&=~(SystemState::MAIN_IRQ_SOURCE_TIMER|SystemState::MAIN_IRQ_SOURCE_PRINTER);
+		break;
+	case FM77AVIO_FIRQ_SUBSYS_INTERFACE: // =   0xFD04,
 		// FIRQ flag must be cleared upon reading $FD04
 		// F-BASIC Analysis Manual Phase III Sub-System, Shuwa System Trading, pp.45
-		state.main.firqSource=0;
+		// Probably break-key FIRQ not.
+		state.main.firqSource&=~SystemState::MAIN_FIRQ_SOURCE_ATTENTION;
 		break;
 
 
@@ -149,6 +153,12 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_KEYCODE_PRINTER: // =         0xFD01,
 		byteData=keyboard.state.lastKeyCode&0xFF;
 		break;
+	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
+		byteData=~state.main.irqSource; // Active-Low
+		break;
+	case FM77AVIO_FIRQ_SUBSYS_INTERFACE: // =   0xFD04,
+		byteData=~state.main.firqSource; // Active-Low
+		break;
 	case FM77AVIO_SUBSYS_BUSY_HALT:
 		byteData=0x7E; // Bit0=0 means has disk, RS232C, or ext device.
 		if(true!=ExternalDevicePresent())
@@ -159,9 +169,6 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		{
 			byteData|=0x80;
 		}
-		break;
-	case FM77AVIO_SUBSYS_INTERFACE: // =        0xFD04,
-		byteData=NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE();
 		break;
 
 
@@ -176,24 +183,6 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_KEY_LOW: //=                 0xD401,
 		byteData=keyboard.state.lastKeyCode&0xFF;
 		break;
-	}
-	return byteData;
-}
-
-uint8_t FM77AV::NonDestructiveIORead_FM77AVIO_SUBSYS_INTERFACE(void) const
-{
-	uint8_t byteData=0xFF;
-	//if(MACHINETYPE_FM77AV40<=state.machineType)
-	//{
-	//	
-	//}
-	//if(breakKeyDown)
-	//{
-	//	byteData&=(~2);
-	//}
-	if(0!=(state.main.firqSource&FIRQ_SUBSYS_ATTENTION))
-	{
-		byteData&=(~1);
 	}
 	return byteData;
 }
