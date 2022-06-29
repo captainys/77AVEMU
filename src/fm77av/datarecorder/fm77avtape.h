@@ -53,11 +53,16 @@ public:
 	public:
 		FM77AVTape t77;
 		FM77AVTape::TapePointer ptr;
+		bool motor;
 	};
 	State state;
 
 	void Reset(void);  // Don't rewind
 	bool LoadT77(std::string fName);
+	void MotorOn(uint64_t fm77avTime);
+	void MotorOff(void);
+	void Move(uint64_t fm77avTime);
+	bool Read(void) const;
 };
 
 

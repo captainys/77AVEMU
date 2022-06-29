@@ -1,3 +1,4 @@
+#include <iostream>
 #include "fm77avtape.h"
 
 bool FM77AVTape::Load(std::string fName)
@@ -73,13 +74,13 @@ void FM77AVTape::MoveTapePointer(TapePointer &ptr,uint64_t fm77avTime) const
 		nanoSecPassed/=1000000;
 		unsigned int milliSecPassed=nanoSecPassed;
 
-		ptr.fm77avTime=fm77avTime;
-
 		if(milliSecPassed<ptr.milliSecLeft)
 		{
 			ptr.milliSecLeft-=milliSecPassed;
 			return;
 		}
+
+		ptr.fm77avTime=fm77avTime;
 
 		milliSecPassed-=ptr.milliSecLeft;
 		ptr.dataPtr+=2;
@@ -128,6 +129,7 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 
 void FM77AVDataRecorder::Reset(void)
 {
+	state.motor=false;
 }
 bool FM77AVDataRecorder::LoadT77(std::string fName)
 {
@@ -135,6 +137,33 @@ bool FM77AVDataRecorder::LoadT77(std::string fName)
 	{
 		state.t77.Rewind(state.ptr);
 		return true;
+	}
+	return false;
+}
+void FM77AVDataRecorder::MotorOn(uint64_t fm77avTime)
+{
+	if(true!=state.motor)
+	{
+		state.t77.MotorOn(state.ptr,fm77avTime);
+		state.motor=true;
+	}
+}
+void FM77AVDataRecorder::MotorOff(void)
+{
+	state.motor=false;
+}
+void FM77AVDataRecorder::Move(uint64_t fm77avTime)
+{
+	if(true==state.motor && true!=state.ptr.eot)
+	{
+		state.t77.MoveTapePointer(state.ptr,fm77avTime);
+	}
+}
+bool FM77AVDataRecorder::Read(void) const
+{
+	if(true==state.motor && true!=state.ptr.eot)
+	{
+		return 0x80<state.t77.GetLevel(state.ptr);
 	}
 	return false;
 }

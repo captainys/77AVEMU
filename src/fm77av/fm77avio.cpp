@@ -24,6 +24,20 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	switch(ioAddr)
 	{
 	// Main-CPU I/O
+	case FM77AVIO_KEYCODE_PRINTER_CASSETTE://=0xFD00,
+		if(0!=(value&2)) // MOTOR ON
+		{
+			dataRecorder.MotorOn(state.fm77avTime);
+		}
+		else
+		{
+			dataRecorder.MotorOff();
+		}
+		break;
+	case FM77AVIO_CASSETTE_IRQMASK://=        0xFD02,
+		state.main.irqEnableBits=value;
+		break;
+
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
 		if(0!=(0x80&value))
 		{
@@ -143,6 +157,9 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		ClearKeyIRQFlag();
 		keyboard.ProcessKeyCodeInQueue();
 		break;
+	case FM77AVIO_CASSETTE_IRQMASK://=        0xFD02,
+		dataRecorder.Move(state.fm77avTime);
+		break;
 	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
 		// From FM-7 schematic, RFD03 seems to clear timer and printer irq.
 		state.main.irqSource&=~(SystemState::MAIN_IRQ_SOURCE_TIMER|SystemState::MAIN_IRQ_SOURCE_PRINTER);
@@ -188,6 +205,13 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		break;
 	case FM77AVIO_KEYCODE_PRINTER: // =         0xFD01,
 		byteData=keyboard.state.lastKeyCode&0xFF;
+		break;
+	case FM77AVIO_CASSETTE_IRQMASK://=        0xFD02,
+		byteData=0x7F;
+		if(true==dataRecorder.Read())
+		{
+			byteData|=0x80;
+		}
 		break;
 	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
 		byteData=~state.main.irqSource; // Active-Low
