@@ -25,7 +25,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	{
 	// Main-CPU I/O
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
-		if(0x80==value)
+		if(0!=(0x80&value))
 		{
 			state.subSysHalt=true;
 			state.subSysBusy=true;
@@ -77,6 +77,10 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 				mainCPU.debugger.ExternalBreak(str);
 			}
 			state.subSysHalt=false;
+		}
+		if(0!=(0x40&value))
+		{
+			std::cout << "Need to Implement: Cancel Request to Sub CPU" << std::endl;
 		}
 		break;
 
