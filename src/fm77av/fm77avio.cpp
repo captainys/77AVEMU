@@ -159,6 +159,7 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		break;
 	case FM77AVIO_CASSETTE_IRQMASK://=        0xFD02,
 		dataRecorder.Move(state.fm77avTime);
+		byteData=NonDestructiveIORead(ioAddr);  // This one needs to be read after Move.
 		break;
 	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
 		// From FM-7 schematic, RFD03 seems to clear timer and printer irq.

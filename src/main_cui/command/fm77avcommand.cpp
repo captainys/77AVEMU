@@ -43,6 +43,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["SUBCMD"]=BREAK_ON_SUBCMD;
+
+	dumpableMap["TAPE"]=DUMP_TAPE;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -106,6 +108,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "SUBCMD ##" << std::endl;
 	std::cout << "  Break on Sub-CPU command.  ## is a number in hexadecimal." << std::endl;
 	std::cout << "  Break timing is same as SUBUNHALT/UNHALTSUB" << std::endl;
+
+	std::cout << "<< Printable >>" << std::endl;
+	std::cout << "TAPE" << std::endl;
+	std::cout << "  Cassette Tape Status." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -542,6 +548,32 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 }
 void FM77AVCommandInterpreter::Execute_Dump(FM77AV &fm77av,Command &cmd)
 {
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+	}
+	else
+	{
+		auto DUMPABLE=cmd.argv[1];
+		cpputil::Capitalize(DUMPABLE);
+		auto found=dumpableMap.find(DUMPABLE);
+		if(found!=dumpableMap.end())
+		{
+			switch(found->second)
+			{
+			case DUMP_TAPE:
+				for(auto str : fm77av.dataRecorder.GetStatusText(fm77av.state.fm77avTime))
+				{
+					std::cout << str << std::endl;
+				}
+				break;
+			}
+		}
+		else
+		{
+			// Dump memory version 1.
+		}
+	}
 }
 void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)
 {

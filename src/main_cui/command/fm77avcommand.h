@@ -64,6 +64,12 @@ public:
 		BREAK_ON_SUBCMD,
 	};
 
+	enum
+	{
+		DUMP_NULL,
+		DUMP_TAPE,
+	};
+
 	class Command
 	{
 	public:

@@ -30,7 +30,7 @@ public:
 	class TapePointer
 	{
 	public:
-		unsigned int dataPtr=16;           // First byte=16.
+		unsigned int dataPtr=0;
 		uint64_t fm77avTime=0;   // In nano sec.
 		bool eot=false;
 	};
@@ -67,6 +67,8 @@ public:
 	void MotorOff(void);
 	void Move(uint64_t fm77avTime);
 	bool Read(void) const;
+
+	std::vector <std::string> GetStatusText(uint64_t fm77avTime) const;
 };
 
 

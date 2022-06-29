@@ -1,5 +1,7 @@
 #include <iostream>
+#include <stdio.h>
 #include "fm77avtape.h"
+#include "cpputil.h"
 
 bool FM77AVTape::Load(std::string fName)
 {
@@ -33,7 +35,7 @@ bool FM77AVTape::SaveAs(std::string fName) const
 }
 void FM77AVTape::Rewind(TapePointer &ptr) const
 {
-	ptr.dataPtr=16;
+	ptr.dataPtr=0;
 	ptr.fm77avTime=0;
 	ptr.eot=false;
 }
@@ -95,7 +97,7 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 	}
 	else
 	{
-		if(data[ptr.dataPtr]<0x40 || (data[ptr.dataPtr]==0x7F && data[ptr.dataPtr]==0xFF))
+		if(data[ptr.dataPtr]<0x40 || (data[ptr.dataPtr]==0x7F && data[ptr.dataPtr+1]==0xFF))
 		{
 			return 0;
 		}
@@ -147,4 +149,53 @@ bool FM77AVDataRecorder::Read(void) const
 		return 0x80<state.t77.GetLevel(state.ptr);
 	}
 	return false;
+}
+std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime) const
+{
+	std::vector <std::string> text;
+
+	std::string str;
+	str="Motor ";
+	if(true==state.motor)
+	{
+		str+="ON";
+	}
+	else
+	{
+		str+="OFF";
+	}
+	text.push_back(str);
+
+	char cstr[256];
+	sprintf(cstr,"Tape Pointer: %llu",state.ptr.dataPtr);
+	text.back()+=cstr;
+	if(state.ptr.dataPtr+1<state.t77.data.size())
+	{
+		uint32_t segTime=state.t77.data[state.ptr.dataPtr+1];
+		sprintf(cstr,"SegmentTime:%u(%02x)",segTime*FM77AVTape::MICROSEC_PER_T77_ONE,segTime);
+		text.push_back(cstr);
+	}
+
+	sprintf(cstr,"Time:%llu  SegStartTime:%llu  TimeIntoSeg:%llu",fm77avTime,state.ptr.fm77avTime,fm77avTime-state.ptr.fm77avTime);
+	text.push_back(cstr);
+
+	for(int i=0; i<66; i+=2)
+	{
+		uint64_t I=state.ptr.dataPtr+i;
+		if(state.t77.data.size()<=I+1)
+		{
+			break;
+		}
+
+		if(0==i%22)
+		{
+			text.push_back("");
+		}
+		text.back()+=cpputil::Ubtox(state.t77.data[I]);
+		text.back()+=" ";
+		text.back()+=cpputil::Ubtox(state.t77.data[I+1]);
+		text.back()+="  ";
+	}
+
+	return text;
 }
