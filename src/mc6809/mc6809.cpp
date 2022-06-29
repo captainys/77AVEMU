@@ -1324,45 +1324,29 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_ANDA_IMM: //  0x84,
-		{
-			auto reg=AND(state.A(),inst.operand[0]);
-			state.SetA(reg);
-		}
+		state.SetA(AND(state.A(),inst.operand[0]));
 		break;
 	case INST_ANDA_DP: //   0x94,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetA(AND(state.A(),mem.FetchByte(DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ANDA_IDX: //  0xA4,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetA(AND(state.A(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ANDA_EXT: //  0xB4,
-		{
-			auto reg=AND(state.A(),mem.FetchByte(inst.ExtendedAddress()));
-			state.SetA(reg);
-		}
+		state.SetA(AND(state.A(),mem.FetchByte(inst.ExtendedAddress())));
 		break;
 
 	case INST_ANDB_IMM: //  0xC4,
-		{
-			auto reg=AND(state.B(),inst.operand[0]);
-			state.SetB(reg);
-		}
+		state.SetB(AND(state.B(),inst.operand[0]));
 		break;
 	case INST_ANDB_DP: //   0xD4,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetB(AND(state.B(),mem.FetchByte(DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ANDB_IDX: //  0xE4,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.SetB(AND(state.B(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ANDB_EXT: //  0xF4,
-		{
-			auto reg=AND(state.B(),mem.FetchByte(inst.ExtendedAddress()));
-			state.SetB(reg);
-		}
+		state.SetB(AND(state.B(),mem.FetchByte(inst.ExtendedAddress())));
 		break;
 
 	case INST_ANDCC_IMM: // 0x1C,
@@ -2681,8 +2665,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		SubWord(state.D,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_SUBD_EXT: //  0xB3,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		SubWord(state.D,mem.FetchWord(inst.ExtendedAddress()));
 		break;
 
 	case INST_SWI: //       0x3F,
