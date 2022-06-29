@@ -33,7 +33,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 
 	if(""!=param.t77Path)
 	{
-		if(true==dataRecorder.state.t77.Load(param.t77Path))
+		if(true==dataRecorder.LoadT77(param.t77Path))
 		{
 			std::cout << "Loaded Cassette: " << param.t77Path << std::endl;
 		}

@@ -129,3 +129,12 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 void FM77AVDataRecorder::Reset(void)
 {
 }
+bool FM77AVDataRecorder::LoadT77(std::string fName)
+{
+	if(true==state.t77.Load(fName))
+	{
+		state.t77.Rewind(state.ptr);
+		return true;
+	}
+	return false;
+}

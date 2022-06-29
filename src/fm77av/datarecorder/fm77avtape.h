@@ -57,6 +57,7 @@ public:
 	State state;
 
 	void Reset(void);  // Don't rewind
+	bool LoadT77(std::string fName);
 };
 
 
