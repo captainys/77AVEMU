@@ -31,7 +31,6 @@ public:
 	{
 	public:
 		unsigned int dataPtr=16;           // First byte=16.
-		unsigned int microSecLeft=0; // Micro seconds left for this byte pair.
 		uint64_t fm77avTime=0;   // In nano sec.
 		bool eot=false;
 	};

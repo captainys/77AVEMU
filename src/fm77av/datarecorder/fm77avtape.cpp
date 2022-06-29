@@ -34,7 +34,6 @@ bool FM77AVTape::SaveAs(std::string fName) const
 void FM77AVTape::Rewind(TapePointer &ptr) const
 {
 	ptr.dataPtr=16;
-	ptr.microSecLeft=0;
 	ptr.fm77avTime=0;
 	ptr.eot=false;
 }
@@ -47,7 +46,6 @@ void FM77AVTape::Seek(TapePointer &ptr,unsigned int dataPtr) const
 	else if(ptr.dataPtr!=dataPtr)
 	{
 		ptr.dataPtr=dataPtr;
-		ptr.microSecLeft=0;
 		ptr.fm77avTime=0;
 		ptr.eot=false;
 	}
@@ -61,7 +59,6 @@ void FM77AVTape::MotorOn(TapePointer &ptr,uint64_t fm77avTime) const
 	}
 	else
 	{
-		ptr.microSecLeft=data[ptr.dataPtr+1]*MICROSEC_PER_T77_ONE;
 		ptr.eot=false;
 	}
 	
@@ -70,33 +67,20 @@ void FM77AVTape::MoveTapePointer(TapePointer &ptr,uint64_t fm77avTime) const
 {
 	if(ptr.fm77avTime<fm77avTime)
 	{
-		auto nanoSecPassed=fm77avTime-ptr.fm77avTime;
-		nanoSecPassed/=1000;
-		unsigned int microSecPassed=nanoSecPassed;
-
-		if(microSecPassed<ptr.microSecLeft)
-		{
-			ptr.microSecLeft-=microSecPassed;
-			return;
-		}
-
-		ptr.fm77avTime=fm77avTime;
-
-		microSecPassed-=ptr.microSecLeft;
-		ptr.dataPtr+=2;
-
 		while(ptr.dataPtr+1<data.size())
 		{
-			unsigned int microSecForSegment=data[ptr.dataPtr+1];
-			microSecForSegment*=MICROSEC_PER_T77_ONE;
-			if(microSecPassed<microSecForSegment)
+			uint64_t nanoSecForSegment=data[ptr.dataPtr+1];
+			nanoSecForSegment*=MICROSEC_PER_T77_ONE*1000;
+
+			uint64_t segmentEndTime=ptr.fm77avTime+nanoSecForSegment;
+
+			if(fm77avTime<segmentEndTime)
 			{
-				ptr.microSecLeft=microSecForSegment-microSecPassed;
 				return;
 			}
 			else
 			{
-				microSecPassed-=microSecForSegment;
+				ptr.fm77avTime=segmentEndTime;
 				ptr.dataPtr+=2;
 			}
 		}
