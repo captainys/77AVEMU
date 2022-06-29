@@ -108,7 +108,7 @@ void FM77AV::Reset(void)
 	state.main.irqSource=0;
 	state.main.firqSource=0;
 
-	state.sub.irqEnableBits=0;
+	state.sub.irqEnableBits=~0;
 	state.sub.irqSource=0;
 	state.sub.firqSource=0;
 

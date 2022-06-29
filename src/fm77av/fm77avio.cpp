@@ -80,7 +80,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		if(0!=(0x40&value))
 		{
-			std::cout << "Need to Implement: Cancel Request to Sub CPU" << std::endl;
+			state.sub.irqSource|=SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
 		}
 		break;
 
@@ -129,10 +129,16 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		break;
 
 
+
+
+
 	// Sub-CPU I/O
 	case FM77AVIO_KEY_LOW: //=                 0xD401,
 		ClearKeyIRQFlag();
 		keyboard.ProcessKeyCodeInQueue();
+		break;
+	case FM77AVIO_ACK_CANCEL_IRQ: //=          0xD402,
+		state.sub.irqSource&=~SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
 		break;
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=false;

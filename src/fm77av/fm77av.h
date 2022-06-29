@@ -46,20 +46,6 @@ public:
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 	};
-	enum
-	{
-		IRQ_KEY=0x01,
-		IRQ_PRINTER=0x02,
-		IRQ_TIMER=0x04,
-		IRQ_EXT=0x08,    // RS232C
-		IRQ_YM2203C=0x20,
-	};
-	enum
-	{
-		FIRQ_SUBSYS_ATTENTION=0x1,
-		FIRQ_BREAK_KEY=0x02,
-	};
-
 
 	class SystemState
 	{
@@ -91,7 +77,8 @@ public:
 		};
 		enum
 		{
-			SUB_FIRQ_SOURCE_KEY=0x01
+			SUB_IRQ_SOURCE_CANCEL_REQ=0x01,
+			SUB_FIRQ_SOURCE_KEY=0x01,
 		};
 		uint16_t irqEnableBits=0;
 		uint16_t irqSource=0,firqSource=0;
