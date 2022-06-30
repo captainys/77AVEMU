@@ -14,7 +14,10 @@ class MC6809 : public Device
 public:
 	enum
 	{
-		MEMORY_ADDRESS_SIZE=65536
+		MEMORY_ADDRESS_SIZE=65536,
+
+		PC_LOG_SIZE=0x10000,
+		PC_LOG_MASK=0x0FFFF
 	};
 
 	enum
@@ -593,6 +596,23 @@ public:
 			unsigned int passed=0,passCount=0;
 		};
 
+		class PCLogType
+		{
+		public:
+			uint16_t PC,S;
+			uint32_t count=0;
+			bool operator==(const PCLogType &from)
+			{
+				return from.PC==PC;
+			}
+			bool operator!=(const PCLogType &from)
+			{
+				return from.PC!=PC;
+			}
+		};
+		size_t PCLogPtr;
+		std::vector <PCLogType> PCLog;
+
 		bool enabled=true;
 		bool stop=false;
 		bool hitMonitorPoint=false;
@@ -613,6 +633,8 @@ public:
 
 		Debugger();
 
+		void CleanUp(void);
+
 		void ClearStopFlag(void);
 
 		void ExternalBreak(std::string reason);
@@ -629,6 +651,14 @@ public:
 			hitMonitorPoint=false;
 			return flag;
 		}
+		inline void BeforeRunOneInstruction(MC6809 &cpu,const MemoryAccess &mem)
+		{
+			if(true==enabled)
+			{
+				BeforeRunOneInstructionMainBody(cpu,mem);
+			}
+		}
+		void BeforeRunOneInstructionMainBody(MC6809 &cpu,const MemoryAccess &mem);
 		inline void AfterRunOneInstruction(MC6809 &cpu,const MemoryAccess &mem)
 		{
 			if(true==enabled)
@@ -663,6 +693,9 @@ public:
 		void FetchWord(uint16_t addr,uint16_t data);
 		void StoreByte(uint16_t addr,uint8_t data);
 		void StoreWord(uint16_t addr,uint16_t data);
+
+		std::vector <PCLogType> GetPCLog(void);
+		std::vector <PCLogType> GetPCLog(unsigned int steps);
 	};
 	Debugger debugger;
 

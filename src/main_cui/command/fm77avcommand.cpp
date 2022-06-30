@@ -49,6 +49,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 
 	dumpableMap["TAPE"]=DUMP_TAPE;
+	dumpableMap["HIST"]=DUMP_PC_LOG;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -125,6 +126,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Printable >>" << std::endl;
 	std::cout << "TAPE" << std::endl;
 	std::cout << "  Cassette Tape Status." << std::endl;
+	std::cout << "HIST main/sub" << std::endl;
+	std::cout << "  Program-Counter history (PC log)." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -585,12 +588,56 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AV &fm77av,Command &cmd)
 					std::cout << str << std::endl;
 				}
 				break;
+			case DUMP_PC_LOG:
+				Execute_PrintHistory(fm77av,cmd);
+				break;
 			}
 		}
 		else
 		{
 			// Dump memory version 1.
 		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AV &av,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		int mainOrSub=StrToCPU(cmd.argv[2]);
+		if(CPU_UNKNOWN==mainOrSub)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+
+		int n=32;
+		if(4<=cmd.argv.size())
+		{
+			n=cpputil::Atoi(cmd.argv[3].c_str());
+		}
+
+		auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
+		// auto &symTable=av.debugger.GetSymTable();
+		for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+		{
+			std::cout << cpputil::Ustox(iter->PC);
+			std::cout << " ";
+			std::cout << "S=" << cpputil::Ustox(iter->S);
+			if(1<iter->count)
+			{
+				std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+			}
+			// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+			// if(nullptr!=symbolPtr)
+			// {
+			// 	std::cout << " " << symbolPtr->Format();
+			// }
+			std::cout << std::endl;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }
 void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)

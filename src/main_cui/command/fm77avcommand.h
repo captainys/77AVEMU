@@ -70,6 +70,7 @@ public:
 	{
 		DUMP_NULL,
 		DUMP_TAPE,
+		DUMP_PC_LOG,
 	};
 
 	class Command
@@ -110,6 +111,7 @@ public:
 	void Execute_Disassemble_Main(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Dump(FM77AV &av,Command &cmd);
+	void Execute_PrintHistory(FM77AV &av,Command &cmd);
 	void Execute_MemoryDump(FM77AV &av,Command &cmd);
 	void Execute_BreakOn(FM77AV &av,Command &cmd);
 	void Execute_DontBreakOn(FM77AV &av,Command &cmd);

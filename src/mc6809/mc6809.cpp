@@ -1143,6 +1143,8 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 }
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 {
+	debugger.BeforeRunOneInstruction(*this,mem);
+
 	auto inst=FetchInstruction(mem,state.PC);
 
 	switch(inst.opCode)
