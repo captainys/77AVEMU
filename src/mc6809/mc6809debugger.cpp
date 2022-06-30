@@ -1,5 +1,17 @@
 #include "mc6809.h"
 
+MC6809::Debugger::Debugger()
+{
+	for(auto &f : memRead)
+	{
+		f.flags=0;
+	}
+	for(auto &f : memWrite)
+	{
+		f.flags=0;
+	}
+}
+
 void MC6809::Debugger::ClearStopFlag(void)
 {
 	stop=false;
@@ -99,4 +111,39 @@ void MC6809::Debugger::CheckBreakCondition(const MC6809 &cpu,const MemoryAccess 
 			stop=true;
 		}
 	}
+}
+
+
+
+void MC6809::Debugger::SetBreakOnMemWrite(uint16_t addr,uint8_t min,uint8_t max,uint8_t flags)
+{
+	memWrite[addr].flags=flags;
+	memWrite[addr].min=min;
+	memWrite[addr].max=max;
+}
+void MC6809::Debugger::ClearBreakOnMemWrite(uint16_t addr)
+{
+	memWrite[addr].flags=0;
+}
+void MC6809::Debugger::SetBreakOnMemRead(uint16_t addr,uint8_t min,uint8_t max,uint8_t flags)
+{
+	memRead[addr].flags=flags;
+	memRead[addr].min=min;
+	memRead[addr].max=max;
+}
+void MC6809::Debugger::ClearBreakOnMemRead(uint16_t addr)
+{
+	memWrite[addr].flags=0;
+}
+void MC6809::Debugger::FetchByte(uint16_t addr,uint8_t data)
+{
+}
+void MC6809::Debugger::FetchWord(uint16_t addr,uint16_t data)
+{
+}
+void MC6809::Debugger::StoreByte(uint16_t addr,uint8_t data)
+{
+}
+void MC6809::Debugger::StoreWord(uint16_t addr,uint16_t data)
+{
 }

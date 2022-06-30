@@ -601,6 +601,16 @@ public:
 		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
 		BreakPoint oneTimeBreakPoints[MEMORY_ADDRESS_SIZE];
 
+		class MemAccessOption
+		{
+		public:
+			uint8_t flags,min,max;
+		};
+		MemAccessOption memRead[65536];
+		MemAccessOption memWrite[65536];
+
+		Debugger();
+
 		void ClearStopFlag(void);
 
 		void ExternalBreak(std::string reason);
@@ -641,6 +651,16 @@ public:
 				nextDisassemblyAddr=cpu.state.PC;
 			}
 		}
+
+		void SetBreakOnMemWrite(uint16_t addr,uint8_t min,uint8_t max,uint8_t flags=BRKPNT_FLAG_BREAK);
+		void ClearBreakOnMemWrite(uint16_t addr);
+		void SetBreakOnMemRead(uint16_t addr,uint8_t min,uint8_t max,uint8_t flags=BRKPNT_FLAG_BREAK);
+		void ClearBreakOnMemRead(uint16_t addr);
+
+		void FetchByte(uint16_t addr,uint8_t data);
+		void FetchWord(uint16_t addr,uint16_t data);
+		void StoreByte(uint16_t addr,uint8_t data);
+		void StoreWord(uint16_t addr,uint16_t data);
 	};
 	Debugger debugger;
 
@@ -761,7 +781,6 @@ public:
 			state.CC|=CF;
 		}
 	}
-
 };
 
 /* } */
