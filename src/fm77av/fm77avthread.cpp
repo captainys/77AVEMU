@@ -1,4 +1,5 @@
 #include "fm77avthread.h"
+#include "fm77avcommand.h"
 #include "outside_world.h"
 #include <chrono>
 #include <iostream>
@@ -132,7 +133,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 				fm77avPtr->state.nextDevicePollingTime=fm77avPtr->state.fm77avTime+FM77AV::DEVICE_POLLING_INTERVAL;
 			}
 			//fm77avPtr->eventLog.Interval(*fm77avPtr);
-			if(true==fm77avPtr->CheckAbort())//  || outside_world->PauseKeyPressed())
+			if(true==fm77avPtr->CheckAbort() || outside_world->PauseKeyPressed())
 			{
 				PrintStatus(*fm77avPtr,false,false); // In case of Abort, disregard mute flags.
 				std::cout << ">";
@@ -143,7 +144,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			if(true!=fm77avPtr->CheckAbort())
 			{
 				fm77avPtr->RunOneInstruction();
-				//fm77avPtr->ProcessIRQ(fm77avPtr->cpu,fm77avPtr->mem);
+				fm77avPtr->ProcessInterrupts();
 				//fm77avPtr->RunFastDevicePolling();
 				//fm77avPtr->RunScheduledTasks();
 			}
@@ -177,6 +178,15 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		//}
 
 		uiThread->uiLock.lock();
+		while(true!=outside_world->commandQueue.empty())
+		{
+			auto cmdStr=outside_world->commandQueue.front();
+			std::cout << cmdStr << std::endl;
+			outside_world->commandQueue.pop();
+			FM77AVCommandInterpreter interpreter;
+			auto cmd=interpreter.Interpret(cmdStr);
+			interpreter.Execute(*this,*fm77avPtr,outside_world,cmd);
+		}
 		uiThread->ExecCommandQueue(*this,*fm77avPtr,outside_world);
 		uiThread->uiLock.unlock();
 		if(true==fm77avPtr->var.justLoadedState)
