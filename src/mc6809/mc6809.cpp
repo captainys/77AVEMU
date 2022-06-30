@@ -1168,7 +1168,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCA_DP: //   0x99,
 		{
-			auto add=mem.FetchByte(DecodeDirectPageAddress(inst));
+			auto add=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1180,7 +1180,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCA_IDX: //  0xA9,
 		{
-			auto add=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			auto add=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1192,7 +1192,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCA_EXT: //  0xB9,
 		{
-			auto add=mem.FetchByte(inst.ExtendedAddress());
+			auto add=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1217,7 +1217,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCB_DP: //   0xD9,
 		{
-			auto add=mem.FetchByte(DecodeDirectPageAddress(inst));
+			auto add=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1229,7 +1229,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCB_IDX: //  0xE9,
 		{
-			auto add=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			auto add=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1241,7 +1241,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCB_EXT: //  0xF9,
 		{
-			auto add=mem.FetchByte(inst.ExtendedAddress());
+			auto add=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1262,21 +1262,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_ADDA_DP: //   0x9B,
 		{
 			auto reg=state.A();
-			AddByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			AddByte(reg,FetchByte(mem,DecodeDirectPageAddress(inst)));
 			state.SetA(reg);
 		}
 		break;
 	case INST_ADDA_IDX: //  0xAB,
 		{
 			auto reg=state.A();
-			AddByte(reg,mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+			AddByte(reg,FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 			state.SetA(reg);
 		}
 		break;
 	case INST_ADDA_EXT: //  0xBB,
 		{
 			auto reg=state.A();
-			AddByte(reg,mem.FetchByte(inst.ExtendedAddress()));
+			AddByte(reg,FetchByte(mem,inst.ExtendedAddress()));
 			state.SetA(reg);
 		}
 		break;
@@ -1291,21 +1291,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_ADDB_DP: //   0xDB,
 		{
 			auto reg=state.B();
-			AddByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			AddByte(reg,FetchByte(mem,DecodeDirectPageAddress(inst)));
 			state.SetB(reg);
 		}
 		break;
 	case INST_ADDB_IDX: //  0xEB,
 		{
 			auto reg=state.B();
-			AddByte(reg,mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+			AddByte(reg,FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 			state.SetB(reg);
 		}
 		break;
 	case INST_ADDB_EXT: //  0xFB,
 		{
 			auto reg=state.B();
-			AddByte(reg,mem.FetchByte(inst.ExtendedAddress()));
+			AddByte(reg,FetchByte(mem,inst.ExtendedAddress()));
 			state.SetB(reg);
 		}
 		break;
@@ -1314,39 +1314,39 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		AddWord(state.D,mc6809util::FetchWord(inst.operand));
 		break;
 	case INST_ADDD_DP: //   0xD3,
-		AddWord(state.D,mem.FetchWord(DecodeDirectPageAddress(inst)));
+		AddWord(state.D,FetchWord(mem,DecodeDirectPageAddress(inst)));
 		break;
 	case INST_ADDD_IDX: //  0xE3,
-		AddWord(state.D,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
+		AddWord(state.D,FetchWord(mem,DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_ADDD_EXT: //  0xF3,
-		AddWord(state.D,mem.FetchWord(inst.ExtendedAddress()));
+		AddWord(state.D,FetchWord(mem,inst.ExtendedAddress()));
 		break;
 
 	case INST_ANDA_IMM: //  0x84,
 		state.SetA(AND(state.A(),inst.operand[0]));
 		break;
 	case INST_ANDA_DP: //   0x94,
-		state.SetA(AND(state.A(),mem.FetchByte(DecodeDirectPageAddress(inst))));
+		state.SetA(AND(state.A(),FetchByte(mem,DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ANDA_IDX: //  0xA4,
-		state.SetA(AND(state.A(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
+		state.SetA(AND(state.A(),FetchByte(mem,DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ANDA_EXT: //  0xB4,
-		state.SetA(AND(state.A(),mem.FetchByte(inst.ExtendedAddress())));
+		state.SetA(AND(state.A(),FetchByte(mem,inst.ExtendedAddress())));
 		break;
 
 	case INST_ANDB_IMM: //  0xC4,
 		state.SetB(AND(state.B(),inst.operand[0]));
 		break;
 	case INST_ANDB_DP: //   0xD4,
-		state.SetB(AND(state.B(),mem.FetchByte(DecodeDirectPageAddress(inst))));
+		state.SetB(AND(state.B(),FetchByte(mem,DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ANDB_IDX: //  0xE4,
-		state.SetB(AND(state.B(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
+		state.SetB(AND(state.B(),FetchByte(mem,DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ANDB_EXT: //  0xF4,
-		state.SetB(AND(state.B(),mem.FetchByte(inst.ExtendedAddress())));
+		state.SetB(AND(state.B(),FetchByte(mem,inst.ExtendedAddress())));
 		break;
 
 	case INST_ANDCC_IMM: // 0x1C,
@@ -1363,19 +1363,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_ASR_DP: //    0x07,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,ASR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ASR(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_ASR_IDX: //   0x67,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,ASR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ASR(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_ASR_EXT: //   0x77,
 		{
 			auto addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,ASR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ASR(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -1383,26 +1383,26 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(state.A()&inst.operand[0]);
 		break;
 	case INST_BITA_DP: //   0x95,
-		Test8(state.A()&mem.FetchByte(DecodeDirectPageAddress(inst)));
+		Test8(state.A()&FetchByte(mem,DecodeDirectPageAddress(inst)));
 		break;
 	case INST_BITA_IDX: //  0xA5,
-		Test8(state.A()&mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+		Test8(state.A()&FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_BITA_EXT: //  0xB5,
-		Test8(state.A()&mem.FetchByte(inst.ExtendedAddress()));
+		Test8(state.A()&FetchByte(mem,inst.ExtendedAddress()));
 		break;
 
 	case INST_BITB_IMM: //  0xC5,
 		Test8(state.B()&inst.operand[0]);
 		break;
 	case INST_BITB_DP: //   0xD5,
-		Test8(state.B()&mem.FetchByte(DecodeDirectPageAddress(inst)));
+		Test8(state.B()&FetchByte(mem,DecodeDirectPageAddress(inst)));
 		break;
 	case INST_BITB_IDX: //  0xE5,
-		Test8(state.B()&mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+		Test8(state.B()&FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_BITB_EXT: //  0xF5,
-		Test8(state.B()&mem.FetchByte(inst.ExtendedAddress()));
+		Test8(state.B()&FetchByte(mem,inst.ExtendedAddress()));
 		break;
 
 	case INST_CLRA: //      0x4F,
@@ -1417,17 +1417,17 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_CLR_DP: //    0x0F,
-		mem.StoreByte(DecodeDirectPageAddress(inst),0);
+		StoreByte(mem,DecodeDirectPageAddress(inst),0);
 		state.CC&=~(SF|VF|CF);
 		state.CC|=ZF;
 		break;
 	case INST_CLR_IDX: //   0x6F,
-		mem.StoreByte(DecodeIndexedAddress(inst,mem),0);
+		StoreByte(mem,DecodeIndexedAddress(inst,mem),0);
 		state.CC&=~(SF|VF|CF);
 		state.CC|=ZF;
 		break;
 	case INST_CLR_EXT: //   0x7F,
-		mem.StoreByte(inst.ExtendedAddress(),0);
+		StoreByte(mem,inst.ExtendedAddress(),0);
 		state.CC&=~(SF|VF|CF);
 		state.CC|=ZF;
 		break;
@@ -1441,13 +1441,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPA_DP: //   0x91,
 		{
 			auto reg=state.A();
-			SubByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			SubByte(reg,FetchByte(mem,DecodeDirectPageAddress(inst)));
 		}
 		break;
 	case INST_CMPA_IDX: //  0xA1,
 		{
 			auto reg=state.A();
-			SubByte(reg,mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+			SubByte(reg,FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		}
 		break;
 	case INST_CMPA_EXT: //  0xB1,
@@ -1464,13 +1464,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPB_DP: //   0xD1,
 		{
 			auto reg=state.B();
-			SubByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			SubByte(reg,FetchByte(mem,DecodeDirectPageAddress(inst)));
 		}
 		break;
 	case INST_CMPB_IDX: //  0xE1,
 		{
 			auto reg=state.B();
-			SubByte(reg,mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+			SubByte(reg,FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		}
 		break;
 	case INST_CMPB_EXT: //  0xF1,
@@ -1487,19 +1487,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPD_DP: //   0x193, // 10 93
 		{
 			auto reg=state.D;
-			SubWord(reg,mem.FetchWord(DecodeDirectPageAddress(inst)));
+			SubWord(reg,FetchWord(mem,DecodeDirectPageAddress(inst)));
 		}
 		break;
 	case INST_CMPD_IDX: //  0x1A3, // 10 A3
 		{
 			auto reg=state.D;
-			SubWord(reg,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
+			SubWord(reg,FetchWord(mem,DecodeIndexedAddress(inst,mem)));
 		}
 		break;
 	case INST_CMPD_EXT: //  0x1B3, // 10 B3
 		{
 			auto reg=state.D;
-			SubWord(reg,mem.FetchWord(inst.ExtendedAddress()));
+			SubWord(reg,FetchWord(mem,inst.ExtendedAddress()));
 		}
 		break;
 
@@ -1515,7 +1515,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_CMPS_IDX: //  0x2AC, // 11 AC
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
+			auto value=FetchWord(mem,DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.S;
 			SubWord(reg,value);
 		}
@@ -1523,7 +1523,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPS_EXT: //  0x2BC, // 11 BC
 		{
 			auto reg=state.S;
-			SubWord(reg,mem.FetchWord(inst.ExtendedAddress()));
+			SubWord(reg,FetchWord(mem,inst.ExtendedAddress()));
 		}
 		break;
 
@@ -1536,12 +1536,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPU_DP: //   0x293, // 11 93
 		{
 			auto reg=state.U;
-			SubWord(reg,mem.FetchWord(DecodeDirectPageAddress(inst)));
+			SubWord(reg,FetchWord(mem,DecodeDirectPageAddress(inst)));
 		}
 		break;
 	case INST_CMPU_IDX: //  0x2A3, // 11 A3
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
+			auto value=FetchWord(mem,DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.U;
 			SubWord(reg,value);
 		}
@@ -1549,7 +1549,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPU_EXT: //  0x2B3, // 11 B3
 		{
 			auto reg=state.U;
-			SubWord(reg,mem.FetchWord(inst.ExtendedAddress()));
+			SubWord(reg,FetchWord(mem,inst.ExtendedAddress()));
 		}
 		break;
 
@@ -1562,7 +1562,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPX_DP: //   0x9C,
 		{
 			auto reg=state.X;
-			SubWord(reg,mem.FetchWord(DecodeDirectPageAddress(inst)));
+			SubWord(reg,FetchWord(mem,DecodeDirectPageAddress(inst)));
 		}
 		break;
 	case INST_CMPX_IDX: //  0xAC,
@@ -1597,7 +1597,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		//				STA		$1FFF	; A=FF
 		//				RTS
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
+			auto value=FetchWord(mem,DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.X;
 			SubWord(reg,value);
 		}
@@ -1605,7 +1605,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPX_EXT: //  0xBC,
 		{
 			auto reg=state.X;
-			SubWord(reg,mem.FetchWord(inst.ExtendedAddress()));
+			SubWord(reg,FetchWord(mem,inst.ExtendedAddress()));
 		}
 		break;
 
@@ -1618,12 +1618,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPY_DP: //   0x19C, // 10 9C
 		{
 			auto reg=state.Y;
-			SubWord(reg,mem.FetchWord(DecodeDirectPageAddress(inst)));
+			SubWord(reg,FetchWord(mem,DecodeDirectPageAddress(inst)));
 		}
 		break;
 	case INST_CMPY_IDX: //  0x1AC, // 10 AC
 		{
-			auto value=mem.FetchWord(DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
+			auto value=FetchWord(mem,DecodeIndexedAddress(inst,mem)); // Let it pre-dec or post-inc before comparison.
 			auto reg=state.Y;
 			SubWord(reg,value);
 		}
@@ -1631,7 +1631,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_CMPY_EXT: //  0x1BC, // 10 BC
 		{
 			auto reg=state.Y;
-			SubWord(reg,mem.FetchWord(inst.ExtendedAddress()));
+			SubWord(reg,FetchWord(mem,inst.ExtendedAddress()));
 		}
 		break;
 
@@ -1655,28 +1655,28 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_COM_DP: //    0x03,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
-			auto reg=~mem.FetchByte(addr);
+			auto reg=~FetchByte(mem,addr);
 			Test8(reg);
 			state.CC|=CF;
-			mem.StoreByte(addr,reg);
+			StoreByte(mem,addr,reg);
 		}
 		break;
 	case INST_COM_IDX: //   0x63,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem);
-			auto reg=~mem.FetchByte(addr);
+			auto reg=~FetchByte(mem,addr);
 			Test8(reg);
 			state.CC|=CF;
-			mem.StoreByte(addr,reg);
+			StoreByte(mem,addr,reg);
 		}
 		break;
 	case INST_COM_EXT: //   0x73,
 		{
 			auto addr=inst.ExtendedAddress();
-			auto reg=~mem.FetchByte(addr);
+			auto reg=~FetchByte(mem,addr);
 			Test8(reg);
 			state.CC|=CF;
-			mem.StoreByte(addr,reg);
+			StoreByte(mem,addr,reg);
 		}
 		break;
 
@@ -1700,19 +1700,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_DEC_DP: //    0x0A,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,DEC(mem.FetchByte(addr)));
+			StoreByte(mem,addr,DEC(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_DEC_IDX: //   0x6A,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,DEC(mem.FetchByte(addr)));
+			StoreByte(mem,addr,DEC(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_DEC_EXT: //   0x7A,
 		{
 			auto addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,DEC(mem.FetchByte(addr)));
+			StoreByte(mem,addr,DEC(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -1725,21 +1725,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_EORA_DP: //   0x98,
 		{
-			auto reg=state.A()^mem.FetchByte(DecodeDirectPageAddress(inst));
+			auto reg=state.A()^FetchByte(mem,DecodeDirectPageAddress(inst));
 			Test8(reg);
 			state.SetA(reg);
 		}
 		break;
 	case INST_EORA_IDX: //  0xA8,
 		{
-			auto reg=state.A()^mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			auto reg=state.A()^FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			Test8(reg);
 			state.SetA(reg);
 		}
 		break;
 	case INST_EORA_EXT: //  0xB8,
 		{
-			auto reg=state.A()^mem.FetchByte(inst.ExtendedAddress());
+			auto reg=state.A()^FetchByte(mem,inst.ExtendedAddress());
 			Test8(reg);
 			state.SetA(reg);
 		}
@@ -1754,21 +1754,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_EORB_DP: //   0xD8,
 		{
-			auto reg=state.B()^mem.FetchByte(DecodeDirectPageAddress(inst));
+			auto reg=state.B()^FetchByte(mem,DecodeDirectPageAddress(inst));
 			Test8(reg);
 			state.SetB(reg);
 		}
 		break;
 	case INST_EORB_IDX: //  0xE8,
 		{
-			auto reg=state.B()^mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			auto reg=state.B()^FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			Test8(reg);
 			state.SetB(reg);
 		}
 		break;
 	case INST_EORB_EXT: //  0xF8,
 		{
-			auto reg=state.B()^mem.FetchByte(inst.ExtendedAddress());
+			auto reg=state.B()^FetchByte(mem,inst.ExtendedAddress());
 			Test8(reg);
 			state.SetB(reg);
 		}
@@ -1817,19 +1817,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_INC_DP: //    0x0C,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,INC(mem.FetchByte(addr)));
+			StoreByte(mem,addr,INC(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_INC_IDX: //   0x6C,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,INC(mem.FetchByte(addr)));
+			StoreByte(mem,addr,INC(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_INC_EXT: //   0x7C,
 		{
 			auto addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,INC(mem.FetchByte(addr)));
+			StoreByte(mem,addr,INC(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -1867,15 +1867,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(inst.operand[0]);
 		break;
 	case INST_LDA_DP: //    0x96,
-		state.SetA(mem.FetchByte(DecodeDirectPageAddress(inst)));
+		state.SetA(FetchByte(mem,DecodeDirectPageAddress(inst)));
 		Test8(state.A());
 		break;
 	case INST_LDA_IDX: //   0xA6,
-		state.SetA(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+		state.SetA(FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		Test8(state.A());
 		break;
 	case INST_LDA_EXT: //   0xB6,
-		state.SetA(mem.FetchByte(inst.ExtendedAddress()));
+		state.SetA(FetchByte(mem,inst.ExtendedAddress()));
 		Test8(state.A());
 		break;
 
@@ -1884,15 +1884,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(inst.operand[0]);
 		break;
 	case INST_LDB_DP: //    0xD6,
-		state.SetB(mem.FetchByte(DecodeDirectPageAddress(inst)));
+		state.SetB(FetchByte(mem,DecodeDirectPageAddress(inst)));
 		Test8(state.B());
 		break;
 	case INST_LDB_IDX: //   0xE6,
-		state.SetB(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+		state.SetB(FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		Test8(state.B());
 		break;
 	case INST_LDB_EXT: //   0xF6,
-		state.SetB(mem.FetchByte(inst.ExtendedAddress()));
+		state.SetB(FetchByte(mem,inst.ExtendedAddress()));
 		Test8(state.B());
 		break;
 
@@ -1902,15 +1902,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.D);
 		break;
 	case INST_LDD_DP: //    0xDC,
-		state.D=mem.FetchWord(DecodeDirectPageAddress(inst));
+		state.D=FetchWord(mem,DecodeDirectPageAddress(inst));
 		Test16(state.D);
 		break;
 	case INST_LDD_IDX: //   0xEC,
-		state.D=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		state.D=FetchWord(mem,DecodeIndexedAddress(inst,mem));
 		Test16(state.D);
 		break;
 	case INST_LDD_EXT: //   0xFC,
-		state.D=mem.FetchWord(inst.ExtendedAddress());
+		state.D=FetchWord(mem,inst.ExtendedAddress());
 		Test16(state.D);
 		break;
 
@@ -1920,17 +1920,17 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.S);
 		break;
 	case INST_LDS_DP: //    0x1DE, // 10 DE
-		state.S=mem.FetchWord(DecodeDirectPageAddress(inst));
+		state.S=FetchWord(mem,DecodeDirectPageAddress(inst));
 		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
 	case INST_LDS_IDX: //   0x1EE, // 10 EE
-		state.S=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		state.S=FetchWord(mem,DecodeIndexedAddress(inst,mem));
 		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
 	case INST_LDS_EXT: //   0x1FE, // 10 FE
-		state.S=mem.FetchWord(inst.ExtendedAddress());
+		state.S=FetchWord(mem,inst.ExtendedAddress());
 		state.nmiEnabled=true;
 		Test16(state.S);
 		break;
@@ -1940,15 +1940,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.U);
 		break;
 	case INST_LDU_DP: //    0xDE,
-		state.U=mem.FetchWord(DecodeDirectPageAddress(inst));
+		state.U=FetchWord(mem,DecodeDirectPageAddress(inst));
 		Test16(state.U);
 		break;
 	case INST_LDU_IDX: //   0xEE,
-		state.U=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		state.U=FetchWord(mem,DecodeIndexedAddress(inst,mem));
 		Test16(state.U);
 		break;
 	case INST_LDU_EXT: //   0xFE,
-		state.U=mem.FetchWord(inst.ExtendedAddress());
+		state.U=FetchWord(mem,inst.ExtendedAddress());
 		Test16(state.U);
 		break;
 
@@ -1957,7 +1957,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.X);
 		break;
 	case INST_LDX_DP: //    0x9E,
-		state.X=mem.FetchWord(DecodeDirectPageAddress(inst));
+		state.X=FetchWord(mem,DecodeDirectPageAddress(inst));
 		Test16(state.X);
 		break;
 	case INST_LDX_IDX: //   0xAE,
@@ -1991,11 +1991,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		//					LDU		,--U
 		//					STU		$1FFE
 		//					RTS
-		state.X=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		state.X=FetchWord(mem,DecodeIndexedAddress(inst,mem));
 		Test16(state.X);
 		break;
 	case INST_LDX_EXT: //   0xBE,
-		state.X=mem.FetchWord(inst.ExtendedAddress());
+		state.X=FetchWord(mem,inst.ExtendedAddress());
 		Test16(state.X);
 		break;
 
@@ -2004,15 +2004,15 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.Y);
 		break;
 	case INST_LDY_DP: //    0x19E, // 10 9E
-		state.Y=mem.FetchWord(DecodeDirectPageAddress(inst));
+		state.Y=FetchWord(mem,DecodeDirectPageAddress(inst));
 		Test16(state.Y);
 		break;
 	case INST_LDY_IDX: //   0x1AE, // 10 AE
-		state.Y=mem.FetchWord(DecodeIndexedAddress(inst,mem));
+		state.Y=FetchWord(mem,DecodeIndexedAddress(inst,mem));
 		Test16(state.Y);
 		break;
 	case INST_LDY_EXT: //   0x1BE, // 10 BE
-		state.Y=mem.FetchWord(inst.ExtendedAddress());
+		state.Y=FetchWord(mem,inst.ExtendedAddress());
 		Test16(state.Y);
 		break;
 
@@ -2056,19 +2056,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_LSL_DP: //    0x08,
 		{
 			uint16_t addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,LSL(mem.FetchByte(addr)));
+			StoreByte(mem,addr,LSL(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_LSL_IDX: //   0x68,
 		{
 			uint16_t addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,LSL(mem.FetchByte(addr)));
+			StoreByte(mem,addr,LSL(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_LSL_EXT: //   0x78,
 		{
 			uint16_t addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,LSL(mem.FetchByte(addr)));
+			StoreByte(mem,addr,LSL(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -2088,19 +2088,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_LSR_DP: //    0x04,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,LSR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,LSR(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_LSR_IDX: //   0x64,
 		{
 			uint16_t addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,LSR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,LSR(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_LSR_EXT: //   0x74,
 		{
 			uint16_t addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,LSR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,LSR(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -2125,9 +2125,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_NEG_DP: //    0x00,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
-			auto reg=mem.FetchByte(addr);
+			auto reg=FetchByte(mem,addr);
 			reg=NEG(reg);
-			mem.StoreByte(addr,reg);
+			StoreByte(mem,addr,reg);
 		}
 		break;
 	case INST_NEG_IDX: //   0x60,
@@ -2149,13 +2149,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ORA_DP: //    0x9A,
-		state.SetA(OR(state.A(),mem.FetchByte(DecodeDirectPageAddress(inst))));
+		state.SetA(OR(state.A(),FetchByte(mem,DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ORA_IDX: //   0xAA,
-		state.SetA(OR(state.A(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
+		state.SetA(OR(state.A(),FetchByte(mem,DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ORA_EXT: //   0xBA,
-		state.SetA(OR(state.A(),mem.FetchByte(inst.ExtendedAddress())));
+		state.SetA(OR(state.A(),FetchByte(mem,inst.ExtendedAddress())));
 		break;
 
 	case INST_ORB_IMM: //   0xCA,
@@ -2165,13 +2165,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_ORB_DP: //    0xDA,
-		state.SetB(OR(state.B(),mem.FetchByte(DecodeDirectPageAddress(inst))));
+		state.SetB(OR(state.B(),FetchByte(mem,DecodeDirectPageAddress(inst))));
 		break;
 	case INST_ORB_IDX: //   0xEA,
-		state.SetB(OR(state.B(),mem.FetchByte(DecodeIndexedAddress(inst,mem))));
+		state.SetB(OR(state.B(),FetchByte(mem,DecodeIndexedAddress(inst,mem))));
 		break;
 	case INST_ORB_EXT: //   0xFA,
-		state.SetB(OR(state.B(),mem.FetchByte(inst.ExtendedAddress())));
+		state.SetB(OR(state.B(),FetchByte(mem,inst.ExtendedAddress())));
 		break;
 
 	case INST_ORCC_IMM: //  0x1A,
@@ -2360,19 +2360,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_ROL_DP: //    0x09,
 		{
 			uint16_t addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,ROL(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ROL(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_ROL_IDX: //   0x69,
 		{
 			uint16_t addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,ROL(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ROL(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_ROL_EXT: //   0x79,
 		{
 			uint16_t addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,ROL(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ROL(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -2386,19 +2386,19 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_ROR_DP: //    0x06,
 		{
 			uint16_t addr=DecodeDirectPageAddress(inst);
-			mem.StoreByte(addr,ROR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ROR(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_ROR_IDX: //   0x66,
 		{
 			uint16_t addr=DecodeIndexedAddress(inst,mem);
-			mem.StoreByte(addr,ROR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ROR(FetchByte(mem,addr)));
 		}
 		break;
 	case INST_ROR_EXT: //   0x76,
 		{
 			uint16_t addr=inst.ExtendedAddress();
-			mem.StoreByte(addr,ROR(mem.FetchByte(addr)));
+			StoreByte(mem,addr,ROR(FetchByte(mem,addr)));
 		}
 		break;
 
@@ -2436,7 +2436,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCA_DP: //   0x92,
 		{
-			uint8_t value=mem.FetchByte(DecodeDirectPageAddress(inst));
+			uint8_t value=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2448,7 +2448,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCA_IDX: //  0xA2,
 		{
-			uint8_t value=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			uint8_t value=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2460,7 +2460,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCA_EXT: //  0xB2,
 		{
-			uint8_t value=mem.FetchByte(inst.ExtendedAddress());
+			uint8_t value=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2485,7 +2485,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCB_DP: //   0xD2,
 		{
-			uint8_t value=mem.FetchByte(DecodeDirectPageAddress(inst));
+			uint8_t value=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2497,7 +2497,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCB_IDX: //  0xE2,
 		{
-			uint8_t value=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			uint8_t value=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2509,7 +2509,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCB_EXT: //  0xF2,
 		{
-			uint8_t value=mem.FetchByte(inst.ExtendedAddress());
+			uint8_t value=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2535,7 +2535,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_STA_DP: //    0x97,
-		mem.StoreByte(DecodeDirectPageAddress(inst),state.A());
+		StoreByte(mem,DecodeDirectPageAddress(inst),state.A());
 		Test8(state.A());
 		break;
 	case INST_STA_IDX: //   0xA7,
@@ -2543,12 +2543,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(state.A());
 		break;
 	case INST_STA_EXT: //   0xB7,
-		mem.StoreByte(inst.ExtendedAddress(),state.A());
+		StoreByte(mem,inst.ExtendedAddress(),state.A());
 		Test8(state.A());
 		break;
 
 	case INST_STB_DP: //    0xD7,
-		mem.StoreByte(DecodeDirectPageAddress(inst),state.B());
+		StoreByte(mem,DecodeDirectPageAddress(inst),state.B());
 		Test8(state.B());
 		break;
 	case INST_STB_IDX: //   0xE7,
@@ -2556,12 +2556,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test8(state.B());
 		break;
 	case INST_STB_EXT: //   0xF7,
-		mem.StoreByte(inst.ExtendedAddress(),state.B());
+		StoreByte(mem,inst.ExtendedAddress(),state.B());
 		Test8(state.B());
 		break;
 
 	case INST_STD_DP: //    0xDD,
-		mem.StoreWord(DecodeDirectPageAddress(inst),state.D);
+		StoreWord(mem,DecodeDirectPageAddress(inst),state.D);
 		Test16(state.D);
 		break;
 	case INST_STD_IDX: //   0xED,
@@ -2569,12 +2569,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		Test16(state.D);
 		break;
 	case INST_STD_EXT: //   0xFD,
-		mem.StoreWord(inst.ExtendedAddress(),state.D);
+		StoreWord(mem,inst.ExtendedAddress(),state.D);
 		Test16(state.D);
 		break;
 
 	case INST_STS_DP: //    0x1DF, // 10 DF
-		mem.StoreWord(DecodeDirectPageAddress(inst),state.S);
+		StoreWord(mem,DecodeDirectPageAddress(inst),state.S);
 		Test16(state.S);
 		break;
 	case INST_STS_IDX: //   0x1EF, // 10 EF
@@ -2599,60 +2599,60 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		// 				RTS
 		{
 			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
-			mem.StoreWord(addr,state.S);
+			StoreWord(mem,addr,state.S);
 			Test16(state.S);
 		}
 		break;
 	case INST_STS_EXT: //   0x1FF, // 10 FF
-		mem.StoreWord(inst.ExtendedAddress(),state.S);
+		StoreWord(mem,inst.ExtendedAddress(),state.S);
 		Test16(state.S);
 		break;
 
 	case INST_STU_DP: //    0xDF,
-		mem.StoreWord(DecodeDirectPageAddress(inst),state.U);
+		StoreWord(mem,DecodeDirectPageAddress(inst),state.U);
 		Test16(state.U);
 		break;
 	case INST_STU_IDX: //   0xEF,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
-			mem.StoreWord(addr,state.U);
+			StoreWord(mem,addr,state.U);
 			Test16(state.U);
 		}
 		break;
 	case INST_STU_EXT: //   0xFF,
-		mem.StoreWord(inst.ExtendedAddress(),state.U);
+		StoreWord(mem,inst.ExtendedAddress(),state.U);
 		Test16(state.U);
 		break;
 
 	case INST_STX_DP: //    0x9F,
-		mem.StoreWord(DecodeDirectPageAddress(inst),state.X);
+		StoreWord(mem,DecodeDirectPageAddress(inst),state.X);
 		Test16(state.X);
 		break;
 	case INST_STX_IDX: //   0xAF,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
-			mem.StoreWord(addr,state.X);
+			StoreWord(mem,addr,state.X);
 			Test16(state.X);
 		}
 		break;
 	case INST_STX_EXT: //   0xBF,
-		mem.StoreWord(inst.ExtendedAddress(),state.X);
+		StoreWord(mem,inst.ExtendedAddress(),state.X);
 		Test16(state.X);
 		break;
 
 	case INST_STY_DP: //    0x19F,
-		mem.StoreWord(DecodeDirectPageAddress(inst),state.Y);
+		StoreWord(mem,DecodeDirectPageAddress(inst),state.Y);
 		Test16(state.Y);
 		break;
 	case INST_STY_IDX: //   0x1AF,
 		{
 			auto addr=DecodeIndexedAddress(inst,mem); // Let it increment/decrement.
-			mem.StoreWord(addr,state.Y);
+			StoreWord(mem,addr,state.Y);
 			Test16(state.Y);
 		}
 		break;
 	case INST_STY_EXT: //   0x1BF,
-		mem.StoreWord(inst.ExtendedAddress(),state.Y);
+		StoreWord(mem,inst.ExtendedAddress(),state.Y);
 		Test16(state.Y);
 		break;
 
@@ -2666,21 +2666,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_SUBA_DP: //   0x90,
 		{
 			auto reg=state.A();
-			SubByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			SubByte(reg,FetchByte(mem,DecodeDirectPageAddress(inst)));
 			state.SetA(reg);
 		}
 		break;
 	case INST_SUBA_IDX: //  0xA0,
 		{
 			auto reg=state.A();
-			SubByte(reg,mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+			SubByte(reg,FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 			state.SetA(reg);
 		}
 		break;
 	case INST_SUBA_EXT: //  0xB0,
 		{
 			auto reg=state.A();
-			SubByte(reg,mem.FetchByte(inst.ExtendedAddress()));
+			SubByte(reg,FetchByte(mem,inst.ExtendedAddress()));
 			state.SetA(reg);
 		}
 		break;
@@ -2695,21 +2695,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_SUBB_DP: //   0xD0,
 		{
 			auto reg=state.B();
-			SubByte(reg,mem.FetchByte(DecodeDirectPageAddress(inst)));
+			SubByte(reg,FetchByte(mem,DecodeDirectPageAddress(inst)));
 			state.SetB(reg);
 		}
 		break;
 	case INST_SUBB_IDX: //  0xE0,
 		{
 			auto reg=state.B();
-			SubByte(reg,mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+			SubByte(reg,FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 			state.SetB(reg);
 		}
 		break;
 	case INST_SUBB_EXT: //  0xF0,
 		{
 			auto reg=state.B();
-			SubByte(reg,mem.FetchByte(inst.ExtendedAddress()));
+			SubByte(reg,FetchByte(mem,inst.ExtendedAddress()));
 			state.SetB(reg);
 		}
 		break;
@@ -2718,13 +2718,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		SubWord(state.D,mc6809util::FetchWord(inst.operand));
 		break;
 	case INST_SUBD_DP: //   0x93,
-		SubWord(state.D,mem.FetchWord(DecodeDirectPageAddress(inst)));
+		SubWord(state.D,FetchWord(mem,DecodeDirectPageAddress(inst)));
 		break;
 	case INST_SUBD_IDX: //  0xA3,
-		SubWord(state.D,mem.FetchWord(DecodeIndexedAddress(inst,mem)));
+		SubWord(state.D,FetchWord(mem,DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_SUBD_EXT: //  0xB3,
-		SubWord(state.D,mem.FetchWord(inst.ExtendedAddress()));
+		SubWord(state.D,FetchWord(mem,inst.ExtendedAddress()));
 		break;
 
 	case INST_SWI: //       0x3F,
@@ -2770,13 +2770,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_TST_DP: //    0x0D,
-		Test8(mem.FetchByte(DecodeDirectPageAddress(inst)));
+		Test8(FetchByte(mem,DecodeDirectPageAddress(inst)));
 		break;
 	case INST_TST_IDX: //   0x6D,
-		Test8(mem.FetchByte(DecodeIndexedAddress(inst,mem)));
+		Test8(FetchByte(mem,DecodeIndexedAddress(inst,mem)));
 		break;
 	case INST_TST_EXT: //   0x7D,
-		Test8(mem.FetchByte(inst.ExtendedAddress()));
+		Test8(FetchByte(mem,inst.ExtendedAddress()));
 		break;
 
 	case INST_BCC_IMM: //   0x24,

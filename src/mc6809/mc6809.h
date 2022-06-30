@@ -781,6 +781,23 @@ public:
 			state.CC|=CF;
 		}
 	}
+
+	inline uint8_t FetchByte(MemoryAccess &mem,uint16_t addr)
+	{
+		return mem.FetchByte(addr);
+	}
+	inline uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
+	{
+		return mem.FetchWord(addr);
+	}
+	inline void StoreByte(MemoryAccess &mem,uint16_t addr,uint8_t data)
+	{
+		mem.StoreByte(addr,data);
+	}
+	inline void StoreWord(MemoryAccess &mem,uint16_t addr,uint16_t data)
+	{
+		mem.StoreWord(addr,data);
+	}
 };
 
 /* } */
