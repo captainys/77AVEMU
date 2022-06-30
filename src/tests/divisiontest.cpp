@@ -103,8 +103,10 @@ public:
 bool Divide(int numer,int denom,bool verbose)
 {
 	TestVM vm;
-	MC6809 cpu(&vm);
+	static MC6809 cpu(&vm);
 	PlainMemoryAccess mem;
+
+	cpu.Reset();
 
 	unsigned int addr=0x2000;
 	for(int i=0; i<code.size(); i+=2)

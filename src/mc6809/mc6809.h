@@ -3,6 +3,8 @@
 /* { */
 
 #include <stdint.h>
+#include <iostream>
+#include "cpputil.h"
 #include "vmbase.h"
 #include "memory.h"
 #include "mc6809util.h"
@@ -784,19 +786,64 @@ public:
 
 	inline uint8_t FetchByte(MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.FetchByte(addr);
+		if(true!=debugger.enabled || 0==debugger.memRead[addr].flags)
+		{
+			return mem.FetchByte(addr);
+		}
+		else
+		{
+			auto option=debugger.memRead[addr];
+			auto data=mem.FetchByte(addr);
+			if(option.min<=data && data<=option.max)
+			{
+				std::cout << "Memory Read " << cpputil::Ustox(addr) << " Value=" << cpputil::Ubtox(data) << std::endl;
+				if(option.flags&Debugger::BRKPNT_FLAG_BREAK)
+				{
+					debugger.stop=true;
+				}
+			}
+		}
 	}
 	inline uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.FetchWord(addr);
+		if(true!=debugger.enabled || 0==debugger.memRead[addr].flags || 0==debugger.memRead[(addr+1)&0xFFFF].flags)
+		{
+			return mem.FetchWord(addr);
+		}
+		else
+		{
+			return (FetchByte(mem,addr)<<8)|FetchByte(mem,addr+1);
+		}
 	}
 	inline void StoreByte(MemoryAccess &mem,uint16_t addr,uint8_t data)
 	{
 		mem.StoreByte(addr,data);
+		if(true==debugger.enabled && 0!=debugger.memWrite[addr].flags)
+		{
+			auto option=debugger.memWrite[addr];
+			if(option.min<=data && data<=option.max)
+			{
+				std::cout << "Memory Write " << cpputil::Ustox(addr) << " Value=" << cpputil::Ubtox(data) << std::endl;
+				if(option.flags&Debugger::BRKPNT_FLAG_BREAK)
+				{
+					debugger.stop=true;
+				}
+			}
+		}
 	}
 	inline void StoreWord(MemoryAccess &mem,uint16_t addr,uint16_t data)
 	{
-		mem.StoreWord(addr,data);
+		if(true!=debugger.enabled &&
+		   0==debugger.memWrite[addr].flags &&
+		   0==debugger.memWrite[(addr+1)&0xFFFF].flags)
+		{
+			mem.StoreWord(addr,data);
+		}
+		else
+		{
+			StoreByte(mem,addr  ,data>>8);
+			StoreByte(mem,addr+1,data&0xFF);
+		}
 	}
 };
 
