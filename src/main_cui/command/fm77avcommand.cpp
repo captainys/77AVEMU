@@ -43,6 +43,10 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["SUBCMD"]=BREAK_ON_SUBCMD;
+	breakEventMap["MEMREAD"]=BREAK_ON_MEM_READ;
+	breakEventMap["MEMR"]=BREAK_ON_MEM_READ;
+	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
+	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 
 	dumpableMap["TAPE"]=DUMP_TAPE;
 }
@@ -108,6 +112,15 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "SUBCMD ##" << std::endl;
 	std::cout << "  Break on Sub-CPU command.  ## is a number in hexadecimal." << std::endl;
 	std::cout << "  Break timing is same as SUBUNHALT/UNHALTSUB" << std::endl;
+	std::cout << "MEMREAD addr" << std::endl;
+	std::cout << "MEMREAD addr DATA=byteData" << std::endl;
+	std::cout << "MEMREAD addr D=byteData" << std::endl;
+	std::cout << "MEMWRITE addr" << std::endl;
+	std::cout << "MEMWRITE addr DATA=byteData" << std::endl;
+	std::cout << "MEMWRITE addr D=byteData" << std::endl;
+	std::cout << "  Memory Read/Write." << std::endl;
+	std::cout << "  For memory range, do something like main:0000 00FF." << std::endl;
+	std::cout << "  For clearing range, do main:0000 00FF or sub:D380 D38F." << std::endl;
 
 	std::cout << "<< Printable >>" << std::endl;
 	std::cout << "TAPE" << std::endl;
@@ -168,6 +181,11 @@ void FM77AVCommandInterpreter::Error_UnknownEvent(const Command &cmd)
 void FM77AVCommandInterpreter::Error_IllegalSubCommand(const Command &cmd)
 {
 	std::cout << "Illegal Sub-CPU Command." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_WrongParameter(const Command &cmd)
+{
+	std::cout << "Wrong Parameter." << std::endl;
 	Error_Common(cmd);
 }
 
@@ -658,6 +676,12 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AV &av,Command &cmd)
 					Error_TooFewArgs(cmd);
 				}
 				break;
+			case BREAK_ON_MEM_READ:
+				Execute_BreakOnMemoryRead(av,cmd);
+				break;
+			case BREAK_ON_MEM_WRITE:
+				Execute_BreakOnMemoryWrite(av,cmd);
+				break;
 			}
 		}
 		else
@@ -707,6 +731,12 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AV &av,Command &cmd)
 					}
 				}
 				break;
+			case BREAK_ON_MEM_READ:
+				Execute_DontBreakOnMemoryRead(av,cmd);
+				break;
+			case BREAK_ON_MEM_WRITE:
+				Execute_DontBreakOnMemoryWrite(av,cmd);
+				break;
 			}
 		}
 		else
@@ -717,5 +747,443 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AV &av,Command &cmd)
 	else
 	{
 		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd)
+{
+	bool useValue=false,useMinMax=false;
+	unsigned char value=0,minValue=0,maxValue=255;
+	int nAddr=0;
+	int mainOrSub=CPU_UNKNOWN;
+	uint32_t addr[2];
+
+	for(int i=2; i<cmd.argv.size(); ++i)
+	{
+		// DATA=, DATA:, D:, D=, VALUE:, VALUE=, V:, V=
+		auto arg=cmd.argv[i];
+		cpputil::Capitalize(arg);
+		if(cpputil::StrStartsWith(arg,"DATA=") ||
+		   cpputil::StrStartsWith(arg,"D=") ||
+		   cpputil::StrStartsWith(arg,"VALUE=") ||
+		   cpputil::StrStartsWith(arg,"V=") ||
+		   cpputil::StrStartsWith(arg,"DATA:") ||
+		   cpputil::StrStartsWith(arg,"D:") ||
+		   cpputil::StrStartsWith(arg,"VALUE:") ||
+		   cpputil::StrStartsWith(arg,"V:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useValue=true;
+				value=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(cpputil::StrStartsWith(arg,"MIN=") ||
+		        cpputil::StrStartsWith(arg,"Min=") ||
+		        cpputil::StrStartsWith(arg,"min=") ||
+		        cpputil::StrStartsWith(arg,"MIN:") ||
+		        cpputil::StrStartsWith(arg,"Min:") ||
+		        cpputil::StrStartsWith(arg,"min:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useMinMax=true;
+				minValue=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(cpputil::StrStartsWith(arg,"MAX=") ||
+		        cpputil::StrStartsWith(arg,"Max=") ||
+		        cpputil::StrStartsWith(arg,"max=") ||
+		        cpputil::StrStartsWith(arg,"MAX:") ||
+		        cpputil::StrStartsWith(arg,"Max:") ||
+		        cpputil::StrStartsWith(arg,"max:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useMinMax=true;
+				maxValue=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(std::string::npos!=cmd.argv[i].find(':'))
+		{
+			auto ptr=MakeCPUandAddress(av,cmd.argv[i]);
+			if(CPU_UNKNOWN==ptr.cpu)
+			{
+				Error_UnknownCPU(cmd);
+				return;
+			}
+
+			if(nAddr<2)
+			{
+				mainOrSub=ptr.cpu;
+				addr[nAddr]=ptr.addr;
+				++nAddr;
+			}
+		}
+		else
+		{
+			if(nAddr<2)
+			{
+				addr[nAddr]=cpputil::Xtoi(arg.c_str());
+				++nAddr;
+			}
+		}
+	}
+
+	if(useMinMax && useValue)
+	{
+		std::cout << "Min/Max and Data cannot be used simultaneously." << std::endl;
+		Error_WrongParameter(cmd);
+		return;
+	}
+
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+
+	if(2==nAddr)
+	{
+		if(addr[1]<addr[0])
+		{
+			std::swap(addr[0],addr[1]);
+		}
+		auto &cpu=av.CPU(mainOrSub);
+		auto &mem=av.MemAccess(mainOrSub);
+		for(auto a=addr[0]; a<=addr[1]; ++a)
+		{
+			if(true!=useValue)
+			{
+				cpu.debugger.SetBreakOnMemRead(a,minValue,maxValue);
+			}
+			else
+			{
+				cpu.debugger.SetBreakOnMemRead(a,value,value);
+			}
+		}
+		std::cout << "Break on Memory Read" << std::endl;
+		std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
+		std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
+		if(true==useValue)
+		{
+			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+		if(true==useMinMax)
+		{
+			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+		}
+	}
+	else if(1==nAddr)
+	{
+		auto &cpu=av.CPU(mainOrSub);
+		auto &mem=av.MemAccess(mainOrSub);
+		if(true!=useValue)
+		{
+			cpu.debugger.SetBreakOnMemRead(addr[0],minValue,maxValue);
+		}
+		else
+		{
+			cpu.debugger.SetBreakOnMemRead(addr[0],value,value);
+		}
+		std::cout << "Break on Memory Read " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
+		if(true==useValue)
+		{
+			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+		if(true==useMinMax)
+		{
+			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+		}
+	}
+	else if(2<nAddr)
+	{
+		Error_WrongParameter(cmd);
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AV &av,Command &cmd)
+{
+	bool useValue=false,useMinMax=false;
+	unsigned char value=0,minValue=0,maxValue=255;
+	int nAddr=0;
+	int mainOrSub=CPU_UNKNOWN;
+	uint32_t addr[2];
+
+	for(int i=2; i<cmd.argv.size(); ++i)
+	{
+		// DATA=, DATA:, D:, D=, VALUE:, VALUE=, V:, V=
+		auto arg=cmd.argv[i];
+		cpputil::Capitalize(arg);
+		if(cpputil::StrStartsWith(arg,"DATA=") ||
+		   cpputil::StrStartsWith(arg,"D=") ||
+		   cpputil::StrStartsWith(arg,"VALUE=") ||
+		   cpputil::StrStartsWith(arg,"V=") ||
+		   cpputil::StrStartsWith(arg,"DATA:") ||
+		   cpputil::StrStartsWith(arg,"D:") ||
+		   cpputil::StrStartsWith(arg,"VALUE:") ||
+		   cpputil::StrStartsWith(arg,"V:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useValue=true;
+				value=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(cpputil::StrStartsWith(arg,"MIN=") ||
+		        cpputil::StrStartsWith(arg,"Min=") ||
+		        cpputil::StrStartsWith(arg,"min=") ||
+		        cpputil::StrStartsWith(arg,"MIN:") ||
+		        cpputil::StrStartsWith(arg,"Min:") ||
+		        cpputil::StrStartsWith(arg,"min:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useMinMax=true;
+				minValue=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(cpputil::StrStartsWith(arg,"MAX=") ||
+		        cpputil::StrStartsWith(arg,"Max=") ||
+		        cpputil::StrStartsWith(arg,"max=") ||
+		        cpputil::StrStartsWith(arg,"MAX:") ||
+		        cpputil::StrStartsWith(arg,"Max:") ||
+		        cpputil::StrStartsWith(arg,"max:"))
+		{
+			auto pos=arg.find(':');
+			if(std::string::npos==pos)
+			{
+				pos=arg.find('=');
+			}
+			if(std::string::npos!=pos)
+			{
+				useMinMax=true;
+				maxValue=cpputil::Xtoi(arg.c_str()+pos+1);
+			}
+		}
+		else if(std::string::npos!=cmd.argv[i].find(':'))
+		{
+			auto ptr=MakeCPUandAddress(av,cmd.argv[i]);
+			if(CPU_UNKNOWN==ptr.cpu)
+			{
+				Error_UnknownCPU(cmd);
+				return;
+			}
+
+			if(nAddr<2)
+			{
+				mainOrSub=ptr.cpu;
+				addr[nAddr]=ptr.addr;
+				++nAddr;
+			}
+		}
+		else
+		{
+			if(nAddr<2)
+			{
+				addr[nAddr]=cpputil::Xtoi(arg.c_str());
+				++nAddr;
+			}
+		}
+	}
+
+	if(useMinMax && useValue)
+	{
+		std::cout << "Min/Max and Data cannot be used simultaneously." << std::endl;
+		Error_WrongParameter(cmd);
+		return;
+	}
+
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+
+	if(2==nAddr)
+	{
+		if(addr[1]<addr[0])
+		{
+			std::swap(addr[0],addr[1]);
+		}
+		auto &cpu=av.CPU(mainOrSub);
+		auto &mem=av.MemAccess(mainOrSub);
+		for(auto a=addr[0]; a<=addr[1]; ++a)
+		{
+			if(true!=useValue)
+			{
+				cpu.debugger.SetBreakOnMemWrite(a,minValue,maxValue);
+			}
+			else
+			{
+				cpu.debugger.SetBreakOnMemWrite(a,value,value);
+			}
+		}
+		std::cout << "Break on Memory Write" << std::endl;
+		std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
+		std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
+		if(true==useValue)
+		{
+			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+		if(true==useMinMax)
+		{
+			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+		}
+	}
+	else if(1==nAddr)
+	{
+		auto &cpu=av.CPU(mainOrSub);
+		auto &mem=av.MemAccess(mainOrSub);
+		if(true!=useValue)
+		{
+			cpu.debugger.SetBreakOnMemWrite(addr[0],minValue,maxValue);
+		}
+		else
+		{
+			cpu.debugger.SetBreakOnMemWrite(addr[0],value,value);
+		}
+		std::cout << "Break on Memory Write " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
+		if(true==useValue)
+		{
+			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+		}
+		if(true==useMinMax)
+		{
+			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+		}
+	}
+	else if(2<nAddr)
+	{
+		Error_WrongParameter(cmd);
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryRead(FM77AV &av,Command &cmd)
+{
+	if(4<=cmd.argv.size())
+	{
+		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		unsigned int addr0=ptr0.addr;
+		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+		if(CPU_UNKNOWN==ptr0.cpu)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+		if(addr1<addr0)
+		{
+			std::swap(addr0,addr1);
+		}
+		auto &cpu=av.CPU(ptr0.cpu);
+		for(auto addr=addr0; addr<=addr1; ++addr)
+		{
+			cpu.debugger.ClearBreakOnMemRead(addr);
+		}
+		std::cout << "Clear Break on Memory Read" << std::endl;
+		std::cout << "  from " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(addr0) << std::endl;
+		std::cout << "  to   " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(addr1) << std::endl;
+	}
+	else if(3<=cmd.argv.size())
+	{
+		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		if(CPU_UNKNOWN==ptr0.cpu)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+		auto &cpu=av.CPU(ptr0.cpu);
+		cpu.debugger.ClearBreakOnMemRead(ptr0.addr);
+		std::cout << "Clear Break on Memory Read " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(ptr0.addr) << std::endl;
+	}
+	else
+	{
+		for(uint32_t addr=0; addr<=0xFFFF; ++addr)
+		{
+			av.mainCPU.debugger.ClearBreakOnMemRead(addr);
+			av.subCPU.debugger.ClearBreakOnMemRead(addr);
+		}
+		std::cout << "Clear All Break on Memory Read on main- and sub-CPUs" << std::endl;
+	}
+}
+void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AV &av,Command &cmd)
+{
+	if(4<=cmd.argv.size())
+	{
+		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		unsigned int addr0=ptr0.addr;
+		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
+		if(CPU_UNKNOWN==ptr0.cpu)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+		if(addr1<addr0)
+		{
+			std::swap(addr0,addr1);
+		}
+		auto &cpu=av.CPU(ptr0.cpu);
+		for(auto addr=addr0; addr<=addr1; ++addr)
+		{
+			cpu.debugger.ClearBreakOnMemWrite(addr);
+		}
+		std::cout << "Clear Break on Memory Write" << std::endl;
+		std::cout << "  from " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(addr0) << std::endl;
+		std::cout << "  to   " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(addr1) << std::endl;
+	}
+	else if(3<=cmd.argv.size())
+	{
+		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		if(CPU_UNKNOWN==ptr0.cpu)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+		auto &cpu=av.CPU(ptr0.cpu);
+		cpu.debugger.ClearBreakOnMemWrite(ptr0.addr);
+		std::cout << "Clear Break on Memory Write " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(ptr0.addr) << std::endl;
+	}
+	else
+	{
+		for(uint32_t addr=0; addr<=0xFFFF; ++addr)
+		{
+			av.mainCPU.debugger.ClearBreakOnMemWrite(addr);
+			av.subCPU.debugger.ClearBreakOnMemWrite(addr);
+		}
+		std::cout << "Clear All Break on Memory Write on main- and sub-CPUs" << std::endl;
 	}
 }

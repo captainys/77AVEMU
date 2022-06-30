@@ -3210,7 +3210,7 @@ uint16_t MC6809::DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem)
 	}
 	if(true==inst.indexIndir)
 	{
-		addr=mem.FetchWord(addr);
+		addr=FetchWord(mem,addr);
 	}
 	return addr;
 }
@@ -3225,52 +3225,52 @@ uint16_t MC6809::DecodeDirectPageAddress(const Instruction &inst)
 void MC6809::PushS16(MemoryAccess &mem,uint16_t value)
 {
 	state.S-=2;
-	mem.StoreWord(state.S,value);
+	StoreWord(mem,state.S,value);
 }
 void MC6809::PushS8(MemoryAccess &mem,uint8_t value)
 {
-	mem.StoreByte(--state.S,value);
+	StoreByte(mem,--state.S,value);
 }
 uint16_t MC6809::PullS16(MemoryAccess &mem)
 {
 	auto S=state.S;
 	state.S+=2;
-	return mem.FetchWord(S);
+	return FetchWord(mem,S);
 }
 uint8_t MC6809::PullS8(MemoryAccess &mem)
 {
-	return mem.FetchByte(state.S++);
+	return FetchByte(mem,state.S++);
 }
 
 void MC6809::PushU16(MemoryAccess &mem,uint16_t value)
 {
 	state.U-=2;
-	mem.StoreWord(state.U,value);
+	StoreWord(mem,state.U,value);
 }
 void MC6809::PushU8(MemoryAccess &mem,uint8_t value)
 {
-	mem.StoreByte(--state.U,value);
+	StoreByte(mem,--state.U,value);
 }
 uint16_t MC6809::PullU16(MemoryAccess &mem)
 {
 	auto U=state.U;
 	state.U+=2;
-	return mem.FetchWord(U);
+	return FetchWord(mem,U);
 }
 uint8_t MC6809::PullU8(MemoryAccess &mem)
 {
-	return mem.FetchByte(state.U++);
+	return FetchByte(mem,state.U++);
 }
 
 void MC6809::WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value)
 {
 	uint16_t addr=DecodeIndexedAddress(inst,mem);
-	mem.StoreWord(addr,value);
+	StoreWord(mem,addr,value);
 }
 void MC6809::WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value)
 {
 	uint16_t addr=DecodeIndexedAddress(inst,mem);
-	mem.StoreByte(addr,value);
+	StoreByte(mem,addr,value);
 }
 
 const uint16_t &MC6809::RegisterRef16(uint8_t reg) const

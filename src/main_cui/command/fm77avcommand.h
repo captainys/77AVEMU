@@ -62,6 +62,8 @@ public:
 		BREAK_ON_NULL,
 		BREAK_ON_SUBCPU_UNHALT,
 		BREAK_ON_SUBCMD,
+		BREAK_ON_MEM_READ,
+		BREAK_ON_MEM_WRITE,
 	};
 
 	enum
@@ -90,6 +92,7 @@ public:
 	void Error_UnknownFeature(const Command &cmd);
 	void Error_UnknownEvent(const Command &cmd);
 	void Error_IllegalSubCommand(const Command &cmd);
+	void Error_WrongParameter(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
 
@@ -110,6 +113,10 @@ public:
 	void Execute_MemoryDump(FM77AV &av,Command &cmd);
 	void Execute_BreakOn(FM77AV &av,Command &cmd);
 	void Execute_DontBreakOn(FM77AV &av,Command &cmd);
+	void Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd);
+	void Execute_BreakOnMemoryWrite(FM77AV &av,Command &cmd);
+	void Execute_DontBreakOnMemoryRead(FM77AV &av,Command &cmd);
+	void Execute_DontBreakOnMemoryWrite(FM77AV &av,Command &cmd);
 };
 
 /* } */
