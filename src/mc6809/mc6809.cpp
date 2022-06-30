@@ -2098,8 +2098,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_LSR_EXT: //   0x74,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint16_t addr=inst.ExtendedAddress();
+			mem.StoreByte(addr,LSR(mem.FetchByte(addr)));
+		}
 		break;
 
 	case INST_MUL: //       0x3D,
@@ -2421,8 +2423,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_SBCA_IMM: //  0x82,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=inst.operand[0];
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.A();
+			SubByte(reg,value);
+			state.SetA(reg);
+		}
 		break;
 	case INST_SBCA_DP: //   0x92,
 		{
@@ -2437,17 +2447,41 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_SBCA_IDX: //  0xA2,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.A();
+			SubByte(reg,value);
+			state.SetA(reg);
+		}
 		break;
 	case INST_SBCA_EXT: //  0xB2,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=mem.FetchByte(inst.ExtendedAddress());
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.A();
+			SubByte(reg,value);
+			state.SetA(reg);
+		}
 		break;
 
 	case INST_SBCB_IMM: //  0xC2,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=inst.operand[0];
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.B();
+			SubByte(reg,value);
+			state.SetB(reg);
+		}
 		break;
 	case INST_SBCB_DP: //   0xD2,
 		{
@@ -2462,17 +2496,42 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_SBCB_IDX: //  0xE2,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=mem.FetchByte(DecodeIndexedAddress(inst,mem));
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.B();
+			SubByte(reg,value);
+			state.SetB(reg);
+		}
 		break;
 	case INST_SBCB_EXT: //  0xF2,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			uint8_t value=mem.FetchByte(inst.ExtendedAddress());
+			if(0!=(state.CC&CF))
+			{
+				++value;
+			}
+			auto reg=state.B();
+			SubByte(reg,value);
+			state.SetB(reg);
+		}
 		break;
 
 	case INST_SEX: //       0x1D,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		state.CC&=~(SF|ZF);
+		if(0!=(state.B()&0x80))
+		{
+			state.CC|=SF;
+			state.SetA(0xFF);
+		}
+		else
+		{
+			state.SetA(0);
+			RaiseZF(0==state.B());
+		}
 		break;
 
 	case INST_STA_DP: //    0x97,
