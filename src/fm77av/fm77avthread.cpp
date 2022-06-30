@@ -52,11 +52,12 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			renderingThread->WaitIdle();
 			// fm77avPtr->ForceRender(render,*outside_world);
 			outside_world->DevicePolling(*fm77avPtr);
-			//if(true==outside_world->PauseKeyPressed())
-			//{
-			//	runMode=RUNMODE_RUN;
-			//	fm77avPtr->debugger.stop=false;
-			//}
+			if(true==outside_world->PauseKeyPressed())
+			{
+				runMode=RUNMODE_RUN;
+				fm77avPtr->mainCPU.debugger.stop=false;
+				fm77avPtr->subCPU.debugger.stop=false;
+			}
 			break;
 		case RUNMODE_RUN:
 			clockTicking=true;

@@ -308,11 +308,21 @@ void FM77AV::PrintSubSystemCommand(void) const
 			break;
 		case FM7_SUBCMD_GET_BLOCK1://            0x1B,
 			break;
-		case FM7_SUBCMD_PUT_BLOCK1://            0x1C,
-			break;
 		case FM7_SUBCMD_GET_BLOCK2://            0x1D,
 			break;
+		case FM7_SUBCMD_PUT_BLOCK1://            0x1C,
 		case FM7_SUBCMD_PUT_BLOCK2://            0x1E,
+			{
+				uint32_t addr=PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN;
+				auto x1=physMem.NonDestructiveFetchWord(addr+3);
+				auto y1=physMem.NonDestructiveFetchWord(addr+5);
+				auto x2=physMem.NonDestructiveFetchWord(addr+7);
+				auto y2=physMem.NonDestructiveFetchWord(addr+9);
+				int CL=physMem.NonDestructiveFetchByte(addr+11);
+				int FN=physMem.NonDestructiveFetchByte(addr+12);
+				int len=physMem.NonDestructiveFetchByte(addr+13);
+				std::cout << "(" << x1 << "," << y1 << ")-(" << x2 << "," << y2 << ") " << CL << " " << FN << " " << len << std::endl;
+			}
 			break;
 		case FM7_SUBCMD_GCURSOR://               0x1F,
 			break;
