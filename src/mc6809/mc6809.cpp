@@ -1876,8 +1876,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_JSR_IDX: //   0xAD,
-		PushS16(mem,state.PC+inst.length);
-		state.PC=DecodeIndexedAddress(inst,mem);
+		{
+			// JSR [,S++] found in Polar Star III.
+			// The correct behavior is probably:
+			//   (1) Calculate Index Address, and S+=2
+			//   (2) Push Return Address
+			//   (3) Jump.
+			auto retAddr=state.PC+inst.length;
+			state.PC=DecodeIndexedAddress(inst,mem);
+			PushS16(mem,retAddr);
+		}
 		inst.length=0;
 		break;
 	case INST_JSR_EXT: //   0xBD,
