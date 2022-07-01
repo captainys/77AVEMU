@@ -46,6 +46,12 @@ public:
 		CMD_DUMP,
 		CMD_MEMDUMP,
 
+		CMD_ADD_BREAKPOINT,
+		CMD_ADD_BREAKPOINT_WITH_PASSCOUNT,
+		CMD_ADD_MONITORPOINT,
+		CMD_DELETE_BREAKPOINT,
+		CMD_LIST_BREAKPOINTS,
+
 		CMD_BREAK_ON,
 		CMD_DONT_BREAK_ON,
 	};
@@ -117,6 +123,11 @@ public:
 	void Execute_DontBreakOn(FM77AV &av,Command &cmd);
 	void Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd);
 	void Execute_BreakOnMemoryWrite(FM77AV &av,Command &cmd);
+	void Execute_AddBreakPoint(FM77AV &fm77av,Command &cmd);
+	void Execute_AddBreakPointWithPassCount(FM77AV &fm77av,Command &cmd);
+	void Execute_AddMonitorPoint(FM77AV &fm77av,Command &cmd);
+	void Execute_DeleteBreakPoint(FM77AV &fm77av,Command &cmd);
+	void Execute_ListBreakPoints(FM77AV &fm77av,Command &cmd);
 	void Execute_DontBreakOnMemoryRead(FM77AV &av,Command &cmd);
 	void Execute_DontBreakOnMemoryWrite(FM77AV &av,Command &cmd);
 };

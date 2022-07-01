@@ -81,14 +81,17 @@ void MC6809::Debugger::CheckBreakCondition(const MC6809 &cpu,const MemoryAccess 
 			if(0==(breakPoints[cpu.state.PC].flags&BRKPNT_FLAG_SILENT_UNTIL_BREAK))
 			{
 				hitMonitorPoint=true;
+				stop=true;
 			}
 		}
 		else if(0!=(breakPoints[cpu.state.PC].flags&BRKPNT_FLAG_MONITOR_ONLY))
 		{
 			hitMonitorPoint=true;
+			stop=true;
 		}
 		else
 		{
+			hitMonitorPoint=false;
 			stop=true;
 		}
 	}

@@ -91,28 +91,26 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 								// 	fm77avPtr->var.powerOff=true;
 								// 	break;
 								// }
-								//if(true!=fm77avPtr->debugger.lastBreakPointInfo.ShouldBreak())
-								//{
-								//	if(0!=(fm77avPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
-								//	   0==(fm77avPtr->debugger.lastBreakPointInfo.flags&i486Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
-								//	{
-								//		std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-								//		PrintStatus(*fm77avPtr);
-								//	}
-								//	fm77avPtr->debugger.ClearStopFlag();
-								//	this->SetRunMode(RUNMODE_RUN);
-								//}
-								//else
-								//{
-								// std::cout << "Passed " << fm77avPtr->debugger.lastBreakPointInfo.passedCount << " times." << std::endl;
-								PrintCPUState(*fm77avPtr,cpu,mem,cpuId);
-								std::cout << ">";
-								runMode=RUNMODE_PAUSE;
-								shouldBreak=true;
-							}
-							else if(true==cpu.debugger.PollMonitorPoint())
-							{
-								PrintCPUState(*fm77avPtr,cpu,mem,cpuId);
+								if(true==cpu.debugger.PollMonitorPoint())
+								{
+									cpu.debugger.hitMonitorPoint=false;
+									if(0!=(cpu.debugger.lastBreakPointInfo.flags&MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY) ||
+									   0==(cpu.debugger.lastBreakPointInfo.flags&MC6809::Debugger::BRKPNT_FLAG_SILENT_UNTIL_BREAK))
+									{
+										std::cout << "Passed " << cpu.debugger.lastBreakPointInfo.passed << " times." << std::endl;
+										PrintCPUState(*fm77avPtr,cpu,mem,cpuId);
+									}
+									cpu.debugger.ClearStopFlag();
+									SetRunMode(RUNMODE_RUN);
+								}
+								else
+								{
+									std::cout << "Passed " << cpu.debugger.lastBreakPointInfo.passed << " times." << std::endl;
+									PrintCPUState(*fm77avPtr,cpu,mem,cpuId);
+									std::cout << ">";
+									runMode=RUNMODE_PAUSE;
+									shouldBreak=true;
+								}
 							}
 						}
 					}

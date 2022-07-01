@@ -33,6 +33,11 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["DM"]=CMD_DUMP;
 	primaryCmdMap["MEMDUMP"]=CMD_MEMDUMP;
 	primaryCmdMap["MD"]=CMD_MEMDUMP;
+	primaryCmdMap["BP"]=CMD_ADD_BREAKPOINT;
+	primaryCmdMap["BPPC"]=CMD_ADD_BREAKPOINT_WITH_PASSCOUNT;
+	primaryCmdMap["MP"]=CMD_ADD_MONITORPOINT;
+	primaryCmdMap["BC"]=CMD_DELETE_BREAKPOINT;
+	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 
@@ -93,6 +98,24 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Memory Dump.  If you enter wid,hei,step it will dump non-16x16 columns." << std::endl;
 	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
 	std::cout << "BRKON event" << std::endl;
+	std::cout << "BP EIP|BRK EIP" << std::endl;
+	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
+	std::cout << "  Add a break point." << std::endl;
+	std::cout << "BPPC EIP|BRK EIP passCount" << std::endl;
+	std::cout << "BPPC CS:EIP passCount" << std::endl;
+	std::cout << "  Add a break point with pass count" << std::endl;
+	std::cout << "  Majority of the numbers specified in the parameters are hexadecimal, but" << std::endl;
+	std::cout << "  The number here (passCount) is a decimal number." << std::endl;
+	std::cout << "MP EIP|BRK EIP" << std::endl;
+	std::cout << "MP CS:EIP|BRK CS:EIP" << std::endl;
+	std::cout << "  Add a monitor-only break point.  At a monitor-only break point, the VM will print" << std::endl;
+	std::cout << "  the status, but will not stop the execution." << std::endl;
+	std::cout << "BC Num" << std::endl;
+	std::cout << "  Delete a break point." << std::endl;
+	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
+	std::cout << "  BC * to erase all break points." << std::endl;
+	std::cout << "BL main|sub" << std::endl;
+	std::cout << "  List break points." << std::endl;
 	std::cout << "  Break on event." << std::endl;
 	std::cout << "CBRKON event" << std::endl;
 	std::cout << "  Don't break on event." << std::endl;
@@ -337,6 +360,21 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DUMP:
 		Execute_Dump(fm77av,cmd);
+		break;
+	case CMD_ADD_BREAKPOINT:
+		Execute_AddBreakPoint(fm77av,cmd);
+		break;
+	case CMD_ADD_BREAKPOINT_WITH_PASSCOUNT:
+		Execute_AddBreakPointWithPassCount(fm77av,cmd);
+		break;
+	case CMD_ADD_MONITORPOINT:
+		Execute_AddMonitorPoint(fm77av,cmd);
+		break;
+	case CMD_DELETE_BREAKPOINT:
+		Execute_DeleteBreakPoint(fm77av,cmd);
+		break;
+	case CMD_LIST_BREAKPOINTS:
+		Execute_ListBreakPoints(fm77av,cmd);
 		break;
 	case CMD_BREAK_ON:
 		Execute_BreakOn(fm77av,cmd);
@@ -1232,5 +1270,149 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AV &av,Command
 			av.subCPU.debugger.ClearBreakOnMemWrite(addr);
 		}
 		std::cout << "Clear All Break on Memory Write on main- and sub-CPUs" << std::endl;
+	}
+}
+
+void FM77AVCommandInterpreter::Execute_AddBreakPoint(FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+
+	auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+	if(CPU_UNKNOWN==ptr.cpu)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+
+	auto &cpu=fm77av.CPU(ptr.cpu);
+	cpu.debugger.SetBreakPoint(ptr.addr,ptr.addr);
+}
+
+void FM77AVCommandInterpreter::Execute_AddBreakPointWithPassCount(FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<3)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+
+	auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+	if(CPU_UNKNOWN==ptr.cpu)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+
+	int passCountUntilBreak=cpputil::Atoi(cmd.argv[2].c_str());
+	auto &cpu=fm77av.CPU(ptr.cpu);
+	cpu.debugger.SetBreakPoint(ptr.addr,ptr.addr,passCountUntilBreak);
+}
+
+void FM77AVCommandInterpreter::Execute_AddMonitorPoint(FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+
+	auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+	if(CPU_UNKNOWN==ptr.cpu)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+
+	auto &cpu=fm77av.CPU(ptr.cpu);
+	cpu.debugger.SetBreakPoint(ptr.addr,ptr.addr,1,MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY);
+}
+
+void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+
+	auto ARGV1=cmd.argv[1];
+	cpputil::Capitalize(ARGV1);
+
+	if("*"==cmd.argv[1])
+	{
+		fm77av.mainCPU.debugger.ClearBreakPoint();
+		fm77av.subCPU.debugger.ClearBreakPoint();
+		std::cout << "Cleared all break points of main- and sub-CPUs." << std::endl;
+	}
+	else if("M:*"==ARGV1 || "MAIN:*"==ARGV1)
+	{
+		fm77av.mainCPU.debugger.ClearBreakPoint();
+		std::cout << "Cleared all break points of main-CPU." << std::endl;
+	}
+	else if("S:*"==ARGV1 || "SUB:*"==ARGV1)
+	{
+		fm77av.subCPU.debugger.ClearBreakPoint();
+		std::cout << "Cleared all break points of sub-CPU." << std::endl;
+	}
+	else
+	{
+		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[2]);
+		if(CPU_UNKNOWN==ptr.cpu)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+
+		int passCountUntilBreak=cpputil::Atoi(cmd.argv[2].c_str());
+		auto &cpu=fm77av.CPU(ptr.cpu);
+		cpu.debugger.ClearBreakPoint(ptr.addr,ptr.addr);
+		std::cout << "Cleared break point." << std::endl;
+	}
+}
+void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+
+	auto mainOrSub=StrToCPU(cmd.argv[1]);
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+
+	auto &cpu=fm77av.CPU(mainOrSub);
+	for(uint32_t addr=0; addr<0x10000; ++addr)
+	{
+		if(0!=(cpu.debugger.breakPoints[addr].flags))
+		{
+			std::cout << cpputil::Ustox(addr);
+			if(0!=(MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY&cpu.debugger.breakPoints[addr].flags))
+			{
+				std::cout << " M";
+			}
+			else
+			{
+				std::cout << "  ";
+			}
+			if(0!=cpu.debugger.breakPoints[addr].passCount)
+			{
+				std::cout << " " << cpu.debugger.breakPoints[addr].passed << "/" << cpu.debugger.breakPoints[addr].passCount;
+			}
+			std::cout << std::endl;
+		}
 	}
 }
