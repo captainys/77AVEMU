@@ -113,6 +113,16 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 
 
 	// Sub-CPU I/O
+	case FM77AVIO_ACK_CANCEL_IRQ: //=          0xD402,
+		// Same as $D404.  Is WD402 also clear main-to-sub IRQ?
+		ClearMainToSubIRQFlag();
+		break;
+	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
+		// FM-Techknow pp. pp.483 and Oh!FM May 1985 pp.47 tells Read D404 to send attnention IRQ to main CPU.
+		// F-BASIC Analysys Manual Phase II pp.36 tells reqd/write to send attention IRQ to main CPU.
+		// Which is true?
+		SetSubToMainFIRQFlag();
+		break;
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
 		break;
@@ -182,7 +192,10 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		keyboard.ProcessKeyCodeInQueue();
 		break;
 	case FM77AVIO_ACK_CANCEL_IRQ: //=          0xD402,
-		state.sub.irqSource&=~SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
+		ClearMainToSubIRQFlag();
+		break;
+	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
+		SetSubToMainFIRQFlag();
 		break;
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=false;

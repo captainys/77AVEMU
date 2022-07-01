@@ -41,3 +41,18 @@ void FM77AV::ClearBreakKeyFIRQFlag(void)
 {
 	state.main.firqSource&=~SystemState::MAIN_FIRQ_SOURCE_BREAK_KEY;
 }
+
+void FM77AV::SetSubToMainFIRQFlag(void)
+{
+	state.main.firqSource|=SystemState::MAIN_FIRQ_SOURCE_ATTENTION;
+}
+void FM77AV::ClearSubToMainFIRQFlag(void)
+{
+	state.main.firqSource&=~SystemState::MAIN_FIRQ_SOURCE_ATTENTION;
+}
+
+void FM77AV::ClearMainToSubIRQFlag(void)
+{
+	state.sub.irqSource&=~SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
+}
+

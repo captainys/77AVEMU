@@ -180,6 +180,11 @@ public:
 	void SetBreakKeyFIRQFlag(void);
 	void ClearBreakKeyFIRQFlag(void);
 
+	void SetSubToMainFIRQFlag(void);
+	void ClearSubToMainFIRQFlag(void);
+
+	void ClearMainToSubIRQFlag(void);
+
 
 	bool LoadROMFiles(std::string ROMPath);
 
