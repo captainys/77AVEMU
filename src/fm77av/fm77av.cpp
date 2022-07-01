@@ -180,11 +180,23 @@ unsigned int FM77AV::RunOneInstruction(void)
 
 		if(0==state.timeBalance)
 		{
-			int64_t mainCPUClk=mainCPU.RunOneInstruction(mainMemAcc);
+			// Run Sub-CPU first.
+			//   Main-CPU may halt Sub-CPU.
+			//   Sub-CPU may never halt MainCPU.
+			//   What happened in Cosmo Crash was:
+			//     1. Main-CPU halted the Sub-CPU.
+			//     2. Sub-CPU Busy Flag automatically set HI.
+			//     3. Although Sub-CPU is not supposed to run at this time, it went ahead and executed one instruction.
+			//     4. The one instruction exactly cleared the busy flag.
+			//     5. Main-CPU waits for the sub-CPU busy flag, but never came.
+			//     6. NMI accumurated on sub-CPU, destroyed stack.
+			//     7. Stack eventually reached $D40A, which set the busy flag.
+			//     8. Too late.
 			int64_t subCPUClk=subCPU.RunOneInstruction(subMemAcc);
-
-			int64_t mainCPUTime=(mainCPUClk*SCALE_NANO)/mainCPU.state.freq;
 			int64_t subCPUTime=(subCPUClk*SCALE_NANO)/subCPU.state.freq;
+
+			int64_t mainCPUClk=mainCPU.RunOneInstruction(mainMemAcc);
+			int64_t mainCPUTime=(mainCPUClk*SCALE_NANO)/mainCPU.state.freq;
 
 			state.timeBalance=mainCPUTime-subCPUTime;
 			nanosec=std::max(mainCPUTime,subCPUTime);

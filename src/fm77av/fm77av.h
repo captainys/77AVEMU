@@ -142,7 +142,12 @@ public:
 		if(state.next20msTimer<=state.fm77avTime)
 		{
 			state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
-			subCPU.NMI(subMemAcc);
+			if(true!=SubCPUHalt())
+			{
+				// Don't fire NMI when sub-cpu is halt.
+				// Greater than 40ms halt will double-fire the NMI, which is not good.
+				subCPU.NMI(subMemAcc);
+			}
 			if(0!=(state.main.irqEnableBits&SystemState::MAIN_IRQ_ENABLE_TIMER))
 			{
 				state.main.irqSource|=SystemState::MAIN_IRQ_SOURCE_TIMER;
