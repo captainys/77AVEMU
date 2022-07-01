@@ -431,7 +431,8 @@ public:
 		INST_LBPL_IMM16=0x12A, // 10 2A
 
 		INST_BRA_IMM=   0x20,
-		INST_LBRA_IMM16=0x120, // 10 20
+		INST_LBRA_IMM16=0x16,
+		INST_LBRA_IMM16_ALT=0x120, // 10 20  6309 takes it as illegal opCode.
 
 		INST_BRN_IMM=   0x21,
 		INST_LBRN_IMM16=0x121, // 10 21

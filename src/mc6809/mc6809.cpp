@@ -322,6 +322,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 
 	instOperaType[INST_BRA_IMM]=OPER_IMM;
 	instOperaType[INST_LBRA_IMM16]=OPER_IMM16;
+	instOperaType[INST_LBRA_IMM16_ALT]=OPER_IMM16;
 
 	instOperaType[INST_BRN_IMM]=OPER_IMM;
 	instOperaType[INST_LBRN_IMM16]=OPER_IMM16;
@@ -688,6 +689,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 
 	instClock[INST_BRA_IMM]=3;
 	instClock[INST_LBRA_IMM16]=5;
+	instClock[INST_LBRA_IMM16_ALT]=5;
 
 	instClock[INST_BRN_IMM]=3;
 	instClock[INST_LBRN_IMM16]=5;
@@ -1052,6 +1054,7 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 
 	instLabel[INST_BRA_IMM]=      "BRA";
 	instLabel[INST_LBRA_IMM16]=   "LBRA";
+	instLabel[INST_LBRA_IMM16_ALT]="LBRA";
 
 	instLabel[INST_BRN_IMM]=      "BRN";
 	instLabel[INST_LBRN_IMM16]=   "LBRN";
@@ -2964,7 +2967,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_BRA_IMM: //   0x20,
 		state.PC+=inst.BranchOffset8();
 		break;
-	case INST_LBRA_IMM16: //0x120, // 10 20
+	case INST_LBRA_IMM16: //0x16
+	case INST_LBRA_IMM16_ALT: //0x120, // 10 20
 		state.PC+=inst.BranchOffset16();
 		break;
 
@@ -3854,7 +3858,8 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 		case INST_LBMI_IMM16: //0x12B, // 10 2B
 		case INST_LBNE_IMM16: //0x126, // 10 26
 		case INST_LBPL_IMM16: //0x12A, // 10 2A
-		case INST_LBRA_IMM16: //0x120, // 10 20
+		case INST_LBRA_IMM16: //0x16
+		case INST_LBRA_IMM16_ALT: //0x120, // 10 20
 		case INST_LBRN_IMM16: //0x121, // 10 21
 		case INST_LBSR_IMM16: //0x18D, // 10 2D
 		case INST_LBVC_IMM16: //0x128, // 10 28
