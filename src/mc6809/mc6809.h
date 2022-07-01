@@ -549,7 +549,7 @@ public:
 		ZF=0x04,
 		SF=0x08, // Is it officially called Negative Flag?  I always called it Sign Flag.
 		IRQMASK=0x10,
-		HF=0x10,
+		HF=0x20,
 		FIRQMASK=0x40,
 		EF=0x80,
 	};
