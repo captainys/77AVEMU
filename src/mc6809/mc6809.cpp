@@ -1158,7 +1158,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_ADCA_IMM: //  0x89,
 		{
-			auto imm=inst.operand[0];
+			uint16_t imm=inst.operand[0];
 			if(0!=(state.CC&CF))
 			{
 				++imm;
@@ -1170,7 +1170,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCA_DP: //   0x99,
 		{
-			auto add=FetchByte(mem,DecodeDirectPageAddress(inst));
+			uint16_t add=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1182,7 +1182,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCA_IDX: //  0xA9,
 		{
-			auto add=FetchByte(mem,DecodeIndexedAddress(inst,mem));
+			uint16_t add=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1194,7 +1194,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCA_EXT: //  0xB9,
 		{
-			auto add=FetchByte(mem,inst.ExtendedAddress());
+			uint16_t add=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1207,7 +1207,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_ADCB_IMM: //  0xC9,
 		{
-			auto imm=inst.operand[0];
+			uint16_t imm=inst.operand[0];
 			if(0!=(state.CC&CF))
 			{
 				++imm;
@@ -1219,7 +1219,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCB_DP: //   0xD9,
 		{
-			auto add=FetchByte(mem,DecodeDirectPageAddress(inst));
+			uint16_t add=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1231,7 +1231,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCB_IDX: //  0xE9,
 		{
-			auto add=FetchByte(mem,DecodeIndexedAddress(inst,mem));
+			uint16_t add=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -1243,7 +1243,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_ADCB_EXT: //  0xF9,
 		{
-			auto add=FetchByte(mem,inst.ExtendedAddress());
+			uint16_t add=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++add;
@@ -2426,7 +2426,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_SBCA_IMM: //  0x82,
 		{
-			uint8_t value=inst.operand[0];
+			uint16_t value=inst.operand[0];
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2438,7 +2438,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCA_DP: //   0x92,
 		{
-			uint8_t value=FetchByte(mem,DecodeDirectPageAddress(inst));
+			uint16_t value=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2450,7 +2450,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCA_IDX: //  0xA2,
 		{
-			uint8_t value=FetchByte(mem,DecodeIndexedAddress(inst,mem));
+			uint16_t value=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2462,7 +2462,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCA_EXT: //  0xB2,
 		{
-			uint8_t value=FetchByte(mem,inst.ExtendedAddress());
+			uint16_t value=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2475,7 +2475,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_SBCB_IMM: //  0xC2,
 		{
-			uint8_t value=inst.operand[0];
+			uint16_t value=inst.operand[0];
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2487,7 +2487,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCB_DP: //   0xD2,
 		{
-			uint8_t value=FetchByte(mem,DecodeDirectPageAddress(inst));
+			uint16_t value=FetchByte(mem,DecodeDirectPageAddress(inst));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2499,7 +2499,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCB_IDX: //  0xE2,
 		{
-			uint8_t value=FetchByte(mem,DecodeIndexedAddress(inst,mem));
+			uint16_t value=FetchByte(mem,DecodeIndexedAddress(inst,mem));
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -2511,7 +2511,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SBCB_EXT: //  0xF2,
 		{
-			uint8_t value=FetchByte(mem,inst.ExtendedAddress());
+			uint16_t value=FetchByte(mem,inst.ExtendedAddress());
 			if(0!=(state.CC&CF))
 			{
 				++value;
@@ -3439,15 +3439,16 @@ void MC6809::AddWord(uint16_t &value1,uint16_t value2)
 	RaiseCF(value1<prevValue);
 	// According to the manual, 16-bit Add does not change HF.
 }
-void MC6809::AddByte(uint8_t &value1,uint8_t value2)
+void MC6809::AddByte(uint8_t &value1,uint16_t value2)
 {
-	uint16_t prevValue=value1&0xff;
-	value1=(value1+value2)&0xff;
+	uint16_t prevValue=value1;
+	uint16_t nextValue=prevValue+value2;
+	value1=nextValue&0xff;
 	state.CC&=~(SF|ZF|VF|CF|HF);
 	RaiseVF((prevValue&0x80)==(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Two sources have same sign, but the result sign is different.
 	RaiseSF(0!=(value1&0x80));
 	RaiseZF(0==value1);
-	RaiseCF(value1<prevValue);
+	RaiseCF(0xFF<nextValue);
 	RaiseHF((value1&0x0F)<(prevValue&0x0F)); // Same as AF in Intel chip?
 }
 void MC6809::SubWord(uint16_t &value1,uint16_t value2)
@@ -3460,15 +3461,15 @@ void MC6809::SubWord(uint16_t &value1,uint16_t value2)
 	RaiseZF(0==value1);
 	RaiseCF(value1>prevValue);
 }
-void MC6809::SubByte(uint8_t &value1,uint8_t value2)
+void MC6809::SubByte(uint8_t &value1,uint16_t value2)
 {
 	uint16_t prevValue=value1;
-	value1=(value1-value2)&0xff;
 	state.CC&=~(SF|ZF|VF|CF);
+	RaiseCF(value1<value2);
+	value1=(value1-value2)&0xff;
 	RaiseVF((prevValue&0x80)!=(value2&0x80) && (prevValue&0x80)!=(value1&0x80)); // Source values have different signs, but the sign flipped.
 	RaiseSF(0!=(value1&0x80));
 	RaiseZF(0==value1);
-	RaiseCF(value1>prevValue);
 }
 
 class DestructiveMemoryFetch

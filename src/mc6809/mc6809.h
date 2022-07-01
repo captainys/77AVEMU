@@ -756,9 +756,9 @@ public:
 	void WriteToIndex16(class MemoryAccess &mem,const Instruction &inst,uint16_t value);
 	void WriteToIndex8(class MemoryAccess &mem,const Instruction &inst,uint8_t value);
 
-	void AddByte(uint8_t &a,uint8_t b);
+	void AddByte(uint8_t &a,uint16_t b);  // Take int 16 for ADC(reg8+0xFF+1)
 	void AddWord(uint16_t &a,uint16_t b);
-	void SubByte(uint8_t &a,uint8_t b);
+	void SubByte(uint8_t &a,uint16_t b);  // Take int 16 for ADC(reg8+0xFF+1)
 	void SubWord(uint16_t &a,uint16_t b);
 
 	Instruction FetchInstruction(class MemoryAccess &mem,uint16_t PC) const;
