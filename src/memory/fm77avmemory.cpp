@@ -279,10 +279,10 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		//}
 		return state.data[addr];
 	case MEMTYPE_MAINSYS_FBASIC_ROM:    // Can be Shadow RAM
-		//if(shadow ram is enabled)
-		//{
-		//return state.data[addr];
-		//}
+		if(true==state.shadowRAMEnabled)
+		{
+			return state.data[addr];
+		}
 		return ROM_FBASIC[addr&0x7FFF];
 	case MEMTYPE_MAINSYS_SHARED_RAM:
 		if(true==fm77avPtr->state.subSysHalt)
@@ -358,10 +358,10 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		state.data[addr]=d;
 		return;
 	case MEMTYPE_MAINSYS_FBASIC_ROM:    // Can be Shadow RAM
-		//if(shadow ram is enabled)
-		//{
-		//state.data[addr]=d;
-		//}
+		if(true==state.shadowRAMEnabled)
+		{
+			state.data[addr]=d;
+		}
 		return;
 	case MEMTYPE_MAINSYS_SHARED_RAM:
 		if(true==fm77avPtr->state.subSysHalt)

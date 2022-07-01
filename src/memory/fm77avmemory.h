@@ -110,6 +110,7 @@ public:
 	class State
 	{
 	public:
+		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
 		uint8_t data[PHYSMEM_SIZE];
 		uint8_t extVRAM[EXTVRAM_SIZE];
 	};

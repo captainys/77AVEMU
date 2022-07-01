@@ -185,6 +185,9 @@ public:
 
 	void ClearMainToSubIRQFlag(void);
 
+	void EnableShadowRAM(void);
+	void DisableShadowRAM(void);
+
 
 	bool LoadROMFiles(std::string ROMPath);
 

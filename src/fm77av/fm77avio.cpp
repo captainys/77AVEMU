@@ -97,6 +97,23 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			state.sub.irqSource|=SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
 		}
 		break;
+	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,
+		// In FM-7, $FD0B works same as write to $FD0F.
+		// Confirmed on actual hardware.
+		// See schematic on FM-7/8 Utilization Research pp.306.  RFD0F and WFD0F (WFD0F is missing last F) are unaware of AB2.
+		// I encountered this problem when I was writing an RS-232C utility, and wanted to make sure to enable
+		// on-board RS232C of FM77AV40, when the program stopped working on FM-7.  The way FM-7 stopped just looked like
+		// accidental enabling of shadow RAM.
+		// Then I confirmed on the schematic.
+		if(MACHINETYPE_FM7==state.machineType)
+		{
+			EnableShadowRAM();
+		}
+		break;
+	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
+		EnableShadowRAM();
+		break;
+
 
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
 	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,
@@ -180,6 +197,22 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		// F-BASIC Analysis Manual Phase III Sub-System, Shuwa System Trading, pp.45
 		// Probably break-key FIRQ not.
 		state.main.firqSource&=~SystemState::MAIN_FIRQ_SOURCE_ATTENTION;
+		break;
+	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,
+		// In FM-7, $FD0B works same as write to $FD0F.
+		// Confirmed on actual hardware.
+		// See schematic on FM-7/8 Utilization Research pp.306.  RFD0F and WFD0F (WFD0F is missing last F) are unaware of AB2.
+		// I encountered this problem when I was writing an RS-232C utility, and wanted to make sure to enable
+		// on-board RS232C of FM77AV40, when the program stopped working on FM-7.  The way FM-7 stopped just looked like
+		// accidental enabling of shadow RAM.
+		// Then I confirmed on the schematic.
+		if(MACHINETYPE_FM7==state.machineType)
+		{
+			DisableShadowRAM();
+		}
+		break;
+	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
+		DisableShadowRAM();
 		break;
 
 
@@ -268,4 +301,13 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		break;
 	}
 	return byteData;
+}
+
+void FM77AV::EnableShadowRAM(void)
+{
+	physMem.state.shadowRAMEnabled=true;
+}
+void FM77AV::DisableShadowRAM(void)
+{
+	physMem.state.shadowRAMEnabled=false;
 }
