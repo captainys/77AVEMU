@@ -41,6 +41,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
 		if(0!=(0x80&value))
 		{
+			if(true==state.subSysBusy)
+			{
+				std::cout << "Warning!  Sub-Sys Halt request while sub-CPU is busy." << std::endl;
+			}
+
 			state.subSysHalt=true;
 			state.subSysBusy=true;
 			// Question: What's going to happen if the main CPU writes $80 to $FD05
