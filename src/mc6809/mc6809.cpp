@@ -1519,8 +1519,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_CMPS_DP: //   0x29C, // 11 9C
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto reg=state.S;
+			SubWord(reg,FetchWord(mem,DecodeDirectPageAddress(inst)));
+		}
 		break;
 	case INST_CMPS_IDX: //  0x2AC, // 11 AC
 		{
@@ -2163,12 +2165,20 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_NEG_IDX: //   0x60,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto addr=DecodeIndexedAddress(inst,mem);
+			auto reg=FetchByte(mem,addr);
+			reg=NEG(reg);
+			StoreByte(mem,addr,reg);
+		}
 		break;
 	case INST_NEG_EXT: //   0x70,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			auto addr=inst.ExtendedAddress();
+			auto reg=FetchByte(mem,addr);
+			reg=NEG(reg);
+			StoreByte(mem,addr,reg);
+		}
 		break;
 
 	case INST_NOP: //       0x12,
