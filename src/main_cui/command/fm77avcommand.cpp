@@ -70,6 +70,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Run to specified address." << std::endl;
 	std::cout << "RUN M:addr/S:addr addr" << std::endl;
 	std::cout << "  Run to specified address range (RUN S:0000 DFFF)." << std::endl;
+	std::cout << "RUN addr" << std::endl;
+	std::cout << "  If one of the CPUs is muted (by MUTE command), run to the address" <<std::endl;
+	std::cout << "  in the unmuted CPU." << std::endl;
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
@@ -249,6 +252,29 @@ void FM77AVCommandInterpreter::Error_WrongParameter(const Command &cmd)
 	}
 	return ptr;
 }
+/* static */ FM77AV::CPUAddr FM77AVCommandInterpreter::MakeCPUandAddress(const FM77AVThread &thr,const FM77AV &fm77av,std::string arg)
+{
+	auto ptr=MakeCPUandAddress(fm77av,arg);
+	if(CPU_UNKNOWN==ptr.cpu)
+	{
+		ptr.cpu=thr.OnlyOneCPUIsUnmuted();
+		if(CPU_UNKNOWN!=ptr.cpu)
+		{
+			FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
+			if(true==parser.Analyze(arg))
+			{
+				ptr.addr=parser.Evaluate();
+			}
+			else
+			{
+				std::cout << "Error in offset description." << std::endl;
+				ptr.cpu=CPU_UNKNOWN;
+				ptr.addr=0;
+			}
+		}
+	}
+	return ptr;
+}
 /* static */ uint16_t FM77AVCommandInterpreter::MakeAddressForCPU(const MC6809 &cpu,std::string arg)
 {
 	FM77AVLineParserHexadecimal parser(&cpu);
@@ -262,7 +288,6 @@ void FM77AVCommandInterpreter::Error_WrongParameter(const Command &cmd)
 		return 0;
 	}
 }
-
 void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
 {
 	switch(cmd.primaryCmd)
@@ -356,31 +381,31 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		Execute_Disassemble_Sub(thr,fm77av,outside_world,cmd);
 		break;
 	case CMD_MEMDUMP:
-		Execute_MemoryDump(fm77av,cmd);
+		Execute_MemoryDump(thr,fm77av,cmd);
 		break;
 	case CMD_DUMP:
-		Execute_Dump(fm77av,cmd);
+		Execute_Dump(thr,fm77av,cmd);
 		break;
 	case CMD_ADD_BREAKPOINT:
-		Execute_AddBreakPoint(fm77av,cmd);
+		Execute_AddBreakPoint(thr,fm77av,cmd);
 		break;
 	case CMD_ADD_BREAKPOINT_WITH_PASSCOUNT:
-		Execute_AddBreakPointWithPassCount(fm77av,cmd);
+		Execute_AddBreakPointWithPassCount(thr,fm77av,cmd);
 		break;
 	case CMD_ADD_MONITORPOINT:
-		Execute_AddMonitorPoint(fm77av,cmd);
+		Execute_AddMonitorPoint(thr,fm77av,cmd);
 		break;
 	case CMD_DELETE_BREAKPOINT:
-		Execute_DeleteBreakPoint(fm77av,cmd);
+		Execute_DeleteBreakPoint(thr,fm77av,cmd);
 		break;
 	case CMD_LIST_BREAKPOINTS:
-		Execute_ListBreakPoints(fm77av,cmd);
+		Execute_ListBreakPoints(thr,fm77av,cmd);
 		break;
 	case CMD_BREAK_ON:
-		Execute_BreakOn(fm77av,cmd);
+		Execute_BreakOn(thr,fm77av,cmd);
 		break;
 	case CMD_DONT_BREAK_ON:
-		Execute_DontBreakOn(fm77av,cmd);
+		Execute_DontBreakOn(thr,fm77av,cmd);
 		break;
 	}
 }
@@ -389,7 +414,7 @@ void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,clas
 {
 	if(3<=cmd.argv.size())
 	{
-		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 		if(CPU_UNKNOWN!=ptr.cpu)
 		{
 			FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
@@ -407,7 +432,7 @@ void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,clas
 	}
 	else if(2<=cmd.argv.size())
 	{
-		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 		if(CPU_UNKNOWN!=ptr.cpu)
 		{
 			fm77av.CPU(ptr.cpu).debugger.SetOneTimeBreakPoint(ptr.addr,ptr.addr);
@@ -533,7 +558,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 {
 	if(2<=cmd.argv.size())
 	{
-		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 		if(CPU_UNKNOWN!=ptr.cpu)
 		{
 			fm77av.var.lastDisassemblyCPU=ptr.cpu;
@@ -547,6 +572,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 				PC+=inst.length;
 			}
 			cpu.debugger.nextDisassemblyAddr=PC;
+		}
+		else
+		{
+			Error_UnknownCPU(cmd);
 		}
 	}
 	else if(CPU_UNKNOWN!=fm77av.var.lastDisassemblyCPU)
@@ -605,7 +634,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
 }
-void FM77AVCommandInterpreter::Execute_Dump(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -627,7 +656,7 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AV &fm77av,Command &cmd)
 				}
 				break;
 			case DUMP_PC_LOG:
-				Execute_PrintHistory(fm77av,cmd);
+				Execute_PrintHistory(thr,fm77av,cmd);
 				break;
 			}
 		}
@@ -637,48 +666,56 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AV &fm77av,Command &cmd)
 		}
 	}
 }
-void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
-	if(3<=cmd.argv.size())
+	int mainOrSub=StrToCPU(cmd.argv[2]);
+	int n=32;
+	int paramBase=3;
+
+	if(CPU_UNKNOWN==mainOrSub)
 	{
-		int mainOrSub=StrToCPU(cmd.argv[2]);
+		// There is a possibility that mainOrSub is omitted, default to the one unmuted.
+		mainOrSub=thr.OnlyOneCPUIsUnmuted();
 		if(CPU_UNKNOWN==mainOrSub)
 		{
 			Error_UnknownCPU(cmd);
 			return;
 		}
-
-		int n=32;
-		if(4<=cmd.argv.size())
+		if(3<=cmd.argv.size())
 		{
-			n=cpputil::Atoi(cmd.argv[3].c_str());
-		}
-
-		auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
-		// auto &symTable=av.debugger.GetSymTable();
-		for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
-		{
-			std::cout << cpputil::Ustox(iter->PC);
-			std::cout << " ";
-			std::cout << "S=" << cpputil::Ustox(iter->S);
-			if(1<iter->count)
-			{
-				std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
-			}
-			// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
-			// if(nullptr!=symbolPtr)
-			// {
-			// 	std::cout << " " << symbolPtr->Format();
-			// }
-			std::cout << std::endl;
+			paramBase=2;
 		}
 	}
 	else
 	{
-		Error_TooFewArgs(cmd);
+		if(4<=cmd.argv.size())
+		{
+			paramBase=3;
+		}
+	}
+
+	n=cpputil::Atoi(cmd.argv[paramBase].c_str());
+
+	auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
+	// auto &symTable=av.debugger.GetSymTable();
+	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+	{
+		std::cout << cpputil::Ustox(iter->PC);
+		std::cout << " ";
+		std::cout << "S=" << cpputil::Ustox(iter->S);
+		if(1<iter->count)
+		{
+			std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+		}
+		// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+		// if(nullptr!=symbolPtr)
+		// {
+		// 	std::cout << " " << symbolPtr->Format();
+		// }
+		std::cout << std::endl;
 	}
 }
-void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -710,7 +747,7 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)
 			ascii=(0!=cpputil::Atoi(cmd.argv[5].c_str()));
 		}
 
-		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 		if(CPU_UNKNOWN!=ptr.cpu)
 		{
 			auto &cpu=fm77av.CPU(ptr.cpu);
@@ -727,7 +764,7 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AV &fm77av,Command &cmd)
 		}
 	}
 }
-void FM77AVCommandInterpreter::Execute_BreakOn(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -762,10 +799,10 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AV &av,Command &cmd)
 				}
 				break;
 			case BREAK_ON_MEM_READ:
-				Execute_BreakOnMemoryRead(av,cmd);
+				Execute_BreakOnMemoryRead(thr,av,cmd);
 				break;
 			case BREAK_ON_MEM_WRITE:
-				Execute_BreakOnMemoryWrite(av,cmd);
+				Execute_BreakOnMemoryWrite(thr,av,cmd);
 				break;
 			}
 		}
@@ -779,7 +816,7 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AV &av,Command &cmd)
 		Error_TooFewArgs(cmd);
 	}
 }
-void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
@@ -817,10 +854,10 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AV &av,Command &cmd)
 				}
 				break;
 			case BREAK_ON_MEM_READ:
-				Execute_DontBreakOnMemoryRead(av,cmd);
+				Execute_DontBreakOnMemoryRead(thr,av,cmd);
 				break;
 			case BREAK_ON_MEM_WRITE:
-				Execute_DontBreakOnMemoryWrite(av,cmd);
+				Execute_DontBreakOnMemoryWrite(thr,av,cmd);
 				break;
 			}
 		}
@@ -834,7 +871,7 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AV &av,Command &cmd)
 		Error_TooFewArgs(cmd);
 	}
 }
-void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
 	bool useValue=false,useMinMax=false;
 	unsigned char value=0,minValue=0,maxValue=255;
@@ -905,7 +942,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd
 		}
 		else if(std::string::npos!=cmd.argv[i].find(':'))
 		{
-			auto ptr=MakeCPUandAddress(av,cmd.argv[i]);
+			auto ptr=MakeCPUandAddress(thr,av,cmd.argv[i]);
 			if(CPU_UNKNOWN==ptr.cpu)
 			{
 				Error_UnknownCPU(cmd);
@@ -1006,7 +1043,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd
 		Error_TooFewArgs(cmd);
 	}
 }
-void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
 	bool useValue=false,useMinMax=false;
 	unsigned char value=0,minValue=0,maxValue=255;
@@ -1077,7 +1114,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AV &av,Command &cm
 		}
 		else if(std::string::npos!=cmd.argv[i].find(':'))
 		{
-			auto ptr=MakeCPUandAddress(av,cmd.argv[i]);
+			auto ptr=MakeCPUandAddress(thr,av,cmd.argv[i]);
 			if(CPU_UNKNOWN==ptr.cpu)
 			{
 				Error_UnknownCPU(cmd);
@@ -1178,11 +1215,11 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AV &av,Command &cm
 		Error_TooFewArgs(cmd);
 	}
 }
-void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryRead(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
 	if(4<=cmd.argv.size())
 	{
-		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		auto ptr0=MakeCPUandAddress(thr,av,cmd.argv[2]);
 		unsigned int addr0=ptr0.addr;
 		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
 		if(CPU_UNKNOWN==ptr0.cpu)
@@ -1205,7 +1242,7 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryRead(FM77AV &av,Command 
 	}
 	else if(3<=cmd.argv.size())
 	{
-		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		auto ptr0=MakeCPUandAddress(thr,av,cmd.argv[2]);
 		if(CPU_UNKNOWN==ptr0.cpu)
 		{
 			Error_UnknownCPU(cmd);
@@ -1225,11 +1262,11 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryRead(FM77AV &av,Command 
 		std::cout << "Clear All Break on Memory Read on main- and sub-CPUs" << std::endl;
 	}
 }
-void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
 	if(4<=cmd.argv.size())
 	{
-		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		auto ptr0=MakeCPUandAddress(thr,av,cmd.argv[2]);
 		unsigned int addr0=ptr0.addr;
 		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
 		if(CPU_UNKNOWN==ptr0.cpu)
@@ -1252,7 +1289,7 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AV &av,Command
 	}
 	else if(3<=cmd.argv.size())
 	{
-		auto ptr0=MakeCPUandAddress(av,cmd.argv[2]);
+		auto ptr0=MakeCPUandAddress(thr,av,cmd.argv[2]);
 		if(CPU_UNKNOWN==ptr0.cpu)
 		{
 			Error_UnknownCPU(cmd);
@@ -1273,7 +1310,7 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AV &av,Command
 	}
 }
 
-void FM77AVCommandInterpreter::Execute_AddBreakPoint(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_AddBreakPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1281,7 +1318,7 @@ void FM77AVCommandInterpreter::Execute_AddBreakPoint(FM77AV &fm77av,Command &cmd
 		return;
 	}
 
-	auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+	auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 	if(CPU_UNKNOWN==ptr.cpu)
 	{
 		Error_UnknownCPU(cmd);
@@ -1292,7 +1329,7 @@ void FM77AVCommandInterpreter::Execute_AddBreakPoint(FM77AV &fm77av,Command &cmd
 	cpu.debugger.SetBreakPoint(ptr.addr,ptr.addr);
 }
 
-void FM77AVCommandInterpreter::Execute_AddBreakPointWithPassCount(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_AddBreakPointWithPassCount(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<3)
 	{
@@ -1300,7 +1337,7 @@ void FM77AVCommandInterpreter::Execute_AddBreakPointWithPassCount(FM77AV &fm77av
 		return;
 	}
 
-	auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+	auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 	if(CPU_UNKNOWN==ptr.cpu)
 	{
 		Error_UnknownCPU(cmd);
@@ -1312,7 +1349,7 @@ void FM77AVCommandInterpreter::Execute_AddBreakPointWithPassCount(FM77AV &fm77av
 	cpu.debugger.SetBreakPoint(ptr.addr,ptr.addr,passCountUntilBreak);
 }
 
-void FM77AVCommandInterpreter::Execute_AddMonitorPoint(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_AddMonitorPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1326,7 +1363,7 @@ void FM77AVCommandInterpreter::Execute_AddMonitorPoint(FM77AV &fm77av,Command &c
 		return;
 	}
 
-	auto ptr=MakeCPUandAddress(fm77av,cmd.argv[1]);
+	auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 	if(CPU_UNKNOWN==ptr.cpu)
 	{
 		Error_UnknownCPU(cmd);
@@ -1337,7 +1374,7 @@ void FM77AVCommandInterpreter::Execute_AddMonitorPoint(FM77AV &fm77av,Command &c
 	cpu.debugger.SetBreakPoint(ptr.addr,ptr.addr,1,MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY);
 }
 
-void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1366,7 +1403,7 @@ void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AV &fm77av,Command &
 	}
 	else
 	{
-		auto ptr=MakeCPUandAddress(fm77av,cmd.argv[2]);
+		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[2]);
 		if(CPU_UNKNOWN==ptr.cpu)
 		{
 			Error_UnknownCPU(cmd);
@@ -1379,7 +1416,7 @@ void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AV &fm77av,Command &
 		std::cout << "Cleared break point." << std::endl;
 	}
 }
-void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AV &fm77av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(cmd.argv.size()<2)
 	{
@@ -1388,6 +1425,10 @@ void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AV &fm77av,Command &c
 	}
 
 	auto mainOrSub=StrToCPU(cmd.argv[1]);
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		mainOrSub=thr.OnlyOneCPUIsUnmuted();
+	}
 	if(CPU_UNKNOWN==mainOrSub)
 	{
 		Error_UnknownCPU(cmd);

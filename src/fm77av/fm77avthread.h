@@ -20,7 +20,7 @@ class FM77AVThread
 private:
 	FM77AV *fm77avPtr;
 	std::unique_ptr <FM77AVRenderingThread> renderingThread;
-	int runMode=RUNMODE_PAUSE;
+	int runMode=RUNMODE_RUN;
 	bool returnOnPause=false;
 
 	// This will be used for virtually slwoing down CPU when VM is lagging.
@@ -59,6 +59,9 @@ public:
 	~FM77AVThread();
 
 	void SetRunMode(unsigned int runMode);
+	/*! If one of main- or sub-CPUs is muted, returns the one NOT muted.
+	*/
+	unsigned int OnlyOneCPUIsUnmuted(void) const;
 
 	void VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
 	void VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);

@@ -16,6 +16,18 @@ void FM77AVThread::SetRunMode(unsigned int runMode)
 {
 	this->runMode=runMode;
 }
+unsigned int FM77AVThread::OnlyOneCPUIsUnmuted(void) const
+{
+	if(true!=output.main.mute && true==output.sub.mute)
+	{
+		return CPU_MAIN;
+	}
+	else if(true==output.main.mute && true!=output.sub.mute)
+	{
+		return CPU_SUB;
+	}
+	return CPU_UNKNOWN;
+}
 void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {
 	this->fm77avPtr=fm77avPtr;
