@@ -235,7 +235,8 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	FsSetWindowTitle("FM-7/FM77AV/FM77AV40 Emulator - MUTSU");
 	soundPlayer.Start();
 #ifdef AUDIO_USE_STREAMING
-	soundPlayer.StartStreaming(FMPSGStream);
+	YsSoundPlayer::StreamingOption FMPSGStreamOpt;
+	soundPlayer.StartStreaming(FMPSGStream,FMPSGStreamOpt);
 #endif
 
 	glClearColor(0,0,0,0);
