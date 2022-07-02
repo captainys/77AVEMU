@@ -43,6 +43,8 @@ public:
 	unsigned int machineType=MACHINETYPE_FM7;
 	std::string ROMPath;
 
+	bool noWait=false;
+
 	std::string t77Path;
 };
 

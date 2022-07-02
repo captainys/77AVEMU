@@ -31,6 +31,8 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		return false;
 	}
 
+	var.noWait=param.noWait;
+
 	if(""!=param.t77Path)
 	{
 		if(true==dataRecorder.LoadT77(param.t77Path))
