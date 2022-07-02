@@ -13,6 +13,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["QUIT"]=CMD_QUIT;
 	primaryCmdMap["Q"]=CMD_QUIT;
 	primaryCmdMap["FORCEQUIT"]=CMD_FORCE_QUIT;
+	primaryCmdMap["NOWAIT"]=CMD_NOWAIT;
+	primaryCmdMap["YESWAIT"]=CMD_YESWAIT;
 	primaryCmdMap["RUN"]=CMD_RUN;
 	primaryCmdMap["PAUSE"]=CMD_PAUSE;
 	primaryCmdMap["PAU"]=CMD_PAUSE;
@@ -64,6 +66,12 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Print help." << std::endl;
 	std::cout << "QUIT|Q" << std::endl;
 	std::cout << "  Quit." << std::endl;
+	std::cout << "NOWAIT" << std::endl;
+	std::cout << "  Run at full-speed without adjusting for real-time." << std::endl;
+	std::cout << "YESWAIT" << std::endl;
+	std::cout << "  Match speed to the wall-clock time." << std::endl;
+	std::cout << "  Albert Einstein said your wall-clock and my wall-clock runs differently," << std::endl;
+	std::cout << "  But, hopefully the error is small enough." << std::endl;
 	std::cout << "RUN" << std::endl;
 	std::cout << "  Run." << std::endl;
 	std::cout << "RUN M:addr/S:addr" << std::endl;
@@ -301,6 +309,12 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_QUIT:
 		thr.SetRunMode(FM77AVThread::RUNMODE_EXIT);
 		cuiQuit=true;
+		break;
+	case CMD_NOWAIT:
+		fm77av.var.noWait=true;
+		break;
+	case CMD_YESWAIT:
+		fm77av.var.noWait=false;
 		break;
 	case CMD_FORCE_QUIT:
 		exit(0);
