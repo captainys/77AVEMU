@@ -99,6 +99,7 @@ public:
 		uint64_t nextDevicePollingTime=0;
 		uint64_t nextRenderingTime=0;
 		uint64_t next20msTimer=FM77AVTIME_MILLISEC*20;
+		uint64_t next2msTimer=FM77AVTIME_MILLISEC*2;
 
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 	};
@@ -148,6 +149,10 @@ public:
 				// Greater than 40ms halt will double-fire the NMI, which is not good.
 				subCPU.NMI(subMemAcc);
 			}
+		}
+		if(state.next2msTimer<=state.fm77avTime)
+		{
+			state.next2msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*2;
 			if(0!=(state.main.irqEnableBits&SystemState::MAIN_IRQ_ENABLE_TIMER))
 			{
 				state.main.irqSource|=SystemState::MAIN_IRQ_SOURCE_TIMER;
@@ -155,6 +160,7 @@ public:
 		}
 		else
 		{
+			// Question: Is it edge-sensitive?  Or, does it latch when 2ms passes?
 			state.main.irqSource&=~SystemState::MAIN_IRQ_SOURCE_TIMER;
 		}
 		if(0!=state.main.irqSource)
