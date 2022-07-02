@@ -132,7 +132,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 					}
 				}
 			}
-			// fm77avPtr->ProcessSound(outside_world);
+			fm77avPtr->ProcessSound(outside_world);
 
 			renderingThread->CheckRenderingTimer(*fm77avPtr,render);
 			renderingThread->CheckImageReady(*fm77avPtr,*outside_world);
@@ -235,6 +235,47 @@ void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM
 
 void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World *outside_world)
 {
+	long long int realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
+
+	fm77avPtr->var.timeAdjustLog[fm77avPtr->var.timeAdjustLogPtr]=cpuTimePassed-realTimePassed;
+	fm77avPtr->var.timeDeficitLog[fm77avPtr->var.timeAdjustLogPtr]=fm77avPtr->state.timeDeficit;
+	fm77avPtr->var.timeAdjustLogPtr=(fm77avPtr->var.timeAdjustLogPtr+1)&(FM77AV::Variable::TIME_ADJUSTMENT_LOG_LEN-1);
+
+	int64_t balance=cpuTimePassed-(fm77avPtr->state.timeDeficit+realTimePassed);
+	if(balance<0)  // Case 3
+	{
+		if(true==fm77avPtr->var.catchUpRealTime)
+		{
+			fm77avPtr->state.timeDeficit=(-balance);
+		}
+		else
+		{
+			fm77avPtr->state.timeDeficit=0;
+		}
+	}
+	else // Case 2
+	{
+		if(true!=fm77avPtr->NoWait())
+		{
+			while(fm77avPtr->state.timeDeficit+realTimePassed<cpuTimePassed)
+			{
+				fm77avPtr->ProcessSound(outside_world);
+				realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
+			}
+			int64_t newBalance=cpuTimePassed-(fm77avPtr->state.timeDeficit+realTimePassed);
+			fm77avPtr->state.timeDeficit=-newBalance;
+		}
+		else
+		{
+			fm77avPtr->state.timeDeficit=0;
+		}
+	}
+	this->timeDeficit=fm77avPtr->state.timeDeficit;
+
+	if(FM77AV::CATCHUP_DEFICIT_CUTOFF<fm77avPtr->state.timeDeficit)
+	{
+		fm77avPtr->state.timeDeficit=FM77AV::CATCHUP_DEFICIT_CUTOFF;
+	}
 }
 void FM77AVThread::PrintStatus(FM77AV &fm77av) const
 {

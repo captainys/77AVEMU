@@ -115,7 +115,14 @@ void FM77AV::Reset(void)
 	state.subSysBusy=true; // Busy on reset.
 	state.subSysHalt=false;
 	state.mainToSubIRQ=false;
+	state.nextDevicePollingTime=0;
+	state.nextRenderingTime=0;
 	state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
+	state.next2msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*2;
+
+	state.timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
+	state.timeDeficit=0;
+
 
 	state.main.irqEnableBits=0;
 	state.main.irqSource=0;
@@ -356,4 +363,9 @@ void FM77AV::DetectMainCPUBIOSCall(void)
 		}
 		std::cout << " " << BIOSCmdToStr(mainMemAcc.FetchByte(mainCPU.state.X)) << std::endl;
 	}
+}
+
+bool FM77AV::NoWait(void) const
+{
+	return var.noWait;
 }

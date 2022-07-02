@@ -47,6 +47,7 @@ public:
 	{
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
+		CATCHUP_DEFICIT_CUTOFF=2000000, // If the deficit is above this threshold, just don't increase.
 	};
 
 	class SystemState
@@ -102,12 +103,19 @@ public:
 		uint64_t next2msTimer=FM77AVTIME_MILLISEC*2;
 
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
+
+		/*! Nanoseconds VM is lagging behind the real time.
+		*/
+		long long int timeDeficit=0;
 	};
 	State state;
 
 	class Variable
 	{
 	public:
+		bool noWait=false;
+		bool catchUpRealTime=true;
+
 		bool forceQuitOnPowerOff=false;
 		bool justLoadedState=false;
 		bool monitorIOReadMain[256],monitorIOReadSub[256];
@@ -118,6 +126,14 @@ public:
 
 		bool breakOnUnhaltSubCPU=false;
 		uint8_t breakOnSubCmd[FM7_MAX_SUB_CMD];
+
+		enum
+		{
+			TIME_ADJUSTMENT_LOG_LEN=4096
+		};
+		unsigned int timeAdjustLogPtr=0;
+		int64_t timeAdjustLog[TIME_ADJUSTMENT_LOG_LEN];
+		int64_t timeDeficitLog[TIME_ADJUSTMENT_LOG_LEN];
 	};
 	Variable var;
 
@@ -138,6 +154,11 @@ public:
 	uint8_t IORead(uint16_t ioAddr);
 	uint8_t NonDestructiveIORead(uint16_t ioAddr) const;
 
+	bool NoWait(void) const;
+
+	inline void ProcessSound(class Outside_World *outside_world)
+	{
+	}
 	inline void ProcessInterrupts(void)
 	{
 		if(state.next20msTimer<=state.fm77avTime)
