@@ -10,6 +10,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "Options:" << std::endl;
 	std::cout << "-T77|-TAPE t77file.t77" << std::endl;
 	std::cout << "  Set T77 cassette data recorder dump." << std::endl;
+	std::cout << "-NOWAIT" << std::endl;
+	std::cout << "  Run VM without adjusting time for the wall-clock time." << std::endl;
 }
 bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 {
@@ -31,6 +33,10 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			Help();
 			dontStart=true;
+		}
+		else if("-NOWAIT"==ARG)
+		{
+			noWait=true;
 		}
 		else if(("-T77"==ARG || "-TAPE"==ARG) && i+1<argc)
 		{

@@ -29,6 +29,9 @@ public:
 
 		CMD_HELP,
 
+		CMD_NOWAIT,
+		CMD_YESWAIT,
+
 		CMD_RUN,
 		CMD_RUN_ONE_INSTRUCTION,
 		CMD_PAUSE,
@@ -103,7 +106,10 @@ public:
 
 	Command Interpret(const std::string &cmdline) const;
 
+	/*! If thread is given, and the CPU main or sub is not given, try the unmuted CPU if one is muted and one is unmuted.
+	*/
 	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AV &fm77av,std::string arg);
+	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AVThread &thr,const FM77AV &fm77av,std::string arg);
 	static uint16_t MakeAddressForCPU(const MC6809 &cpu,std::string arg);
 
 	/*! Executes a command.
@@ -116,20 +122,20 @@ public:
 	void Execute_Disassemble(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Main(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
-	void Execute_Dump(FM77AV &av,Command &cmd);
-	void Execute_PrintHistory(FM77AV &av,Command &cmd);
-	void Execute_MemoryDump(FM77AV &av,Command &cmd);
-	void Execute_BreakOn(FM77AV &av,Command &cmd);
-	void Execute_DontBreakOn(FM77AV &av,Command &cmd);
-	void Execute_BreakOnMemoryRead(FM77AV &av,Command &cmd);
-	void Execute_BreakOnMemoryWrite(FM77AV &av,Command &cmd);
-	void Execute_AddBreakPoint(FM77AV &fm77av,Command &cmd);
-	void Execute_AddBreakPointWithPassCount(FM77AV &fm77av,Command &cmd);
-	void Execute_AddMonitorPoint(FM77AV &fm77av,Command &cmd);
-	void Execute_DeleteBreakPoint(FM77AV &fm77av,Command &cmd);
-	void Execute_ListBreakPoints(FM77AV &fm77av,Command &cmd);
-	void Execute_DontBreakOnMemoryRead(FM77AV &av,Command &cmd);
-	void Execute_DontBreakOnMemoryWrite(FM77AV &av,Command &cmd);
+	void Execute_Dump(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_MemoryDump(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_AddBreakPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_AddBreakPointWithPassCount(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_AddMonitorPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_DeleteBreakPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_ListBreakPoints(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_DontBreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 };
 
 /* } */
