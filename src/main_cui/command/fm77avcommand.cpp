@@ -46,6 +46,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
 	featureMap["BIOSMON"]=ENABLE_BIOSCMD_MONITOR;
+	featureMap["DEBUG"]=ENABLE_DEBUGGER;
+	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -132,6 +134,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Don't break on event." << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
+	std::cout << "DEBUG/DEBUGGER" << std::endl;
+	std::cout << "  Debugger." << std::endl;
 	std::cout << "IOMON iopotMin ioportMax" << std::endl;
 	std::cout << "  IO Monitor." << std::endl;
 	std::cout << "  ioportMin and ioportMax are optional." << std::endl;
@@ -479,6 +483,11 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 		}
 		switch(foundFeature->second)
 		{
+		case ENABLE_DEBUGGER:
+			fm77av.mainCPU.debugger.enabled=true;
+			fm77av.subCPU.debugger.enabled=true;
+			std::cout << "Enabled debugger." << std::endl;
+			break;
 		case ENABLE_IOMONITOR:
 			if(2==cmd.argv.size())
 			{
@@ -530,6 +539,11 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		}
 		switch(foundFeature->second)
 		{
+		case ENABLE_DEBUGGER:
+			fm77av.mainCPU.debugger.enabled=false;
+			fm77av.subCPU.debugger.enabled=false;
+			std::cout << "Disabled debugger." << std::endl;
+			break;
 		case ENABLE_IOMONITOR:
 			if(2==cmd.argv.size())
 			{
