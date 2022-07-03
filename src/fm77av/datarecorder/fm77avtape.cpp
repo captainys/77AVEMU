@@ -112,6 +112,7 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 
 void FM77AVDataRecorder::Reset(void)
 {
+	Device::Reset();
 	state.motor=false;
 }
 bool FM77AVDataRecorder::LoadT77(std::string fName)

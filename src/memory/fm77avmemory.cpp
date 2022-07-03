@@ -223,6 +223,13 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	return true;
 }
 
+void PhysicalMemory::Reset(void)
+{
+	Device::Reset();
+	state.VRAMAccessMask=0;
+	state.shadowRAMEnabled=false;
+}
+
 const uint8_t *PhysicalMemory::GetVRAMBank(int bank) const
 {
 	switch(bank)

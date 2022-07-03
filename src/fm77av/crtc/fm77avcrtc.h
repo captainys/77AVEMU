@@ -37,6 +37,7 @@ public:
 		Palette palette;
 		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
 		uint16_t VRAMOffset=0;
+		uint8_t VRAMAccessMask=0;
 	};
 	FM77AVCRTC(VMBase *vmBase);
 	void Reset(void);

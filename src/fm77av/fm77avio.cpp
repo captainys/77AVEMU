@@ -137,6 +137,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		fdc.IOWriteByte(ioAddr,value);
 		break;
 
+	case FM77AVIO_DISPLAY_PAGE://=            0xFD37,
+		crtc.state.VRAMAccessMask=((value>>4)&7);
+		physMem.state.VRAMAccessMask=(value&7);
+		break;
+
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
 	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,
 	case FM77AVIO_DIGITAL_PALETTE_2: //=       0xFD3A,
@@ -245,8 +250,6 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
 		byteData=fdc.IOReadByte(ioAddr);
 		break;
-
-
 
 
 

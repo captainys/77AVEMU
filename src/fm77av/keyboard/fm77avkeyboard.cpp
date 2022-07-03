@@ -6,6 +6,8 @@
 
 void FM77AVKeyboard::Reset(void)
 {
+	Device::Reset();
+
 	state.encodingMode=ENCODING_JIS;
 
 	decltype(state.keyCodeQueue) emptyQueue;

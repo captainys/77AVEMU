@@ -1094,6 +1094,7 @@ void MC6809::PowerOn(void)
 }
 void MC6809::Reset(void)
 {
+	Device::Reset();
 	state.halt=false;
 	state.nmiEnabled=false;     
 }

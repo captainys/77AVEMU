@@ -47,7 +47,7 @@ public:
 	uint8_t GetLevel(TapePointer tracker) const;
 };
 
-class FM77AVDataRecorder
+class FM77AVDataRecorder : public Device
 {
 public:
 	virtual const char *DeviceName(void) const{return "FMDataRecorder";}
@@ -60,6 +60,8 @@ public:
 		bool motor;
 	};
 	State state;
+
+	FM77AVDataRecorder(VMBase *vmPtr) : Device(vmPtr){}
 
 	void Reset(void);  // Don't rewind
 	bool LoadT77(std::string fName);

@@ -110,6 +110,7 @@ public:
 	class State
 	{
 	public:
+		uint8_t VRAMAccessMask=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
 		uint8_t data[PHYSMEM_SIZE];
 		uint8_t extVRAM[EXTVRAM_SIZE];
@@ -118,6 +119,8 @@ public:
 
 	virtual const char *DeviceName(void) const{return "PHYSMEM";}
 	PhysicalMemory(VMBase *vmBase);
+
+	void Reset(void);
 
 	bool LoadROMFiles(std::string ROMPath);
 

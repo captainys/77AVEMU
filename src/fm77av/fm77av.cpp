@@ -15,7 +15,8 @@ FM77AV::FM77AV() :
 	subCPU(this),
 	crtc(this),
 	keyboard(this),
-	fdc(this)
+	fdc(this),
+	dataRecorder(this)
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);
@@ -25,6 +26,7 @@ FM77AV::FM77AV() :
 	allDevices.push_back(&crtc);
 	allDevices.push_back(&keyboard);
 	allDevices.push_back(&fdc);
+	allDevices.push_back(&dataRecorder);
 	VMBase::CacheDeviceIndex();
 
 	for(auto &b : var.breakOnSubCmd)
@@ -128,6 +130,8 @@ void FM77AV::PowerOn(void)
 }
 void FM77AV::Reset(void)
 {
+	Device::Reset();
+
 	// Sub-CPU reset vector is based on:
 	//   F-BASIC Analysis Manual Phase III Sub-System, Fig. 2.2.1, pp. 31, Shuwa System Trading, 
 	switch(state.machineType)
