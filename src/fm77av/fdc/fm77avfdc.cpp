@@ -40,6 +40,8 @@ void FM77AVFDC::MakeReady(void)
 	state.busy=false;
 	fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_FDC;
 	state.IRQ=true;
+	fm77avPtr->UnscheduleDeviceCallBack(*this);
+	state.lastStatus&=0xFE;  // Clear busy-flag.  Don't touch other status.
 }
 
 ////////////////////////////////////////////////////////////
@@ -515,7 +517,7 @@ void FM77AVFDC::MakeReady(void)
 		{
 			state.DRQ=false;
 			state.drive[DriveSelect()].dataReg=state.data[state.dataReadPointer++];
-			if(state.dataReadPointer<state.data.size())
+			if(state.data.size()<=state.dataReadPointer)
 			{
 				if(0x90==(state.lastCmd&0xF0) && nullptr!=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Read Sector + MultiRecordFlag
 				{
