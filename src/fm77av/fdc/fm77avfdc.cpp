@@ -278,163 +278,50 @@ void FM77AVFDC::MakeReady(void)
 		MakeReady();
 		break;
 	case 0xF0: // Write Track
-// Let me take care of it later.
-//		if(nullptr!=diskPtr)
-//		{
-//			if(true==diskPtr->IsWriteProtected())
-//			{
-//				// Write protected.
-//			}
-//			else if(true==CheckMediaTypeAndDriveModeCompatibleForFormat(drv.mediaType,GetDriveMode()))
-//			{
-//				auto DMACh=DMACPtr->GetDMAChannel(fm77avDMA_FPD);
-//				if(nullptr!=DMACh)
-//				{
-//					// What's the length?
-//					// Looks like fm77av MENU makes 2DE0H bytes of data.
-//					// [10]
-//					//   1232KB format 1024 bytes per sector,  8 sectors per track, 77 tracks
-//					//   1440KB format  512 bytes per sector, 18 sectors per track, 80 tracks
-//					//    640KB format  512 bytes per sector,  8 sectors per track, 80 tracks
-//					//    720KB format  512 bytes per sector,  9 sectors per track, 80 tracks
-//					// [2] pp. 250
-//					// From the index hole:
-//					//    GAP        80 bytes 0x4E
-//					//    SYNC       12 bytes 0x00
-//					//    INDEX MARK  4 bytes 0xC2,0xC2,0xC2,0xFC (or 0xF6,0xF6,0xF6,0xFC)
-//					//    GAP        50 bytes 0x4E
-//					//    {
-//					//    SYNC       12 bytes 0x00
-//					//    ADDR MARK   4 bytes 0xA1,0xA1,0xA1,0xFE (or 0xF5,0xF5,0xF5,0xFE)
-//					//    CHRN        4 bytes
-//					//    CRC         2 bytes 0xF7 (Write 1 byte will become 2 bytes of CRC code)
-//					//    GAP        22 bytes
-//					//    SYNC       12 bytes
-//					//    DATA Mark   4 bytes 0xA1,0xA1,0xA1,0xFB (or 0xF5,0xF5,0xF5,0xFB)
-//					//    DATA        x bytes (x=128*(2^N))
-//					//    CRC         2 bytes 0xF7 (Write 1 byte will become 2 bytes of CRC code)
-//					//    GAP        54/84/116/108 bytes.
-//					//    } times sectors
-//					//    GAP        598/400/654/? bytes
-//					// 1232KB format -> 80+12+4+50+(12+4+4+2+22+12+4+1024+2+116)*8+654=10416 (28B0H)
-//					// 1440KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+108)*18+?=12422+? (3086H+?)
-//					//  640KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+84)*8+598=6008 (1778H)
-//					//  720KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+54)*9+400=6198 (1836H)
-//
-//					// 2HD -> Read 0x3286 bytes
-//					// 2DD -> Read 0x1836 bytes
-//
-//					unsigned int len=0;
-//					switch(GetDriveMode())
-//					{
-//					case MEDIA_2DD_640KB:
-//					case MEDIA_2DD_720KB:
-//						len=6198;
-//						break;
-//					case MEDIA_2HD_1232KB:
-//						len=10416;
-//						break;
-//					case MEDIA_2HD_1440KB:
-//						len=12934; // Assume ?=512
-//						break;
-//					}
-//					auto formatData=DMACPtr->MemoryToDevice(DMACh,len);
-//					unsigned int C=0,H=0,R=0,N=0,trackCapacity=0;
-//					std::vector <D77File::D77Disk::D77Sector> sectors;
-//					for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
-//					{
-//						// FM-OASYS writes 00 00 00 FE, 00 00 00 FB for formatting the track 0 side 0.
-//						if((0xA1==formatData[ptr] &&
-//						    0xA1==formatData[ptr+1] &&
-//						    0xA1==formatData[ptr+2] &&
-//						    0xFE==formatData[ptr+3]) ||
-//						   (0xF5==formatData[ptr] &&
-//						    0xF5==formatData[ptr+1] &&
-//						    0xF5==formatData[ptr+2] &&
-//						    0xFE==formatData[ptr+3]) ||
-//						   (0x00==formatData[ptr] &&
-//						    0x00==formatData[ptr+1] &&
-//						    0x00==formatData[ptr+2] &&
-//						    0xFE==formatData[ptr+3])
-//						    ) // Address Mark
-//						{
-//							C=formatData[ptr+4];
-//							H=formatData[ptr+5];
-//							R=formatData[ptr+6];
-//							N=formatData[ptr+7];
-//							std::cout << "CHRN:" << C << " " << H << " " << R << " " << N << std::endl;
-//							ptr+=7;
-//						}
-//						else if((0xA1==formatData[ptr] &&
-//						         0xA1==formatData[ptr+1] &&
-//						         0xA1==formatData[ptr+2] &&
-//						         0xFB==formatData[ptr+3]) ||
-//						        (0xF5==formatData[ptr] &&
-//						         0xF5==formatData[ptr+1] &&
-//						         0xF5==formatData[ptr+2] &&
-//						         0xFB==formatData[ptr+3]) ||
-//						        (0x00==formatData[ptr] &&
-//						         0x00==formatData[ptr+1] &&
-//						         0x00==formatData[ptr+2] &&
-//						         0xFB==formatData[ptr+3])
-//						         ) // Data Mark
-//						{
-//							auto dataPtr=formatData.data()+ptr+4;
-//							unsigned int sectorSize=128*(1<<N);
-//							if(0xF7==dataPtr[sectorSize]) // CRC
-//							{
-//								std::cout << "Sector Data" << std::endl;
-//								D77File::D77Disk::D77Sector sector;
-//								sector.Make(C,H,R,sectorSize);
-//								for(unsigned int i=0; i<sectorSize; ++i)
-//								{
-//									sector.sectorData[i]=dataPtr[i];
-//								}
-//								sectors.push_back(sector);
-//								trackCapacity+=sectorSize;
-//							}
-//						}
-//					}
-//					auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
-//					if(MEDIA_UNKNOWN!=newDiskMediaType)
-//					{
-//						drv.mediaType=newDiskMediaType;
-//						switch(newDiskMediaType)
-//						{
-//						case MEDIA_2DD_640KB:
-//						case MEDIA_2DD_720KB:
-//							diskPtr->SetNumTrack(80);
-//							break;
-//						case MEDIA_2HD_1232KB:
-//							diskPtr->SetNumTrack(77);
-//							break;
-//						case MEDIA_2HD_1440KB:
-//							diskPtr->SetNumTrack(80);
-//							break;
-//						}
-//					}
-//					for(auto &s : sectors)
-//					{
-//						s.nSectorTrack=(unsigned short)sectors.size();
-//					}
-//					diskPtr->ForceWriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
-//					state.writeFault=false;
-//				}
-//				else
-//				{
-//					state.writeFault=true;
-//				}
-//			}
-//			else
-//			{
-//				state.writeFault=true;
-//			}
-//		}
-		MakeReady();
+		if(state.expectedWriteLength==0)
+		{
+			if(nullptr!=diskPtr)
+			{
+				if(true==diskPtr->IsWriteProtected())
+				{
+					// Write protected.
+				}
+				else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
+				{
+					state.expectedWriteLength=FORMAT_WRITE_LENGTH_2D_2DD;
+					state.DRQ=true;
+					// Should I raise IRQ?
+					fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+				}
+				else
+				{
+					state.writeFault=true;
+					MakeReady();
+				}
+			}
+		}
+		else if(true!=state.DRQ)
+		{
+			state.DRQ=true;
+			// Should I raise IRQ?
+			fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+		}
+		else // Data didn't come in time.  In fact, I may need to write partial and mark it as CRC error.
+		{
+			// In fact, if it ends partial, it should still make sectors, or the sectors have already been created
+			// from disk-drive point of view.
+			WriteTrack(state.data);
+			state.lostData=true;
+			MakeReady();
+		}
 		break;
 
 	default:
 	case 0xD0: // Force Interrupt
+		if(true==state.busy)
+		{
+			std::cout << "Terminated FDC command:" << cpputil::Ubtox(state.lastCmd) << std::endl;
+		}
 		state.busy=false;
 		break;
 	}
@@ -492,9 +379,11 @@ void FM77AVFDC::MakeReady(void)
 						}
 					}
 				}
-			}
-			else if(0xF0==(state.lastCmd&0xF0)) // // Write Track
-			{
+				else if(0xF0==(state.lastCmd&0xF0)) // // Write Track
+				{
+					WriteTrack(state.data);
+					MakeReady();
+				}
 			}
 		}
 		state.drive[DriveSelect()].dataReg=data;
@@ -589,4 +478,145 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 {
 	DiskDrive::Reset();
 	state.HISPD=false;
+}
+
+void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
+{
+	auto &drv=state.drive[DriveSelect()];
+	auto diskPtr=GetDriveDisk(DriveSelect());
+	if(nullptr!=diskPtr)
+	{
+		if(true==diskPtr->IsWriteProtected())
+		{
+			// Write protected.
+		}
+		else if(true==CheckMediaTypeAndDriveModeCompatibleForFormat(drv.mediaType,GetDriveMode()))
+		{
+			// What's the length?
+			// Looks like fm77av MENU makes 2DE0H bytes of data.
+			// [10]
+			//   1232KB format 1024 bytes per sector,  8 sectors per track, 77 tracks
+			//   1440KB format  512 bytes per sector, 18 sectors per track, 80 tracks
+			//    640KB format  512 bytes per sector,  8 sectors per track, 80 tracks
+			//    720KB format  512 bytes per sector,  9 sectors per track, 80 tracks
+			// [2] pp. 250
+			// From the index hole:
+			//    GAP        80 bytes 0x4E
+			//    SYNC       12 bytes 0x00
+			//    INDEX MARK  4 bytes 0xC2,0xC2,0xC2,0xFC (or 0xF6,0xF6,0xF6,0xFC)
+			//    GAP        50 bytes 0x4E
+			//    {
+			//    SYNC       12 bytes 0x00
+			//    ADDR MARK   4 bytes 0xA1,0xA1,0xA1,0xFE (or 0xF5,0xF5,0xF5,0xFE)
+			//    CHRN        4 bytes
+			//    CRC         2 bytes 0xF7 (Write 1 byte will become 2 bytes of CRC code)
+			//    GAP        22 bytes
+			//    SYNC       12 bytes
+			//    DATA Mark   4 bytes 0xA1,0xA1,0xA1,0xFB (or 0xF5,0xF5,0xF5,0xFB)
+			//    DATA        x bytes (x=128*(2^N))
+			//    CRC         2 bytes 0xF7 (Write 1 byte will become 2 bytes of CRC code)
+			//    GAP        54/84/116/108 bytes.
+			//    } times sectors
+			//    GAP        598/400/654/? bytes
+			// 1232KB format -> 80+12+4+50+(12+4+4+2+22+12+4+1024+2+116)*8+654=10416 (28B0H)
+			// 1440KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+108)*18+?=12422+? (3086H+?)
+			//  640KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+84)*8+598=6008 (1778H)
+			//  720KB format -> 80+12+4+50+(12+4+4+2+22+12+4+512+2+54)*9+400=6198 (1836H)
+
+			// 2HD -> Read 0x3286 bytes
+			// 2DD -> Read 0x1836 bytes
+
+			unsigned int C=0,H=0,R=0,N=0,trackCapacity=0;
+			std::vector <D77File::D77Disk::D77Sector> sectors;
+			for(unsigned int ptr=0; ptr<formatData.size()-4; ++ptr)
+			{
+				// FM-OASYS writes 00 00 00 FE, 00 00 00 FB for formatting the track 0 side 0.
+				if((0xA1==formatData[ptr] &&
+				    0xA1==formatData[ptr+1] &&
+				    0xA1==formatData[ptr+2] &&
+				    0xFE==formatData[ptr+3]) ||
+				   (0xF5==formatData[ptr] &&
+				    0xF5==formatData[ptr+1] &&
+				    0xF5==formatData[ptr+2] &&
+				    0xFE==formatData[ptr+3]) ||
+				   (0x00==formatData[ptr] &&
+				    0x00==formatData[ptr+1] &&
+				    0x00==formatData[ptr+2] &&
+				    0xFE==formatData[ptr+3])
+				    ) // Address Mark
+				{
+					C=formatData[ptr+4];
+					H=formatData[ptr+5];
+					R=formatData[ptr+6];
+					N=formatData[ptr+7];
+					std::cout << "CHRN:" << C << " " << H << " " << R << " " << N << std::endl;
+					ptr+=7;
+				}
+				else if((0xA1==formatData[ptr] &&
+				         0xA1==formatData[ptr+1] &&
+				         0xA1==formatData[ptr+2] &&
+				         0xFB==formatData[ptr+3]) ||
+				        (0xF5==formatData[ptr] &&
+				         0xF5==formatData[ptr+1] &&
+				         0xF5==formatData[ptr+2] &&
+				         0xFB==formatData[ptr+3]) ||
+				        (0x00==formatData[ptr] &&
+				         0x00==formatData[ptr+1] &&
+				         0x00==formatData[ptr+2] &&
+				         0xFB==formatData[ptr+3])
+				         ) // Data Mark
+				{
+					auto dataPtr=formatData.data()+ptr+4;
+					unsigned int sectorSize=128*(1<<N);
+					if(0xF7==dataPtr[sectorSize]) // CRC
+					{
+						std::cout << "Sector Data" << std::endl;
+						D77File::D77Disk::D77Sector sector;
+						sector.Make(C,H,R,sectorSize);
+						for(unsigned int i=0; i<sectorSize; ++i)
+						{
+							sector.sectorData[i]=dataPtr[i];
+						}
+						sectors.push_back(sector);
+						trackCapacity+=sectorSize;
+					}
+				}
+			}
+			auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
+			if(MEDIA_UNKNOWN!=newDiskMediaType)
+			{
+				if(drv.mediaType==MEDIA_2D)
+				{
+					// Don't change media type from 2D to 2DD.
+				}
+				else if((drv.mediaType==MEDIA_2DD_640KB || drv.mediaType==MEDIA_2DD_720KB) &&
+				        (newDiskMediaType==MEDIA_2DD_640KB || newDiskMediaType==MEDIA_2DD_720KB))
+				{
+					// 2D 640KB,720KB can be re-formatted to 720KB,640KB
+					drv.mediaType=newDiskMediaType;
+				}
+				else if((drv.mediaType==MEDIA_2HD_1232KB || drv.mediaType==MEDIA_2HD_1440KB) &&
+				        (newDiskMediaType==MEDIA_2HD_1232KB || newDiskMediaType==MEDIA_2HD_1440KB))
+				{
+					// 2HD 1232KB,1440KB can be re-formatted to 1440KB,1232KB,
+					// and it may change the number of tracks.
+					drv.mediaType=newDiskMediaType;
+					switch(newDiskMediaType)
+					{
+					case MEDIA_2HD_1232KB:
+						diskPtr->SetNumTrack(77);
+						break;
+					case MEDIA_2HD_1440KB:
+						diskPtr->SetNumTrack(80);
+						break;
+					}
+				}
+			}
+			for(auto &s : sectors)
+			{
+				s.nSectorTrack=(unsigned short)sectors.size();
+			}
+			diskPtr->ForceWriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
+		}
+	}
 }

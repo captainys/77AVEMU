@@ -16,6 +16,10 @@ public:
 		// 200 ms/6075=32 microseconds per byte.
 		NANOSEC_PER_BYTE=32000,
 		NANOSEC_BETWEEN_MULTI_SECTOR_READ=3200000, // Just multiplied by 100.  Let's see how it works.
+
+		FORMAT_WRITE_LENGTH_2D_2DD=6144,
+		FORMAT_WRITE_LENGTH_2HD_1232KB=10416,
+		FORMAT_WRITE_LENFTH_2HD_1440KB=12934,
 	};
 	class FM77AV *fm77avPtr;
 
@@ -38,6 +42,7 @@ public:
 	unsigned int NonDestructiveIORead(unsigned int ioport) const;
 
 	virtual void Reset(void);
+	void WriteTrack(const std::vector <uint8_t> &data);
 };
 
 /* } */
