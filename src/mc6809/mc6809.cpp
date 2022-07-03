@@ -1697,23 +1697,22 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_DAA: //       0x19,
-		// Let's see if the algorithm took from my 80486 core works.
-		if(0!=(state.CC&HF) || 9<(state.A()&0x0F))
 		{
-			state.SetA(state.A()+6);
+			uint16_t A=state.A();
+			if(0!=(state.CC&HF) || 9<(A&0x0F))
+			{
+				A+=6;
+			}
+			if(0x9F<A || 0!=(state.CC&CF))
+			{
+				A+=0x60;
+				state.CC|=CF;
+			}
+			state.SetA(A);
+			state.CC&=~(ZF|SF);
+			RaiseZF(0==state.A());
+			RaiseSF(0!=(state.A()&0x80));
 		}
-		if(0x9F<state.A() || 0!=(state.CC&CF))
-		{
-			state.SetA(state.A()+0x60);
-			state.CC|=CF;
-		}
-		else
-		{
-			state.CC&=~CF;
-		}
-		state.CC&=~(ZF|SF);
-		RaiseZF(0==state.A());
-		RaiseSF(0!=(state.A()&0x80));
 		break;
 
 	case INST_DECA: //      0x4A,
