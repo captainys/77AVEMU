@@ -2,6 +2,7 @@ add_subdirectory(crtc)
 add_subdirectory(fdc)
 add_subdirectory(datarecorder)
 add_subdirectory(keyboard)
+add_subdirectory(sound)
 
 
 
