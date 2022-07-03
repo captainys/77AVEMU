@@ -150,7 +150,7 @@ void MC6809::Debugger::SetBreakOnMemRead(uint16_t addr,uint8_t min,uint8_t max,u
 }
 void MC6809::Debugger::ClearBreakOnMemRead(uint16_t addr)
 {
-	memWrite[addr].flags=0;
+	memRead[addr].flags=0;
 }
 void MC6809::Debugger::FetchByte(uint16_t addr,uint8_t data)
 {

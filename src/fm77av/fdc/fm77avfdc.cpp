@@ -584,4 +584,5 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 /* virtual */ void FM77AVFDC::Reset(void)
 {
 	DiskDrive::Reset();
+	state.HISPD=false;
 }
