@@ -57,6 +57,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 
+	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["TAPE"]=DUMP_TAPE;
 	dumpableMap["HIST"]=DUMP_PC_LOG;
 }
@@ -162,6 +163,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  For clearing range, do main:0000 00FF or sub:D380 D38F." << std::endl;
 
 	std::cout << "<< Printable >>" << std::endl;
+	std::cout << "FDC" << std::endl;
+	std::cout << "  Floppy Disk Controller Status." << std::endl;
 	std::cout << "TAPE" << std::endl;
 	std::cout << "  Cassette Tape Status." << std::endl;
 	std::cout << "HIST main/sub" << std::endl;
@@ -677,6 +680,12 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 		{
 			switch(found->second)
 			{
+			case DUMP_FDC:
+				for(auto str : fm77av.fdc.GetStatusText())
+				{
+					std::cout << str << std::endl;
+				}
+				break;
 			case DUMP_TAPE:
 				for(auto str : fm77av.dataRecorder.GetStatusText(fm77av.state.fm77avTime))
 				{
@@ -696,51 +705,57 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 }
 void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
-	int mainOrSub=StrToCPU(cmd.argv[2]);
-	int n=32;
-	int paramBase=3;
-
-	if(CPU_UNKNOWN==mainOrSub)
+	if(3<=cmd.argv.size())
 	{
-		// There is a possibility that mainOrSub is omitted, default to the one unmuted.
-		mainOrSub=thr.OnlyOneCPUIsUnmuted();
+		int mainOrSub=StrToCPU(cmd.argv[2]);
+		int n=32;
+		int paramBase=3;
+
 		if(CPU_UNKNOWN==mainOrSub)
 		{
-			Error_UnknownCPU(cmd);
-			return;
+			// There is a possibility that mainOrSub is omitted, default to the one unmuted.
+			mainOrSub=thr.OnlyOneCPUIsUnmuted();
+			if(CPU_UNKNOWN==mainOrSub)
+			{
+				Error_UnknownCPU(cmd);
+				return;
+			}
+			if(3<=cmd.argv.size())
+			{
+				paramBase=2;
+			}
 		}
-		if(3<=cmd.argv.size())
+		else
 		{
-			paramBase=2;
+			if(4<=cmd.argv.size())
+			{
+				paramBase=3;
+			}
 		}
-	}
-	else
-	{
-		if(4<=cmd.argv.size())
-		{
-			paramBase=3;
-		}
-	}
 
-	n=cpputil::Atoi(cmd.argv[paramBase].c_str());
-
-	auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
-	// auto &symTable=av.debugger.GetSymTable();
-	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
-	{
-		std::cout << cpputil::Ustox(iter->PC);
-		std::cout << " ";
-		std::cout << "S=" << cpputil::Ustox(iter->S);
-		if(1<iter->count)
+		if(paramBase<cmd.argv.size())
 		{
-			std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+			n=cpputil::Atoi(cmd.argv[paramBase].c_str());
 		}
-		// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
-		// if(nullptr!=symbolPtr)
-		// {
-		// 	std::cout << " " << symbolPtr->Format();
-		// }
-		std::cout << std::endl;
+
+		auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
+		// auto &symTable=av.debugger.GetSymTable();
+		for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+		{
+			std::cout << cpputil::Ustox(iter->PC);
+			std::cout << " ";
+			std::cout << "S=" << cpputil::Ustox(iter->S);
+			if(1<iter->count)
+			{
+				std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+			}
+			// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+			// if(nullptr!=symbolPtr)
+			// {
+			// 	std::cout << " " << symbolPtr->Format();
+			// }
+			std::cout << std::endl;
+		}
 	}
 }
 void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)

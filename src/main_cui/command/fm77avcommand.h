@@ -80,6 +80,7 @@ public:
 	{
 		DUMP_NULL,
 		DUMP_TAPE,
+		DUMP_FDC,
 		DUMP_PC_LOG,
 	};
 

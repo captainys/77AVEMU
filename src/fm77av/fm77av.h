@@ -188,7 +188,12 @@ public:
 			// Question: Is it edge-sensitive?  Or, does it latch when 2ms passes?
 			state.main.irqSource&=~SystemState::MAIN_IRQ_SOURCE_TIMER;
 		}
-		if(0!=state.main.irqSource)
+		uint8_t mainIRQSource=(state.main.irqSource&0x07);
+		if(0!=(state.main.irqSource&~0x0F))
+		{
+			mainIRQSource|=8; // Ext should include YM2612.  Will come back.
+		}
+		if(0!=(mainIRQSource&state.main.irqEnableBits))
 		{
 			mainCPU.IRQ(mainMemAcc);
 		}

@@ -243,7 +243,7 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_FDC_SIDE://                0xFD1C,
 	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
-		fdc.IOReadByte(ioAddr);
+		byteData=fdc.IOReadByte(ioAddr);
 		break;
 
 
@@ -316,7 +316,7 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_FDC_SIDE://                0xFD1C,
 	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
-		fdc.NonDestructiveIORead(ioAddr);
+		byteData=fdc.NonDestructiveIORead(ioAddr);
 		break;
 
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,

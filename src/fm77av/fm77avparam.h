@@ -4,6 +4,7 @@
 
 
 
+#include <vector>
 #include <string>
 #include "fm77avdef.h"
 
@@ -45,7 +46,11 @@ public:
 
 	bool noWait=false;
 
+	std::vector <std::string> imgSearchPaths;
+
 	std::string t77Path;
+	std::string fdImgFName[NUM_FDDRIVES];
+	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};
 };
 
 

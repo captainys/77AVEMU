@@ -17,6 +17,16 @@ FM77AV::FM77AV() :
 	keyboard(this),
 	fdc(this)
 {
+	allDevices.push_back(&mainCPU);
+	allDevices.push_back(&subCPU);
+	allDevices.push_back(&physMem);
+	allDevices.push_back(&mainMemAcc);
+	allDevices.push_back(&subMemAcc);
+	allDevices.push_back(&crtc);
+	allDevices.push_back(&keyboard);
+	allDevices.push_back(&fdc);
+	VMBase::CacheDeviceIndex();
+
 	for(auto &b : var.breakOnSubCmd)
 	{
 		b=0;
@@ -46,6 +56,23 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 			return false;
 		}
 	}
+
+
+	fdc.searchPaths=param.imgSearchPaths;
+	for(int drv=0; drv<4; ++drv)
+	{
+		if(""!=param.fdImgFName[drv])
+		{
+			fdc.LoadD77orRAW(drv,param.fdImgFName[drv].c_str());
+			if(true==param.fdImgWriteProtect[drv])
+			{
+				// D77 image may have write-protect switch.
+				// Enable write protect only when specified by the parameter.
+				fdc.SetWriteProtect(drv,true);
+			}
+		}
+	}
+
 
 	for(int i=0; i<32; ++i)
 	{
@@ -141,9 +168,9 @@ void FM77AV::Reset(void)
 	subMemAcc.Reset();
 	subCPU.Reset();
 	crtc.Reset();
+	fdc.Reset();
 	keyboard.Reset();
 	dataRecorder.Reset();
-	fdc.Reset();
 }
 bool FM77AV::SubCPUHalt(void) const
 {
@@ -153,7 +180,7 @@ bool FM77AV::SubCPUHalt(void) const
 }
 bool FM77AV::ExternalDevicePresent(void) const
 {
-	return true;  // Has disk drive.
+	return true; // Has FDD.
 }
 unsigned int FM77AV::RunOneInstruction(void)
 {
