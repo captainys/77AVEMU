@@ -23,6 +23,7 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Write un-protect floppy disk." << std::endl;
 	std::cout << "-GENFD filename.d77 320|640" << std::endl;
 	std::cout << "  Generate an empty disk. Need to specify 320KB disk (2D) or 640KB disk (2DD)" << std::endl;
+	std::cout << "  Specify 400 as size to make 2D disk with 1024-byte per sector, 5 sectors per track." << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
 	std::cout << "  Run VM without adjusting time for the wall-clock time." << std::endl;
 }
@@ -80,13 +81,15 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-GENFD"==ARG && i+2<argc)
 		{
 			std::string fName=argv[i+1];
+			std::string size=argv[i+2];
 			unsigned int KB=cpputil::Atoi(argv[i+2]);
-			if(640==KB || 320==KB)
+			if(640==KB || 320==KB || 400==KB)
 			{
 				D77File d77;
 				switch(KB)
 				{
 				case 320:
+				case 400:
 					d77.CreateUnformatted(80,"FM7DISK");
 					break;
 				case 640:
@@ -95,34 +98,45 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 				}
 
 				auto diskPtr=d77.GetDisk(0);
+				int mediaType=0;
+				int numTracks;
+				int sectorsPerTrack;
+				int sectorSize;
+				D77File::D77Disk::D77Sector sec[16];
+
 				if(320==KB)
 				{
-					diskPtr->header.mediaType=0;
-					for(int i=0; i<80; ++i)
-					{
-						D77File::D77Disk::D77Sector sec[16];
-						for(int j=0; j<16; ++j)
-						{
-							sec[j].Make(i/2,i%2,j+1,256);
-							sec[j].nSectorTrack=16;
-						}
-						diskPtr->WriteTrack(i/2,i%2,16,sec);
-					}
+					mediaType=0;
+					numTracks=80;
+					sectorsPerTrack=16;
+					sectorSize=256;
+				}
+				else if(400==KB)
+				{
+					mediaType=0;
+					numTracks=80;
+					sectorsPerTrack=5;
+					sectorSize=1024;
 				}
 				else if(640==KB)
 				{
-					diskPtr->header.mediaType=0x10;
-					for(int i=0; i<160; ++i)
-					{
-						D77File::D77Disk::D77Sector sec[8];
-						for(int j=0; j<8; ++j)
-						{
-							sec[j].Make(i/2,i%2,j+1,512);
-							sec[j].nSectorTrack=8;
-						}
-						diskPtr->WriteTrack(i/2,i%2,8,sec);
-					}
+					mediaType=0x10;
+					numTracks=160;
+					sectorsPerTrack=8;
+					sectorSize=512;
 				}
+
+				diskPtr->header.mediaType=mediaType;
+				for(int i=0; i<numTracks; ++i)
+				{
+					for(int j=0; j<sectorsPerTrack; ++j)
+					{
+						sec[j].Make(i/2,i%2,j+1,sectorSize);
+						sec[j].nSectorTrack=sectorsPerTrack;
+					}
+					diskPtr->WriteTrack(i/2,i%2,sectorsPerTrack,sec);
+				}
+
 
 				std::vector <unsigned char> img;
 

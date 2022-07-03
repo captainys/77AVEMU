@@ -196,11 +196,13 @@ void FM77AVFDC::MakeReady(void)
 					else
 					{
 						state.recordNotFound=true;
+						MakeReady();
 					}
 				}
 				else
 				{
 					state.recordNotFound=true;
+					MakeReady();
 				}
 			}
 		}
