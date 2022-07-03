@@ -80,7 +80,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 					fm77avPtr->RunOneInstruction();
 					fm77avPtr->ProcessInterrupts();
 					// fm77avPtr->RunFastDevicePolling();
-					// fm77avPtr->RunScheduledTasks();
+					fm77avPtr->RunScheduledTasks(fm77avPtr->state.fm77avTime);
 
 					//auto payBack=std::min<long long int>(TIME_DEFICIT_PAYBACK_PER_INSTRUCTION,timeDeficit);
 					//fm77avPtr->state.fm77avTime+=payBack;

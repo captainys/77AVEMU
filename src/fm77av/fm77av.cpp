@@ -14,7 +14,8 @@ FM77AV::FM77AV() :
 	subMemAcc(this,&physMem),
 	subCPU(this),
 	crtc(this),
-	keyboard(this)
+	keyboard(this),
+	fdc(this)
 {
 	for(auto &b : var.breakOnSubCmd)
 	{
@@ -142,6 +143,7 @@ void FM77AV::Reset(void)
 	crtc.Reset();
 	keyboard.Reset();
 	dataRecorder.Reset();
+	fdc.Reset();
 }
 bool FM77AV::SubCPUHalt(void) const
 {
@@ -151,7 +153,7 @@ bool FM77AV::SubCPUHalt(void) const
 }
 bool FM77AV::ExternalDevicePresent(void) const
 {
-	return false; // Tentatively no external devices.
+	return true;  // Has disk drive.
 }
 unsigned int FM77AV::RunOneInstruction(void)
 {

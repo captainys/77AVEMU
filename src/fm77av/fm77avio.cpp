@@ -127,6 +127,15 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		EnableShadowRAM();
 		break;
 
+	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
+	case FM77AVIO_FDC_TRACK://               0xFD19,
+	case FM77AVIO_FDC_SECTOR://              0xFD1A,
+	case FM77AVIO_FDC_DATA://                0xFD1B,
+	case FM77AVIO_FDC_SIDE://                0xFD1C,
+	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
+	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
+		fdc.IOWriteByte(ioAddr,value);
+		break;
 
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
 	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,
@@ -227,6 +236,15 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
 		DisableShadowRAM();
 		break;
+	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
+	case FM77AVIO_FDC_TRACK://               0xFD19,
+	case FM77AVIO_FDC_SECTOR://              0xFD1A,
+	case FM77AVIO_FDC_DATA://                0xFD1B,
+	case FM77AVIO_FDC_SIDE://                0xFD1C,
+	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
+	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
+		fdc.IOReadByte(ioAddr);
+		break;
 
 
 
@@ -290,6 +308,17 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 			byteData|=0x80;
 		}
 		break;
+
+	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
+	case FM77AVIO_FDC_TRACK://               0xFD19,
+	case FM77AVIO_FDC_SECTOR://              0xFD1A,
+	case FM77AVIO_FDC_DATA://                0xFD1B,
+	case FM77AVIO_FDC_SIDE://                0xFD1C,
+	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
+	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
+		fdc.NonDestructiveIORead(ioAddr);
+		break;
+
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
 	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,
 	case FM77AVIO_DIGITAL_PALETTE_2: //=       0xFD3A,

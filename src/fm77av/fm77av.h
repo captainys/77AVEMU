@@ -10,6 +10,7 @@
 #include "fm77avdef.h"
 #include "fm77avparam.h"
 #include "fm77avcrtc.h"
+#include "fm77avfdc.h"
 #include "fm77avkeyboard.h"
 #include "fm77avtape.h"
 
@@ -39,6 +40,7 @@ public:
 	SubCPU subCPU;
 
 	FM77AVCRTC crtc;
+	FM77AVFDC fdc;
 	FM77AVKeyboard keyboard;
 	FM77AVDataRecorder dataRecorder;
 	// Devices <<
@@ -70,7 +72,9 @@ public:
 			MAIN_IRQ_SOURCE_KEY=0x01,
 			MAIN_IRQ_SOURCE_PRINTER=0x02,
 			MAIN_IRQ_SOURCE_TIMER=0x04,
-			MAIN_IRQ_SOURCE_EXT=0x08,   // FDC, RS232C
+			MAIN_IRQ_SOURCE_EXT=0x08,   // FDC, RS232C  Combine FDC and RS232C int into this bit when memory read.
+
+			MAIN_IRQ_SOURCE_FDC=0x10,
 		};
 		enum
 		{
