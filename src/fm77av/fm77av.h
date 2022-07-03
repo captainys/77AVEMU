@@ -183,11 +183,13 @@ public:
 				state.main.irqSource|=SystemState::MAIN_IRQ_SOURCE_TIMER;
 			}
 		}
-		else
-		{
-			// Question: Is it edge-sensitive?  Or, does it latch when 2ms passes?
-			state.main.irqSource&=~SystemState::MAIN_IRQ_SOURCE_TIMER;
-		}
+		// else
+		// {
+		// 	// Question: Is it edge-sensitive?  Or, does it latch when 2ms passes?
+		// 	// Looks like it should latch.  If not latch, Polar Star III map moves
+		// 	// extremely slow.  Most likely IRQs were dropping while accessing sub-CPU.
+		// 	state.main.irqSource&=~SystemState::MAIN_IRQ_SOURCE_TIMER;
+		// }
 		uint8_t mainIRQSource=(state.main.irqSource&0x07);
 		if(0!=(state.main.irqSource&~0x0F))
 		{
