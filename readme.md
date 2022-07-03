@@ -49,5 +49,11 @@ In the working directory, do:
 7. cmake ../src
 8. cmake --build . --config Release
 
-Then, you get Mutsu_CUI.exe in main_cui\Release in Windows, Mutsu_CUI in main/Release in Linux, or 
+Then, you get the executable in main_cui\Release\Mutsu_CUI.exe in Windows, main_cui/Mutsu_CUI in Linux, or main_cui/Mutsu_CUI.app/Contents/MacOS/Mutsu_CUI in macos.
 
+
+# Command Line Example
+
+./Mutsu_CUI path_to_FM7ROM -TAPE tape/PlazmaLine.t77
+
+./Mutsu_CUI path_to_FM7ROM -FD0 disk/Thexder.d77
