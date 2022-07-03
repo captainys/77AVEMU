@@ -13,6 +13,7 @@ private:
 
 	unsigned int scrnMode;
 	unsigned int VRAMOffset;
+	unsigned int VRAMAccessMask;
 
 public:
 	class Image

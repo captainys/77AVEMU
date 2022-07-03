@@ -26,6 +26,7 @@ void FM77AVRender::Prepare(const FM77AVCRTC &crtc)
 {
 	this->scrnMode=crtc.state.scrnMode;
 	this->VRAMOffset=crtc.state.VRAMOffset;
+	this->VRAMAccessMask=crtc.state.VRAMAccessMask;
 	switch(crtc.state.scrnMode)
 	{
 	case SCRNMODE_640X200_SINGLE:
@@ -58,6 +59,19 @@ void FM77AVRender::BuildImage(const unsigned char VRAM[],const class FM77AVCRTC:
 					unsigned int B=VRAM[addr];
 					unsigned int R=VRAM[addr+0x4000];
 					unsigned int G=VRAM[addr+0x8000];
+
+					if(0!=(VRAMAccessMask&1))
+					{
+						B=0;
+					}
+					if(0!=(VRAMAccessMask&2))
+					{
+						R=0;
+					}
+					if(0!=(VRAMAccessMask&4))
+					{
+						G=0;
+					}
 
 					for(int dx=0; dx<8; ++dx)
 					{

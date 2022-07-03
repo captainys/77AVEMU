@@ -1,6 +1,7 @@
 #include <iostream>
 #include "fm77avargv.h"
 #include "cpputil.h"
+#include "d77.h"
 
 
 
@@ -20,6 +21,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Write protect floppy disk." << std::endl;
 	std::cout << "-FD0UP,-FD1UP" << std::endl;
 	std::cout << "  Write un-protect floppy disk." << std::endl;
+	std::cout << "-GENFD filename.d77 320|640" << std::endl;
+	std::cout << "  Generate an empty disk. Need to specify 320KB disk (2D) or 640KB disk (2DD)" << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
 	std::cout << "  Run VM without adjusting time for the wall-clock time." << std::endl;
 }
@@ -73,6 +76,86 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			int drv=ARG[3]-'0';
 			fdImgWriteProtect[drv]=false;
+		}
+		else if("-GENFD"==ARG && i+2<argc)
+		{
+			std::string fName=argv[i+1];
+			unsigned int KB=cpputil::Atoi(argv[i+2]);
+			if(640==KB || 320==KB)
+			{
+				D77File d77;
+				switch(KB)
+				{
+				case 320:
+					d77.CreateUnformatted(80,"FM7DISK");
+					break;
+				case 640:
+					d77.CreateUnformatted(160,"FM7DISK");
+					break;
+				}
+
+				auto diskPtr=d77.GetDisk(0);
+				if(320==KB)
+				{
+					diskPtr->header.mediaType=0;
+					for(int i=0; i<80; ++i)
+					{
+						D77File::D77Disk::D77Sector sec[16];
+						for(int j=0; j<16; ++j)
+						{
+							sec[j].Make(i/2,i%2,j+1,256);
+							sec[j].nSectorTrack=16;
+						}
+						diskPtr->WriteTrack(i/2,i%2,16,sec);
+					}
+				}
+				else if(640==KB)
+				{
+					diskPtr->header.mediaType=0x10;
+					for(int i=0; i<160; ++i)
+					{
+						D77File::D77Disk::D77Sector sec[8];
+						for(int j=0; j<8; ++j)
+						{
+							sec[j].Make(i/2,i%2,j+1,512);
+							sec[j].nSectorTrack=8;
+						}
+						diskPtr->WriteTrack(i/2,i%2,8,sec);
+					}
+				}
+
+				std::vector <unsigned char> img;
+
+				auto ext=cpputil::GetExtension(fName.c_str());
+				auto EXT=cpputil::Capitalize(ext);
+				if(".D77"==EXT)
+				{
+					std::cout << "Making D77 disk image." << std::endl;
+					img=d77.MakeD77Image();
+				}
+				else
+				{
+					std::cout << "Unsupported data type." << std::endl;
+					return false;
+				}
+
+				if(true!=cpputil::WriteBinaryFile(fName,img.size(),img.data()))
+				{
+					std::cout << "Failed to write file: " << fName << std::endl;
+					return false;
+				}
+				else
+				{
+					std::cout << "Created FD Image: " << fName << std::endl;
+				}
+			}
+			else
+			{
+				std::cout << "Unsupported floppy-disk size: " << KB << std::endl;
+				std::cout << "Must be 640 or 320" << std::endl;
+				return false;
+			}
+			i+=2;
 		}
 		else
 		{

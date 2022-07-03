@@ -267,6 +267,31 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		return 0xFF;
 	case MEMTYPE_SUBSYS_VRAM:
 		addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
+		// Question: Is the VRAM Access Mask valid in non-640x200-singlePage mode?
+		{
+			uint16_t addr16=addr;
+			if(addr16<0x4000)
+			{
+				if(0!=(state.VRAMAccessMask&1))
+				{
+					return 0xFF;
+				}
+			}
+			else if(addr16<0x8000)
+			{
+				if(0!=(state.VRAMAccessMask&2))
+				{
+					return 0xFF;
+				}
+			}
+			else
+			{
+				if(0!=(state.VRAMAccessMask&4))
+				{
+					return 0xFF;
+				}
+			}
+		}
 		// if(different bank)
 		// {
 		//	return byte from the correct bank.
@@ -343,6 +368,30 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		return;
 	case MEMTYPE_SUBSYS_VRAM:
 		addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
+		{
+			uint16_t addr16=addr;
+			if(addr16<0x4000)
+			{
+				if(0!=(state.VRAMAccessMask&1))
+				{
+					return;
+				}
+			}
+			else if(addr16<0x8000)
+			{
+				if(0!=(state.VRAMAccessMask&2))
+				{
+					return;
+				}
+			}
+			else
+			{
+				if(0!=(state.VRAMAccessMask&4))
+				{
+					return;
+				}
+			}
+		}
 		// if(different bank)
 		// {
 		//	write to the correct bank.
