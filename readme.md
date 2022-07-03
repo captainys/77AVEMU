@@ -10,7 +10,7 @@ It is yet another emulator for legendary Fujitsu FM-7 series computers.  The goa
 
 Why another FM-7 series emulator?  Primary reason is because I like programming.  I was able to write FM Towns emulator.  I thought I should be able to write an FM77AV emulator by myself, especially I know pretty good internal mechanism.  But, I also want to make it (1)have functionalities for help preserving actual hardware, (2) have symbolic debugger like Tsugaru, (3)natively run on mac/Linux/Windows, (4) replicate copy-protection as is so that the program runs without altering the code.  I don't think none of the existing emulators have all.
 
-At this time it can run only a few tape-based games with no sound.  Will add more features soon.
+At this time it can run only a few games with no sound.  Will add more features soon.
 
 I'm re-using code from FM-TOWNS Emulator Tsugaru.  So, CMakeLists.txt assumes that you have TOWNSEMU and 77AVEMU at the same level.
 
@@ -20,7 +20,7 @@ Please run Mutsu_CUI -H for help.
 
 FM-7シリーズには既にいくつかの非常に高い再現性を持つエミュレータが存在しますが、なぜあらためて作るのか、というと、僕はプログラミングが好きなので、FM TOWNSエミュレータが作れたんだからFM77AVも中身は結構知ってるつもりだからエミュレータ作れそう、と、思ったというのが最大の要因ですが、(1)実機の動態保存に使いやすいエミュレータにする、(2)資料研究のためにシンボリックデバッガを搭載する、(3)mac/Linux/Windowsにネイティブ対応、(4)コピープロテクトを忠実に再現することでプロテクトを解除しなくてもソフトウェアを実行できるようにする、のすべてを備えたエミュレータはまだ無いと思うので、この辺りを目指してます。
 
-現在、まだ一部のテープのゲームが実行できるだけで、音が鳴りませんが、順次サポートを広げていきます。
+現在、まだ限られた一部のゲームが実行できるだけで、音が鳴りませんが、順次サポートを広げていきます。
 
 なお、FM TOWNSエミュレータ「津軽」のコードを再利用しているので、CMakeLists.Txtは、77AVEMUと同じレベルのディレクトリにTOWNSEMUが存在することを前提としています。
 
