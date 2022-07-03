@@ -210,7 +210,7 @@ void FM77AVFDC::MakeReady(void)
 			// Should I raise IRQ?
 			fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
 		}
-		else // Data didn't come in time.  In fact, I may need to mark it as CRC error.
+		else // Data didn't come in time.  In fact, I may need to write partial and mark it as CRC error.
 		{
 			state.lostData=true;
 			MakeReady();

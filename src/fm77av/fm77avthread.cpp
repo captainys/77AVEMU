@@ -171,22 +171,21 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			std::cout << "Undefined VM RunMode!" << std::endl;
 			break;
 		}
-		//if(fm77avPtr->state.nextSecondInfm77avTime<=fm77avPtr->state.fm77avTime)
-		//{
-		//	fm77avPtr->state.nextSecondInfm77avTime+=PER_SECOND;
-		//	fm77avPtr->fdc.SaveModifiedDiskImages();
-		//	fm77avPtr->physMem.state.memCard.SaveRawImageIfModified();
-		//}
+		if(fm77avPtr->state.nextSecondInfm77avTime<=fm77avPtr->state.fm77avTime)
+		{
+			fm77avPtr->state.nextSecondInfm77avTime+=FM77AVTIME_ONE_SECOND;
+			fm77avPtr->fdc.SaveModifiedDiskImages();
+		}
 
-		//if(RUNMODE_PAUSE==runModeCopy)
-		//{
-		//	fm77avPtr->fdc.SaveModifiedDiskImages();
-		//	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-		//	if(true==returnOnPause)
-		//	{
-		//		break;
-		//	}
-		//}
+		if(RUNMODE_PAUSE==runModeCopy)
+		{
+			fm77avPtr->fdc.SaveModifiedDiskImages();
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			if(true==returnOnPause)
+			{
+				break;
+			}
+		}
 
 		uiThread->uiLock.lock();
 		while(true!=outside_world->commandQueue.empty())

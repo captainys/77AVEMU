@@ -105,6 +105,7 @@ public:
 		uint64_t nextRenderingTime=0;
 		uint64_t next20msTimer=FM77AVTIME_MILLISEC*20;
 		uint64_t next2msTimer=FM77AVTIME_MILLISEC*2;
+		uint64_t nextSecondInfm77avTime=0;
 
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 
