@@ -1,4 +1,5 @@
-#include "sound.h"
+#include "fm77av.h"
+#include "fm77avsound.h"
 
 
 
@@ -16,8 +17,8 @@ void FM77AVSound::SetOutsideWorld(class Outside_World *outside_world)
 }
 /* virtual */ void FM77AVSound::Reset(void)
 {
-	state.PSG.Reset();
-	state.PSGAddrLatch=0;
+	state.ay38910.Reset();
+	state.ay38910AddrLatch=0;
 
 }
 /* virtual */ void FM77AVSound::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -52,4 +53,5 @@ void FM77AVSound::ProcessSound(void)
 }
 /* virtual */ bool FM77AVSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	return true;
 }

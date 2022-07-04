@@ -23,8 +23,8 @@ public:
 	State state;
 
 	void Reset(void);
-	uint8_t ReadRegister(void) const;
-	void WriteRegister(uint8_t value);
+	uint8_t ReadRegister(uint8_t reg) const;
+	void WriteRegister(uint8_t reg,uint8_t value);
 
 	bool IsPlaying(void) const;
 };

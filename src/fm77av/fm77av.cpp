@@ -16,7 +16,8 @@ FM77AV::FM77AV() :
 	crtc(this),
 	keyboard(this),
 	fdc(this),
-	dataRecorder(this)
+	dataRecorder(this),
+	sound(this)
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);
@@ -27,6 +28,7 @@ FM77AV::FM77AV() :
 	allDevices.push_back(&keyboard);
 	allDevices.push_back(&fdc);
 	allDevices.push_back(&dataRecorder);
+	allDevices.push_back(&sound);
 	VMBase::CacheDeviceIndex();
 
 	for(auto &b : var.breakOnSubCmd)
@@ -89,6 +91,8 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR+1]=0x00;
 
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
+
+	sound.SetOutsideWorld(outside_world);
 
 	Reset();
 	return true;

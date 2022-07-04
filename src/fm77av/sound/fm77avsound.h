@@ -30,8 +30,8 @@ public:
 		// unsigned int muteFlag;
 		// unsigned int addrLatch[2];
 
-		AY38910 PSG;
-		uint8_t PSGAddrLatch=0;
+		AY38910 ay38910;
+		uint8_t ay38910AddrLatch=0;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -64,7 +64,7 @@ public:
 
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
-	virtual uint8_t IOReadByte(unsigned int ioport);
+	virtual unsigned int IOReadByte(unsigned int ioport);
 	uint8_t NonDestructiveIOReadByte(unsigned int ioport);
 
 	/*! Called from FM77AV::RunFastDevicePolling.
