@@ -26,6 +26,12 @@ void AY38910::Reset(void)
 	{
 		r=0;
 	}
+
+	state.envPhase=0;
+	state.envOut=0;
+	state.envPeriodBalance=0;
+	state.envPatternSeg=0;
+
 }
 uint8_t AY38910::Read(uint8_t reg) const
 {
@@ -34,6 +40,11 @@ uint8_t AY38910::Read(uint8_t reg) const
 void AY38910::Write(uint8_t reg,uint8_t value)
 {
 	state.regs[reg]=value;
+	if(REG_ENV_PATTERN==reg)
+	{
+		state.envPatternSeg=0;
+		StartEnvelopeSegment();
+	}
 }
 
 inline unsigned int AY38910::GetF_NUM(int ch) const
@@ -59,12 +70,13 @@ inline unsigned int AY38910::GetAmplitude(int ch) const
 	unsigned int volume=state.regs[REG_CH0_VOL+ch];
 	if(0!=(0x10&volume)) // Envelope
 	{
-		return MAX_AMPLITUDE; // Tentative
+		volume=state.envOut;
+		return volume*MAX_AMPLITUDE/ENV_OUT_MAX;
 	}
 	else
 	{
-		volume&=0x10;
-		return MAX_AMPLITUDE/16;
+		volume&=0x0F;
+		return volume*MAX_AMPLITUDE/16;
 	}
 }
 
@@ -96,6 +108,58 @@ inline unsigned int AY38910::EnvelopeFreqX1000(void) const
 	}
 	return 0;
 }
+
+const uint8_t AY38910::envPtn[16][4]
+{
+	{ENV_DOWN,ENV_ZERO,ENV_KEEP,ENV_KEEP},
+	{ENV_DOWN,ENV_ZERO,ENV_KEEP,ENV_KEEP},
+	{ENV_DOWN,ENV_ZERO,ENV_KEEP,ENV_KEEP},
+	{ENV_DOWN,ENV_ZERO,ENV_KEEP,ENV_KEEP},
+
+	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
+	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
+	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
+	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
+
+	{ENV_DOWN,ENV_REPT,ENV_KEEP,ENV_KEEP},
+
+	{ENV_DOWN,ENV_ZERO,ENV_KEEP,ENV_KEEP},
+
+	{ENV_DOWN,ENV_UP,  ENV_REPT,ENV_KEEP},
+
+	{ENV_DOWN,ENV_UP,  ENV_REPT,ENV_KEEP},
+
+	{ENV_DOWN,ENV_ONE, ENV_KEEP,ENV_KEEP},
+
+	{ENV_UP,  ENV_REPT,ENV_KEEP,ENV_KEEP},
+
+	{ENV_UP,  ENV_ONE, ENV_KEEP,ENV_KEEP},
+
+	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
+};
+
+void AY38910::StartEnvelopeSegment(void)
+{
+	state.envPhase=0;
+	state.envPeriodBalance=0;
+	switch(envPtn[GetEnvelopePatternType()][state.envPatternSeg])
+	{
+	case ENV_UP:
+	case ENV_ZERO:
+		state.envOut=0;
+		break;
+	case ENV_DOWN:
+	case ENV_ONE:
+		state.envOut=ENV_OUT_MAX;
+		break;
+	}
+}
+
+inline unsigned int AY38910::GetEnvelopePatternType(void) const
+{
+	return state.regs[REG_ENV_PATTERN]&0x0F;
+}
+
 void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples)
 {
 	unsigned int halfTonePeriodX10[3]={0,0,0};
@@ -112,6 +176,15 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 		}
 	}
 
+	unsigned int envPeriodX10=0;
+	unsigned int envType=GetEnvelopePatternType();
+	{
+		unsigned int envFreqX1000=EnvelopeFreqX1000();
+		if(0<envFreqX1000)
+		{
+			envPeriodX10=WAVE_SAMPLING_RATE*10000/envFreqX1000;
+		}
+	}
 
 	for(unsigned long long int i=0; i<numSamples; ++i)
 	{
@@ -141,6 +214,35 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 				}
 			}
 		}
+
+		// Like drawing a line from (0,0)-(envPeriod,ENV_OUT_MAX) with DDA.
+		state.envPeriodBalance+=(ENV_OUT_MAX*10);
+		if(envPeriodX10<=state.envPeriodBalance)
+		{
+			state.envPeriodBalance-=envPeriodX10;
+			if(ENV_UP==envPtn[envType][state.envPatternSeg])
+			{
+				++state.envOut;
+			}
+			if(ENV_DOWN==envPtn[envType][state.envPatternSeg] && 0<state.envOut)
+			{
+				--state.envOut;
+			}
+		}
+		state.envPhase+=10;
+		if(envPeriodX10<=state.envPhase)
+		{
+			if(ENV_KEEP!=envPtn[envType][state.envPatternSeg])
+			{
+				state.envPatternSeg=(state.envPatternSeg+1)&3;
+				if(ENV_REPT==envPtn[envType][state.envPatternSeg])
+				{
+					state.envPatternSeg=0;
+				}
+				StartEnvelopeSegment();
+			}
+		}
+
 		*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 	}
 }

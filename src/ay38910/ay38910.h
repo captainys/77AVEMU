@@ -18,6 +18,8 @@ public:
 		FREQ_CONST=1228800,  // FM-Techknow pp.230, 200000 for PC88?
 		MAX_AMPLITUDE=2048,
 
+		ENV_OUT_MAX=256,
+
 		WAVE_SAMPLING_RATE=44100,  // Must be equal from ym2612.h
 
 		REG_CH0_FREQ_LOW=0,
@@ -37,6 +39,15 @@ public:
 		REG_PORTA=14,
 		REG_PORTB=15,
 	};
+	enum
+	{
+		ENV_UP,
+		ENV_DOWN,
+		ENV_ZERO,
+		ENV_ONE,
+		ENV_REPT,
+		ENV_KEEP
+	};
 
 	class Channel
 	{
@@ -49,8 +60,14 @@ public:
 	public:
 		uint8_t regs[NUM_REGS];
 		Channel ch[NUM_CHANNELS];
+		unsigned int envPhase=0;
+		unsigned int envOut=0;
+		unsigned int envPeriodBalance=0;
+		unsigned int envPatternSeg=0;  // 0 to 3.  Index to envPtn[PTN].
 	};
 	State state;
+
+	static const uint8_t envPtn[16][4];
 
 	void Reset(void);
 	uint8_t Read(uint8_t reg) const;
@@ -65,6 +82,8 @@ public:
 	inline unsigned int ChannelFrequencyX1000(int ch) const;
 	inline unsigned int GetAmplitude(int ch) const;
 	inline unsigned int EnvelopeFreqX1000(void) const;
+	inline unsigned int GetEnvelopePatternType(void) const;
+	void StartEnvelopeSegment(void);
 
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
 	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples);
