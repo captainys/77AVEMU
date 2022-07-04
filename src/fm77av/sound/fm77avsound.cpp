@@ -2,16 +2,13 @@
 #include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avsound.h"
+#include "outside_world.h"
 
 
 
 FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 {
 	PowerOn();
-}
-void FM77AVSound::SetOutsideWorld(class Outside_World *outside_world)
-{
-	this->outside_world=outside_world;
 }
 /* virtual */ void FM77AVSound::PowerOn(void)
 {
@@ -85,8 +82,46 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 	std::vector <std::string> text;
 	return text;
 }
-void FM77AVSound::ProcessSound(void)
+void FM77AVSound::ProcessSound(Outside_World *outside_world)
 {
+	if((true==state.ay38910.IsPlaying() /* or FMPlying or Beep Playing */) && nullptr!=outside_world)
+	{
+		if(true==nextWave.empty())
+		{
+			/*if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
+			{
+				nextWave=state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE);
+			} */
+			if(true==state.ay38910.IsPlaying())
+			{
+				const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.
+				unsigned int numSamples=0;
+				if(true==nextWave.empty()) // YM2612 not playing.
+				{
+					numSamples=MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
+					nextWave.resize(numSamples*4);
+					std::memset(nextWave.data(),0,numSamples*4);
+				}
+				else
+				{
+					numSamples=(unsigned int)(nextWave.size()/4);
+				}
+
+				state.ay38910.AddWaveAllChannelsForNumSamples(nextWave.data(),numSamples);
+			}
+		}
+
+		if(true!=outside_world->FMPSGChannelPlaying() && true!=nextWave.empty())
+		{
+			if(true==recordAudio)
+			{
+				audioRecording.insert(audioRecording.end(),nextWave.begin(),nextWave.end());
+			}
+			outside_world->FMPSGPlay(nextWave);
+			nextWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
+			// state.ym2612.CheckToneDoneAllChannels();
+		}
+	}
 }
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
 {

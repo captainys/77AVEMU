@@ -42,11 +42,10 @@ public:
 	};
 	State state;
 
-	class Outside_World *outside_world=nullptr;
 
 
 	bool recordAudio=false;
-	std::vector <unsigned char> AudioRecording;
+	std::vector <unsigned char> audioRecording;
 
 	std::vector <unsigned char> nextWave;
 
@@ -60,7 +59,6 @@ public:
 	}
 
 	FM77AVSound(class FM77AV *fm77avPtr);
-	void SetOutsideWorld(class Outside_World *outside_world);
 
 	virtual void PowerOn(void);
 	virtual void Reset(void);
@@ -78,7 +76,7 @@ public:
 
 	/*! Call this function periodically to continue sound playback.
 	*/
-	void ProcessSound(void);
+	void ProcessSound(class Outside_World *outside_world);
 
 	void StartRecording(void);
 	void EndRecording(void);

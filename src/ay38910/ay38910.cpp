@@ -34,10 +34,6 @@ uint8_t AY38910::Read(uint8_t reg) const
 void AY38910::Write(uint8_t reg,uint8_t value)
 {
 	state.regs[reg]=value;
-if(reg==0 || reg==1)
-{
-	std::cout << ChannelFrequencyX1000(0) << std::endl;
-}
 }
 
 inline unsigned int AY38910::GetF_NUM(int ch) const

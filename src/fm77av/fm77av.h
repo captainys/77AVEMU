@@ -165,6 +165,7 @@ public:
 
 	inline void ProcessSound(class Outside_World *outside_world)
 	{
+		sound.ProcessSound(outside_world);
 	}
 	inline void ProcessInterrupts(void)
 	{

@@ -92,8 +92,6 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
 
-	sound.SetOutsideWorld(outside_world);
-
 	Reset();
 	return true;
 }
