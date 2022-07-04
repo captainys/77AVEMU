@@ -12,7 +12,7 @@ public:
 	{
 		NUM_REGS=16,
 		REG_MASK=NUM_REGS-1,
-		FREQ_CONST=122880,  // FM-Techknow pp.230
+		FREQ_CONST=122880,  // FM-Techknow pp.230, 200000 for PC88?
 	};
 
 	class State
@@ -23,8 +23,8 @@ public:
 	State state;
 
 	void Reset(void);
-	uint8_t ReadRegister(uint8_t reg) const;
-	void WriteRegister(uint8_t reg,uint8_t value);
+	uint8_t Read(uint8_t reg) const;
+	void Write(uint8_t reg,uint8_t value);
 
 	bool IsPlaying(void) const;
 };

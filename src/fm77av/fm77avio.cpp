@@ -123,6 +123,14 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			EnableShadowRAM();
 		}
 		break;
+
+	case FM77AVIO_YM2203C_CONTROL://         0xFD15,
+	case FM77AVIO_YM2203C_DATA://            0xFD16,
+	case FM77AVIO_PSG_CONTROL://             0xFD0D,
+	case FM77AVIO_PSG_DATA://                0xFD0E,
+		sound.IOWriteByte(ioAddr,value);
+		break;
+
 	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
 		EnableShadowRAM();
 		break;
@@ -238,6 +246,14 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 			DisableShadowRAM();
 		}
 		break;
+
+	case FM77AVIO_YM2203C_CONTROL://         0xFD15,
+	case FM77AVIO_YM2203C_DATA://            0xFD16,
+	case FM77AVIO_PSG_CONTROL://             0xFD0D,
+	case FM77AVIO_PSG_DATA://                0xFD0E,
+		// Probably Reading sound I/O won't change anything.
+		break;
+
 	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
 		DisableShadowRAM();
 		break;
@@ -311,6 +327,14 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 			byteData|=0x80;
 		}
 		break;
+
+	case FM77AVIO_YM2203C_CONTROL://         0xFD15,
+	case FM77AVIO_YM2203C_DATA://            0xFD16,
+	case FM77AVIO_PSG_CONTROL://             0xFD0D,
+	case FM77AVIO_PSG_DATA://                0xFD0E,
+		byteData=sound.NonDestructiveIOReadByte(ioAddr);
+		break;
+
 
 	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
 	case FM77AVIO_FDC_TRACK://               0xFD19,

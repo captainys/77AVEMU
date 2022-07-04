@@ -31,7 +31,10 @@ public:
 		// unsigned int addrLatch[2];
 
 		AY38910 ay38910;
+		uint8_t ay38910regMode=0; // 0:High Impedance  1:Data Read  2:Data Write  3:AddrLatch
 		uint8_t ay38910AddrLatch=0;
+		uint8_t ay38910LastControl=0;
+		uint8_t ay38910LastData=0;
 
 		void PowerOn(void);
 		void Reset(void);
@@ -65,7 +68,7 @@ public:
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 
 	virtual unsigned int IOReadByte(unsigned int ioport);
-	uint8_t NonDestructiveIOReadByte(unsigned int ioport);
+	uint8_t NonDestructiveIOReadByte(unsigned int ioport) const;
 
 	/*! Called from FM77AV::RunFastDevicePolling.
 	*/
