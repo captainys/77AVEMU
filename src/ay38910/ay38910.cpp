@@ -167,6 +167,44 @@ inline unsigned int AY38910::GetEnvelopePatternType(void) const
 	return state.regs[REG_ENV_PATTERN]&0x0F;
 }
 
+inline unsigned int AY38910::NoiseFreqX1000(void) const
+{
+	unsigned int F=state.regs[REG_NOISE_FREQ]&0x1F;
+	if(0<F)
+	{
+		unsigned int freq=FREQ_CONST*1000/16;
+		freq/=F;
+		return freq;
+	}
+	return 0;
+}
+
+inline void AY38910::MoveLFSR(void)
+{
+	// Experiment showed the following taps give 255 period for 8-bit LFSR.
+	// I don't know which one is used by AY-3-8910.
+	// I just randomly pick one.
+	// 142
+	// 149
+	// 150
+	// 166
+	// 175
+	// 177
+	// 178
+	// 180
+	// 184
+	// 195
+	// 198
+	// 212
+	// 225
+	// 231
+	// 243
+	// 250
+	// Implementation based on wikipedia.
+	const unsigned char taps=142;
+	state.LFSR=(state.LFSR>>1)^(-(state.LFSR&1)&taps);
+}
+
 void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples)
 {
 	unsigned int halfTonePeriodX10[3]={0,0,0};
@@ -193,6 +231,15 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 		}
 	}
 
+	unsigned int noisePeriodX10=0;
+	if(0b00111000!=(state.regs[REG_MIXER]&0b00111000))
+	{
+		auto noiseFreqX1000=NoiseFreqX1000();
+		if(0<noiseFreqX1000)
+		{
+			noisePeriodX10=WAVE_SAMPLING_RATE*10000/noiseFreqX1000;
+		}
+	}
 	for(unsigned long long int i=0; i<numSamples; ++i)
 	{
 		auto dataPtr=data+i*4; // 16-bit stereo
@@ -220,6 +267,14 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 					WordOp_Add(dataPtr,ampl);
 				}
 			}
+			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX10)
+			{
+				int noiseOut=state.LFSR;
+				int ampl=GetAmplitude(ch);
+				noiseOut-=0x80;
+				noiseOut=noiseOut*ampl/0x80;
+				WordOp_Add(dataPtr,noiseOut);
+			}
 		}
 
 		// Like drawing a line from (0,0)-(envPeriod,ENV_OUT_MAX) with DDA.
@@ -236,6 +291,7 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 				--state.envOut;
 			}
 		}
+
 		state.envPhase+=10;
 		if(envPeriodX10<=state.envPhase)
 		{
@@ -249,6 +305,17 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 				StartEnvelopeSegment();
 			}
 		}
+
+		if(0!=noisePeriodX10)
+		{
+			state.noisePeriodBalance+=10;
+			while(noisePeriodX10<=state.noisePeriodBalance)
+			{
+				state.noisePeriodBalance-=noisePeriodX10;
+				MoveLFSR();
+			}
+		}
+
 
 		*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 	}

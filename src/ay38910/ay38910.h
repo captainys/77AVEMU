@@ -19,6 +19,7 @@ public:
 		MAX_AMPLITUDE=1024,
 
 		ENV_OUT_MAX=256,
+		LFSR_CYCLE=255,
 
 		WAVE_SAMPLING_RATE=44100,  // Must be equal from ym2612.h
 
@@ -64,6 +65,9 @@ public:
 		unsigned int envOut=0;
 		unsigned int envPeriodBalance=0;
 		unsigned int envPatternSeg=0;  // 0 to 3.  Index to envPtn[PTN].
+
+		unsigned char LFSR=1;
+		unsigned int noisePeriodBalance=0;
 	};
 	State state;
 
@@ -84,6 +88,8 @@ public:
 	inline unsigned int GetAmplitude(int ch) const;
 	inline unsigned int EnvelopeFreqX1000(void) const;
 	inline unsigned int GetEnvelopePatternType(void) const;
+	inline unsigned int NoiseFreqX1000(void) const;
+	inline void MoveLFSR(void);
 	void StartEnvelopeSegment(void);
 
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
