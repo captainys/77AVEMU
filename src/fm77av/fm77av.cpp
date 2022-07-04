@@ -192,33 +192,8 @@ unsigned int FM77AV::RunOneInstruction(void)
 {
 	unsigned int clocksPassed=0;
 	uint64_t nanosec=0;
-	if(true==mainCPU.state.halt && true==SubCPUHalt())
-	{
-		clocksPassed=2; // 2 is the minimum clocks, which is the minimum time resolution.
-		nanosec=FM77AVTIME_MICROSEC;
-		state.timeBalance=0;
-	}
-	else if(true==SubCPUHalt())
-	{
-		clocksPassed=mainCPU.RunOneInstruction(mainMemAcc);
-		if(FM7_BIOS_ENTRY_ADDR==mainCPU.state.PC)
-		{
-			DetectMainCPUBIOSCall();
-		}
-
-		nanosec=clocksPassed;
-		nanosec*=SCALE_NANO;
-		nanosec/=mainCPU.state.freq;
-	}
-	else if(true==mainCPU.state.halt)
-	{
-		clocksPassed=subCPU.RunOneInstruction(subMemAcc);
-
-		nanosec=clocksPassed;
-		nanosec*=SCALE_NANO;
-		nanosec/=mainCPU.state.freq;
-	}
-	else
+	bool subCPUHalt=SubCPUHalt();
+	if(true!=mainCPU.state.halt && true!=subCPUHalt)
 	{
 		unsigned int clocksPassed=0;
 
@@ -269,6 +244,32 @@ unsigned int FM77AV::RunOneInstruction(void)
 				DetectMainCPUBIOSCall();
 			}
 		}
+	}
+	else if(true!=mainCPU.state.halt)
+	{
+		clocksPassed=mainCPU.RunOneInstruction(mainMemAcc);
+		if(FM7_BIOS_ENTRY_ADDR==mainCPU.state.PC)
+		{
+			DetectMainCPUBIOSCall();
+		}
+
+		nanosec=clocksPassed;
+		nanosec*=SCALE_NANO;
+		nanosec/=mainCPU.state.freq;
+	}
+	else if(true!=subCPUHalt)
+	{
+		clocksPassed=subCPU.RunOneInstruction(subMemAcc);
+
+		nanosec=clocksPassed;
+		nanosec*=SCALE_NANO;
+		nanosec/=mainCPU.state.freq;
+	}
+	else // if(true==mainCPU.state.halt && true==subCPUHalt)
+	{
+		clocksPassed=2; // 2 is the minimum clocks, which is the minimum time resolution.
+		nanosec=FM77AVTIME_MICROSEC;
+		state.timeBalance=0;
 	}
 
 	state.fm77avTime+=nanosec;
