@@ -1,3 +1,4 @@
+#include <iostream>
 #include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avsound.h"
@@ -19,7 +20,11 @@ void FM77AVSound::SetOutsideWorld(class Outside_World *outside_world)
 /* virtual */ void FM77AVSound::Reset(void)
 {
 	state.ay38910.Reset();
+	state.ay38910regMode=0; // 0:High Impedance  1:Data Read  2:Data Write  3:AddrLatch
 	state.ay38910AddrLatch=0;
+	state.ay38910LastControl=0;
+	state.ay38910LastData=0;
+
 
 }
 /* virtual */ void FM77AVSound::IOWriteByte(unsigned int ioport,unsigned int data)
@@ -28,16 +33,16 @@ void FM77AVSound::SetOutsideWorld(class Outside_World *outside_world)
 	{
 	case FM77AVIO_PSG_CONTROL://             0xFD0D,
 		{
-			auto control=data&3;
+			auto control=(data&3);
 			if(3==state.ay38910LastControl && 0==control) // Latch Address
 			{
-				state.ay38910AddrLatch=state.ay38910LastData&AY38910::REG_MASK;
+				state.ay38910AddrLatch=(state.ay38910LastData&AY38910::REG_MASK);
 			}
 			if(1==control) // Read Data
 			{
 				// Probably I don't have anything to do here.
 			}
-			if(2==control) // Write Data
+			if(2==state.ay38910LastControl && 0==control) // Write Data
 			{
 				state.ay38910.Write(state.ay38910AddrLatch,state.ay38910LastData);
 			}
