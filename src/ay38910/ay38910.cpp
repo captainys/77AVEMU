@@ -88,7 +88,7 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 	for(int ch=0; ch<3; ++ch)
 	{
 		// Let's worry about envelope and noise later.
-		unsigned int toneFreqX1000=ChannelFrequencyX1000(0);
+		unsigned int toneFreqX1000=ChannelFrequencyX1000(ch);
 		if(0<toneFreqX1000)
 		{
 			unsigned int tonePeriodX10=WAVE_SAMPLING_RATE*10000/toneFreqX1000;
@@ -98,22 +98,25 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			{
 				auto dataPtr=data+i*4; // 16-bit stereo
 
-				if(state.ch[ch].tonePeriodBalance<10)
+				if(0==(state.regs[REG_MIXER]&(1<<ch)))
 				{
-					state.ch[ch].toneSign=1-state.ch[ch].toneSign;
-					state.ch[ch].tonePeriodBalance+=halfTonePeriodX10;
-				}
-				else
-				{
-					state.ch[ch].tonePeriodBalance-=10;
-				}
+					if(state.ch[ch].tonePeriodBalance<10)
+					{
+						state.ch[ch].toneSign=1-state.ch[ch].toneSign;
+						state.ch[ch].tonePeriodBalance+=halfTonePeriodX10;
+					}
+					else
+					{
+						state.ch[ch].tonePeriodBalance-=10;
+					}
 
-				int ampl=GetAmplitude(ch);
-				if(0==state.ch[ch].toneSign)
-				{
-					ampl=-ampl;
+					int ampl=GetAmplitude(ch);
+					if(0==state.ch[ch].toneSign)
+					{
+						ampl=-ampl;
+					}
+					WordOp_Add(dataPtr,ampl);
 				}
-				WordOp_Add(dataPtr,ampl);
 				*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 			}
 		}
