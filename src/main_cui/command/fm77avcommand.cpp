@@ -25,6 +25,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["ENA"]=CMD_ENABLE;
 	primaryCmdMap["DISABLE"]=CMD_DISABLE;
 	primaryCmdMap["DIS"]=CMD_DISABLE;
+	primaryCmdMap["STARTAUDIOREC"]=CMD_START_AUDIO_RECORDING;
+	primaryCmdMap["ENDAUDIOREC"]=CMD_END_AUDIO_RECORDING;
+	primaryCmdMap["SAVEAUDIOREC"]=CMD_SAVE_AUDIO_RECORDING;
 	primaryCmdMap["U"]=CMD_DISASM;
 	primaryCmdMap["UM"]=CMD_DISASM_MAIN;
 	primaryCmdMap["US"]=CMD_DISASM_SUB;
@@ -392,6 +395,20 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_DISABLE:
 		Execute_Disable(thr,fm77av,outside_world,cmd);
 		break;
+
+	case CMD_START_AUDIO_RECORDING:
+		fm77av.sound.StartRecording();
+		break;
+	case CMD_END_AUDIO_RECORDING:
+		fm77av.sound.EndRecording();
+		break;
+	case CMD_SAVE_AUDIO_RECORDING:
+		if(2<=cmd.argv.size())
+		{
+			fm77av.sound.SaveRecording(cmd.argv[1]);
+		}
+		break;
+
 	case CMD_DISASM:
 		Execute_Disassemble(thr,fm77av,outside_world,cmd);
 		break;

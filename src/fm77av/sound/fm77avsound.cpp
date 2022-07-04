@@ -123,6 +123,27 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 		}
 	}
 }
+
+void FM77AVSound::StartRecording(void)
+{
+	recordAudio=true;
+	audioRecording.clear();
+}
+void FM77AVSound::EndRecording(void)
+{
+	recordAudio=false;
+}
+#include "yssimplesound.h"
+void FM77AVSound::SaveRecording(std::string fName) const
+{
+	YsSoundPlayer::SoundData data;
+	auto dataCopy=audioRecording;
+	data.CreateFromSigned16bitStereo(44100,dataCopy);
+	auto wavFile=data.MakeWavByteData();
+	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
+}
+
+
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
 {
 	return 0;
