@@ -64,6 +64,7 @@ public:
 	inline unsigned int GetF_NUM(int ch) const;
 	inline unsigned int ChannelFrequencyX1000(int ch) const;
 	inline unsigned int GetAmplitude(int ch) const;
+	inline unsigned int EnvelopeFreqX1000(void) const;
 
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
 	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples);

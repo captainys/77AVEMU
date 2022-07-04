@@ -83,27 +83,49 @@ std::vector <unsigned char> AY38910::MakeWaveAllChannels(unsigned long long int 
 	AddWaveAllChannelsForNumSamples(wave.data(),numSamples);
 	return wave;
 }
+inline unsigned int AY38910::EnvelopeFreqX1000(void) const
+{
+	unsigned int D=state.regs[REG_ENV_FREQ_HIGH];
+	D<<=8;
+	D|=state.regs[REG_ENV_FREQ_LOW];
+	if(0<D)
+	{
+		unsigned int freq=FREQ_CONST*1000/256;
+		freq/=D;
+		return freq;
+	}
+	return 0;
+}
 void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples)
 {
+	unsigned int halfTonePeriodX10[3]={0,0,0};
 	for(int ch=0; ch<3; ++ch)
 	{
-		// Let's worry about envelope and noise later.
-		unsigned int toneFreqX1000=ChannelFrequencyX1000(ch);
-		if(0<toneFreqX1000)
+		if(0==(state.regs[REG_MIXER]&(1<<ch)))
 		{
-			unsigned int tonePeriodX10=WAVE_SAMPLING_RATE*10000/toneFreqX1000;
-			unsigned int halfTonePeriodX10=tonePeriodX10/2;
-
-			for(unsigned long long int i=0; i<numSamples; ++i)
+			unsigned int toneFreqX1000=ChannelFrequencyX1000(ch);
+			if(0<toneFreqX1000)
 			{
-				auto dataPtr=data+i*4; // 16-bit stereo
+				unsigned int tonePeriodX10=WAVE_SAMPLING_RATE*10000/toneFreqX1000;
+				halfTonePeriodX10[ch]=tonePeriodX10/2;
+			}
+		}
+	}
 
+
+	for(unsigned long long int i=0; i<numSamples; ++i)
+	{
+		auto dataPtr=data+i*4; // 16-bit stereo
+		for(int ch=0; ch<3; ++ch)
+		{
+			if(0<halfTonePeriodX10[ch])
+			{
 				if(0==(state.regs[REG_MIXER]&(1<<ch)))
 				{
 					if(state.ch[ch].tonePeriodBalance<10)
 					{
 						state.ch[ch].toneSign=1-state.ch[ch].toneSign;
-						state.ch[ch].tonePeriodBalance+=halfTonePeriodX10;
+						state.ch[ch].tonePeriodBalance+=halfTonePeriodX10[ch];
 					}
 					else
 					{
@@ -117,8 +139,8 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 					}
 					WordOp_Add(dataPtr,ampl);
 				}
-				*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 			}
 		}
+		*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 	}
 }
