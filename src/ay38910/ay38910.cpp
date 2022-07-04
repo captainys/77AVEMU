@@ -19,6 +19,13 @@ inline void WordOp_Add(unsigned char *ptr,int value)
 	}
 	cpputil::PutWord(ptr,(value&0xFFFF));
 }
+AY38910::AY38910()
+{
+	std::cout << "AY-3-8910 Emulator for Mutsu - DONDANZ" << std::endl;
+	std::cout << "by CaptainYS" << std::endl;
+	std::cout << "http://www.ysflight.com" << std::endl;
+	Reset();
+}
 
 void AY38910::Reset(void)
 {

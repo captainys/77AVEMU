@@ -16,7 +16,7 @@ public:
 		NUM_REGS=16,
 		REG_MASK=NUM_REGS-1,
 		FREQ_CONST=1228800,  // FM-Techknow pp.230, 200000 for PC88?
-		MAX_AMPLITUDE=2048,
+		MAX_AMPLITUDE=1024,
 
 		ENV_OUT_MAX=256,
 
@@ -69,6 +69,7 @@ public:
 
 	static const uint8_t envPtn[16][4];
 
+	AY38910();
 	void Reset(void);
 	uint8_t Read(uint8_t reg) const;
 	void Write(uint8_t reg,uint8_t value);
