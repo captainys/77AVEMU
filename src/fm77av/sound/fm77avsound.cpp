@@ -16,6 +16,10 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 }
 /* virtual */ void FM77AVSound::Reset(void)
 {
+	state.ym2203c.Reset();
+	state.ym2203cAddrLatch[0]=0;
+	state.ym2203cAddrLatch[1]=0;
+
 	state.ay38910.Reset();
 	state.ay38910regMode=0; // 0:High Impedance  1:Data Read  2:Data Write  3:AddrLatch
 	state.ay38910AddrLatch=0;
