@@ -16,7 +16,7 @@ public:
 		NUM_REGS=16,
 		REG_MASK=NUM_REGS-1,
 		FREQ_CONST=1228800,  // FM-Techknow pp.230, 200000 for PC88?
-		MAX_AMPLITUDE=1024,
+		MAX_AMPLITUDE=2048,
 
 		ENV_OUT_MAX=256,
 		LFSR_CYCLE=255,
@@ -72,6 +72,7 @@ public:
 	State state;
 
 	static const uint8_t envPtn[16][4];
+	static const unsigned int DAConvOut[16];
 
 	AY38910();
 	void Reset(void);

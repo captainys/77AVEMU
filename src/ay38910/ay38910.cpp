@@ -78,13 +78,16 @@ inline unsigned int AY38910::GetAmplitude(int ch) const
 	unsigned int volume=state.regs[REG_CH0_VOL+ch];
 	if(0!=(0x10&volume)) // Envelope
 	{
-		volume=state.envOut;
-		return volume*MAX_AMPLITUDE/ENV_OUT_MAX;
+		volume=state.envOut*16/ENV_OUT_MAX;
+		if(16<=volume)
+		{
+			volume=15;
+		}
+		return DAConvOut[volume];
 	}
 	else
 	{
-		volume&=0x0F;
-		return volume*MAX_AMPLITUDE/16;
+		return DAConvOut[volume&0x0F];
 	}
 }
 
@@ -144,6 +147,40 @@ const uint8_t AY38910::envPtn[16][4]
 	{ENV_UP,  ENV_ONE, ENV_KEEP,ENV_KEEP},
 
 	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
+};
+
+const unsigned int AY38910::DAConvOut[16]=
+{
+	// Fig.3 of AY-3-8910 data sheet implies it is C*pow((sqrt(2)),linear)
+	// Values obtained by the following code.
+	//#include <math.h>
+	//#include <stdio.h>
+	//int main(void)
+	//{
+	//	double C=1.0/pow(sqrt(2.0),15);
+	//	for(int i=0; i<16; ++i)
+	//	{
+	//		double o=C*pow(sqrt(2),i);
+	//		printf("%d %lf\n",i,65535.0*o);
+	//	}
+	//	return 0;
+	//}
+	AY38910::MAX_AMPLITUDE*0/65535,
+	AY38910::MAX_AMPLITUDE*511/65535,
+	AY38910::MAX_AMPLITUDE*724/65535,
+	AY38910::MAX_AMPLITUDE*1023/65535,
+	AY38910::MAX_AMPLITUDE*1448/65535,
+	AY38910::MAX_AMPLITUDE*2047/65535,
+	AY38910::MAX_AMPLITUDE*2896/65535,
+	AY38910::MAX_AMPLITUDE*4095/65535,
+	AY38910::MAX_AMPLITUDE*5792/65535,
+	AY38910::MAX_AMPLITUDE*8191/65535,
+	AY38910::MAX_AMPLITUDE*11585/65535,
+	AY38910::MAX_AMPLITUDE*16383/65535,
+	AY38910::MAX_AMPLITUDE*23170/65535,
+	AY38910::MAX_AMPLITUDE*32767/65535,
+	AY38910::MAX_AMPLITUDE*46340/65535,
+	AY38910::MAX_AMPLITUDE*65535/65535,
 };
 
 void AY38910::StartEnvelopeSegment(void)
