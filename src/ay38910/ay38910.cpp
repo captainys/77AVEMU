@@ -38,6 +38,7 @@ void AY38910::Reset(void)
 	state.envOut=0;
 	state.envPeriodBalance=0;
 	state.envPatternSeg=0;
+	state.LFSR=1;
 
 }
 uint8_t AY38910::Read(uint8_t reg) const
@@ -169,14 +170,10 @@ inline unsigned int AY38910::GetEnvelopePatternType(void) const
 
 inline unsigned int AY38910::NoiseFreqX1000(void) const
 {
-	unsigned int F=state.regs[REG_NOISE_FREQ]&0x1F;
-	if(0<F)
-	{
-		unsigned int freq=FREQ_CONST*1000/16;
-		freq/=F;
-		return freq;
-	}
-	return 0;
+	unsigned int F=1+(state.regs[REG_NOISE_FREQ]&0x1F);
+	unsigned int freq=FREQ_CONST*1000/16;
+	freq/=F;
+	return freq;
 }
 
 inline void AY38910::MoveLFSR(void)
@@ -204,6 +201,14 @@ inline void AY38910::MoveLFSR(void)
 	const unsigned char taps=142;
 	state.LFSR=(state.LFSR>>1)^(-(state.LFSR&1)&taps);
 }
+
+inline uint32_t AY38910::LFSR24(uint32_t lfsr) const
+{
+	unsigned int bit=((lfsr>>(24-24))^(lfsr>>(24-23))^(lfsr>>(24-22))^(lfsr>>(24-17)))&1;
+	lfsr=(lfsr>>1)|(bit<<23);
+	return lfsr;
+}
+
 
 void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples)
 {
@@ -277,11 +282,12 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			}
 			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX1000)
 			{
-				int noiseOut=state.LFSR;
 				int ampl=GetAmplitude(ch);
-				noiseOut-=0x80;
-				noiseOut=noiseOut*ampl/0x80;
-				WordOp_Add(dataPtr,noiseOut);
+				if(0!=(state.LFSR&1))
+				{
+					ampl=-ampl;
+				}
+				WordOp_Add(dataPtr,ampl);
 			}
 		}
 
@@ -320,7 +326,7 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			while(noisePeriodX1000<=state.noisePeriodBalance)
 			{
 				state.noisePeriodBalance-=noisePeriodX1000;
-				MoveLFSR();
+				state.LFSR=LFSR24(state.LFSR);
 			}
 		}
 

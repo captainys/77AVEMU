@@ -66,7 +66,7 @@ public:
 		unsigned int envPeriodBalance=0;
 		unsigned int envPatternSeg=0;  // 0 to 3.  Index to envPtn[PTN].
 
-		unsigned char LFSR=1;
+		uint32_t LFSR=1;
 		unsigned int noisePeriodBalance=0;
 	};
 	State state;
@@ -89,7 +89,8 @@ public:
 	inline unsigned int EnvelopeFreqX1000(void) const;
 	inline unsigned int GetEnvelopePatternType(void) const;
 	inline unsigned int NoiseFreqX1000(void) const;
-	inline void MoveLFSR(void);
+	inline void MoveLFSR(void);  // Turned out 8-bit was too short for high-frequency noise.
+	inline uint32_t LFSR24(uint32_t lfsr) const;
 	void StartEnvelopeSegment(void);
 
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
