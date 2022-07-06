@@ -64,9 +64,11 @@ public:
 			MAIN_IRQ_ENABLE_PRINTER=0x02,
 			MAIN_IRQ_ENABLE_TIMER=0x04,
 			MAIN_IRQ_ENABLE_FDC=0x10,
-			MAIN_IRQ_ENABLE_TXRDY=0x20,
+			MAIN_IRQ_ENABLE_TXRDY=0x20,    // Looks like IRQ mask is stored in M9 74LS175.  Maybe I should make RS232C responsible for remembering it.
 			MAIN_IRQ_ENABLE_RXRDY=0x40,
 			MAIN_IRQ_ENABLE_SYNDET=0x80,
+
+			MAIN_IRQ_ENABLE_YM2203C=0x100, // Looks like there is no I/O for masking it.  YM2203C card schematic does not have anything to remember mask status.
 		};
 		enum
 		{
@@ -77,6 +79,9 @@ public:
 			MAIN_IRQ_SOURCE_EXT=0x08,   // FDC, RS232C  Combine FDC and RS232C int into this bit when memory read.
 
 			MAIN_IRQ_SOURCE_FDC=0x10,
+
+			// Read $FD17
+			MAIN_IRQ_SOURCE_YM2203C=0x100, // Bit 3, Active-Low
 		};
 		enum
 		{
@@ -104,6 +109,7 @@ public:
 		unsigned int keyboardIRQHandler=CPU_SUB; // Controlled by $FD02 bit 0.  FM-Techknow pp.151.
 		uint64_t fm77avTime=0;
 		uint64_t nextDevicePollingTime=0;
+		uint64_t nextFastDevicePollingTime=0;
 		uint64_t nextRenderingTime=0;
 		uint64_t next20msTimer=FM77AVTIME_MILLISEC*20;
 		uint64_t next2msTimer=FM77AVTIME_MILLISEC*2;
@@ -163,6 +169,19 @@ public:
 
 	bool NoWait(void) const;
 
+private:
+	void RunFastDevicePollingInternal(void);
+public:
+	/*! Check nextFastDevicePollingTime and call RunScheduledTask function of the devices in fastDevices.
+	*/
+	inline void RunFastDevicePolling(void)
+	{
+		if(state.nextFastDevicePollingTime<state.fm77avTime)
+		{
+			RunFastDevicePollingInternal();
+		}
+	}
+
 	inline void ProcessSound(class Outside_World *outside_world)
 	{
 		sound.ProcessSound(outside_world);
@@ -194,12 +213,7 @@ public:
 		// 	// extremely slow.  Most likely IRQs were dropping while accessing sub-CPU.
 		// 	state.main.irqSource&=~SystemState::MAIN_IRQ_SOURCE_TIMER;
 		// }
-		uint8_t mainIRQSource=(state.main.irqSource&0x07);
-		if(0!=(state.main.irqSource&~0x0F))
-		{
-			mainIRQSource|=8; // Ext should include YM2612.  Will come back.
-		}
-		if(0!=(mainIRQSource&state.main.irqEnableBits))
+		if(0!=(state.main.irqSource&state.main.irqEnableBits))
 		{
 			mainCPU.IRQ(mainMemAcc);
 		}

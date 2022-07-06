@@ -160,7 +160,7 @@ void FM77AV::Reset(void)
 	state.timeDeficit=0;
 
 
-	state.main.irqEnableBits=0;
+	state.main.irqEnableBits=SystemState::MAIN_IRQ_SOURCE_YM2203C;
 	state.main.irqSource=0;
 	state.main.firqSource=0;
 
@@ -406,4 +406,10 @@ void FM77AV::DetectMainCPUBIOSCall(void)
 bool FM77AV::NoWait(void) const
 {
 	return var.noWait;
+}
+
+void FM77AV::RunFastDevicePollingInternal(void)
+{
+	sound.SoundPolling(state.fm77avTime);
+	state.nextFastDevicePollingTime=state.fm77avTime+FAST_DEVICE_POLLING_INTERVAL;
 }

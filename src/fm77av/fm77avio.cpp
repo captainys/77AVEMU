@@ -311,7 +311,14 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		}
 		break;
 	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
-		byteData=~state.main.irqSource; // Active-Low
+		{
+			uint8_t irqSource=(state.main.irqSource&0x07);
+			if(0!=(irqSource&~0x0f))
+			{
+				irqSource|=SystemState::MAIN_IRQ_SOURCE_EXT;
+			}
+			byteData=~irqSource; // Active-Low
+		}
 		break;
 	case FM77AVIO_FIRQ_SUBSYS_INTERFACE: // =   0xFD04,
 		byteData=~state.main.firqSource; // Active-Low

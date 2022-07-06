@@ -78,8 +78,18 @@ uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
 	}
 	return 0xFF;
 }
-void FM77AVSound::SoundPolling(uint64_t FM77AVTime)
+void FM77AVSound::SoundPolling(uint64_t fm77avTime)
 {
+	state.ym2203c.Run(fm77avTime);
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(true==(state.ym2203c.TimerAUp() || state.ym2203c.TimerBUp()))
+	{
+		fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
+	}
+	else
+	{
+		fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
+	}
 }
 std::vector <std::string> FM77AVSound::GetStatusText(void) const
 {
