@@ -28,7 +28,10 @@ public:
 	{
 	public:
 		YM2612 ym2203c;  // Will use Tsugaru-Ben for emulate YM2203C.
-		unsigned int ym2203cAddrLatch[2];
+		uint8_t ym2203cCommand=0;
+		uint8_t ym2203cDataRead=0;
+		uint8_t ym2203cDataWrite=0;
+		unsigned int ym2203cAddrLatch=0;
 
 		AY38910 ay38910;
 		uint8_t ay38910regMode=0; // 0:High Impedance  1:Data Read  2:Data Write  3:AddrLatch

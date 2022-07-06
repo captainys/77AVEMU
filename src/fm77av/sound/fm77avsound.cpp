@@ -17,8 +17,10 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 /* virtual */ void FM77AVSound::Reset(void)
 {
 	state.ym2203c.Reset();
-	state.ym2203cAddrLatch[0]=0;
-	state.ym2203cAddrLatch[1]=0;
+	state.ym2203cCommand=0;
+	state.ym2203cDataRead=0;
+	state.ym2203cDataWrite=0;
+	state.ym2203cAddrLatch=0;
 
 	state.ay38910.Reset();
 	state.ay38910regMode=0; // 0:High Impedance  1:Data Read  2:Data Write  3:AddrLatch
@@ -56,6 +58,38 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			state.ay38910LastData=data;
 		}
 		break;
+	case FM77AVIO_YM2203C_CONTROL://=         0xFD15,
+		switch(data&0x0F)
+		{
+		case 0: // High impedance
+			switch(state.ym2203cCommand)
+			{
+			case 3: // Address Latch
+				state.ym2203cAddrLatch=state.ym2203cDataWrite;
+				break;
+			case 2: // Data Write
+				// YM2203C does not have additional 3 channels. Channel base is always 0.
+				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				break;
+			}
+			break;
+		case 1: // Data Read
+			// YM2203C does not have additional 3 channels. Channel base is always 0.
+			state.ym2203cDataRead=state.ym2203c.ReadRegister(0,state.ym2203cAddrLatch);
+			break;
+		case 4: // Status Read
+			state.ym2203cDataRead=0b01111100;
+			state.ym2203cDataRead|=(true==state.ym2203c.TimerAUp() ? 1 : 0);
+			state.ym2203cDataRead|=(true==state.ym2203c.TimerBUp() ? 2 : 0);
+			break;
+		case 9: // Joystick Read
+			break;
+		}
+		state.ym2203cCommand=data&0x0F;
+		break;
+	case FM77AVIO_YM2203C_DATA://=            0xFD16,
+		state.ym2203cDataWrite=data;
+		break;
 	}
 }
 /* virtual */ unsigned int FM77AVSound::IOReadByte(unsigned int ioport)
@@ -75,6 +109,11 @@ uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
 			return state.ay38910.Read(state.ay38910AddrLatch);
 		}
 		break;
+
+	case FM77AVIO_YM2203C_CONTROL://=         0xFD15,
+		break;
+	case FM77AVIO_YM2203C_DATA://=            0xFD16,
+		return state.ym2203cDataRead;
 	}
 	return 0xFF;
 }
