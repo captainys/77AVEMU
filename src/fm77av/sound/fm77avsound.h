@@ -56,7 +56,7 @@ public:
 
 	inline bool IsFMPlaying(void) const
 	{
-		return false; // Will come 0!=state.ym2612.state.playingCh;
+		return 0!=state.ym2203c.state.playingCh;
 	}
 	inline bool IsPSGPlaying(void) const
 	{

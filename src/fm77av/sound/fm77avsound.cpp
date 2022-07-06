@@ -146,10 +146,10 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 	{
 		if(true==nextWave.empty())
 		{
-			/*if(true==IsFMPlaying() && 0!=(state.muteFlag&2))
+			if(true==IsFMPlaying())
 			{
-				nextWave=state.ym2612.MakeWaveAllChannels(FM_PCM_MILLISEC_PER_WAVE);
-			} */
+				nextWave=state.ym2203c.MakeWaveAllChannels(MILLISEC_PER_WAVE);
+			}
 			if(true==state.ay38910.IsPlaying())
 			{
 				const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.

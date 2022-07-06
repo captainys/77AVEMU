@@ -6,6 +6,8 @@ enable_testing()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_definitions(MUTSU_FM77AV)
+
 set(TSUGARU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../TOWNSEMU/src)
 
 add_subdirectory(${TSUGARU_SOURCE_DIR}/cpputil ${CMAKE_BINARY_DIR}/cpputil)
