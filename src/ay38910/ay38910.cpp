@@ -262,14 +262,11 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			{
 				if(0==(state.regs[REG_MIXER]&(1<<ch)))
 				{
-					if(state.ch[ch].tonePeriodBalance<1000)
+					state.ch[ch].tonePeriodBalance+=1000;
+					if(halfTonePeriodX1000[ch]<=state.ch[ch].tonePeriodBalance)
 					{
 						state.ch[ch].toneSign=1-state.ch[ch].toneSign;
-						state.ch[ch].tonePeriodBalance+=halfTonePeriodX1000[ch];
-					}
-					else
-					{
-						state.ch[ch].tonePeriodBalance-=1000;
+						state.ch[ch].tonePeriodBalance-=halfTonePeriodX1000[ch];
 					}
 
 					int ampl=GetAmplitude(ch);
@@ -333,4 +330,34 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 
 		*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 	}
+}
+
+std::vector <std::string> AY38910::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("AY-3-8910");
+
+	text.push_back("    ");
+	for(int i=0; i<16; ++i)
+	{
+		text.back()+=cpputil::Ubtox(i);
+		text.back()+=" ";
+	}
+
+	text.push_back("REG ");
+	for(auto r : state.regs)
+	{
+		text.back()+=cpputil::Ubtox(r);
+		text.back()+=" ";
+	}
+
+	for(int ch=0; ch<NUM_CHANNELS; ++ch)
+	{
+		text.push_back("");
+		text.back()+="F_NUM ";
+		text.back()+=cpputil::Ustox(GetF_NUM(ch));
+	}
+
+	return text;
 }

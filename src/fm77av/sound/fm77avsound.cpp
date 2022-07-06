@@ -68,9 +68,15 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 				state.ym2203cAddrLatch=state.ym2203cDataWrite;
 				break;
 			case 2: // Data Write
-				// YM2203C does not have additional 3 channels. Channel base is always 0.
-				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite);
-				break;
+				if(state.ym2203cAddrLatch<=0x0F)
+				{
+					state.ay38910.Write(state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				}
+				else
+				{
+					// YM2203C does not have additional 3 channels. Channel base is always 0.
+					state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				}
 			}
 			break;
 		case 1: // Data Read
@@ -134,6 +140,10 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 {
 	std::vector <std::string> text;
 	for(auto str : state.ym2203c.GetStatusText())
+	{
+		text.push_back(str);
+	}
+	for(auto str : state.ay38910.GetStatusText())
 	{
 		text.push_back(str);
 	}

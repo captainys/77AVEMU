@@ -95,6 +95,8 @@ public:
 
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
 	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples);
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 /* } */
