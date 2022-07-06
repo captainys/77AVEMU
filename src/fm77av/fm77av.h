@@ -69,6 +69,8 @@ public:
 			MAIN_IRQ_ENABLE_SYNDET=0x80,
 
 			MAIN_IRQ_ENABLE_YM2203C=0x100, // Looks like there is no I/O for masking it.  YM2203C card schematic does not have anything to remember mask status.
+
+			MAIN_IRQ_ENABLE_ALWAYS_ON=0xFF00, // YM2203C etc.  Never mask by $FD02.
 		};
 		enum
 		{

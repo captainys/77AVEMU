@@ -5,6 +5,8 @@
 
 
 #include <stdint.h>
+#include <vector>
+#include <string>
 #include "device.h"
 #include "ay38910.h"
 #include "ym2612.h"

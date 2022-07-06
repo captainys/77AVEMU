@@ -35,7 +35,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		break;
 	case FM77AVIO_CASSETTE_IRQMASK://=        0xFD02,
-		state.main.irqEnableBits=value;
+		state.main.irqEnableBits=value|SystemState::MAIN_IRQ_ENABLE_ALWAYS_ON;
 		if(0!=(value&1))
 		{
 			state.keyboardIRQHandler=CPU_MAIN;

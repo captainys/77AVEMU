@@ -63,6 +63,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["TAPE"]=DUMP_TAPE;
 	dumpableMap["HIST"]=DUMP_PC_LOG;
+	dumpableMap["SOUND"]=DUMP_SOUND;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -172,6 +173,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Cassette Tape Status." << std::endl;
 	std::cout << "HIST main/sub" << std::endl;
 	std::cout << "  Program-Counter history (PC log)." << std::endl;
+	std::cout << "SOUND" << std::endl;
+	std::cout << "  AY-3-8910 and YM2203C Status." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -711,6 +714,12 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				break;
 			case DUMP_PC_LOG:
 				Execute_PrintHistory(thr,fm77av,cmd);
+				break;
+			case DUMP_SOUND:
+				for(auto str : fm77av.sound.GetStatusText())
+				{
+					std::cout << str << std::endl;
+				}
 				break;
 			}
 		}

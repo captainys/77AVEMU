@@ -133,8 +133,13 @@ void FM77AVSound::SoundPolling(uint64_t fm77avTime)
 std::vector <std::string> FM77AVSound::GetStatusText(void) const
 {
 	std::vector <std::string> text;
+	for(auto str : state.ym2203c.GetStatusText())
+	{
+		text.push_back(str);
+	}
 	return text;
 }
+
 void FM77AVSound::ProcessSound(Outside_World *outside_world)
 {
 	if((true==state.ay38910.IsPlaying() /* or FMPlying or Beep Playing */) && nullptr!=outside_world)
@@ -195,7 +200,6 @@ void FM77AVSound::SaveRecording(std::string fName) const
 	auto wavFile=data.MakeWavByteData();
 	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
 }
-
 
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
 {
