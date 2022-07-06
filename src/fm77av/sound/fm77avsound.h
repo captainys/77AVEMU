@@ -29,13 +29,18 @@ public:
 	enum
 	{
 		BEEP_OFF,
-		BEEP_SINGLE,
+		BEEP_ONE_SHOT,
 		BEEP_CONTINUOUS,
+
+		SINGLE_BEEP_DURATION=210000000, // 0.21 seconds from FM-7.
+		BEEP_SOUND_AMPLITUDE=2048,
 	};
 
 	class State
 	{
 	public:
+		bool mute=false;
+
 		YM2612 ym2203c;  // Will use Tsugaru-Ben for emulate YM2203C.
 		uint8_t ym2203cCommand=0;
 		uint8_t ym2203cDataRead=0;
@@ -51,6 +56,7 @@ public:
 		uint8_t beepState=BEEP_OFF;
 		uint64_t beepStopTime=0;
 		uint32_t beepTimeBalance=0;
+		uint8_t beepWaveOut=0;
 
 		void PowerOn(void);
 		void Reset(void);

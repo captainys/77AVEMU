@@ -46,6 +46,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		break;
 
+	case FM77AVIO_IRQ_BEEP://=                0xFD03,
+		// Write to FD03 is taken by sound.
+		sound.IOWriteByte(ioAddr,value);
+		break;
+
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
 		if(0!=(0x80&value))
 		{
@@ -169,6 +174,9 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		// Same as $D404.  Is WD402 also clear main-to-sub IRQ?
 		ClearMainToSubIRQFlag();
 		break;
+	case FM77AVIO_BEEP:// =                    0xD403,
+		sound.IOWriteByte(ioAddr,value);
+		break;
 	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
 		// FM-Techknow pp. pp.483 and Oh!FM May 1985 pp.47 tells Read D404 to send attnention IRQ to main CPU.
 		// F-BASIC Analysys Manual Phase II pp.36 tells reqd/write to send attention IRQ to main CPU.
@@ -276,6 +284,9 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		break;
 	case FM77AVIO_ACK_CANCEL_IRQ: //=          0xD402,
 		ClearMainToSubIRQFlag();
+		break;
+	case FM77AVIO_BEEP:// =                    0xD403,
+		sound.IOReadByte(ioAddr);
 		break;
 	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
 		SetSubToMainFIRQFlag();

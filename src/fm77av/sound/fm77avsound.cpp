@@ -5,6 +5,50 @@
 #include "outside_world.h"
 
 
+inline void WordOp_Add(unsigned char *ptr,int value)
+{
+	value+=cpputil::GetSignedWord(ptr);
+
+	if(value<-32767)
+	{
+		value=-32767;
+	}
+	else if(32767<value)
+	{
+		value=32767;
+	}
+	cpputil::PutWord(ptr,(value&0xFFFF));
+}
+inline void WordOp_Set(unsigned char *ptr,short value)
+{
+#ifdef YS_LITTLE_ENDIAN
+	if(value<-32767)
+	{
+		*((short *)ptr)=-32767;
+	}
+	else if(32767<value)
+	{
+		*((short *)ptr)=32767;
+	}
+	else
+	{
+		*((short *)ptr)=value;
+	}
+#else
+	if(value<-32767)
+	{
+		value=-32767;
+	}
+	else if(32767<value)
+	{
+		value=32767;
+	}
+	ptr[0]=value&255;
+	ptr[1]=(value>>8)&255;
+#endif
+}
+
+
 
 FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 {
@@ -16,6 +60,8 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 }
 /* virtual */ void FM77AVSound::Reset(void)
 {
+	state.mute=false;
+
 	state.ym2203c.Reset();
 	state.ym2203cCommand=0;
 	state.ym2203cDataRead=0;
@@ -34,8 +80,28 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 }
 /* virtual */ void FM77AVSound::IOWriteByte(unsigned int ioport,unsigned int data)
 {
+	FM77AV *fm77avPtr=(FM77AV *)vmPtr;
 	switch(ioport)
 	{
+	case FM77AVIO_IRQ_BEEP://=                0xFD03,
+		state.mute=(0==(data&0x01));
+		// Confirmed on real FM77AV.
+		//    POKE &HFD03,&HC1 will play continuous beep.
+		if(0!=(data&0x80))
+		{
+			state.beepState=BEEP_CONTINUOUS;
+		}
+		else if(0!=(data&0x40))
+		{
+			state.beepState=BEEP_ONE_SHOT;
+			state.beepStopTime=fm77avPtr->state.fm77avTime+SINGLE_BEEP_DURATION;
+		}
+		else
+		{
+			state.beepState=BEEP_OFF;
+		}
+		break;
+
 	case FM77AVIO_PSG_CONTROL://             0xFD0D,
 		{
 			auto control=(data&3);
@@ -98,11 +164,22 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 	case FM77AVIO_YM2203C_DATA://=            0xFD16,
 		state.ym2203cDataWrite=data;
 		break;
+
+	case FM77AVIO_BEEP://=                    0xD403,
+		state.beepState=BEEP_ONE_SHOT;
+		state.beepStopTime=fm77avPtr->state.fm77avTime+SINGLE_BEEP_DURATION;
+		break;
 	}
 }
 /* virtual */ unsigned int FM77AVSound::IOReadByte(unsigned int ioport)
 {
 	uint8_t byteData=NonDestructiveIOReadByte(ioport);
+	if(FM77AVIO_BEEP==ioport)//=                    0xD403,
+	{
+		FM77AV *fm77avPtr=(FM77AV *)vmPtr;
+		state.beepState=BEEP_ONE_SHOT;
+		state.beepStopTime=fm77avPtr->state.fm77avTime+SINGLE_BEEP_DURATION;
+	}
 	return byteData;
 }
 uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
@@ -154,7 +231,7 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 
 void FM77AVSound::ProcessSound(Outside_World *outside_world)
 {
-	if((true==state.ay38910.IsPlaying() /* or FMPlying or Beep Playing */) && nullptr!=outside_world)
+	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState) && nullptr!=outside_world)
 	{
 		if(true==nextWave.empty())
 		{
@@ -178,6 +255,56 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 				}
 
 				state.ay38910.AddWaveAllChannelsForNumSamples(nextWave.data(),numSamples);
+			}
+			if(BEEP_OFF!=state.beepState)
+			{
+				// 1200Hz Square Wave.  Sign flips at 2400 times per sec.
+				const uint32_t periodX100=AY38910::WAVE_SAMPLING_RATE*100/2400;
+				if(true==nextWave.empty()) // YM2612 not playing.
+				{
+					unsigned int numSamples=MILLISEC_PER_WAVE*AY38910::WAVE_SAMPLING_RATE/1000;
+					nextWave.resize(numSamples*4);
+					std::memset(nextWave.data(),0,numSamples*4);
+					for(unsigned int i=0; i<numSamples; ++i)
+					{
+						state.beepTimeBalance+=100;
+						if(periodX100<=state.beepTimeBalance)
+						{
+							state.beepTimeBalance-=periodX100;
+							state.beepWaveOut=255-state.beepWaveOut;
+						}
+						auto dataPtr=nextWave.data()+i*4;
+						auto waveOut=(0==state.beepWaveOut ? -BEEP_SOUND_AMPLITUDE : BEEP_SOUND_AMPLITUDE);
+						WordOp_Set(dataPtr,  waveOut);
+						WordOp_Set(dataPtr+2,waveOut);
+					}
+				}
+				else
+				{
+					unsigned int numSamples=(unsigned int)(nextWave.size()/4);
+					for(unsigned int i=0; i<numSamples; ++i)
+					{
+						state.beepTimeBalance+=100;
+						if(periodX100<=state.beepTimeBalance)
+						{
+							state.beepTimeBalance-=periodX100;
+							state.beepWaveOut=255-state.beepWaveOut;
+						}
+						auto dataPtr=nextWave.data()+i*4;
+						auto waveOut=(0==state.beepWaveOut ? -BEEP_SOUND_AMPLITUDE : BEEP_SOUND_AMPLITUDE);
+						WordOp_Add(dataPtr,  waveOut);
+						WordOp_Add(dataPtr+2,waveOut);
+					}
+				}
+			}
+		}
+
+		if(BEEP_ONE_SHOT==state.beepState)
+		{
+			auto fm77avPtr=(FM77AV *)vmPtr;
+			if(state.beepStopTime<=fm77avPtr->state.fm77avTime)
+			{
+				state.beepState=BEEP_OFF;
 			}
 		}
 

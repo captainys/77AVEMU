@@ -311,7 +311,8 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 					{
 						ampl=-ampl;
 					}
-					WordOp_Add(dataPtr,ampl);
+					WordOp_Add(dataPtr  ,ampl);
+					WordOp_Add(dataPtr+2,ampl);
 				}
 			}
 			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX1000)
@@ -321,7 +322,8 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 				{
 					ampl=-ampl;
 				}
-				WordOp_Add(dataPtr,ampl);
+				WordOp_Add(dataPtr  ,ampl);
+				WordOp_Add(dataPtr+2,ampl);
 			}
 		}
 
@@ -363,9 +365,6 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 				state.LFSR=LFSR24(state.LFSR);
 			}
 		}
-
-
-		*(uint16_t *)(dataPtr+2)=*(uint16_t *)(dataPtr);
 	}
 }
 
