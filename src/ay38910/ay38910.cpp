@@ -207,37 +207,45 @@ inline void AY38910::MoveLFSR(void)
 
 void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples)
 {
-	unsigned int halfTonePeriodX10[3]={0,0,0};
+	uint32_t halfTonePeriodX1000[3]={0,0,0};
 	for(int ch=0; ch<3; ++ch)
 	{
 		if(0==(state.regs[REG_MIXER]&(1<<ch)))
 		{
-			unsigned int toneFreqX1000=ChannelFrequencyX1000(ch);
+			uint64_t toneFreqX1000=ChannelFrequencyX1000(ch);
 			if(0<toneFreqX1000)
 			{
-				unsigned int tonePeriodX10=WAVE_SAMPLING_RATE*10000/toneFreqX1000;
-				halfTonePeriodX10[ch]=tonePeriodX10/2;
+				uint64_t tonePeriodX1000=WAVE_SAMPLING_RATE;
+				tonePeriodX1000*=1000000;
+				tonePeriodX1000/=toneFreqX1000;
+				halfTonePeriodX1000[ch]=uint32_t(tonePeriodX1000/2);
 			}
 		}
 	}
 
-	unsigned int envPeriodX10=0;
-	unsigned int envType=GetEnvelopePatternType();
+	uint32_t envPeriodX1000=0;
+	uint32_t envType=GetEnvelopePatternType();
 	{
-		unsigned int envFreqX1000=EnvelopeFreqX1000();
+		uint64_t envFreqX1000=EnvelopeFreqX1000();
 		if(0<envFreqX1000)
 		{
-			envPeriodX10=WAVE_SAMPLING_RATE*10000/envFreqX1000;
+			uint64_t periodX1000=WAVE_SAMPLING_RATE;
+			periodX1000*=1000000;
+			periodX1000/=envFreqX1000;
+			envPeriodX1000=uint32_t(periodX1000);
 		}
 	}
 
-	unsigned int noisePeriodX10=0;
+	uint32_t noisePeriodX1000=0;
 	if(0b00111000!=(state.regs[REG_MIXER]&0b00111000))
 	{
-		auto noiseFreqX1000=NoiseFreqX1000();
+		uint64_t noiseFreqX1000=NoiseFreqX1000();
 		if(0<noiseFreqX1000)
 		{
-			noisePeriodX10=WAVE_SAMPLING_RATE*10000/noiseFreqX1000;
+			uint64_t periodX1000=WAVE_SAMPLING_RATE;
+			periodX1000*=1000000;
+			periodX1000/=noiseFreqX1000;
+			noisePeriodX1000=uint32_t(periodX1000);
 		}
 	}
 	for(unsigned long long int i=0; i<numSamples; ++i)
@@ -245,18 +253,18 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 		auto dataPtr=data+i*4; // 16-bit stereo
 		for(int ch=0; ch<3; ++ch)
 		{
-			if(0<halfTonePeriodX10[ch])
+			if(0<halfTonePeriodX1000[ch])
 			{
 				if(0==(state.regs[REG_MIXER]&(1<<ch)))
 				{
-					if(state.ch[ch].tonePeriodBalance<10)
+					if(state.ch[ch].tonePeriodBalance<1000)
 					{
 						state.ch[ch].toneSign=1-state.ch[ch].toneSign;
-						state.ch[ch].tonePeriodBalance+=halfTonePeriodX10[ch];
+						state.ch[ch].tonePeriodBalance+=halfTonePeriodX1000[ch];
 					}
 					else
 					{
-						state.ch[ch].tonePeriodBalance-=10;
+						state.ch[ch].tonePeriodBalance-=1000;
 					}
 
 					int ampl=GetAmplitude(ch);
@@ -267,7 +275,7 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 					WordOp_Add(dataPtr,ampl);
 				}
 			}
-			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX10)
+			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX1000)
 			{
 				int noiseOut=state.LFSR;
 				int ampl=GetAmplitude(ch);
@@ -278,10 +286,10 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 		}
 
 		// Like drawing a line from (0,0)-(envPeriod,ENV_OUT_MAX) with DDA.
-		state.envPeriodBalance+=(ENV_OUT_MAX*10);
-		if(envPeriodX10<=state.envPeriodBalance)
+		state.envPeriodBalance+=(ENV_OUT_MAX*1000);
+		if(envPeriodX1000<=state.envPeriodBalance)
 		{
-			state.envPeriodBalance-=envPeriodX10;
+			state.envPeriodBalance-=envPeriodX1000;
 			if(ENV_UP==envPtn[envType][state.envPatternSeg])
 			{
 				++state.envOut;
@@ -292,8 +300,8 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			}
 		}
 
-		state.envPhase+=10;
-		if(envPeriodX10<=state.envPhase)
+		state.envPhase+=1000;
+		if(envPeriodX1000<=state.envPhase)
 		{
 			if(ENV_KEEP!=envPtn[envType][state.envPatternSeg])
 			{
@@ -306,12 +314,12 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			}
 		}
 
-		if(0!=noisePeriodX10)
+		if(0!=noisePeriodX1000)
 		{
-			state.noisePeriodBalance+=10;
-			while(noisePeriodX10<=state.noisePeriodBalance)
+			state.noisePeriodBalance+=1000;
+			while(noisePeriodX1000<=state.noisePeriodBalance)
 			{
-				state.noisePeriodBalance-=noisePeriodX10;
+				state.noisePeriodBalance-=noisePeriodX1000;
 				MoveLFSR();
 			}
 		}
