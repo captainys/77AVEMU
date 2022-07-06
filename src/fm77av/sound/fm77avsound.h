@@ -26,6 +26,13 @@ public:
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
 
+	enum
+	{
+		BEEP_OFF,
+		BEEP_SINGLE,
+		BEEP_CONTINUOUS,
+	};
+
 	class State
 	{
 	public:
@@ -40,6 +47,10 @@ public:
 		uint8_t ay38910AddrLatch=0;
 		uint8_t ay38910LastControl=0;
 		uint8_t ay38910LastData=0;
+
+		uint8_t beepState=BEEP_OFF;
+		uint64_t beepStopTime=0;
+		uint32_t beepTimeBalance=0;
 
 		void PowerOn(void);
 		void Reset(void);

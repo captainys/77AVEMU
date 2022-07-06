@@ -28,7 +28,9 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 	state.ay38910LastControl=0;
 	state.ay38910LastData=0;
 
-
+	state.beepState=BEEP_OFF;
+	state.beepStopTime=0;
+	state.beepTimeBalance=0;
 }
 /* virtual */ void FM77AVSound::IOWriteByte(unsigned int ioport,unsigned int data)
 {
