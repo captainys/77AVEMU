@@ -106,6 +106,13 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		memType[addr]=MEMTYPE_MAINSYS_BOOT_ROM;
 	}
+
+	// Experimented on actual FM77AV.
+	// Default memory contents for $00000 to $0FFFF are $FF.
+	for(uint32_t addr=0; addr<65536; ++addr)
+	{
+		state.data[addr]=0xFF;
+	}
 }
 
 bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
@@ -353,9 +360,11 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 
 	case MEMTYPE_SUBSYS_IO:
 	case MEMTYPE_MAINSYS_IO:
-		Abort("Not supposed to come here.");
+		Abort("Not supposed to come here. (1)");
 		return 0;
 	}
+	Abort("Not supposed to come here. (2)");
+	return 0;
 }
 
 uint8_t PhysicalMemory::FetchByte(uint32_t addr)
@@ -489,36 +498,27 @@ void MainCPUAccess::Reset(void)
 	MMRSEG=0;
 	for(int i=0; i<8; ++i)
 	{
-		MMR[i][ 0]=MAINCPU_ADDR_BASE+0x0000;
-		MMR[i][ 1]=MAINCPU_ADDR_BASE+0x1000;
-		MMR[i][ 2]=MAINCPU_ADDR_BASE+0x2000;
-		MMR[i][ 3]=MAINCPU_ADDR_BASE+0x3000;
-		MMR[i][ 4]=MAINCPU_ADDR_BASE+0x4000;
-		MMR[i][ 5]=MAINCPU_ADDR_BASE+0x5000;
-		MMR[i][ 6]=MAINCPU_ADDR_BASE+0x6000;
-		MMR[i][ 7]=MAINCPU_ADDR_BASE+0x7000;
-		MMR[i][ 8]=MAINCPU_ADDR_BASE+0x8000;
-		MMR[i][ 9]=MAINCPU_ADDR_BASE+0x9000;
-		MMR[i][10]=MAINCPU_ADDR_BASE+0xA000;
-		MMR[i][11]=MAINCPU_ADDR_BASE+0xB000;
-		MMR[i][12]=MAINCPU_ADDR_BASE+0xC000;
-		MMR[i][13]=MAINCPU_ADDR_BASE+0xD000;
-		MMR[i][14]=MAINCPU_ADDR_BASE+0xE000;
-		MMR[i][15]=MAINCPU_ADDR_BASE+0xF000;
+		// Experimented on actual FM77AV
+		// By default, MMR addresses are all zero.
+		MMR[i][ 0]=0;
+		MMR[i][ 1]=0;
+		MMR[i][ 2]=0;
+		MMR[i][ 3]=0;
+		MMR[i][ 4]=0;
+		MMR[i][ 5]=0;
+		MMR[i][ 6]=0;
+		MMR[i][ 7]=0;
+		MMR[i][ 8]=0;
+		MMR[i][ 9]=0;
+		MMR[i][10]=0;
+		MMR[i][11]=0;
+		MMR[i][12]=0;
+		MMR[i][13]=0;
+		MMR[i][14]=0;
+		MMR[i][15]=0;
 	}
 }
 
-/* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
-{
-	if(true==MMREnabled)
-	{
-		return physMemPtr->FetchByte(CPUAddrToPhysicalAddr(addr));
-	}
-	else
-	{
-		return physMemPtr->FetchByte(MAINCPU_ADDR_BASE+addr);
-	}
-}
 /* virtual */ void MainCPUAccess::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	switch(ioport)
@@ -544,9 +544,15 @@ void MainCPUAccess::Reset(void)
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
 		MMRSEG=data&7;
 		break;
+	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
+		TWRAddr=data;
+		TWRAddr<<=8;
+		break;
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
 		MMREnabled=(0!=(data&0x80));
-		// TWREnabled=(0!=(data&0x40));
+		TWREnabled=(0!=(data&0x40));
+		// Boot ROM/RAM mode is controlled by physMem.
+		// Bit 0 will be done in fm77avio.cpp
 		break;
 	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
 		break;
@@ -574,8 +580,7 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	case FM77AVIO_MMR_F://=                   0xFD8F,
 		return (MMR[MMRSEG][ioport-FM77AVIO_MMR_0]>>12);
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
-		return MMRSEG|0xF8;
-		break;
+		break;  // Confirmed write-only.
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
 		{
 			uint8_t data=0x3f;
@@ -583,10 +588,13 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 			{
 				data|=0x80;
 			}
-			// if(true==TWREnabled)
-			//{
-			//	data|=0x40;
-			//}
+			if(true==TWREnabled)
+			{
+				data|=0x40;
+			}
+			// Boot ROM/RAM mode is controlled by physMem.
+			// Bit 0 will be done in fm77avio.cpp
+			return data;
 		}
 		break;
 	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
@@ -594,13 +602,32 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	}
 	return 0xFF;
 }
+/* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
+{
+	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
+	{
+		return physMemPtr->FetchByte(TWRAddressTranslation(addr));
+	}
+	else if(true==MMREnabled)
+	{
+		return physMemPtr->FetchByte(MMRAddressTranslation(addr));
+	}
+	else
+	{
+		return physMemPtr->FetchByte(MAINCPU_ADDR_BASE+addr);
+	}
+}
 /* virtual */ uint16_t MainCPUAccess::FetchWord(uint16_t addr)
 {
-	if(true==MMREnabled)
+	if(true==TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
+	{
+		return (FetchByte(addr)<<8)|FetchByte(addr+1);
+	}
+	else if(true==MMREnabled)
 	{
 		return physMemPtr->FetchWord(
-			CPUAddrToPhysicalAddr(addr),
-			CPUAddrToPhysicalAddr(addr+1));
+			MMRAddressTranslation(addr),
+			MMRAddressTranslation(addr+1));
 	}
 	else
 	{
@@ -611,9 +638,13 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ void MainCPUAccess::StoreByte(uint16_t addr,uint8_t data)
 {
-	if(true==MMREnabled)
+	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
-		physMemPtr->StoreByte(CPUAddrToPhysicalAddr(addr),data);
+		physMemPtr->StoreByte(TWRAddressTranslation(addr),data);
+	}
+	else if(true==MMREnabled)
+	{
+		physMemPtr->StoreByte(MMRAddressTranslation(addr),data);
 	}
 	else
 	{
@@ -622,11 +653,16 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ void MainCPUAccess::StoreWord(uint16_t addr,uint16_t data)
 {
-	if(true==MMREnabled)
+	if(true==TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
+	{
+		StoreByte(addr  ,(data>>8));
+		StoreByte(addr+1,data&0xFF);
+	}
+	else if(true==MMREnabled)
 	{
 		physMemPtr->StoreWord(
-			CPUAddrToPhysicalAddr(addr),
-			CPUAddrToPhysicalAddr(addr+1),
+			MMRAddressTranslation(addr),
+			MMRAddressTranslation(addr+1),
 			data);
 	}
 	else
@@ -639,9 +675,13 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
 {
-	if(true==MMREnabled)
+	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
-		return physMemPtr->NonDestructiveFetchByte(CPUAddrToPhysicalAddr(addr));
+		return physMemPtr->NonDestructiveFetchByte(TWRAddressTranslation(addr));
+	}
+	else if(true==MMREnabled)
+	{
+		return physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr));
 	}
 	else
 	{
@@ -650,11 +690,15 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
 {
-	if(true==MMREnabled)
+	if(true==TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
+	{
+		return (NonDestructiveFetchByte(addr)<<8)|NonDestructiveFetchByte(addr+1);
+	}
+	else if(true==MMREnabled)
 	{
 		return mc6809util::FetchWord(
-			physMemPtr->NonDestructiveFetchByte(CPUAddrToPhysicalAddr(addr)),
-			physMemPtr->NonDestructiveFetchByte(CPUAddrToPhysicalAddr(addr+1)));
+			physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr)),
+			physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr+1)));
 	}
 	else
 	{

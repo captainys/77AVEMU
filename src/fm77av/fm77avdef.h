@@ -150,7 +150,7 @@ enum
 	FM77AVIO_MMR_E=                   0xFD8E,
 	FM77AVIO_MMR_F=                   0xFD8F,
 	FM77AVIO_MMR_SEG=                 0xFD90,
-	FM77AVIO_WINDOW_OFFSET=           0xFD90,
+	FM77AVIO_WINDOW_OFFSET=           0xFD92,
 	FM77AVIO_MEMORY_MODE=             0xFD93,
 
 	FM77AVIO_AV40_EXTMMR=             0xFD94,

@@ -154,14 +154,20 @@ public:
 	PhysicalMemory *physMemPtr;
 
 	bool MMREnabled=false;
+	bool TWREnabled=false;
 	uint8_t MMRSEG=0;
 	uint32_t MMR[8][16];
+	uint32_t TWRAddr=0;
 
 	virtual const char *DeviceName(void) const{return "MAINMEMACCESS";}
 
-	inline uint32_t CPUAddrToPhysicalAddr(uint16_t cpuAddr) const
+	inline uint32_t MMRAddressTranslation(uint16_t cpuAddr) const
 	{
 		return MMR[MMRSEG][cpuAddr>>12]+(cpuAddr&0xFFF);
+	}
+	inline uint32_t TWRAddressTranslation(uint16_t cpuAddr) const
+	{
+		return TWRAddr+(cpuAddr&0x3FF);
 	}
 
 	void Reset(void);

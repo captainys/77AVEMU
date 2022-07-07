@@ -190,9 +190,10 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_MMR_E://=                   0xFD8E,
 	case FM77AVIO_MMR_F://=                   0xFD8F,
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
+	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
-			// mainMemAcc.IOWriteByte(ioAddr,value);
+			mainMemAcc.IOWriteByte(ioAddr,value);
 		}
 		break;
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
@@ -454,9 +455,10 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_MMR_E://=                   0xFD8E,
 	case FM77AVIO_MMR_F://=                   0xFD8F,
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
+	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
-			// byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
+			byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
 		}
 		break;
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
