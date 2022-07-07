@@ -127,6 +127,8 @@ public:
 
 	bool LoadROMFiles(std::string ROMPath);
 
+	void IOWriteByte(unsigned int ioport,unsigned int data);
+
 	const uint8_t *GetVRAMBank(int bank) const;
 	uint8_t *GetVRAMBank(int bank);
 	uint32_t GetVRAMBankSize(int bank) const;

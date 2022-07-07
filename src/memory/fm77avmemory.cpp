@@ -223,6 +223,16 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	return true;
 }
 
+void PhysicalMemory::IOWriteByte(unsigned int ioport,unsigned int data)
+{
+	switch(ioport)
+	{
+	case FM77AVIO_INITIATOR_ROM://=           0xFD10,
+		state.avBootROM=(0==(data&2));
+		break;
+	}
+}
+
 void PhysicalMemory::Reset(void)
 {
 	Device::Reset();

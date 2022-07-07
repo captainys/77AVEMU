@@ -129,6 +129,13 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		break;
 
+	case FM77AVIO_INITIATOR_ROM://=           0xFD10,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			physMem.IOWriteByte(ioAddr,value);
+		}
+		break;
+
 	case FM77AVIO_YM2203C_CONTROL://         0xFD15,
 	case FM77AVIO_YM2203C_DATA://            0xFD16,
 	case FM77AVIO_PSG_CONTROL://             0xFD0D,
