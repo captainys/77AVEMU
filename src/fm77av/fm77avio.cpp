@@ -191,14 +191,21 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
-			// mainMemAcc.IOWriteByte(ioAddr,value);
-			physMem.state.avBootROM=(0==(value&1));
+			mainMemAcc.IOWriteByte(ioAddr,value);
+			if(0==(value&1))
+			{
+				physMem.state.FE00ROMMode=true;
+			}
+			else
+			{
+				physMem.state.FE00ROMMode=false;
+			}
 		}
 		break;
 	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
 		if(MACHINETYPE_FM77AV40<=state.machineType)
 		{
-			// mainMemAcc.IOWriteByte(ioAddr);
+			mainMemAcc.IOWriteByte(ioAddr,value);
 		}
 		break;
 
@@ -380,6 +387,19 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 			byteData|=0x80;
 		}
 		break;
+	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			if(true==physMem.state.DOSMode)
+			{
+				byteData|=0x01;
+			}
+			else
+			{
+				byteData&=0xFE;
+			}
+		}
+		break;
 
 	case FM77AVIO_YM2203C_CONTROL://         0xFD15,
 	case FM77AVIO_YM2203C_DATA://            0xFD16,
@@ -435,8 +455,8 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
-			// byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
-			if(true==physMem.state.avBootROM)
+			byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
+			if(true==physMem.state.FE00ROMMode)
 			{
 				byteData&=0xFE;
 			}

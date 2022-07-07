@@ -110,6 +110,8 @@ public:
 	class State
 	{
 	public:
+		bool DOSMode=false;
+		bool FE00ROMMode=true;
 		uint8_t VRAMAccessMask=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
 		bool avBootROM=false;
@@ -150,31 +152,19 @@ public:
 	PhysicalMemory *physMemPtr;
 
 	bool MMREnabled=false;
-	uint32_t MMR[16]={
-		MAINCPU_ADDR_BASE+0x0000,
-		MAINCPU_ADDR_BASE+0x1000,
-		MAINCPU_ADDR_BASE+0x2000,
-		MAINCPU_ADDR_BASE+0x3000,
-		MAINCPU_ADDR_BASE+0x4000,
-		MAINCPU_ADDR_BASE+0x5000,
-		MAINCPU_ADDR_BASE+0x6000,
-		MAINCPU_ADDR_BASE+0x7000,
-		MAINCPU_ADDR_BASE+0x8000,
-		MAINCPU_ADDR_BASE+0x9000,
-		MAINCPU_ADDR_BASE+0xA000,
-		MAINCPU_ADDR_BASE+0xB000,
-		MAINCPU_ADDR_BASE+0xC000,
-		MAINCPU_ADDR_BASE+0xD000,
-		MAINCPU_ADDR_BASE+0xE000,
-		MAINCPU_ADDR_BASE+0xF000,
-	};
+	uint8_t MMRSEG=0;
+	uint32_t MMR[8][16];
 
 	virtual const char *DeviceName(void) const{return "MAINMEMACCESS";}
 
 	inline uint32_t CPUAddrToPhysicalAddr(uint16_t cpuAddr) const
 	{
-		return MMR[cpuAddr>>12]+(cpuAddr&0xFFF);
+		return MMR[MMRSEG][cpuAddr>>12]+(cpuAddr&0xFFF);
 	}
+
+	void Reset(void);
+	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
+	uint8_t NonDestructiveIOReadByte(unsigned int ioport) const;
 
 	MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr);
 	virtual uint8_t FetchByte(uint16_t addr);

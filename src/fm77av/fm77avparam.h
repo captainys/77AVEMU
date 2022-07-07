@@ -44,6 +44,8 @@ public:
 	unsigned int machineType=MACHINETYPE_AUTO;
 	std::string ROMPath;
 
+	bool pauseOnStart=false;
+
 	bool noWait=false;
 
 	std::vector <std::string> imgSearchPaths;

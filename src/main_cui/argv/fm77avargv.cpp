@@ -9,6 +9,8 @@ void FM77AVArgv::Help(void)
 {
 	std::cout << "Mutsu_CUI ROM-PATH <options>" << std::endl;
 	std::cout << "Options:" << std::endl;
+	std::cout << "-PAUSE" << std::endl;
+	std::cout << "  Pause on start." << std::endl;
 	std::cout << "-IMGPATH dir" << std::endl;
 	std::cout << "  Image search path." << std::endl;
 	std::cout << "-T77|-TAPE t77file.t77" << std::endl;
@@ -47,6 +49,10 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			Help();
 			dontStart=true;
+		}
+		else if("-PAUSE"==ARG)
+		{
+			pauseOnStart=true;
 		}
 		else if("-NOWAIT"==ARG)
 		{

@@ -86,7 +86,7 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		memType[addr]=MEMTYPE_SUBSYS_MONITOR_ROM;
 	}
-	for(unsigned int addr=MAINSYS_INITIATOR_ROM_BEGIN; addr<MAINSYS_INITIATOR_ROM_BEGIN; ++addr)
+	for(unsigned int addr=MAINSYS_INITIATOR_ROM_BEGIN; addr<MAINSYS_INITIATOR_ROM_END; ++addr)
 	{
 		memType[addr]=MEMTYPE_MAINSYS_INITIATOR_ROM;
 	}
@@ -227,6 +227,7 @@ void PhysicalMemory::Reset(void)
 {
 	Device::Reset();
 	state.VRAMAccessMask=0;
+	state.FE00ROMMode=true;
 	state.shadowRAMEnabled=false;
 	state.avBootROM=false;
 
@@ -312,10 +313,10 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		// if(subsys monitor A or B) use appropriate font bank.
 		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
 	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
-		//if(initiator rom is enabled)
-		//{
-		//	return ROM_INITIATOR[addr&(INITIATOR_ROM_SIZE-1)];
-		//}
+		if(true==state.avBootROM)
+		{
+			return ROM_INITIATOR[addr&(INITIATOR_ROM_SIZE-1)];
+		}
 		return state.data[addr];
 	case MEMTYPE_MAINSYS_FBASIC_ROM:    // Can be Shadow RAM
 		if(true==state.shadowRAMEnabled)
@@ -330,14 +331,14 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		}
 		return 0xFF;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
-		//if(RAM Mode)
-		//{
-		//	return state.data[addr];
-		//}
-		//if(DOS Mode)
-		//{
-		//	return ROM_BOOT_DOS[addr&(BOOT_ROM_SIZE-1)];
-		//}
+		if(true!=state.FE00ROMMode)
+		{
+			return state.data[addr];
+		}
+		if(true==state.DOSMode)
+		{
+			return ROM_BOOT_DOS[addr&(BOOT_ROM_SIZE-1)];
+		}
 		return ROM_BOOT_BASIC[addr&(BOOT_ROM_SIZE-1)];
 
 	case MEMTYPE_SUBSYS_IO:
@@ -413,12 +414,12 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
 	case MEMTYPE_SUBSYS_MONITOR_ROM:
+		return;
 	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
-		//if(initiator rom is enabled)
-		//{
-		//	return ROM_INITIATOR[addr&(INITIATOR_ROM_SIZE-1)];
-		//}
-		state.data[addr]=d;
+		if(true!=state.avBootROM)
+		{
+			state.data[addr]=d;
+		}
 		return;
 	case MEMTYPE_MAINSYS_FBASIC_ROM:    // Can be Shadow RAM
 		if(true==state.shadowRAMEnabled)
@@ -433,10 +434,10 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		}
 		return;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
-		//if(RAM Mode)
-		//{
-		//	state.data[addr]=d;
-		//}
+		if(true!=state.FE00ROMMode)
+		{
+			state.data[addr]=d;
+		}
 		return;
 	}
 }
@@ -468,7 +469,35 @@ uint16_t PhysicalMemory::NonDestructiveFetchWord(uint32_t addr) const
 MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Device(vmPtr)
 {
 	this->physMemPtr=physMemPtr;
+	Reset();
 }
+
+void MainCPUAccess::Reset(void)
+{
+	Device::Reset();
+	MMREnabled=false;
+	MMRSEG=0;
+	for(int i=0; i<8; ++i)
+	{
+		MMR[i][ 0]=MAINCPU_ADDR_BASE+0x0000;
+		MMR[i][ 1]=MAINCPU_ADDR_BASE+0x1000;
+		MMR[i][ 2]=MAINCPU_ADDR_BASE+0x2000;
+		MMR[i][ 3]=MAINCPU_ADDR_BASE+0x3000;
+		MMR[i][ 4]=MAINCPU_ADDR_BASE+0x4000;
+		MMR[i][ 5]=MAINCPU_ADDR_BASE+0x5000;
+		MMR[i][ 6]=MAINCPU_ADDR_BASE+0x6000;
+		MMR[i][ 7]=MAINCPU_ADDR_BASE+0x7000;
+		MMR[i][ 8]=MAINCPU_ADDR_BASE+0x8000;
+		MMR[i][ 9]=MAINCPU_ADDR_BASE+0x9000;
+		MMR[i][10]=MAINCPU_ADDR_BASE+0xA000;
+		MMR[i][11]=MAINCPU_ADDR_BASE+0xB000;
+		MMR[i][12]=MAINCPU_ADDR_BASE+0xC000;
+		MMR[i][13]=MAINCPU_ADDR_BASE+0xD000;
+		MMR[i][14]=MAINCPU_ADDR_BASE+0xE000;
+		MMR[i][15]=MAINCPU_ADDR_BASE+0xF000;
+	}
+}
+
 /* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
 {
 	if(true==MMREnabled)
@@ -479,6 +508,81 @@ MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : D
 	{
 		return physMemPtr->FetchByte(MAINCPU_ADDR_BASE+addr);
 	}
+}
+/* virtual */ void MainCPUAccess::IOWriteByte(unsigned int ioport,unsigned int data)
+{
+	switch(ioport)
+	{
+	case FM77AVIO_MMR_0://=                   0xFD80,
+	case FM77AVIO_MMR_1://=                   0xFD81,
+	case FM77AVIO_MMR_2://=                   0xFD82,
+	case FM77AVIO_MMR_3://=                   0xFD83,
+	case FM77AVIO_MMR_4://=                   0xFD84,
+	case FM77AVIO_MMR_5://=                   0xFD85,
+	case FM77AVIO_MMR_6://=                   0xFD86,
+	case FM77AVIO_MMR_7://=                   0xFD87,
+	case FM77AVIO_MMR_8://=                   0xFD88,
+	case FM77AVIO_MMR_9://=                   0xFD89,
+	case FM77AVIO_MMR_A://=                   0xFD8A,
+	case FM77AVIO_MMR_B://=                   0xFD8B,
+	case FM77AVIO_MMR_C://=                   0xFD8C,
+	case FM77AVIO_MMR_D://=                   0xFD8D,
+	case FM77AVIO_MMR_E://=                   0xFD8E,
+	case FM77AVIO_MMR_F://=                   0xFD8F,
+		MMR[MMRSEG][ioport-FM77AVIO_MMR_0]=(data<<12);
+		break;
+	case FM77AVIO_MMR_SEG://=                 0xFD90,
+		MMRSEG=data&7;
+		break;
+	case FM77AVIO_MEMORY_MODE://=             0xFD93,
+		MMREnabled=(0!=(data&0x80));
+		// TWREnabled=(0!=(data&0x40));
+		break;
+	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
+		break;
+	}
+}
+uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
+{
+	switch(ioport)
+	{
+	case FM77AVIO_MMR_0://=                   0xFD80,
+	case FM77AVIO_MMR_1://=                   0xFD81,
+	case FM77AVIO_MMR_2://=                   0xFD82,
+	case FM77AVIO_MMR_3://=                   0xFD83,
+	case FM77AVIO_MMR_4://=                   0xFD84,
+	case FM77AVIO_MMR_5://=                   0xFD85,
+	case FM77AVIO_MMR_6://=                   0xFD86,
+	case FM77AVIO_MMR_7://=                   0xFD87,
+	case FM77AVIO_MMR_8://=                   0xFD88,
+	case FM77AVIO_MMR_9://=                   0xFD89,
+	case FM77AVIO_MMR_A://=                   0xFD8A,
+	case FM77AVIO_MMR_B://=                   0xFD8B,
+	case FM77AVIO_MMR_C://=                   0xFD8C,
+	case FM77AVIO_MMR_D://=                   0xFD8D,
+	case FM77AVIO_MMR_E://=                   0xFD8E,
+	case FM77AVIO_MMR_F://=                   0xFD8F,
+		return (MMR[MMRSEG][ioport-FM77AVIO_MMR_0]>>12);
+	case FM77AVIO_MMR_SEG://=                 0xFD90,
+		return MMRSEG|0xF8;
+		break;
+	case FM77AVIO_MEMORY_MODE://=             0xFD93,
+		{
+			uint8_t data=0x3f;
+			if(true==MMREnabled)
+			{
+				data|=0x80;
+			}
+			// if(true==TWREnabled)
+			//{
+			//	data|=0x40;
+			//}
+		}
+		break;
+	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
+		break;
+	}
+	return 0xFF;
 }
 /* virtual */ uint16_t MainCPUAccess::FetchWord(uint16_t addr)
 {
