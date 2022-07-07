@@ -41,7 +41,7 @@ public:
 		std::string cmdStr;
 	};
 
-	unsigned int machineType=MACHINETYPE_FM7;
+	unsigned int machineType=MACHINETYPE_AUTO;
 	std::string ROMPath;
 
 	bool noWait=false;

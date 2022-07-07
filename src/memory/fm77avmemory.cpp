@@ -228,6 +228,13 @@ void PhysicalMemory::Reset(void)
 	Device::Reset();
 	state.VRAMAccessMask=0;
 	state.shadowRAMEnabled=false;
+	state.avBootROM=false;
+
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
+	{
+		state.avBootROM=true;
+	}
 }
 
 const uint8_t *PhysicalMemory::GetVRAMBank(int bank) const

@@ -40,10 +40,22 @@ FM77AV::FM77AV() :
 bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 {
 	state.machineType=param.machineType;
-	if(true!=LoadROMFiles(param.ROMPath))
+	if(MACHINETYPE_AUTO==state.machineType)
 	{
-		std::cout << "Failed to load ROM files." << std::endl;
-		return false;
+		state.machineType=LoadROMFilesAndIdentifyMachineType(param.ROMPath);
+		if(MACHINETYPE_UNKNOWN==state.machineType)
+		{
+			std::cout << "Insufficient ROM files." << std::endl;
+			return false;
+		}
+	}
+	else
+	{
+		if(true!=LoadROMFiles(param.ROMPath))
+		{
+			std::cout << "Failed to load ROM files." << std::endl;
+			return false;
+		}
 	}
 
 	var.noWait=param.noWait;
@@ -99,6 +111,26 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 bool FM77AV::LoadROMFiles(std::string ROMPath)
 {
 	return physMem.LoadROMFiles(ROMPath);
+}
+
+unsigned int FM77AV::LoadROMFilesAndIdentifyMachineType(std::string ROMPath)
+{
+	state.machineType=MACHINETYPE_FM77AV40;
+	if(true==physMem.LoadROMFiles(ROMPath))
+	{
+		return MACHINETYPE_FM77AV40;
+	}
+	state.machineType=MACHINETYPE_FM77AV;
+	if(true==physMem.LoadROMFiles(ROMPath))
+	{
+		return MACHINETYPE_FM77AV;
+	}
+	state.machineType=MACHINETYPE_FM7;
+	if(true==physMem.LoadROMFiles(ROMPath))
+	{
+		return MACHINETYPE_FM7;
+	}
+	return MACHINETYPE_UNKNOWN;
 }
 
 MC6809 &FM77AV::CPU(unsigned int mainOrSub)

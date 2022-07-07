@@ -247,6 +247,7 @@ public:
 	void DisableShadowRAM(void);
 
 
+	unsigned int LoadROMFilesAndIdentifyMachineType(std::string ROMPath);
 	bool LoadROMFiles(std::string ROMPath);
 
 	MC6809 &CPU(unsigned int mainOrSub);

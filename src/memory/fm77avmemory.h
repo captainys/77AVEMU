@@ -112,6 +112,7 @@ public:
 	public:
 		uint8_t VRAMAccessMask=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
+		bool avBootROM=false;
 		uint8_t data[PHYSMEM_SIZE];
 		uint8_t extVRAM[EXTVRAM_SIZE];
 	};

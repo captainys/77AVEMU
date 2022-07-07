@@ -40,6 +40,7 @@ enum
 	MACHINETYPE_FM77AV,
 	MACHINETYPE_FM77AV40
 };
+#define MACHINETYPE_AUTO MACHINETYPE_UNKNOWN
 std::string MachineTypeToStr(unsigned int machineType);
 unsigned int StrToMachineType(std::string str);
 

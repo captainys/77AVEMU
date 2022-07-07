@@ -166,6 +166,41 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		crtc.state.palette.digitalPalette[ioAddr-FM77AVIO_DIGITAL_PALETTE_0]=(value&7);
 		break;
 
+	case FM77AVIO_MMR_0://=                   0xFD80,
+	case FM77AVIO_MMR_1://=                   0xFD81,
+	case FM77AVIO_MMR_2://=                   0xFD82,
+	case FM77AVIO_MMR_3://=                   0xFD83,
+	case FM77AVIO_MMR_4://=                   0xFD84,
+	case FM77AVIO_MMR_5://=                   0xFD85,
+	case FM77AVIO_MMR_6://=                   0xFD86,
+	case FM77AVIO_MMR_7://=                   0xFD87,
+	case FM77AVIO_MMR_8://=                   0xFD88,
+	case FM77AVIO_MMR_9://=                   0xFD89,
+	case FM77AVIO_MMR_A://=                   0xFD8A,
+	case FM77AVIO_MMR_B://=                   0xFD8B,
+	case FM77AVIO_MMR_C://=                   0xFD8C,
+	case FM77AVIO_MMR_D://=                   0xFD8D,
+	case FM77AVIO_MMR_E://=                   0xFD8E,
+	case FM77AVIO_MMR_F://=                   0xFD8F,
+	case FM77AVIO_MMR_SEG://=                 0xFD90,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			// mainMemAcc.IOWriteByte(ioAddr,value);
+		}
+		break;
+	case FM77AVIO_MEMORY_MODE://=             0xFD93,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			// mainMemAcc.IOWriteByte(ioAddr,value);
+			physMem.state.avBootROM=(0==(value&1));
+		}
+		break;
+	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			// mainMemAcc.IOWriteByte(ioAddr);
+		}
+		break;
 
 
 
@@ -374,6 +409,51 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_DIGITAL_PALETTE_7: //=       0xFD3F,
 		byteData=0xF8|crtc.state.palette.digitalPalette[ioAddr-FM77AVIO_DIGITAL_PALETTE_0];
 		break;
+
+	case FM77AVIO_MMR_0://=                   0xFD80,
+	case FM77AVIO_MMR_1://=                   0xFD81,
+	case FM77AVIO_MMR_2://=                   0xFD82,
+	case FM77AVIO_MMR_3://=                   0xFD83,
+	case FM77AVIO_MMR_4://=                   0xFD84,
+	case FM77AVIO_MMR_5://=                   0xFD85,
+	case FM77AVIO_MMR_6://=                   0xFD86,
+	case FM77AVIO_MMR_7://=                   0xFD87,
+	case FM77AVIO_MMR_8://=                   0xFD88,
+	case FM77AVIO_MMR_9://=                   0xFD89,
+	case FM77AVIO_MMR_A://=                   0xFD8A,
+	case FM77AVIO_MMR_B://=                   0xFD8B,
+	case FM77AVIO_MMR_C://=                   0xFD8C,
+	case FM77AVIO_MMR_D://=                   0xFD8D,
+	case FM77AVIO_MMR_E://=                   0xFD8E,
+	case FM77AVIO_MMR_F://=                   0xFD8F,
+	case FM77AVIO_MMR_SEG://=                 0xFD90,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			// byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
+		}
+		break;
+	case FM77AVIO_MEMORY_MODE://=             0xFD93,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			// byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
+			if(true==physMem.state.avBootROM)
+			{
+				byteData&=0xFE;
+			}
+			else
+			{
+				byteData|=1;
+			}
+		}
+		break;
+	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			// byteData=mainMemAcc.NonDestructiveIOReadByte(ioAddr);
+		}
+		break;
+
+
 
 	// Sub-CPU I/O
 	case FM77AVIO_KEY_HIGH: // =                0xD400,
