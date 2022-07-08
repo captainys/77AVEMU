@@ -118,6 +118,7 @@ public:
 	*/
 	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AV &fm77av,std::string arg);
 	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AVThread &thr,const FM77AV &fm77av,std::string arg);
+	static uint32_t DecodePhysicalAddress(const FM77AV &fm77av,std::string arg);
 	static uint16_t MakeAddressForCPU(const MC6809 &cpu,std::string arg);
 
 	/*! Executes a command.

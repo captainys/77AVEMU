@@ -299,6 +299,36 @@ void FM77AVCommandInterpreter::Error_WrongParameter(const Command &cmd)
 	}
 	return ptr;
 }
+/* static */ uint32_t FM77AVCommandInterpreter::DecodePhysicalAddress(const FM77AV &fm77av,std::string arg)
+{
+	std::string cpuStr;
+	for(int i=0; i<arg.size(); ++i)
+	{
+		if(':'==arg[i])
+		{
+			std::string addrStr=arg.substr(i+1);
+			cpputil::Capitalize(cpuStr);
+			if("P"==cpuStr || "PHYS"==cpuStr)
+			{
+				FM77AVLineParserHexadecimal parser(&fm77av.mainCPU);
+				if(true==parser.Analyze(addrStr))
+				{
+					return parser.Evaluate();
+				}
+				else
+				{
+					std::cout << "Error in offset description." << std::endl;
+					break;
+				}
+			}
+		}
+		else
+		{
+			cpuStr.push_back(arg[i]);
+		}
+	}
+	return 0xFFFFFFFF;
+}
 /* static */ uint16_t FM77AVCommandInterpreter::MakeAddressForCPU(const MC6809 &cpu,std::string arg)
 {
 	FM77AVLineParserHexadecimal parser(&cpu);
@@ -829,20 +859,36 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77
 			ascii=(0!=cpputil::Atoi(cmd.argv[5].c_str()));
 		}
 
-		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
-		if(CPU_UNKNOWN!=ptr.cpu)
+		uint32_t addr0=DecodePhysicalAddress(fm77av,cmd.argv[1]);
+		if(addr0<FM77AV_MAX_RAM_SIZE)
 		{
-			auto &cpu=fm77av.CPU(ptr.cpu);
-			auto &mem=fm77av.MemAccess(ptr.cpu);
-			for(auto str : miscutil::MakeMemDump2(cpu,mem,ptr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
+			std::vector <unsigned char> data;
+			for(uint32_t addr=0; addr<(wid*hei); ++addr)
+			{
+				data.push_back(fm77av.physMem.NonDestructiveFetchByte((addr0+addr)&(FM77AV_MAX_RAM_SIZE-1)));
+			}
+			for(auto str : miscutil::MakeDump(data.data(),addr0,wid,hei,skip,/*shiftJIS*/false,ascii))
 			{
 				std::cout << str << std::endl;
 			}
 		}
 		else
 		{
-			Error_CPUOrAddress(cmd);
-			return;
+			auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
+			if(CPU_UNKNOWN!=ptr.cpu)
+			{
+				auto &cpu=fm77av.CPU(ptr.cpu);
+				auto &mem=fm77av.MemAccess(ptr.cpu);
+				for(auto str : miscutil::MakeMemDump2(cpu,mem,ptr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
+				{
+					std::cout << str << std::endl;
+				}
+			}
+			else
+			{
+				Error_CPUOrAddress(cmd);
+				return;
+			}
 		}
 	}
 }

@@ -24,6 +24,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 namespace miscutil
 {
+	/*! data must be at least wid*hei bytes long. */
+	std::vector <std::string> MakeDump(const unsigned char data[],unsigned int STARTADDR,int wid,int hei,int skip,bool shiftJIS,bool includeASCII);
 	std::vector <std::string> MakeMemDump(const MC6809 &cpu,const MemoryAccess &mem,uint32_t addr,unsigned int length,bool shiftJIS);
 	std::vector <std::string> MakeMemDump2(const MC6809 &cpu,const MemoryAccess &mem,uint32_t addr,int wid,int hei,int skip,bool shiftJIS,bool includeASCII);
 

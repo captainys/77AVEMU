@@ -545,7 +545,7 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	{
 		text.back()+="RAM ";
 	}
-	text.back()+="VRAM Access Mask";
+	text.back()+="VRAM Access Mask:";
 	text.back()+=cpputil::Ubtox(state.VRAMAccessMask);
 
 	return text;
@@ -628,8 +628,12 @@ void MainCPUAccess::Reset(void)
 		}
 		break;
 	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
+		// Experiment indicated TWR address 0 will map physical 0x07C00 to main CPU memory space 0x7C00.
+		// TWR address 1 0x07D00, 0xFF 0x07C00.  It wraps around and comes back to 0x00000.
 		TWRAddr=data;
 		TWRAddr<<=8;
+		TWRAddr+=0x7C00;
+		TWRAddr&=0xFFFF;
 		break;
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
 		MMREnabled=(0!=(data&0x80));
@@ -856,8 +860,8 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	{
 		text.back()+="Disabled ";
 	}
-	text.back()+="TWR Addr:";
-	text.back()+=cpputil::Ubtox(TWRAddr);
+	text.back()+="TWR Addr:0";
+	text.back()+=cpputil::Ustox(TWRAddr);
 
 	text.push_back("Current MMR");
 	text.push_back("");

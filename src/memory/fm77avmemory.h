@@ -174,7 +174,7 @@ public:
 	}
 	inline uint32_t TWRAddressTranslation(uint16_t cpuAddr) const
 	{
-		return TWRAddr+(cpuAddr&0x3FF);
+		return (TWRAddr+(cpuAddr&0x3FF))&0xFFFF;
 	}
 
 	void Reset(void);

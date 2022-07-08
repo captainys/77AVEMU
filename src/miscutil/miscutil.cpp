@@ -17,6 +17,54 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 
+std::vector <std::string> miscutil::MakeDump(const unsigned char data[],unsigned int STARTADDR,int wid,int hei,int skip,bool shiftJIS,bool includeASCII)
+{
+	std::vector <std::string> text;
+
+	for(int y=0; y<hei; ++y)
+	{
+		unsigned int addr0=y*wid;
+		std::string addrTxt;
+
+		addrTxt=cpputil::Ustox(STARTADDR+addr0);
+
+		std::string str,ascii;
+		for(int x=0; x<wid; x+=skip)
+		{
+			unsigned int offset=y*wid+x;
+
+			auto byte=data[offset];
+			str+=" "+cpputil::Ubtox(byte);
+
+			if(true==includeASCII)
+			{
+				if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
+				{
+					ascii.push_back(' ');
+				}
+				else
+				{
+					ascii.push_back(byte);
+				}
+			}
+		}
+		if(0!=ascii.size())
+		{
+			str.push_back('|');
+			str+=ascii;
+			if(true==shiftJIS)
+			{
+				// Make sure to break first char of shift-JIS
+				ascii.push_back(' ');
+				ascii.push_back(' ');
+			}
+		}
+		text.push_back(addrTxt+str);
+	}
+
+	return text;
+}
+
 std::vector <std::string> miscutil::MakeMemDump(const MC6809 &cpu,const MemoryAccess &mem,uint32_t STARTADDR,unsigned int length,bool shiftJIS)
 {
 	// Make it 32-bit addressing.  I don't think there is any point rounding the address for memory dump.
