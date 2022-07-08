@@ -1815,6 +1815,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				GetRegisterValue(reg[0]),
 				GetRegisterValue(reg[1]),
 			};
+
+			if(REG_PC==reg[0])
+			{
+				value[0]+=inst.length;
+			}
+			if(REG_PC==reg[1])
+			{
+				value[1]+=inst.length;
+			}
+
 			SetRegisterValue(reg[1],value[0]);
 			SetRegisterValue(reg[0],value[1]);
 
@@ -2800,7 +2810,14 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				Abort("TFR to different size register not supported yet.");
 				inst.length=0;
 			}
-			SetRegisterValue(reg[1],GetRegisterValue(reg[0]));
+
+			uint16_t value=GetRegisterValue(reg[0]);
+			if(REG_PC==reg[0])
+			{
+				value+=inst.length;
+			}
+
+			SetRegisterValue(reg[1],value);
 			if(REG_S==reg[1])
 			{
 				state.nmiEnabled=true;
