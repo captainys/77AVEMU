@@ -64,6 +64,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["TAPE"]=DUMP_TAPE;
 	dumpableMap["HIST"]=DUMP_PC_LOG;
 	dumpableMap["SOUND"]=DUMP_SOUND;
+	dumpableMap["MEM"]=DUMP_MEMORY;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -175,6 +176,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Program-Counter history (PC log)." << std::endl;
 	std::cout << "SOUND" << std::endl;
 	std::cout << "  AY-3-8910 and YM2203C Status." << std::endl;
+	std::cout << "MEM" << std::endl;
+	std::cout << "  Memory-Management Status." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -717,6 +720,16 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				break;
 			case DUMP_SOUND:
 				for(auto str : fm77av.sound.GetStatusText())
+				{
+					std::cout << str << std::endl;
+				}
+				break;
+			case DUMP_MEMORY:
+				for(auto str : fm77av.physMem.GetStatusText())
+				{
+					std::cout << str << std::endl;
+				}
+				for(auto str : fm77av.mainMemAcc.GetStatusText())
 				{
 					std::cout << str << std::endl;
 				}

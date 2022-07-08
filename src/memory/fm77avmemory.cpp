@@ -106,6 +106,8 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		memType[addr]=MEMTYPE_MAINSYS_BOOT_ROM;
 	}
+	memType[0x3FFFE]=MEMTYPE_MAIN_RESET_VECTOR;
+	memType[0x3FFFF]=MEMTYPE_MAIN_RESET_VECTOR;
 
 	// Experimented on actual FM77AV.
 	// Default memory contents for $00000 to $0FFFF are $FF.
@@ -357,6 +359,24 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 			return ROM_BOOT_DOS[addr&(BOOT_ROM_SIZE-1)];
 		}
 		return ROM_BOOT_BASIC[addr&(BOOT_ROM_SIZE-1)];
+	case MEMTYPE_MAIN_RESET_VECTOR:
+		if(true!=state.FE00ROMMode)
+		{
+			return state.data[addr];
+		}
+		if(0==(addr&1))
+		{
+			if(true==state.avBootROM)
+			{
+				return 0x60; // 0x6000
+			}
+			else
+			{
+				return 0xFE; // 0xFE00
+			}
+		}
+		return 0;
+
 
 	case MEMTYPE_SUBSYS_IO:
 	case MEMTYPE_MAINSYS_IO:
@@ -453,6 +473,7 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		}
 		return;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
+	case MEMTYPE_MAIN_RESET_VECTOR:
 		if(true!=state.FE00ROMMode)
 		{
 			state.data[addr]=d;
@@ -481,6 +502,53 @@ uint16_t PhysicalMemory::NonDestructiveFetchWord(uint32_t addr) const
 	uint16_t hiByte=NonDestructiveFetchByte(addr);
 	uint16_t loByte=NonDestructiveFetchByte(addr+1);
 	return (hiByte<<8)|loByte;
+}
+
+std::vector <std::string> PhysicalMemory::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+	if(true==state.DOSMode)
+	{
+		text.push_back("DOSMode ");
+	}
+	else
+	{
+		text.push_back("BASICMode ");
+	}
+
+	text.back()+="FE00:";
+	if(true==state.FE00ROMMode)
+	{
+		text.back()+="BootROM ";
+	}
+	else
+	{
+		text.back()+="RAM ";
+	}
+
+	text.back()+="8000:";
+	if(true==state.shadowRAMEnabled)
+	{
+		text.back()+="UraRAM ";
+	}
+	else
+	{
+		text.back()+="ROM ";
+	}
+
+	text.back()+="6000:";
+	if(true==state.avBootROM)
+	{
+		text.back()+="InitiatorROM ";
+	}
+	else
+	{
+		text.back()+="RAM ";
+	}
+	text.back()+="VRAM Access Mask";
+	text.back()+=cpputil::Ubtox(state.VRAMAccessMask);
+
+	return text;
 }
 
 ////////////////////////////////////////////////////////////
@@ -539,10 +607,20 @@ void MainCPUAccess::Reset(void)
 	case FM77AVIO_MMR_D://=                   0xFD8D,
 	case FM77AVIO_MMR_E://=                   0xFD8E,
 	case FM77AVIO_MMR_F://=                   0xFD8F,
-		MMR[MMRSEG][ioport-FM77AVIO_MMR_0]=(data<<12);
+		MMR[MMRSEG][ioport-FM77AVIO_MMR_0]=data;
+		MMR[MMRSEG][ioport-FM77AVIO_MMR_0]<<=12;
 		break;
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
-		MMRSEG=data&7;
+		// Oh!FM May 1989 issue pp.45 implies that there are 8 MMR segments in total.
+		// However, if so F-BAISC 3.3 does not boot.  It messes up the MMR.
+		if(true!=exMMR)
+		{
+			MMRSEG=data&MMR_SEGMENT_MASK;
+		}
+		else
+		{
+			MMRSEG=data&MMR_SEGMENT_MASK_EXMMR;
+		}
 		break;
 	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
 		TWRAddr=data;
@@ -744,4 +822,55 @@ SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Dev
 	return mc6809util::FetchWord(
 		physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr),
 		physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+((addr+1)&0xFFFF)));
+}
+
+std::vector <std::string> MainCPUAccess::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("MMR:");
+	if(true==MMREnabled)
+	{
+		text.back()+="Enabled ";
+	}
+	else
+	{
+		text.back()+="Disabled ";
+	}
+
+	text.back()+="MMRSEG:";
+	text.back()+=cpputil::Ubtox(MMRSEG);
+	text.back()+=" ";
+
+	text.back()+="TWR:";
+	if(true==TWREnabled)
+	{
+		text.back()+="Enabled ";
+	}
+	else
+	{
+		text.back()+="Disabled ";
+	}
+	text.back()+="TWR Addr:";
+	text.back()+=cpputil::Ubtox(TWRAddr);
+
+	text.push_back("Current MMR");
+	text.push_back("");
+	for(auto R : MMR[MMRSEG])
+	{
+		text.back()+=cpputil::Ubtox(R>>12);
+		text.back()+=" ";
+	}
+	text.push_back("MMR Segments");
+	for(int i=0; i<8; ++i)
+	{
+		text.push_back("");
+		for(auto R : MMR[i])
+		{
+			text.back()+=cpputil::Ubtox(R>>12);
+			text.back()+=" ";
+		}
+	}
+
+	return text;
 }

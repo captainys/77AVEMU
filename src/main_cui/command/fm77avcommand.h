@@ -87,6 +87,7 @@ public:
 		DUMP_FDC,
 		DUMP_PC_LOG,
 		DUMP_SOUND,
+		DUMP_MEMORY
 	};
 
 	class Command

@@ -89,6 +89,7 @@ public:
 		MEMTYPE_MAINSYS_SHARED_RAM,
 		MEMTYPE_MAINSYS_IO,
 		MEMTYPE_MAINSYS_BOOT_ROM,
+		MEMTYPE_MAIN_RESET_VECTOR,
 	};
 
 	uint8_t ROM_BOOT_DOS[BOOT_ROM_SIZE];
@@ -141,6 +142,8 @@ public:
 	void StoreWord(uint32_t addr0,uint32_t addr1,uint16_t data);
 	uint8_t NonDestructiveFetchByte(uint32_t addr) const;
 	uint16_t NonDestructiveFetchWord(uint32_t addr) const;
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 class MainCPUAccess : public MemoryAccess,public Device
@@ -149,14 +152,18 @@ public:
 	enum
 	{
 		MAINCPU_ADDR_BASE=0x30000,
+		NUM_MMR_SEGMENTS=8,
+		MMR_SEGMENT_MASK=3,
+		MMR_SEGMENT_MASK_EXMMR=7,
 	};
 
 	PhysicalMemory *physMemPtr;
 
+	bool exMMR=false; // Expanded MMR for AV40 and later.
 	bool MMREnabled=false;
 	bool TWREnabled=false;
 	uint8_t MMRSEG=0;
-	uint32_t MMR[8][16];
+	uint32_t MMR[NUM_MMR_SEGMENTS][16];
 	uint32_t TWRAddr=0;
 
 	virtual const char *DeviceName(void) const{return "MAINMEMACCESS";}
@@ -181,6 +188,8 @@ public:
 	virtual void StoreWord(uint16_t addr,uint16_t data);
 	virtual uint8_t NonDestructiveFetchByte(uint16_t addr) const;
 	virtual uint16_t NonDestructiveFetchWord(uint16_t addr) const;
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 class SubCPUAccess : public MemoryAccess,public Device
