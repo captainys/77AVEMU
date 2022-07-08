@@ -562,8 +562,13 @@ MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : D
 void MainCPUAccess::Reset(void)
 {
 	Device::Reset();
+	exMMR=false;
 	MMREnabled=false;
 	MMRSEG=0;
+
+	TWREnabled=false;
+	TWRAddr=0;
+
 	for(int i=0; i<8; ++i)
 	{
 		// Experimented on actual FM77AV
