@@ -374,7 +374,7 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_IRQ_BEEP: // =                0xFD03,
 		{
 			uint8_t irqSource=(state.main.irqSource&0x07);
-			if(0!=(irqSource&~0x0f))
+			if(0!=(state.main.irqSource&~0x0f))
 			{
 				irqSource|=SystemState::MAIN_IRQ_SOURCE_EXT;
 			}
