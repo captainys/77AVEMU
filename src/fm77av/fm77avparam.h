@@ -45,6 +45,7 @@ public:
 	std::string ROMPath;
 
 	bool pauseOnStart=false;
+	unsigned int keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
 
 	bool noWait=false;
 

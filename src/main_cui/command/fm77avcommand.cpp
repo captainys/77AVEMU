@@ -3,6 +3,7 @@
 #include "miscutil.h"
 #include "fm77avcommand.h"
 #include "fm77avlineparser.h"
+#include "outside_world.h"
 
 
 FM77AVCommandInterpreter::FM77AVCommandInterpreter()
@@ -46,6 +47,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
+	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -81,6 +83,15 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Match speed to the wall-clock time." << std::endl;
 	std::cout << "  Albert Einstein said your wall-clock and my wall-clock runs differently," << std::endl;
 	std::cout << "  But, hopefully the error is small enough." << std::endl;
+	std::cout << "KEYBOARD keyboardMode" <<std::endl;
+	std::cout << "  Select TRANSLATE or DIRECT mode." << std::endl;
+	std::cout << "  TRANSLATE or TRANS mode (TRANSLATE1 or TRANS1) will be good for typing commands, but" << std::endl;
+	std::cout << "  cannot sense key release correctly." << std::endl;
+	std::cout << "  TRANS1 will make virtual BREAK+ESC from physical ESC." << std::endl;
+	std::cout << "  TRANS2 will make virtual ESC from physical ESC." << std::endl;
+	std::cout << "  TRANS3 will make virtual BREAK from physical ESC." << std::endl;
+	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
+	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
 	std::cout << "RUN" << std::endl;
 	std::cout << "  Run." << std::endl;
 	std::cout << "RUN M:addr/S:addr" << std::endl;
@@ -491,6 +502,40 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DONT_BREAK_ON:
 		Execute_DontBreakOn(thr,fm77av,cmd);
+		break;
+	case CMD_KEYBOARD:
+		if (cmd.argv.size() < 2) {
+			Error_TooFewArgs(cmd);
+		}
+		else if(nullptr!=outside_world)
+		{
+			std::string MODE=cmd.argv[1];
+			cpputil::Capitalize(MODE);
+			if("TRANS"==MODE || "TRANSLATE"==MODE || "TRANS1"==MODE || "TRANSLATE1"==MODE)
+			{
+				outside_world->keyboardMode=FM77AV_KEYBOARD_MODE_TRANSLATION1;
+				std::cout << "Keyboard TRANSLATION Mode 1 (ESC->ESC+BREAK)" << std::endl;
+			}
+			else if("TRANS2"==MODE || "TRANSLATE2"==MODE)
+			{
+				outside_world->keyboardMode=FM77AV_KEYBOARD_MODE_TRANSLATION2;
+				std::cout << "Keyboard TRANSLATION Mode 2 (ESC->ESC)" << std::endl;
+			}
+			else if("TRANS3"==MODE || "TRANSLATE3"==MODE)
+			{
+				outside_world->keyboardMode=FM77AV_KEYBOARD_MODE_TRANSLATION3;
+				std::cout << "Keyboard TRANSLATION Mode 3 (ESC->BREAK)" << std::endl;
+			}
+			else if("DIRECT"==MODE)
+			{
+				outside_world->keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
+				std::cout << "Keyboard DIRECT Mode" << std::endl;
+			}
+			else
+			{
+				Error_WrongParameter(cmd);
+			}
+		}
 		break;
 	}
 }

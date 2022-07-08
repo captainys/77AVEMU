@@ -63,6 +63,8 @@ public:
 
 		CMD_BREAK_ON,
 		CMD_DONT_BREAK_ON,
+
+		CMD_KEYBOARD,
 	};
 
 	enum

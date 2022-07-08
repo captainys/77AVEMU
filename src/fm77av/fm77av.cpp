@@ -103,6 +103,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR+1]=0x00;
 
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
+	outside_world->keyboardMode=param.keyboardMode;
 
 	Reset();
 	return true;

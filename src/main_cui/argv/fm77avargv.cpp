@@ -177,6 +177,33 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			}
 			i+=2;
 		}
+		else if("-KEYBOARD"==ARG && i+1<argc)
+		{
+			std::string MODE=argv[i+1];
+			cpputil::Capitalize(MODE);
+			if("DIRECT"==MODE)
+			{
+				keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
+			}
+			else if("TRANS"==MODE || "TRANSLATION"==MODE || "TRANS1"==MODE || "TRANSLATION1"==MODE)
+			{
+				keyboardMode=FM77AV_KEYBOARD_MODE_TRANSLATION1;
+			}
+			else if("TRANS2"==MODE || "TRANSLATION2"==MODE)
+			{
+				keyboardMode=FM77AV_KEYBOARD_MODE_TRANSLATION2;
+			}
+			else if("TRANS3"==MODE || "TRANSLATION3"==MODE)
+			{
+				keyboardMode=FM77AV_KEYBOARD_MODE_TRANSLATION3;
+			}
+			else
+			{
+				std::cout << "Undefined keyboard emulation." << std::endl;
+				return false;
+			}
+			++i;
+		}
 		else
 		{
 			std::cout << "Unknown option " << argv[i] << std::endl;
