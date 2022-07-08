@@ -1818,11 +1818,11 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			SetRegisterValue(reg[1],value[0]);
 			SetRegisterValue(reg[0],value[1]);
 
-			if(REG_S==reg[1] || REG_S==reg[1])
+			if(REG_S==reg[0] || REG_S==reg[1])
 			{
 				state.nmiEnabled=true;
 			}
-			else if(REG_PC==reg[1] || REG_PC==reg[1])
+			else if(REG_PC==reg[0] || REG_PC==reg[1])
 			{
 				inst.length=0;
 			}
