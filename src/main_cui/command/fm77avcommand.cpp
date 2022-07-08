@@ -45,6 +45,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
+	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -138,6 +139,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Break on event." << std::endl;
 	std::cout << "CBRKON event" << std::endl;
 	std::cout << "  Don't break on event." << std::endl;
+	std::cout << "SAVEHIST filename.txt" << std::endl;
+	std::cout << "  Save CS:EIP Log to file." << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "DEBUG/DEBUGGER" << std::endl;
@@ -239,6 +242,11 @@ void FM77AVCommandInterpreter::Error_IllegalSubCommand(const Command &cmd)
 void FM77AVCommandInterpreter::Error_WrongParameter(const Command &cmd)
 {
 	std::cout << "Wrong Parameter." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
+{
+	std::cout << "Cannot Save File." << std::endl;
 	Error_Common(cmd);
 }
 
@@ -459,6 +467,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DUMP:
 		Execute_Dump(thr,fm77av,cmd);
+		break;
+	case CMD_SAVE_HISTORY:
+		Execute_SaveHistory(thr,fm77av,cmd);
 		break;
 	case CMD_ADD_BREAKPOINT:
 		Execute_AddBreakPoint(thr,fm77av,cmd);
@@ -825,6 +836,48 @@ void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av
 			// }
 			std::cout << std::endl;
 		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		std::ofstream ofp(cmd.argv[1]);
+		if(ofp.is_open())
+		{
+			for(int mainOrSub=0; mainOrSub<2; ++mainOrSub)
+			{
+				ofp << CPUToStr(mainOrSub) << " CPU" << std::endl;
+
+				auto list=av.CPU(mainOrSub).debugger.GetPCLog(MC6809::PC_LOG_SIZE);
+				// auto &symTable=av.debugger.GetSymTable();
+				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+				{
+					ofp << cpputil::Ustox(iter->PC);
+					ofp << " ";
+					ofp << "S=" << cpputil::Ustox(iter->S);
+					if(1<iter->count)
+					{
+						ofp << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+					}
+					// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+					// if(nullptr!=symbolPtr)
+					// {
+					// 	ofp << " " << symbolPtr->Format();
+					// }
+					ofp << std::endl;
+				}
+			}
+			ofp.close();
+		}
+		else
+		{
+			Error_CannotSaveFile(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }
 void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)

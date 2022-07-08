@@ -1822,6 +1822,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			{
 				state.nmiEnabled=true;
 			}
+			else if(REG_PC==reg[1] || REG_PC==reg[1])
+			{
+				inst.length=0;
+			}
 		}
 		break;
 
@@ -2800,6 +2804,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			if(REG_S==reg[1])
 			{
 				state.nmiEnabled=true;
+			}
+			else if(REG_PC==reg[1])
+			{
+				inst.length=0;
 			}
 		}
 		break;

@@ -53,6 +53,8 @@ public:
 		CMD_DUMP,
 		CMD_MEMDUMP,
 
+		CMD_SAVE_HISTORY,
+
 		CMD_ADD_BREAKPOINT,
 		CMD_ADD_BREAKPOINT_WITH_PASSCOUNT,
 		CMD_ADD_MONITORPOINT,
@@ -111,6 +113,7 @@ public:
 	void Error_UnknownEvent(const Command &cmd);
 	void Error_IllegalSubCommand(const Command &cmd);
 	void Error_WrongParameter(const Command &cmd);
+	void Error_CannotSaveFile(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
 
@@ -133,6 +136,7 @@ public:
 	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Dump(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_MemoryDump(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd);
