@@ -47,6 +47,9 @@ public:
 	bool InVSYNC(uint64_t fm77avTime) const;
 	bool InHSYNC(uint64_t fm77avTime) const;
 
+	void WriteFD12(uint8_t data);
+	const int NonDestructiveReadFD12(void) const;
+
 	static inline uint32_t TransformVRAMAddress(uint32_t addr,unsigned int scrnMode,uint16_t VRAMOffset)
 	{
 		uint32_t addrHI,addrLO;

@@ -69,3 +69,38 @@ uint64_t FM77AVCRTC::NextVSYNCEndTime(uint64_t fm77avTime) const
 	return fm77avTime-mod+VSYNC_CYCLE;
 }
 
+void FM77AVCRTC::WriteFD12(uint8_t data)
+{
+	if(0==(data&0x40))
+	{
+		state.scrnMode=SCRNMODE_640X200_SINGLE;
+	}
+	else
+	{
+		state.scrnMode=SCRNMODE_320X200_4096COL;
+	}
+}
+const int FM77AVCRTC::NonDestructiveReadFD12(void) const
+{
+	auto fm77avPtr=(const FM77AV *)vmPtr;
+
+	uint8_t byteData=0xBF;
+	if(SCRNMODE_320X200_4096COL==state.scrnMode)
+	{
+		byteData|=0x40;
+	}
+	// else if(SCRNMODE_640X200_SINGLE==state.scrnMode)
+	//{
+	//	byteData&=0xBF;
+	//}
+
+	if(true==InVSYNC(fm77avPtr->state.fm77avTime))
+	{
+		byteData&=0xFD; // VSYNC=1, DISPTMG=0
+	}
+	else
+	{
+		byteData&=0xFE; // VSYNC=1, DISPTMG=0
+	}
+	return byteData;
+}

@@ -147,6 +147,12 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		EnableShadowRAM();
 		break;
 
+	case FM77AVIO_SUBSYS_MODE://=             0xFD12,
+		crtc.WriteFD12(value);
+		break;
+	case FM77AVIO_SUBSYS_BANK://=             0xFD13,
+		break;
+
 	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
 	case FM77AVIO_FDC_TRACK://               0xFD19,
 	case FM77AVIO_FDC_SECTOR://              0xFD1A,
@@ -315,6 +321,7 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
 		DisableShadowRAM();
 		break;
+
 	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
 	case FM77AVIO_FDC_TRACK://               0xFD19,
 	case FM77AVIO_FDC_SECTOR://              0xFD1A,
@@ -407,6 +414,12 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 				byteData&=0xFE;
 			}
 		}
+		break;
+
+	case FM77AVIO_SUBSYS_MODE://=             0xFD12,
+		byteData=crtc.NonDestructiveReadFD12();
+		break;
+	case FM77AVIO_SUBSYS_BANK://=             0xFD13,
 		break;
 
 	case FM77AVIO_YM2203C_CONTROL://         0xFD15,
