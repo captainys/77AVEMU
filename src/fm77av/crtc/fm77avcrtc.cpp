@@ -18,21 +18,60 @@ void FM77AVCRTC::Palette::Reset(void)
 	analogPaletteLatch=0;
 }
 
+void FM77AVCRTC::HardwareDrawing::Reset(void)
+{
+	// $D410
+	enabled=false;
+	condition=0;
+	cmd=HD_CMD_PSET;
+	// $D411
+	color=0;
+	// $D412
+	maskBits=0;
+	// $D413 to $D41A
+	compareColor[0]=0;
+	compareColor[1]=0;
+	compareColor[2]=0;
+	compareColor[3]=0;
+	compareColor[4]=0;
+	compareColor[5]=0;
+	compareColor[6]=0;
+	compareColor[7]=0;
+	// $D41B
+	bankMask=0;
+	// $D41C to $D41E
+	tile[0]=0;
+	tile[1]=0;
+	tile[2]=0;
+
+	// $D430
+	lineBusy=false;
+	// $D420,$D421
+	addrOffset=0;
+	// $D422,$D423
+	lineStipple=0xFFFF;
+	// $D424,$D425
+	x0=0;
+	y0=0;
+	x1=0;
+	y1=0;
+}
+
 FM77AVCRTC::FM77AVCRTC(VMBase *vmBase) : Device(vmBase)
 {
+	Reset();
 }
 void FM77AVCRTC::Reset(void)
 {
 	Device::Reset();
 	state.palette.Reset();
+	state.hardDraw.Reset();
 	state.scrnMode=SCRNMODE_640X200_SINGLE;
 	state.VRAMOffset=0;
 	state.VRAMOffsetMask=0xFFE0;
 	state.VRAMAccessMask=0;
 	state.displayPage=0;
 	state.activePage=0;
-
-	state.lineHardwareBusy=false;
 }
 FM77AVCRTC::Palette &FM77AVCRTC::GetPalette(void)
 {
@@ -134,7 +173,7 @@ uint8_t FM77AVCRTC::NonDestructiveReadD430(void) const
 	{
 		data&=0x7F;
 	}
-	if(true==state.lineHardwareBusy)
+	if(true==state.hardDraw.lineBusy)
 	{
 		data&=0xEF;
 	}
@@ -168,4 +207,116 @@ void FM77AVCRTC::WriteFD33(uint8_t data)
 void FM77AVCRTC::WriteFD34(uint8_t data)
 {
 	state.palette.analogPalette[state.palette.analogPaletteLatch][1]=data|(data<<4);
+}
+void FM77AVCRTC::VRAMDummyRead(uint8_t VRAMAddr)
+{
+	std::cout << cpputil::Ustox(VRAMAddr) << std::endl;
+}
+void FM77AVCRTC::WriteD410(uint8_t data)
+{
+}
+uint8_t FM77AVCRTC::NonDestructiveReadD410(void) const
+{
+	uint8_t byteData=0x18;
+	if(true==state.hardDraw.enabled)
+	{
+		byteData|=0x80;
+	}
+	byteData|=(state.hardDraw.condition<<5);
+	byteData|=state.hardDraw.cmd;
+	return byteData;
+}
+void FM77AVCRTC::WriteD411(uint8_t data)
+{
+}
+uint8_t FM77AVCRTC::NonDestructiveReadD411(void) const
+{
+	return 0xF8|state.hardDraw.color;
+}
+void FM77AVCRTC::WriteD412(uint8_t data)
+{
+}
+uint8_t FM77AVCRTC::NonDestructiveReadD412(void) const
+{
+	return state.hardDraw.maskBits;
+}
+void FM77AVCRTC::WriteD413(uint8_t data)
+{
+}
+uint8_t FM77AVCRTC::NonDestructiveReadD413(void) const
+{
+	return 0; // Compare Bit according to FM77AV40 Hardware Manual, D0 to D7 according to FM Techknow and Oh!FM 1989-05.  No other explanation.
+}
+void FM77AVCRTC::WriteD414(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD415(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD416(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD417(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD418(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD419(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD41A(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD41B(uint8_t data)
+{
+}
+uint8_t FM77AVCRTC::NonDestructiveReadD41B(void) const
+{
+	return 0xF8|state.hardDraw.bankMask;
+}
+void FM77AVCRTC::WriteD41C(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD41D(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD41E(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD420(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD421(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD422(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD423(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD424(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD425(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD426(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD427(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD428(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD429(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD42A(uint8_t data)
+{
+}
+void FM77AVCRTC::WriteD42B(uint8_t data)
+{
 }

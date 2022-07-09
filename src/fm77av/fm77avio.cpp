@@ -279,17 +279,193 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			crtc.state.VRAMOffset&=~0x1F;
 		}
 		break;
+
+
+	case FM77AVIO_LOGICAL_OP_MODE://         0xD410,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD410(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COLOR://        0xD411,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD411(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_MASK://         0xD412,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD412(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_0://    0xD413,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD413(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_1://    0xD414,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD414(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_2://    0xD415,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD415(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_3://    0xD416,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD416(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_4://    0xD417,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD417(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_5://    0xD418,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD418(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_6://    0xD419,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD419(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_7://    0xD41A,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD41A(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_BANK_DISABLE:// 0xD41B,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD41B(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_TILING_BLUE://  0xD41C,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD41C(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_TILING_RED://   0xD41D,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD41D(value);
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_TILING_GREEN:// 0xD41E,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD41E(value);
+		}
+		break;
+
+	case FM77AVIO_LINE_DRAW_OFFSET_HIGH://   0xD420,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD420(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_OFFSET_LOW://    0xD421,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD421(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_PATTERN_HIGH://  0xD422,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD422(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_PATTERN_LOW://   0xD423,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD423(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_X0_HIGH://       0xD424,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD424(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_X0_LOW://        0xD425,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD425(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_Y0_HIGH://       0xD426,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD426(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_Y0_LOW://        0xD427,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD427(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_X1_HIGH://       0xD428,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD428(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_X1_LOW://        0xD429,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD429(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_Y1_HIGH://       0xD42A,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD42A(value);
+		}
+		break;
+	case FM77AVIO_LINE_DRAW_Y1_LOW://        0xD42B,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD42B(value);
+		}
+		break;
+
+
 	case FM77AVIO_LINE_DRAW_STATUS://=        0xD430,
-		crtc.WriteD430(value);
-		physMem.WriteD430(value);
-		state.subNMIMask=(0!=(value&0x80));
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			crtc.WriteD430(value);
+			physMem.WriteD430(value);
+			state.subNMIMask=(0!=(value&0x80));
+		}
 		break;
 
 	case FM77AVIO_ENCODER_DATA://=            0xD431,
-		keyboard.WriteD431(value);
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			keyboard.WriteD431(value);
+		}
 		break;
 	case FM77AVIO_ENCODER_STATUS://=          0xD432,
-		keyboard.WriteD432(value);
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			keyboard.WriteD432(value);
+		}
 		break;
 	}
 }
@@ -389,7 +565,10 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		state.subSysBusy=false;
 		break;
 	case FM77AVIO_LINE_DRAW_STATUS://=        0xD430,
-		physMem.state.subROMSwitch=false;
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			physMem.state.subROMSwitch=false;
+		}
 		break;
 	case FM77AVIO_ENCODER_DATA://=            0xD431,
 		if(MACHINETYPE_FM77AV<=state.machineType)
@@ -559,6 +738,40 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_KEY_LOW: //=                 0xD401,
 		byteData=keyboard.state.lastKeyCode&0xFF;
 		break;
+
+
+	case FM77AVIO_LOGICAL_OP_MODE://         0xD410,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadD410();
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COLOR://        0xD411,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadD411();
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_MASK://         0xD412,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadD412();
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_COMPARE_0://    0xD413,://         0xD413,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadD413();
+		}
+		break;
+	case FM77AVIO_LOGICAL_OP_BANK_DISABLE:// 0xD41B,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadD41B();
+		}
+		break;
+
+
 	case FM77AVIO_LINE_DRAW_STATUS://=        0xD430,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{

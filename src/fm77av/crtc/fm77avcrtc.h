@@ -23,6 +23,47 @@ public:
 
 	enum
 	{
+		HD_CMD_PSET=0,
+		HD_CMD_OR=2,
+		HD_CMD_AND=3,
+		HD_CMD_XOR=4,
+		HD_CMD_NOT=5,
+		HD_CMD_TILE_6,
+		HD_CMD_CMP=7, // Compare? What is it?
+	};
+
+	class HardwareDrawing
+	{
+	public:
+		// $D410
+		bool enabled=false; // bit7
+		uint8_t condition=0;
+		uint8_t cmd=HD_CMD_PSET;
+		// $D411
+		uint8_t color=0;
+		// $D412
+		uint8_t maskBits=0;
+		// $D413 to $D41A
+		uint8_t compareColor[8];
+		// $D41B
+		uint8_t bankMask=0;
+		// $D41C to $D41E
+		uint8_t tile[3];
+
+		// $D430
+		bool lineBusy=false;
+		// $D420,$D421
+		uint16_t addrOffset=0;
+		// $D422,$D423
+		uint16_t lineStipple=0xFFFF;
+		// $D424,$D425
+		uint16_t x0=0,y0=0,x1=0,y1=0;
+
+		void Reset(void);
+	};
+
+	enum
+	{
 		// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
 		VSYNC_CYCLE=         0x1000000,
 		// Measurement taken from actual FM TOWNS II MX hardware tells VSYNC lasts for 60us.
@@ -36,13 +77,12 @@ public:
 	{
 	public:
 		Palette palette;
+		HardwareDrawing hardDraw;
 		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
 		uint16_t VRAMOffset=0,VRAMOffsetMask=0xffe0;
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
 		uint8_t activePage=0;
-
-		bool lineHardwareBusy=false;
 	};
 	FM77AVCRTC(VMBase *vmBase);
 	void Reset(void);
@@ -67,6 +107,43 @@ public:
 
 	void WriteD430(uint8_t data);
 	uint8_t NonDestructiveReadD430(void) const;
+
+	// Graphics Accelerator >>
+	void VRAMDummyRead(uint8_t VRAMAddr);
+	void WriteD410(uint8_t data);
+	uint8_t NonDestructiveReadD410(void) const;
+	void WriteD411(uint8_t data);
+	uint8_t NonDestructiveReadD411(void) const;
+	void WriteD412(uint8_t data);
+	uint8_t NonDestructiveReadD412(void) const;
+	void WriteD413(uint8_t data);
+	uint8_t NonDestructiveReadD413(void) const;
+	void WriteD414(uint8_t data);
+	void WriteD415(uint8_t data);
+	void WriteD416(uint8_t data);
+	void WriteD417(uint8_t data);
+	void WriteD418(uint8_t data);
+	void WriteD419(uint8_t data);
+	void WriteD41A(uint8_t data);
+	void WriteD41B(uint8_t data);
+	uint8_t NonDestructiveReadD41B(void) const;
+	void WriteD41C(uint8_t data);
+	void WriteD41D(uint8_t data);
+	void WriteD41E(uint8_t data);
+	void WriteD420(uint8_t data);
+	void WriteD421(uint8_t data);
+	void WriteD422(uint8_t data);
+	void WriteD423(uint8_t data);
+	void WriteD424(uint8_t data);
+	void WriteD425(uint8_t data);
+	void WriteD426(uint8_t data);
+	void WriteD427(uint8_t data);
+	void WriteD428(uint8_t data);
+	void WriteD429(uint8_t data);
+	void WriteD42A(uint8_t data);
+	void WriteD42B(uint8_t data);
+	// Graphics Accelerator <<
+
 
 	static inline uint32_t TransformVRAMAddress(uint32_t addr,unsigned int scrnMode,uint16_t VRAMOffset)
 	{

@@ -448,6 +448,12 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	switch(memType[addr])
 	{
+	case MEMTYPE_SUBSYS_VRAM:
+		if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
+		{
+			fm77avPtr->crtc.VRAMDummyRead(addr);
+		}
+		break;
 	case MEMTYPE_SUBSYS_IO:
 	case MEMTYPE_MAINSYS_IO:
 		return fm77avPtr->IORead(addr&0xFFFF);
