@@ -11,8 +11,11 @@ void FM77AVCRTC::Palette::Reset(void)
 	}
 	for(int i=0; i<4096; ++i)
 	{
-		analogPalette[i]=i;
+		analogPalette[i][0]=0;
+		analogPalette[i][1]=0;
+		analogPalette[i][2]=0;
 	}
+	analogPaletteLatch=0;
 }
 
 FM77AVCRTC::FM77AVCRTC(VMBase *vmBase) : Device(vmBase)
@@ -24,7 +27,7 @@ void FM77AVCRTC::Reset(void)
 	state.palette.Reset();
 	state.scrnMode=SCRNMODE_640X200_SINGLE;
 	state.VRAMOffset=0;
-	state.VRAMOffsetLowBitsEnabled=false;
+	state.VRAMOffsetMask=0xFFE0;
 	state.VRAMAccessMask=0;
 	state.displayPage=0;
 	state.activePage=0;
@@ -113,7 +116,14 @@ void FM77AVCRTC::WriteD430(uint8_t data)
 {
 	state.displayPage=((0!=(data&0x40)) ? 1 : 0);
 	state.activePage=((0!=(data&0x20)) ? 1 : 0);
-	state.VRAMOffsetLowBitsEnabled=(0!=(data&4));
+	if(0!=(data&4))
+	{
+		state.VRAMOffsetMask=0xffff;
+	}
+	else
+	{
+		state.VRAMOffsetMask=0xffe0;
+	}
 	// Katakana/Hiragana is managed by physMem.
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD430(void) const
@@ -134,4 +144,28 @@ uint8_t FM77AVCRTC::NonDestructiveReadD430(void) const
 	}
 	// Sub-Monitor Change is managed by physMem.
 	return data;
+}
+
+void FM77AVCRTC::WriteFD30(uint8_t data)
+{
+	uint16_t data16=data&0x0F;
+	state.palette.analogPaletteLatch&=0xFF;
+	state.palette.analogPaletteLatch|=(data16<<8);
+}
+void FM77AVCRTC::WriteFD31(uint8_t data)
+{
+	state.palette.analogPaletteLatch&=0xFF00;
+	state.palette.analogPaletteLatch|=data;
+}
+void FM77AVCRTC::WriteFD32(uint8_t data)
+{
+	state.palette.analogPalette[state.palette.analogPaletteLatch][2]=data|(data<<4);
+}
+void FM77AVCRTC::WriteFD33(uint8_t data)
+{
+	state.palette.analogPalette[state.palette.analogPaletteLatch][0]=data|(data<<4);
+}
+void FM77AVCRTC::WriteFD34(uint8_t data)
+{
+	state.palette.analogPalette[state.palette.analogPaletteLatch][1]=data|(data<<4);
 }

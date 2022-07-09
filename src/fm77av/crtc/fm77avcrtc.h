@@ -16,7 +16,8 @@ public:
 	{
 	public:
 		uint8_t digitalPalette[8];
-		uint16_t analogPalette[4096];
+		uint16_t analogPaletteLatch=0;
+		uint8_t analogPalette[4096][3];
 		void Reset(void);
 	};
 
@@ -36,8 +37,7 @@ public:
 	public:
 		Palette palette;
 		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
-		uint16_t VRAMOffset=0;
-		bool VRAMOffsetLowBitsEnabled=false;
+		uint16_t VRAMOffset=0,VRAMOffsetMask=0xffe0;
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
 		uint8_t activePage=0;
@@ -56,6 +56,12 @@ public:
 		return InVSYNC(fm77avTime)||InHSYNC(fm77avTime);
 	}
 
+	void WriteFD30(uint8_t data);
+	void WriteFD31(uint8_t data);
+	void WriteFD32(uint8_t data);
+	void WriteFD33(uint8_t data);
+	void WriteFD34(uint8_t data);
+
 	void WriteFD12(uint8_t data);
 	const int NonDestructiveReadFD12(void) const;
 
@@ -68,15 +74,20 @@ public:
 		switch(scrnMode)
 		{
 		case SCRNMODE_640X200_SINGLE:
+		case SCRNMODE_640X200_DOUBLE:
 			addrHI=addr&~0x3FFF;
 			addrLO=(addr+VRAMOffset)&0x3FFF;
+			return addrHI|addrLO;
+		case SCRNMODE_320X200_4096COL:
+			addrHI=addr&~0x1FFF;
+			addrLO=(addr+VRAMOffset)&0x1FFF;
 			return addrHI|addrLO;
 		}
 		return addr;
 	}
 	inline uint32_t TransformVRAMAddress(uint32_t addr) const
 	{
-		return TransformVRAMAddress(addr,state.scrnMode,state.VRAMOffset);
+		return TransformVRAMAddress(addr,state.scrnMode,state.VRAMOffset&state.VRAMOffsetMask);
 	}
 
 	/*

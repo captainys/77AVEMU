@@ -354,11 +354,11 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 				}
 			}
 		}
-		// if(different bank)
-		// {
-		//	return byte from the correct bank.
-		// }
-		return state.data[addr];
+		if(0==fm77avPtr->crtc.state.activePage)
+		{
+			return state.data[addr];
+		}
+		return state.extVRAM[addr];
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
 		if(SUBMON_C==state.subMonType)
@@ -491,11 +491,14 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 				}
 			}
 		}
-		// if(different bank)
-		// {
-		//	write to the correct bank.
-		// }
-		state.data[addr]=d;
+		if(0==fm77avPtr->crtc.state.activePage)
+		{
+			state.data[addr]=d;
+		}
+		else
+		{
+			state.extVRAM[addr]=d;
+		}
 		return;
 
 	case MEMTYPE_SUBSYS_IO:

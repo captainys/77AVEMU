@@ -25,11 +25,7 @@ FM77AVRender::Image FM77AVRender::GetImage(void) const
 void FM77AVRender::Prepare(const FM77AVCRTC &crtc)
 {
 	this->scrnMode=crtc.state.scrnMode;
-	this->VRAMOffset=crtc.state.VRAMOffset;
-	if(true!=crtc.state.VRAMOffsetLowBitsEnabled)
-	{
-		this->VRAMOffset&=0xFFE0;
-	}
+	this->VRAMOffset=crtc.state.VRAMOffset&crtc.state.VRAMOffsetMask;
 	this->VRAMAccessMask=crtc.state.VRAMAccessMask;
 	switch(crtc.state.scrnMode)
 	{

@@ -172,6 +172,22 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		fdc.IOWriteByte(ioAddr,value);
 		break;
 
+	case FM77AVIO_ANALOG_PALETTE_NUM_HIGH://= 0xFD30,
+		crtc.WriteFD30(value);
+		break;
+	case FM77AVIO_ANALOG_PALETTE_NUM_LOW://=  0xFD31,
+		crtc.WriteFD31(value);
+		break;
+	case FM77AVIO_ANALOG_PALETTE_BLUE://=     0xFD32,
+		crtc.WriteFD32(value);
+		break;
+	case FM77AVIO_ANALOG_PALETTE_RED://=      0xFD33,
+		crtc.WriteFD33(value);
+		break;
+	case FM77AVIO_ANALOG_PALETTE_GREEN://=    0xFD34,
+		crtc.WriteFD34(value);
+		break;
+
 	case FM77AVIO_DISPLAY_PAGE://=            0xFD37,
 		crtc.state.VRAMAccessMask=((value>>4)&7);
 		physMem.state.VRAMAccessMask=(value&7);
