@@ -298,6 +298,8 @@ const uint8_t *PhysicalMemory::GetVRAMBank(int bank) const
 	{
 	case 0:
 		return state.data+SUBSYS_VRAM_BEGIN;
+	case 1:
+		return state.extVRAM;
 	}
 	std::cout << "Bank not supported." << std::endl;
 	return nullptr;
@@ -308,6 +310,8 @@ uint8_t *PhysicalMemory::GetVRAMBank(int bank)
 	{
 	case 0:
 		return state.data+SUBSYS_VRAM_BEGIN;
+	case 1:
+		return state.extVRAM;
 	}
 	std::cout << "Bank not supported." << std::endl;
 	return nullptr;
