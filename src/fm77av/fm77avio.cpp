@@ -530,6 +530,10 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_PSG_DATA://                0xFD0E,
 		// Probably Reading sound I/O won't change anything.
 		break;
+	case FM77AVIO_INT_YM2203C_MOUSE://=       0xFD17,
+		// Am I supposed to clear OPN and MOUSE interrupt?
+		break;
+
 
 	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
 		DisableShadowRAM();
@@ -658,6 +662,13 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_PSG_DATA://                0xFD0E,
 		byteData=sound.NonDestructiveIOReadByte(ioAddr);
 		break;
+	case FM77AVIO_INT_YM2203C_MOUSE://=       0xFD17,
+		if(0!=(state.main.irqSource&SystemState::MAIN_IRQ_SOURCE_YM2203C))
+		{
+			byteData&=0xF7;
+		}
+		break;
+
 
 
 	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,

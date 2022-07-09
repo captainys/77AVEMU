@@ -28,7 +28,7 @@ public:
 		HD_CMD_AND=3,
 		HD_CMD_XOR=4,
 		HD_CMD_NOT=5,
-		HD_CMD_TILE_6,
+		HD_CMD_TILE=6,
 		HD_CMD_CMP=7, // Compare? What is it?
 	};
 

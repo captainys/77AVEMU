@@ -222,9 +222,14 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddr)
 		auto fm77avPtr=(FM77AV *)vmPtr;
 		auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
 		VRAMAddr&=VRAM_PLANE_MASK;
-		VRAM[VRAMAddr]=state.hardDraw.tile[0];		// Tentative implementation
-		VRAM[VRAMAddr+VRAM_PLANE_SIZE]=state.hardDraw.tile[1];
-		VRAM[VRAMAddr+VRAM_PLANE_SIZE*2]=state.hardDraw.tile[2];
+		switch(state.hardDraw.cmd)
+		{
+		case HD_CMD_TILE:
+			VRAM[VRAMAddr]=state.hardDraw.tile[0];		// Tentative implementation
+			VRAM[VRAMAddr+VRAM_PLANE_SIZE]=state.hardDraw.tile[1];
+			VRAM[VRAMAddr+VRAM_PLANE_SIZE*2]=state.hardDraw.tile[2];
+			break;
+		}
 	}
 }
 void FM77AVCRTC::WriteD410(uint8_t data)
