@@ -181,6 +181,8 @@ public:
 	*/
 	uint64_t NextVSYNCRisingEdge(uint64_t fm77avTime) const;
 	uint64_t NextVSYNCEndTime(uint64_t fm77avTime) const;
+
+	std::vector <std::string> GetStatusText(void) const;
 };
 
 

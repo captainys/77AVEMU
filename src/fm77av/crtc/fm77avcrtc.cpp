@@ -392,3 +392,102 @@ void FM77AVCRTC::WriteD42A(uint8_t data)
 void FM77AVCRTC::WriteD42B(uint8_t data)
 {
 }
+
+std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
+{
+	std::vector <std::string> text;
+
+	text.push_back("MODE:");
+	text.back()+=ScrnModeToStr(state.scrnMode);
+	text.back()+=" VRAMOffset:";
+	text.back()+=cpputil::Ustox(state.VRAMOffset);
+	if(0xFFFF==state.VRAMOffsetMask)
+	{
+		text.back()+=" VRAMOffsetLowBits:Enabled";
+	}
+	else
+	{
+		text.back()+=" VRAMOffsetLowBits:Disabled";
+	}
+
+	text.push_back("");
+	text.back()+="VRAMAccessMask:";
+	text.back()+=cpputil::Ubtox(state.VRAMAccessMask);
+	text.back()+=" DisplayPage:";
+	text.back().push_back('0'+state.displayPage);
+	text.back()+=" ActivePage:";
+	text.back().push_back('0'+state.activePage);
+
+	text.push_back("HWDrawing:");
+	text.back()+=(true==state.hardDraw.enabled ? "Ena " : "Dis ");
+	text.back()+="Cond:";
+	switch(state.hardDraw.condition)
+	{
+	case 0:
+		text.back()+="Always(0) ";
+		break;
+	case 1:
+		text.back()+="Always(1) ";
+		break;
+	case 2:
+		text.back()+="If Equal(2) ";
+		break;
+	case 3:
+		text.back()+="If Not Equal(3) ";
+		break;
+	}
+	text.back()+="OP:";
+	switch(state.hardDraw.cmd)
+	{
+	case HD_CMD_PSET://0,
+		text.back()+="PSET";
+		break;
+	case HD_CMD_OR://2,
+		text.back()+="OR";
+		break;
+	case HD_CMD_AND://3,
+		text.back()+="AND";
+		break;
+	case HD_CMD_XOR://4,
+		text.back()+="XOR";
+		break;
+	case HD_CMD_NOT://5,
+		text.back()+="NOT";
+		break;
+	case HD_CMD_TILE://6,
+		text.back()+="TILE";
+		break;
+	case HD_CMD_CMP://7, // Compare? What is it?
+		text.back()+="CMP";
+		break;
+	default:
+		text.back()+="?(1)";
+		break;
+	}
+	text.back()+=" COL:";
+	text.back().push_back('0'+state.hardDraw.color);
+
+	text.back()+=" MaskBits:";
+	text.back()+=cpputil::Ubtox(state.hardDraw.maskBits);
+
+	text.push_back("");
+	text.back()+="CMPCOL:";
+	for(int i=0; i<8; ++i)
+	{
+		text.back()+=cpputil::Ubtox(state.hardDraw.compareColor[i]&0x87);
+		text.back().push_back(' ');
+	}
+
+	text.push_back("");
+	text.back()+="BankMask:";
+	text.back()+=cpputil::Ubtox(state.hardDraw.bankMask);
+
+	text.back()+="TilePtn:";
+	text.back()+=cpputil::Ubtox(state.hardDraw.tile[0]);
+	text.back().push_back(' ');
+	text.back()+=cpputil::Ubtox(state.hardDraw.tile[1]);
+	text.back().push_back(' ');
+	text.back()+=cpputil::Ubtox(state.hardDraw.tile[2]);
+
+	return text;
+}

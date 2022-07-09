@@ -70,6 +70,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["HIST"]=DUMP_PC_LOG;
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["MEM"]=DUMP_MEMORY;
+	dumpableMap["CRTC"]=DUMP_CRTC;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -190,6 +191,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "<< Printable >>" << std::endl;
 	std::cout << "FDC" << std::endl;
 	std::cout << "  Floppy Disk Controller Status." << std::endl;
+	std::cout << "CRTC" << std::endl;
+	std::cout << "  CRTC Status." << std::endl;
 	std::cout << "TAPE" << std::endl;
 	std::cout << "  Cassette Tape Status." << std::endl;
 	std::cout << "HIST main/sub" << std::endl;
@@ -812,6 +815,12 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 			{
 			case DUMP_FDC:
 				for(auto str : fm77av.fdc.GetStatusText())
+				{
+					std::cout << str << std::endl;
+				}
+				break;
+			case DUMP_CRTC:
+				for(auto str : fm77av.crtc.GetStatusText())
 				{
 					std::cout << str << std::endl;
 				}

@@ -34,6 +34,8 @@ enum
 	SCRNMODE_320X200_260KCOL,
 	SCRNMODE_640X400_SINGLE,
 };
+std::string ScrnModeToStr(int scrnMode);
+
 enum
 {
 	MACHINETYPE_UNKNOWN,

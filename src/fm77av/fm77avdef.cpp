@@ -211,6 +211,24 @@ std::string BIOSCmdToStr(unsigned int biosCmd)
 	return "?";
 }
 
+std::string ScrnModeToStr(int scrnMode)
+{
+	switch(scrnMode)
+	{
+	case SCRNMODE_640X200_SINGLE:
+		return "640X200_SINGLE";
+	case SCRNMODE_640X200_DOUBLE:
+		return "640X200_DOUBLE";
+	case SCRNMODE_320X200_4096COL:
+		return "320X200_4096COL";
+	case SCRNMODE_320X200_260KCOL:
+		return "320X200_260KCOL";
+	case SCRNMODE_640X400_SINGLE:
+		return "640X400_SINGLE";
+	}
+	return "SCRNMODE_?";
+}
+
 unsigned int StrToGamePortEmu(std::string str)
 {
 	Capitalize(str);
