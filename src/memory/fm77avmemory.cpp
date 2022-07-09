@@ -460,6 +460,7 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 	case MEMTYPE_SUBSYS_VRAM:
 		if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
 		{
+			addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
 			fm77avPtr->crtc.VRAMDummyRead(addr);
 		}
 		break;
