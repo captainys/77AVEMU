@@ -37,7 +37,12 @@ public:
 		Palette palette;
 		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
 		uint16_t VRAMOffset=0;
+		bool VRAMOffsetLowBitsEnabled=false;
 		uint8_t VRAMAccessMask=0;
+		uint8_t displayPage=0;
+		uint8_t activePage=0;
+
+		bool lineHardwareBusy=false;
 	};
 	FM77AVCRTC(VMBase *vmBase);
 	void Reset(void);
@@ -46,9 +51,16 @@ public:
 	const Palette &GetPalette(void) const;
 	bool InVSYNC(uint64_t fm77avTime) const;
 	bool InHSYNC(uint64_t fm77avTime) const;
+	inline bool InBlank(uint64_t fm77avTime) const
+	{
+		return InVSYNC(fm77avTime)||InHSYNC(fm77avTime);
+	}
 
 	void WriteFD12(uint8_t data);
 	const int NonDestructiveReadFD12(void) const;
+
+	void WriteD430(uint8_t data);
+	uint8_t NonDestructiveReadD430(void) const;
 
 	static inline uint32_t TransformVRAMAddress(uint32_t addr,unsigned int scrnMode,uint16_t VRAMOffset)
 	{

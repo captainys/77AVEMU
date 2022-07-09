@@ -24,7 +24,12 @@ void FM77AVCRTC::Reset(void)
 	state.palette.Reset();
 	state.scrnMode=SCRNMODE_640X200_SINGLE;
 	state.VRAMOffset=0;
+	state.VRAMOffsetLowBitsEnabled=false;
 	state.VRAMAccessMask=0;
+	state.displayPage=0;
+	state.activePage=0;
+
+	state.lineHardwareBusy=false;
 }
 FM77AVCRTC::Palette &FM77AVCRTC::GetPalette(void)
 {
@@ -103,4 +108,30 @@ const int FM77AVCRTC::NonDestructiveReadFD12(void) const
 		byteData&=0xFE; // VSYNC=1, DISPTMG=0
 	}
 	return byteData;
+}
+void FM77AVCRTC::WriteD430(uint8_t data)
+{
+	state.displayPage=((0!=(data&0x40)) ? 1 : 0);
+	state.activePage=((0!=(data&0x20)) ? 1 : 0);
+	state.VRAMOffsetLowBitsEnabled=(0!=(data&4));
+	// Katakana/Hiragana is managed by physMem.
+}
+uint8_t FM77AVCRTC::NonDestructiveReadD430(void) const
+{
+	auto fm77avPtr=(const FM77AV *)vmPtr;
+	uint8_t data=0xFF;
+	if(true!=InBlank(fm77avPtr->state.fm77avTime))
+	{
+		data&=0x7F;
+	}
+	if(true==state.lineHardwareBusy)
+	{
+		data&=0xEF;
+	}
+	if(true!=InVSYNC(fm77avPtr->state.fm77avTime))
+	{
+		data&=0xFB;
+	}
+	// Sub-Monitor Change is managed by physMem.
+	return data;
 }

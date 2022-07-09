@@ -151,6 +151,15 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		crtc.WriteFD12(value);
 		break;
 	case FM77AVIO_SUBSYS_BANK://=             0xFD13,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			physMem.WriteFD13(value);
+			if(true==physMem.state.subROMSwitch)
+			{
+				subCPU.Reset();
+				subCPU.state.PC=subMemAcc.FetchWord(0xFFFE);
+			}
+		}
 		break;
 
 	case FM77AVIO_FDC_STATUS_COMMAND://      0xFD18,
@@ -254,6 +263,18 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			crtc.state.VRAMOffset&=~0x1F;
 		}
 		break;
+	case FM77AVIO_LINE_DRAW_STATUS://=        0xD430,
+		crtc.WriteD430(value);
+		physMem.WriteD430(value);
+		state.subNMIMask=(0!=(value&0x80));
+		break;
+
+	case FM77AVIO_ENCODER_DATA://=            0xD431,
+		keyboard.WriteD431(value);
+		break;
+	case FM77AVIO_ENCODER_STATUS://=          0xD432,
+		keyboard.WriteD432(value);
+		break;
 	}
 }
 uint8_t FM77AV::IORead(uint16_t ioAddr)
@@ -351,6 +372,17 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=false;
 		break;
+	case FM77AVIO_LINE_DRAW_STATUS://=        0xD430,
+		physMem.state.subROMSwitch=false;
+		break;
+	case FM77AVIO_ENCODER_DATA://=            0xD431,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			keyboard.AfterReadD431();
+		}
+		break;
+	case FM77AVIO_ENCODER_STATUS://=          0xD432,
+		break;
 	}
 	return byteData;
 }
@@ -417,7 +449,10 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		break;
 
 	case FM77AVIO_SUBSYS_MODE://=             0xFD12,
-		byteData=crtc.NonDestructiveReadFD12();
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadFD12();
+		}
 		break;
 	case FM77AVIO_SUBSYS_BANK://=             0xFD13,
 		break;
@@ -507,6 +542,28 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		break;
 	case FM77AVIO_KEY_LOW: //=                 0xD401,
 		byteData=keyboard.state.lastKeyCode&0xFF;
+		break;
+	case FM77AVIO_LINE_DRAW_STATUS://=        0xD430,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=crtc.NonDestructiveReadD430();
+			if(true!=physMem.state.subROMSwitch)
+			{
+				byteData&=0xFE;
+			}
+		}
+		break;
+	case FM77AVIO_ENCODER_DATA://=            0xD431,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=keyboard.NonDestructiveReadD431();
+		}
+		break;
+	case FM77AVIO_ENCODER_STATUS://=          0xD432,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=keyboard.NonDestructiveReadD432();
+		}
 		break;
 	}
 	return byteData;

@@ -30,10 +30,21 @@ public:
 		uint16_t encodingMode=ENCODING_JIS;
 		uint16_t lastKeyCode=0;
 		std::queue <uint16_t> keyCodeQueue;
+
+		uint64_t encoderAcknowledgeBy=0;
+		uint64_t encoderDataReadyBy=0;
+		uint8_t encoderCmd=0;
+		std::queue <uint8_t> encoderQueue;
 	};
 	State state;
 
 	FM77AVKeyboard(VMBase *vmBase) : Device(vmBase){}
+
+	void WriteD431(uint8_t data);
+	void WriteD432(uint8_t data);
+	void AfterReadD431(void);
+	uint8_t NonDestructiveReadD431(void) const;
+	uint8_t NonDestructiveReadD432(void) const;
 
 	void ProcessKeyCodeInQueue(void);
 

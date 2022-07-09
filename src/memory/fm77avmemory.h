@@ -91,6 +91,12 @@ public:
 		MEMTYPE_MAINSYS_BOOT_ROM,
 		MEMTYPE_MAIN_RESET_VECTOR,
 	};
+	enum
+	{
+		SUBMON_A,
+		SUBMON_B,
+		SUBMON_C,
+	};
 
 	uint8_t ROM_BOOT_DOS[BOOT_ROM_SIZE];
 	uint8_t ROM_BOOT_BASIC[BOOT_ROM_SIZE];
@@ -118,6 +124,10 @@ public:
 		bool avBootROM=false;
 		uint8_t data[PHYSMEM_SIZE];
 		uint8_t extVRAM[EXTVRAM_SIZE];
+
+		uint8_t subMonType=SUBMON_C;
+		uint8_t subFontType=0;
+		bool subROMSwitch=false;
 	};
 	State state;
 
@@ -129,6 +139,9 @@ public:
 	bool LoadROMFiles(std::string ROMPath);
 
 	void IOWriteByte(unsigned int ioport,unsigned int data);
+
+	void WriteFD13(uint8_t data);
+	void WriteD430(uint8_t data);
 
 	const uint8_t *GetVRAMBank(int bank) const;
 	uint8_t *GetVRAMBank(int bank);

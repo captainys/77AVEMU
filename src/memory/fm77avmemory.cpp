@@ -242,6 +242,40 @@ void PhysicalMemory::IOWriteByte(unsigned int ioport,unsigned int data)
 	}
 }
 
+void PhysicalMemory::WriteFD13(uint8_t data)
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	// if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType)
+	// { Can make sub-system all RAM.
+	// }
+	// else
+	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
+	{
+		auto prev=state.subMonType;
+		switch(data&3)
+		{
+		case 0:
+			state.subMonType=SUBMON_C;
+			break;
+		case 1:
+			state.subMonType=SUBMON_A;
+			break;
+		case 2:
+			state.subMonType=SUBMON_B;
+			break;
+		}
+		if(prev!=state.subMonType)
+		{
+			state.subROMSwitch=true;
+		}
+	}
+}
+void PhysicalMemory::WriteD430(uint8_t data)
+{
+	auto prev=state.subFontType;
+	state.subFontType=data&3;
+}
+
 void PhysicalMemory::Reset(void)
 {
 	Device::Reset();
@@ -249,6 +283,7 @@ void PhysicalMemory::Reset(void)
 	state.FE00ROMMode=true;
 	state.shadowRAMEnabled=false;
 	state.avBootROM=false;
+	state.subROMSwitch=false;
 
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
@@ -326,10 +361,27 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		return state.data[addr];
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
-		// if(subsys monitor A or B) use appropriate font bank.
-		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
+		if(SUBMON_C==state.subMonType)
+		{
+			return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
+		}
+		else // if(SUBMON_A==state. || SUBMON_B==state.)
+		{
+			return ROM_ASCII_FONT[state.subFontType*ASCII_FONT_ROM_SIZE+(addr-SUBSYS_FONT_ROM_BEGIN)];
+		}
 	case MEMTYPE_SUBSYS_MONITOR_ROM:
-		// if(subsys monitor A or B) use appropriate font bank.
+		if(SUBMON_C==state.subMonType)
+		{
+			return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
+		}
+		else if(SUBMON_A==state.subMonType)
+		{
+			return ROM_SUBSYS_A[addr-SUBSYS_MONITOR_ROM_BEGIN];
+		}
+		else if(SUBMON_B==state.subMonType)
+		{
+			return ROM_SUBSYS_B[addr-SUBSYS_MONITOR_ROM_BEGIN];
+		}
 		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
 	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
 		if(true==state.avBootROM)
@@ -547,6 +599,40 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	}
 	text.back()+="VRAM Access Mask:";
 	text.back()+=cpputil::Ubtox(state.VRAMAccessMask);
+
+	text.push_back("");
+	text.back()+="SubSysROM:";
+	switch(state.subMonType)
+	{
+	case SUBMON_A:
+		text.back()+="TypeA ";
+		break;
+	case SUBMON_B:
+		text.back()+="TypeB ";
+		break;
+	case SUBMON_C:
+		text.back()+="TypeC ";
+		break;
+	}
+	text.back()+="FontROM:";
+	switch(state.subFontType)
+	{
+	case 0:
+		text.back()+="Katakana ";
+		break;
+	case 1:
+		text.back()+="Hiragana ";
+		break;
+	case 2:
+		text.back()+="ROM1 ";
+		break;
+	case 3:
+		text.back()+="ROM2 ";
+		break;
+	case 4:
+		text.back()+="Corrupt ";
+		break;
+	}
 
 	return text;
 }

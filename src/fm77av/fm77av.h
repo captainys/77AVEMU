@@ -106,6 +106,7 @@ public:
 
 		bool subSysBusy,subSysHalt;
 		bool mainToSubIRQ;
+		bool subNMIMask=false;
 
 		unsigned int machineType=MACHINETYPE_FM7;
 		unsigned int keyboardIRQHandler=CPU_SUB; // Controlled by $FD02 bit 0.  FM-Techknow pp.151.
@@ -193,7 +194,7 @@ public:
 		if(state.next20msTimer<=state.fm77avTime)
 		{
 			state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
-			if(true!=SubCPUHalt())
+			if(true!=SubCPUHalt() && true!=state.subNMIMask)
 			{
 				// Don't fire NMI when sub-cpu is halt.
 				// Greater than 40ms halt will double-fire the NMI, which is not good.
