@@ -29,6 +29,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["STARTAUDIOREC"]=CMD_START_AUDIO_RECORDING;
 	primaryCmdMap["ENDAUDIOREC"]=CMD_END_AUDIO_RECORDING;
 	primaryCmdMap["SAVEAUDIOREC"]=CMD_SAVE_AUDIO_RECORDING;
+	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
+	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
 	primaryCmdMap["U"]=CMD_DISASM;
 	primaryCmdMap["UM"]=CMD_DISASM_MAIN;
 	primaryCmdMap["US"]=CMD_DISASM_SUB;
@@ -113,6 +115,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Enable a feature." << std::endl;
 	std::cout << "DIS feature|DISABLE feature" << std::endl;
 	std::cout << "  Disable a feature." << std::endl;
+	std::cout << "STA / STA m(ain) / STA s(ub)" << std::endl;
+	std::cout << "  Print CPU status." << std::endl;
+	std::cout << "HIST / HIST m(ain) / HIST s(ub)" << std::endl;
+	std::cout << "  Same as PRI HIST command." << std::endl;
 	std::cout << "U cpu:addr" << std::endl;
 	std::cout << "UM addr" << std::endl;
 	std::cout << "US addr" << std::endl;
@@ -464,6 +470,19 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		}
 		break;
 
+	case CMD_PRINT_STATUS:
+		thr.PrintStatus(fm77av,false,false);
+		break;
+	case CMD_PRINT_HISTORY:
+		{
+			decltype(cmd.argv) argvCopy;
+			std::swap(argvCopy,cmd.argv);
+			cmd.argv.push_back("PRI");
+			cmd.argv.insert(cmd.argv.end(),argvCopy.begin(),argvCopy.end());
+			Execute_PrintHistory(thr,fm77av,cmd);
+		}
+		break;
+
 	case CMD_DISASM:
 		Execute_Disassemble(thr,fm77av,outside_world,cmd);
 		break;
@@ -737,6 +756,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV
 	auto &cpu=fm77av.mainCPU;
 	auto &mem=fm77av.mainMemAcc;
 	uint16_t PC;
+	fm77av.var.lastDisassemblyCPU=CPU_MAIN;
 	if(cmd.argv.size()<2)
 	{
 		PC=cpu.debugger.nextDisassemblyAddr;
@@ -758,6 +778,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 	auto &cpu=fm77av.subCPU;
 	auto &mem=fm77av.subMemAcc;
 	uint16_t PC;
+	fm77av.var.lastDisassemblyCPU=CPU_SUB;
 	if(cmd.argv.size()<2)
 	{
 		PC=cpu.debugger.nextDisassemblyAddr;
@@ -830,57 +851,51 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 }
 void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd)
 {
+	int mainOrSub=CPU_UNKNOWN;
+	int n=32;
+	int paramBase=3;
+
 	if(3<=cmd.argv.size())
 	{
-		int mainOrSub=StrToCPU(cmd.argv[2]);
-		int n=32;
-		int paramBase=3;
-
+		mainOrSub=StrToCPU(cmd.argv[2]);
+		paramBase=3;
+	}
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		mainOrSub=thr.OnlyOneCPUIsUnmuted();
+		paramBase=2;
+	}
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		// There is a possibility that mainOrSub is omitted, default to the one unmuted.
 		if(CPU_UNKNOWN==mainOrSub)
 		{
-			// There is a possibility that mainOrSub is omitted, default to the one unmuted.
-			mainOrSub=thr.OnlyOneCPUIsUnmuted();
-			if(CPU_UNKNOWN==mainOrSub)
-			{
-				Error_UnknownCPU(cmd);
-				return;
-			}
-			if(3<=cmd.argv.size())
-			{
-				paramBase=2;
-			}
+			Error_UnknownCPU(cmd);
+			return;
 		}
-		else
-		{
-			if(4<=cmd.argv.size())
-			{
-				paramBase=3;
-			}
-		}
+	}
+	if(paramBase<cmd.argv.size())
+	{
+		n=cpputil::Atoi(cmd.argv[paramBase].c_str());
+	}
 
-		if(paramBase<cmd.argv.size())
+	auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
+	// auto &symTable=av.debugger.GetSymTable();
+	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
+	{
+		std::cout << cpputil::Ustox(iter->PC);
+		std::cout << " ";
+		std::cout << "S=" << cpputil::Ustox(iter->S);
+		if(1<iter->count)
 		{
-			n=cpputil::Atoi(cmd.argv[paramBase].c_str());
+			std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
 		}
-
-		auto list=av.CPU(mainOrSub).debugger.GetPCLog(n);
-		// auto &symTable=av.debugger.GetSymTable();
-		for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
-		{
-			std::cout << cpputil::Ustox(iter->PC);
-			std::cout << " ";
-			std::cout << "S=" << cpputil::Ustox(iter->S);
-			if(1<iter->count)
-			{
-				std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
-			}
-			// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
-			// if(nullptr!=symbolPtr)
-			// {
-			// 	std::cout << " " << symbolPtr->Format();
-			// }
-			std::cout << std::endl;
-		}
+		// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
+		// if(nullptr!=symbolPtr)
+		// {
+		// 	std::cout << " " << symbolPtr->Format();
+		// }
+		std::cout << std::endl;
 	}
 }
 void FM77AVCommandInterpreter::Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,Command &cmd)
