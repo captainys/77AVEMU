@@ -320,10 +320,19 @@ uint32_t PhysicalMemory::GetVRAMBankSize(int bank) const
 {
 	return 0xC000;
 }
+uint8_t *PhysicalMemory::GetCurrentVRAMBank(void)
+{
+	auto fm77avPtr=(const FM77AV *)vmPtr;
+	if(0==fm77avPtr->crtc.state.activePage)
+	{
+		return state.data+SUBSYS_VRAM_BEGIN;
+	}
+	return state.extVRAM;
+}
 
 uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 {
-	auto fm77avPtr=(FM77AV *)vmPtr;
+	auto fm77avPtr=(const FM77AV *)vmPtr;
 	switch(memType[addr])
 	{
 	case MEMTYPE_RAM:

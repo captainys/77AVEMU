@@ -43,6 +43,10 @@ void FM77AVCRTC::HardwareDrawing::Reset(void)
 	tile[0]=0;
 	tile[1]=0;
 	tile[2]=0;
+	for(int i=0; i<8; ++i)
+	{
+		tilePtnCache[i]=0;
+	}
 
 	// $D430
 	lineBusy=false;
@@ -198,22 +202,36 @@ void FM77AVCRTC::WriteFD31(uint8_t data)
 }
 void FM77AVCRTC::WriteFD32(uint8_t data)
 {
+	data&=0x0f;
 	state.palette.analogPalette[state.palette.analogPaletteLatch][2]=data|(data<<4);
 }
 void FM77AVCRTC::WriteFD33(uint8_t data)
 {
+	data&=0x0f;
 	state.palette.analogPalette[state.palette.analogPaletteLatch][0]=data|(data<<4);
 }
 void FM77AVCRTC::WriteFD34(uint8_t data)
 {
+	data&=0x0f;
 	state.palette.analogPalette[state.palette.analogPaletteLatch][1]=data|(data<<4);
 }
-void FM77AVCRTC::VRAMDummyRead(uint8_t VRAMAddr)
+void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddr)
 {
-	std::cout << cpputil::Ustox(VRAMAddr) << std::endl;
+	if(true==state.hardDraw.enabled)
+	{
+		auto fm77avPtr=(FM77AV *)vmPtr;
+		auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
+		VRAMAddr&=VRAM_PLANE_MASK;
+		VRAM[VRAMAddr]=state.hardDraw.tile[0];		// Tentative implementation
+		VRAM[VRAMAddr+VRAM_PLANE_SIZE]=state.hardDraw.tile[1];
+		VRAM[VRAMAddr+VRAM_PLANE_SIZE*2]=state.hardDraw.tile[2];
+	}
 }
 void FM77AVCRTC::WriteD410(uint8_t data)
 {
+	state.hardDraw.enabled=(0!=(0x80&data));
+	state.hardDraw.condition=(data>>5)&3;
+	state.hardDraw.cmd=data&7;
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD410(void) const
 {
@@ -228,6 +246,7 @@ uint8_t FM77AVCRTC::NonDestructiveReadD410(void) const
 }
 void FM77AVCRTC::WriteD411(uint8_t data)
 {
+	state.hardDraw.color=data&7;
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD411(void) const
 {
@@ -235,6 +254,7 @@ uint8_t FM77AVCRTC::NonDestructiveReadD411(void) const
 }
 void FM77AVCRTC::WriteD412(uint8_t data)
 {
+	state.hardDraw.maskBits=data;
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD412(void) const
 {
@@ -242,6 +262,7 @@ uint8_t FM77AVCRTC::NonDestructiveReadD412(void) const
 }
 void FM77AVCRTC::WriteD413(uint8_t data)
 {
+	state.hardDraw.compareColor[0]=data;
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD413(void) const
 {
@@ -249,27 +270,35 @@ uint8_t FM77AVCRTC::NonDestructiveReadD413(void) const
 }
 void FM77AVCRTC::WriteD414(uint8_t data)
 {
+	state.hardDraw.compareColor[1]=data;
 }
 void FM77AVCRTC::WriteD415(uint8_t data)
 {
+	state.hardDraw.compareColor[2]=data;
 }
 void FM77AVCRTC::WriteD416(uint8_t data)
 {
+	state.hardDraw.compareColor[3]=data;
 }
 void FM77AVCRTC::WriteD417(uint8_t data)
 {
+	state.hardDraw.compareColor[4]=data;
 }
 void FM77AVCRTC::WriteD418(uint8_t data)
 {
+	state.hardDraw.compareColor[5]=data;
 }
 void FM77AVCRTC::WriteD419(uint8_t data)
 {
+	state.hardDraw.compareColor[6]=data;
 }
 void FM77AVCRTC::WriteD41A(uint8_t data)
 {
+	state.hardDraw.compareColor[7]=data;
 }
 void FM77AVCRTC::WriteD41B(uint8_t data)
 {
+	state.hardDraw.bankMask=data&7;
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD41B(void) const
 {
@@ -277,18 +306,56 @@ uint8_t FM77AVCRTC::NonDestructiveReadD41B(void) const
 }
 void FM77AVCRTC::WriteD41C(uint8_t data)
 {
+	state.hardDraw.tile[0]=data;
+	for(int i=0; i<8; ++i)
+	{
+		state.hardDraw.tilePtnCache[i]&=0xFE;
+		if(0!=(data&0x80))
+		{
+			state.hardDraw.tilePtnCache[i]|=1;
+		}
+		data<<=1;
+	}
 }
 void FM77AVCRTC::WriteD41D(uint8_t data)
 {
+	state.hardDraw.tile[1]=data;
+	for(int i=0; i<8; ++i)
+	{
+		state.hardDraw.tilePtnCache[i]&=0xFD;
+		if(0!=(data&0x80))
+		{
+			state.hardDraw.tilePtnCache[i]|=2;
+		}
+		data<<=1;
+	}
 }
 void FM77AVCRTC::WriteD41E(uint8_t data)
 {
+	state.hardDraw.tile[2]=data;
+	for(int i=0; i<8; ++i)
+	{
+		state.hardDraw.tilePtnCache[i]&=0xFB;
+		if(0!=(data&0x80))
+		{
+			state.hardDraw.tilePtnCache[i]|=4;
+		}
+		data<<=1;
+	}
 }
 void FM77AVCRTC::WriteD420(uint8_t data)
 {
+	uint16_t orPtn=data&0x1F;
+	orPtn<<9;
+	state.hardDraw.addrOffset&=0x1FF;
+	state.hardDraw.addrOffset|=orPtn;
 }
 void FM77AVCRTC::WriteD421(uint8_t data)
 {
+	uint16_t orPtn=data;
+	orPtn<<1;
+	state.hardDraw.addrOffset&=0xFE00;
+	state.hardDraw.addrOffset|=orPtn;
 }
 void FM77AVCRTC::WriteD422(uint8_t data)
 {

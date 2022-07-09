@@ -1,9 +1,9 @@
 #include <iostream>
+#include <string.h>
 #include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avsound.h"
 #include "outside_world.h"
-
 
 inline void WordOp_Add(unsigned char *ptr,int value)
 {
@@ -247,7 +247,7 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 				{
 					numSamples=MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
 					nextWave.resize(numSamples*4);
-					std::memset(nextWave.data(),0,numSamples*4);
+					memset(nextWave.data(),0,numSamples*4);
 				}
 				else
 				{
@@ -264,7 +264,7 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 				{
 					unsigned int numSamples=MILLISEC_PER_WAVE*AY38910::WAVE_SAMPLING_RATE/1000;
 					nextWave.resize(numSamples*4);
-					std::memset(nextWave.data(),0,numSamples*4);
+					memset(nextWave.data(),0,numSamples*4);
 					for(unsigned int i=0; i<numSamples; ++i)
 					{
 						state.beepTimeBalance+=100;

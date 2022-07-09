@@ -49,6 +49,8 @@ public:
 		uint8_t bankMask=0;
 		// $D41C to $D41E
 		uint8_t tile[3];
+		uint8_t tilePtnCache[8];
+
 
 		// $D430
 		bool lineBusy=false;
@@ -71,6 +73,9 @@ public:
 		// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
 		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
 		CRT_HORIZONTAL_DURATION= 30000,
+
+		VRAM_PLANE_SIZE=0x4000,
+		VRAM_PLANE_MASK=0x3FFF,
 	};
 
 	class State
@@ -109,7 +114,7 @@ public:
 	uint8_t NonDestructiveReadD430(void) const;
 
 	// Graphics Accelerator >>
-	void VRAMDummyRead(uint8_t VRAMAddr);
+	void VRAMDummyRead(uint16_t VRAMAddr);
 	void WriteD410(uint8_t data);
 	uint8_t NonDestructiveReadD410(void) const;
 	void WriteD411(uint8_t data);

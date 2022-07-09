@@ -1,4 +1,5 @@
 #include "fm77avrender.h"
+#include "string.h"
 
 
 
@@ -110,6 +111,7 @@ void FM77AVRender::BuildImage(const unsigned char VRAM[],const class FM77AVCRTC:
 				{
 					unsigned int addr=y*40+(x>>3);
 					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset);
+
 					unsigned int B3=VRAM[addr];
 					unsigned int B2=VRAM[addr+ 0x2000];
 					unsigned int B1=VRAM[addr+ 0xC000];
@@ -158,11 +160,10 @@ void FM77AVRender::BuildImage(const unsigned char VRAM[],const class FM77AVCRTC:
 							(0!=(R2&0x80) ? 64 : 0) |
 							(0!=(R1&0x80) ? 32 : 0) |
 							(0!=(R0&0x80) ? 16 : 0) |
-							(0!=(B3&0x80) ? 8 : 0);
-							(0!=(B2&0x80) ? 4 : 0);
-							(0!=(B1&0x80) ? 2 : 0);
+							(0!=(B3&0x80) ? 8 : 0) |
+							(0!=(B2&0x80) ? 4 : 0) |
+							(0!=(B1&0x80) ? 2 : 0) |
 							(0!=(B0&0x80) ? 1 : 0);
-
 						rgba0[0]=palette.analogPalette[code][0];
 						rgba0[1]=palette.analogPalette[code][1];
 						rgba0[2]=palette.analogPalette[code][2];
