@@ -185,7 +185,14 @@ public:
 
 	inline uint32_t MMRAddressTranslation(uint16_t cpuAddr) const
 	{
-		return MMR[MMRSEG][cpuAddr>>12]+(cpuAddr&0xFFF);
+		if(cpuAddr<0xFC00) // FM77AV40 Hardware Manual pp.146
+		{
+			return MMR[MMRSEG][cpuAddr>>12]+(cpuAddr&0xFFF);
+		}
+		else
+		{
+			return MAINCPU_ADDR_BASE+cpuAddr;
+		}
 	}
 	inline uint32_t TWRAddressTranslation(uint16_t cpuAddr) const
 	{
