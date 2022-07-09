@@ -1,0 +1,57 @@
+				ORG		$4000
+				PSHS	CC
+				ORCC	#$50
+
+				BSR		MMRINIT
+
+				LDA		#$80
+				STA		$FD05
+
+				LDA		#$1D	; Sub $D000
+				STA		$FD8D
+				LDA		#$80
+				STA		$FD93
+
+
+				LDA		#$80
+				BSR		ENCODER_WRITE
+				CLRA
+				BSR		ENCODER_WRITE
+
+				LDB		#7
+				LDU		#$5000
+READ_LOOP
+				BSR		ENCODER_READ
+				STA		,U+
+				DECB
+				BNE		READ_LOOP
+
+				CLR		$FD05
+
+				BSR		MMRINIT
+
+				PULS	CC,PC
+
+MMRINIT
+				LDA		#$30
+				LDX		#$FD80
+MMRINITLOOP
+				STA		,X+
+				INCA
+				CMPA	#$40
+				BNE		MMRINITLOOP
+				RTS
+
+ENCODER_WRITE
+				STA		$D381
+ENCODER_WRITE_WAIT
+				LDA		$D382
+				ANDA	#1
+				BEQ		ENCODER_WRITE_WAIT
+				RTS
+
+ENCODER_READ
+				LDA		$D382
+				BMI		ENCODER_READ
+				LDA		$D381
+				RTS

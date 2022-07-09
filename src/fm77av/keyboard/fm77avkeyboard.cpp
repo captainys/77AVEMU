@@ -1,6 +1,7 @@
 #include "fm77av.h"
 #include "fm77avkeyboard.h"
 #include "fm77avkey.h"
+#include "cpputil.h"
 
 
 
@@ -89,9 +90,19 @@ void FM77AVKeyboard::WriteD431(uint8_t data)
 {
 	state.encoderCmd<<=8;
 	state.encoderCmd|=data;
+
+std::cout << cpputil::Ustox(state.encoderCmd) << std::endl;
+
 	switch(state.encoderCmd)
 	{
 	case 0x8000: // ?? Probably Reset.  Subsys Monitor A expects to read 7 bytes after this command.
+		state.encoderQueue.push(0); // FM Techknow pp.141 Must return RTC
+		state.encoderQueue.push(0);
+		state.encoderQueue.push(0);
+		state.encoderQueue.push(0);
+		state.encoderQueue.push(0);
+		state.encoderQueue.push(0);
+		state.encoderQueue.push(0);
 		break;
 	}
 
@@ -112,5 +123,15 @@ uint8_t FM77AVKeyboard::NonDestructiveReadD431(void) const
 }
 uint8_t FM77AVKeyboard::NonDestructiveReadD432(void) const
 {
-	return 0;
+	uint8_t byteData=0xFF;
+	const FM77AV *fm77av=(const FM77AV *)vmPtr;
+	if(fm77av->state.fm77avTime<=state.encoderAcknowledgeBy)
+	{
+		byteData&=0xFE;
+	}
+	if(true!=state.encoderQueue.empty() && state.encoderDataReadyBy<fm77av->state.fm77avTime)
+	{
+		byteData&=0x7F;
+	}
+	return byteData;
 }

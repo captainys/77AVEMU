@@ -33,7 +33,7 @@ public:
 
 		uint64_t encoderAcknowledgeBy=0;
 		uint64_t encoderDataReadyBy=0;
-		uint8_t encoderCmd=0;
+		uint16_t encoderCmd=0;
 		std::queue <uint8_t> encoderQueue;
 	};
 	State state;
