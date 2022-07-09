@@ -43,6 +43,8 @@ public:
 		uint8_t color=0;
 		// $D412
 		uint8_t maskBits=0;
+		// $D413
+		uint8_t compareResult=0;
 		// $D413 to $D41A
 		uint8_t compareColor[8];
 		// $D41B

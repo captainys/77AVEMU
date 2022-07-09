@@ -215,20 +215,97 @@ void FM77AVCRTC::WriteFD34(uint8_t data)
 	data&=0x0f;
 	state.palette.analogPalette[state.palette.analogPaletteLatch][1]=data|(data<<4);
 }
-void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddr)
+void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 {
 	if(true==state.hardDraw.enabled)
 	{
 		auto fm77avPtr=(FM77AV *)vmPtr;
 		auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
-		VRAMAddr&=VRAM_PLANE_MASK;
-		switch(state.hardDraw.cmd)
+
+		VRAMAddrIn&=VRAM_PLANE_MASK;
+		uint16_t VRAMAddr[3]=
 		{
-		case HD_CMD_TILE:
-			VRAM[VRAMAddr]=state.hardDraw.tile[0];		// Tentative implementation
-			VRAM[VRAMAddr+VRAM_PLANE_SIZE]=state.hardDraw.tile[1];
-			VRAM[VRAMAddr+VRAM_PLANE_SIZE*2]=state.hardDraw.tile[2];
-			break;
+			VRAMAddrIn,
+			VRAMAddrIn+VRAM_PLANE_SIZE,
+			VRAMAddrIn+VRAM_PLANE_SIZE*2,
+		};
+
+		if(0!=(state.hardDraw.condition&2))
+		{
+			state.hardDraw.compareResult=0;
+		}
+
+		uint8_t bit=0x80;
+		uint8_t writeBits=0;
+		for(int i=0; i<8; ++i)
+		{
+			if(0!=(state.hardDraw.maskBits&bit))
+			{
+				goto NEXT;
+			}
+
+			if(0!=(state.hardDraw.condition&2) && 0==state.hardDraw.compareColor[i]&0x80) // Or should it be compareColor[7-i]&0x80?
+			{
+				uint8_t srcColor=0;
+				srcColor|=(0!=(VRAM[VRAMAddr[0]]&bit) ? 1 : 0);
+				srcColor|=(0!=(VRAM[VRAMAddr[1]]&bit) ? 2 : 0);
+				srcColor|=(0!=(VRAM[VRAMAddr[2]]&bit) ? 4 : 0);
+
+				if((0==(state.hardDraw.condition&1) && state.hardDraw.compareColor[i]==srcColor) ||
+				   (0!=(state.hardDraw.condition&1) && state.hardDraw.compareColor[i]!=srcColor))
+				{
+					// Pass
+					state.hardDraw.compareResult|=bit;
+				}
+				else
+				{
+					goto NEXT;
+				}
+			}
+			writeBits|=bit;
+
+		NEXT:
+			bit>>=1;
+		}
+
+		uint8_t bankMask=state.hardDraw.bankMask;
+		uint8_t col=state.hardDraw.color;
+		for(int i=0; i<3; ++i,bankMask>>=1,col>>=1)
+		{
+			if(0!=(bankMask&1))
+			{
+				continue;
+			}
+
+			uint8_t rgb=(0!=(col&1) ? 255 : 0);
+			uint8_t src=VRAM[VRAMAddr[i]];
+
+			switch(state.hardDraw.cmd)
+			{
+			case HD_CMD_TILE:
+				VRAM[VRAMAddr[i]]&=~writeBits;
+				VRAM[VRAMAddr[i]]|=(state.hardDraw.tile[i]&writeBits);
+				break;
+			case HD_CMD_PSET:
+				VRAM[VRAMAddr[i]]&=~writeBits;
+				VRAM[VRAMAddr[i]]|=(rgb&writeBits);
+				break;
+			case HD_CMD_OR:
+				VRAM[VRAMAddr[i]]|=(rgb&writeBits);
+				break;
+			case HD_CMD_AND:
+				VRAM[VRAMAddr[i]]=(src&~writeBits)|(src&rgb&writeBits);
+				break;
+			case HD_CMD_XOR://4,
+				VRAM[VRAMAddr[i]]^=(writeBits&rgb);
+				break;
+			case HD_CMD_NOT://5,
+				VRAM[VRAMAddr[i]]&=~writeBits;
+				VRAM[VRAMAddr[i]]|=((~rgb)&writeBits);
+				break;
+			case HD_CMD_CMP://7,
+				break;
+			}
 		}
 	}
 }
@@ -267,39 +344,40 @@ uint8_t FM77AVCRTC::NonDestructiveReadD412(void) const
 }
 void FM77AVCRTC::WriteD413(uint8_t data)
 {
-	state.hardDraw.compareColor[0]=data;
+	state.hardDraw.compareColor[0]=data&0x87;
 }
 uint8_t FM77AVCRTC::NonDestructiveReadD413(void) const
 {
-	return 0; // Compare Bit according to FM77AV40 Hardware Manual, D0 to D7 according to FM Techknow and Oh!FM 1989-05.  No other explanation.
+	// FM77AV40 Hardware Manual pp. 157 tells it is comparison result.
+	return state.hardDraw.compareResult;
 }
 void FM77AVCRTC::WriteD414(uint8_t data)
 {
-	state.hardDraw.compareColor[1]=data;
+	state.hardDraw.compareColor[1]=data&0x87;
 }
 void FM77AVCRTC::WriteD415(uint8_t data)
 {
-	state.hardDraw.compareColor[2]=data;
+	state.hardDraw.compareColor[2]=data&0x87;
 }
 void FM77AVCRTC::WriteD416(uint8_t data)
 {
-	state.hardDraw.compareColor[3]=data;
+	state.hardDraw.compareColor[3]=data&0x87;
 }
 void FM77AVCRTC::WriteD417(uint8_t data)
 {
-	state.hardDraw.compareColor[4]=data;
+	state.hardDraw.compareColor[4]=data&0x87;
 }
 void FM77AVCRTC::WriteD418(uint8_t data)
 {
-	state.hardDraw.compareColor[5]=data;
+	state.hardDraw.compareColor[5]=data&0x87;
 }
 void FM77AVCRTC::WriteD419(uint8_t data)
 {
-	state.hardDraw.compareColor[6]=data;
+	state.hardDraw.compareColor[6]=data&0x87;
 }
 void FM77AVCRTC::WriteD41A(uint8_t data)
 {
-	state.hardDraw.compareColor[7]=data;
+	state.hardDraw.compareColor[7]=data&0x87;
 }
 void FM77AVCRTC::WriteD41B(uint8_t data)
 {
@@ -457,7 +535,7 @@ std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
 	case HD_CMD_TILE://6,
 		text.back()+="TILE";
 		break;
-	case HD_CMD_CMP://7, // Compare? What is it?
+	case HD_CMD_CMP://7,
 		text.back()+="CMP";
 		break;
 	default:
