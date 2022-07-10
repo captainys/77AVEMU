@@ -113,6 +113,13 @@ public:
 		return state.VRAMOffset[state.activePage];
 	}
 
+	/*! Returns 80 for 640x? mode, 40 for 320x? mode.
+	*/
+	unsigned int GetBytesPerLine(void) const;
+	/*! Returns 0x3FFF for 640x? mode, 0x1FFF for 320x? mode.
+	*/
+	unsigned int GetPlaneVRAMMask(void) const;
+
 	void AddBreakOnHardwareVRAMWriteType(uint8_t opType);
 	void ClearBreakOnHardwareVRAMWriteType(uint8_t opType);
 
@@ -169,6 +176,7 @@ public:
 	void WriteD42A(uint8_t data);
 	void WriteD42B(uint8_t data);
 	void DrawLine(void);
+	void PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned int count); // Count is for line stipple or tile.
 	// Graphics Accelerator <<
 
 
