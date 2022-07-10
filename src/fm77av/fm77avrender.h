@@ -15,6 +15,8 @@ private:
 	unsigned int VRAMOffset;
 	unsigned int VRAMAccessMask;
 
+	unsigned char VRAM[FM77AV40_VRAM_SIZE];
+
 public:
 	class Image
 	{
@@ -35,11 +37,11 @@ public:
 
 	/*! 
 	*/
-	void Prepare(const FM77AVCRTC &crtc);
+	void Prepare(const FM77AV &fm77av);
 
 	/*! 
 	*/
-	void BuildImage(const unsigned char VRAM[],const class FM77AVCRTC::Palette &palette);
+	void BuildImage(const class FM77AVCRTC::Palette &palette);
 
 	/*!
 	*/

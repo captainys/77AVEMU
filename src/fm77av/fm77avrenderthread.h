@@ -30,7 +30,6 @@ public:
 	bool imageNeedsFlip=false;
 
 	FM77AVRender *rendererPtr;
-	unsigned char VRAMCopy[FM77AV40_VRAM_SIZE];
 	FM77AVCRTC::Palette paletteCopy;
 
 	bool imageReady=false;

@@ -23,12 +23,29 @@ FM77AVRender::Image FM77AVRender::GetImage(void) const
 	image.rgba=rgba.data();
 	return image;
 }
-void FM77AVRender::Prepare(const FM77AVCRTC &crtc)
+void FM77AVRender::Prepare(const FM77AV &fm77av)
 {
-	this->scrnMode=crtc.state.scrnMode;
-	this->VRAMOffset=crtc.state.VRAMOffset&crtc.state.VRAMOffsetMask;
-	this->VRAMAccessMask=crtc.state.VRAMAccessMask;
-	switch(crtc.state.scrnMode)
+	this->scrnMode=fm77av.crtc.state.scrnMode;
+	this->VRAMOffset=fm77av.crtc.state.VRAMOffset&fm77av.crtc.state.VRAMOffsetMask;
+	this->VRAMAccessMask=fm77av.crtc.state.VRAMAccessMask;
+
+	switch(fm77av.crtc.state.scrnMode)
+	{
+	case SCRNMODE_640X200_SINGLE:
+		memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0)); // Bank 0 always.
+		break;
+	case SCRNMODE_640X200_DOUBLE:
+		memcpy(this->VRAM,
+		       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),
+		       fm77av.physMem.GetVRAMBankSize(fm77av.crtc.state.displayPage));
+		break;
+	case SCRNMODE_320X200_4096COL:
+		memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
+		memcpy(this->VRAM+fm77av.physMem.GetVRAMBankSize(0),fm77av.physMem.GetVRAMBank(1),fm77av.physMem.GetVRAMBankSize(1));
+		break;
+	}
+
+	switch(fm77av.crtc.state.scrnMode)
 	{
 	case SCRNMODE_640X200_SINGLE:
 	case SCRNMODE_640X200_DOUBLE:
@@ -42,7 +59,7 @@ void FM77AVRender::Prepare(const FM77AVCRTC &crtc)
 	}
 }
 
-void FM77AVRender::BuildImage(const unsigned char VRAM[],const class FM77AVCRTC::Palette &palette)
+void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 {
 	switch(scrnMode)
 	{

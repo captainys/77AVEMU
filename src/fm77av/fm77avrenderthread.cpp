@@ -42,7 +42,7 @@ void FM77AVRenderingThread::ThreadFunc(void)
 		}
 		else if(RENDER==command)
 		{
-			rendererPtr->BuildImage(VRAMCopy,paletteCopy);
+			rendererPtr->BuildImage(paletteCopy);
 
 			if(true==imageNeedsFlip)
 			{
@@ -70,23 +70,8 @@ void FM77AVRenderingThread::CheckRenderingTimer(FM77AV &fm77av,FM77AVRender &ren
 	   fm77av.state.nextRenderingTime<=fm77av.state.fm77avTime && 
 	   true!=fm77av.crtc.InVSYNC(fm77av.state.fm77avTime))
 	{
-		render.Prepare(fm77av.crtc);
+		render.Prepare(fm77av);
 		this->rendererPtr=&render;
-		switch(fm77av.crtc.state.scrnMode)
-		{
-		case SCRNMODE_640X200_SINGLE:
-			memcpy(this->VRAMCopy,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0)); // Bank 0 always.
-			break;
-		case SCRNMODE_640X200_DOUBLE:
-			memcpy(this->VRAMCopy,
-			       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),
-			       fm77av.physMem.GetVRAMBankSize(fm77av.crtc.state.displayPage));
-			break;
-		case SCRNMODE_320X200_4096COL:
-			memcpy(this->VRAMCopy,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
-			memcpy(this->VRAMCopy+fm77av.physMem.GetVRAMBankSize(0),fm77av.physMem.GetVRAMBank(1),fm77av.physMem.GetVRAMBankSize(1));
-			break;
-		}
 		this->paletteCopy=fm77av.crtc.GetPalette();
 
 		state=STATE_RENDERING;
