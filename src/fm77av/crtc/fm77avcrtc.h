@@ -30,6 +30,8 @@ public:
 		HD_CMD_NOT=5,
 		HD_CMD_TILE=6,
 		HD_CMD_CMP=7, // Compare? What is it?
+
+		HD_LINE_DURATION=1000000, // 1000 lines per second?  I need to do experiment to see the average line-drawing time.
 	};
 
 	class HardwareDrawing
@@ -56,6 +58,7 @@ public:
 
 		// $D430
 		bool lineBusy=false;
+		uint64_t lineBusyBy=0;
 		// $D420,$D421
 		uint16_t addrOffset=0;
 		// $D422,$D423
@@ -93,6 +96,7 @@ public:
 	};
 
 	uint8_t breakOnHardwareVRAMWriteOpBits=0;
+	bool breakOnHardwareLineDrawing=false;
 
 	FM77AVCRTC(VMBase *vmBase);
 	void Reset(void);
@@ -112,6 +116,9 @@ public:
 
 	void AddBreakOnHardwareVRAMWriteType(uint8_t opType);
 	void ClearBreakOnHardwareVRAMWriteType(uint8_t opType);
+
+	void BreakOnHardwareLineDrawing(void);
+	void ClearBreakOnHardwareLineDrawing(void);
 
 	void WriteFD30(uint8_t data);
 	void WriteFD31(uint8_t data);
@@ -162,6 +169,7 @@ public:
 	void WriteD429(uint8_t data);
 	void WriteD42A(uint8_t data);
 	void WriteD42B(uint8_t data);
+	void DrawLine(void);
 	// Graphics Accelerator <<
 
 

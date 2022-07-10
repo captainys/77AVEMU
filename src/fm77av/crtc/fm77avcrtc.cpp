@@ -50,6 +50,7 @@ void FM77AVCRTC::HardwareDrawing::Reset(void)
 
 	// $D430
 	lineBusy=false;
+	lineBusyBy=0;
 	// $D420,$D421
 	addrOffset=0;
 	// $D422,$D423
@@ -73,6 +74,15 @@ void FM77AVCRTC::AddBreakOnHardwareVRAMWriteType(uint8_t opType)
 void FM77AVCRTC::ClearBreakOnHardwareVRAMWriteType(uint8_t opType)
 {
 	breakOnHardwareVRAMWriteOpBits&=~(1<<opType);
+}
+
+void FM77AVCRTC::BreakOnHardwareLineDrawing(void)
+{
+	breakOnHardwareLineDrawing=true;
+}
+void FM77AVCRTC::ClearBreakOnHardwareLineDrawing(void)
+{
+	breakOnHardwareLineDrawing=false;
 }
 
 void FM77AVCRTC::Reset(void)
@@ -480,34 +490,71 @@ void FM77AVCRTC::WriteD421(uint8_t data)
 	state.hardDraw.addrOffset&=0xFE00;
 	state.hardDraw.addrOffset|=orPtn;
 }
+
 void FM77AVCRTC::WriteD422(uint8_t data)
 {
+	uint16_t data16=data;
+	state.hardDraw.lineStipple&=0x00FF;
+	state.hardDraw.lineStipple|=(data16<<8);
 }
 void FM77AVCRTC::WriteD423(uint8_t data)
 {
+	state.hardDraw.lineStipple&=0xFF00;
+	state.hardDraw.lineStipple|=data;
 }
 void FM77AVCRTC::WriteD424(uint8_t data)
 {
+	uint16_t data16=data;
+	state.hardDraw.x0&=0x00FF;
+	state.hardDraw.x0|=(data16<<8);
 }
 void FM77AVCRTC::WriteD425(uint8_t data)
 {
+	state.hardDraw.x0&=0xFF00;
+	state.hardDraw.x0|=data;
 }
 void FM77AVCRTC::WriteD426(uint8_t data)
 {
+	uint16_t data16=data;
+	state.hardDraw.y0&=0x00FF;
+	state.hardDraw.y0|=(data16<<8);
 }
 void FM77AVCRTC::WriteD427(uint8_t data)
 {
+	state.hardDraw.y0&=0xFF00;
+	state.hardDraw.y0|=data;
 }
 void FM77AVCRTC::WriteD428(uint8_t data)
 {
+	uint16_t data16=data;
+	state.hardDraw.x1&=0x00FF;
+	state.hardDraw.x1|=(data16<<8);
 }
 void FM77AVCRTC::WriteD429(uint8_t data)
 {
+	state.hardDraw.x1&=0xFF00;
+	state.hardDraw.x1|=data;
 }
 void FM77AVCRTC::WriteD42A(uint8_t data)
 {
+	uint16_t data16=data;
+	state.hardDraw.y1&=0x00FF;
+	state.hardDraw.y1|=(data16<<8);
 }
 void FM77AVCRTC::WriteD42B(uint8_t data)
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(true==breakOnHardwareLineDrawing)
+	{
+		fm77avPtr->mainCPU.debugger.ExternalBreak("CRTC Hardware VRAM Write");
+	}
+	state.hardDraw.y1&=0xFF00;
+	state.hardDraw.y1|=data;
+	DrawLine();
+	state.hardDraw.lineBusyBy=fm77avPtr->state.fm77avTime+HD_LINE_DURATION;
+}
+
+void FM77AVCRTC::DrawLine(void)
 {
 }
 
