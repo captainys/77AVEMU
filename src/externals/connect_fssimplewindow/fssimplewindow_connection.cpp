@@ -556,70 +556,67 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		}
 	}
 
-// OK.  Game-Port emulation should work pretty similar to Towns.
-// Just keep these commented out for now.
 // 	if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
-// 	{
-// 		bool mouseEmulationByAnalogAxis=false;
-// 		for(unsigned int portId=0; portId<FM77AV_NUM_GAMEPORTS; ++portId)
-// 		{
-// 			switch(gamePort[portId])
-// 			{
-// 			default:
-// 				// Not implemented yet.
-// 				break;
-// 			case FM77AV_GAMEPORTEMU_KEYBOARD:
-// 				{
-// 					bool Abutton=(0!=FsGetKeyState(FSKEY_Z));
-// 					bool Bbutton=(0!=FsGetKeyState(FSKEY_X));
-// 					bool run=(0!=FsGetKeyState(FSKEY_A));
-// 					bool pause=(0!=FsGetKeyState(FSKEY_S));
-// 					bool left=(0!=FsGetKeyState(FSKEY_LEFT));
-// 					bool right=(0!=FsGetKeyState(FSKEY_RIGHT));
-// 					if(true==left && true==right)
-// 					{
-// 						right=false;
-// 					}
-// 					bool up=(0!=FsGetKeyState(FSKEY_UP));
-// 					bool down=(0!=FsGetKeyState(FSKEY_DOWN));
-// 					if(true==up && true==down)
-// 					{
-// 						down=false;
-// 					}
-// 					fm77av.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
-// 				}
-// 				break;
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL0:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL1:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL2:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL3:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL4:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL5:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL6:
-// 			case FM77AV_GAMEPORTEMU_PHYSICAL7:
-// 				if(true!=gamePadInitialized)
-// 				{
-// 					YsGamePadInitialize();
-// 					gamePadInitialized=true;
-// 				}
-// 				{
-// 					int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_PHYSICAL0;
-// 					if(0<=padId && padId<gamePads.size())
-// 					{
-// 						auto &reading=gamePads[padId];
-// 						fm77av.SetGamePadState(
-// 						    portId,
-// 						    reading.buttons[0],
-// 						    reading.buttons[1],
-// 						    reading.dirs[0].upDownLeftRight[2],
-// 						    reading.dirs[0].upDownLeftRight[3],
-// 						    reading.dirs[0].upDownLeftRight[0],
-// 						    reading.dirs[0].upDownLeftRight[1],
-// 						    reading.buttons[2],
-// 						    reading.buttons[3]);
-// 					}
-// 				}
-// 				break;
+ 	{
+ 		bool mouseEmulationByAnalogAxis=false;
+ 		for(unsigned int portId=0; portId<FM77AV_NUM_GAMEPORTS; ++portId)
+ 		{
+ 			switch(gamePort[portId])
+ 			{
+ 			default:
+ 				break;
+ 			case FM77AV_GAMEPORTEMU_KEYBOARD:
+ 				{
+ 					bool Abutton=(0!=FsGetKeyState(FSKEY_Z));
+ 					bool Bbutton=(0!=FsGetKeyState(FSKEY_X));
+ 					bool run=(0!=FsGetKeyState(FSKEY_A));
+ 					bool pause=(0!=FsGetKeyState(FSKEY_S));
+ 					bool left=(0!=FsGetKeyState(FSKEY_LEFT));
+ 					bool right=(0!=FsGetKeyState(FSKEY_RIGHT));
+ 					if(true==left && true==right)
+ 					{
+ 						right=false;
+ 					}
+ 					bool up=(0!=FsGetKeyState(FSKEY_UP));
+ 					bool down=(0!=FsGetKeyState(FSKEY_DOWN));
+ 					if(true==up && true==down)
+ 					{
+ 						down=false;
+ 					}
+ 					fm77av.SetGamePadState(portId,Abutton,Bbutton,left,right,up,down,run,pause);
+ 				}
+ 				break;
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL0:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL1:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL2:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL3:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL4:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL5:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL6:
+ 			case FM77AV_GAMEPORTEMU_PHYSICAL7:
+ 				if(true!=gamePadInitialized)
+ 				{
+ 					YsGamePadInitialize();
+ 					gamePadInitialized=true;
+ 				}
+ 				{
+ 					int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_PHYSICAL0;
+ 					if(0<=padId && padId<gamePads.size())
+ 					{
+ 						auto &reading=gamePads[padId];
+ 						fm77av.SetGamePadState(
+ 						    portId,
+ 						    reading.buttons[0],
+ 						    reading.buttons[1],
+ 						    reading.dirs[0].upDownLeftRight[2],
+ 						    reading.dirs[0].upDownLeftRight[3],
+ 						    reading.dirs[0].upDownLeftRight[0],
+ 						    reading.dirs[0].upDownLeftRight[1],
+ 						    reading.buttons[2],
+ 						    reading.buttons[3]);
+ 					}
+ 				}
+ 				break;
 // 			case FM77AV_GAMEPORTEMU_ANALOG0:
 // 			case FM77AV_GAMEPORTEMU_ANALOG1:
 // 			case FM77AV_GAMEPORTEMU_ANALOG2:
@@ -930,8 +927,8 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 // 					fm77av.SetCyberStickState(portId,ix,iy,iz,iw,trig);
 // 				}
 // 				break;
-// 			}
-// 		}
+ 			}
+ 		}
 
 //		if(mouseEmulationByAnalogAxis!=true)
 		{
@@ -965,7 +962,7 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 				this->ProcessMouse(fm77av,lb,mb,rb,mx,my);
 			}
 		}
-//	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
+	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
 }
 void FsSimpleWindowConnection::PollGamePads(void)
 {

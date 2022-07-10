@@ -35,6 +35,12 @@ public:
 		SINGLE_BEEP_DURATION=210000000, // 0.21 seconds from FM-7.
 		BEEP_SOUND_AMPLITUDE=2048,
 	};
+	enum
+	{
+		REG_GAMEPORTENABLE=7,
+		REG_PORTA=14,
+		REG_PORTB=15,
+	};
 
 	class State
 	{

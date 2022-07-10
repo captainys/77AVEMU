@@ -47,6 +47,9 @@ public:
 	bool pauseOnStart=false;
 	unsigned int keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
 
+	unsigned int gamePort[NUM_GAMEPORTS]={FM77AV_GAMEPORTEMU_PHYSICAL0,FM77AV_GAMEPORTEMU_MOUSE};
+	long long int maxButtonHoldTime[2][2]={{0,0},{0,0}};
+
 	bool noWait=false;
 
 	std::vector <std::string> imgSearchPaths;

@@ -93,6 +93,14 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	}
 
 
+	for(int i=0; i<FM77AV_NUM_GAMEPORTS; ++i)
+	{
+		outside_world->gamePort[i]=param.gamePort[i];
+		gameport.state.ports[i].device=FM77AVGamePort::EmulationTypeToDeviceType(param.gamePort[i]);
+		gameport.state.ports[i].maxButtonHoldTime[0]=param.maxButtonHoldTime[i][0];
+		gameport.state.ports[i].maxButtonHoldTime[1]=param.maxButtonHoldTime[i][1];
+	}
+
 	for(int i=0; i<32; ++i)
 	{
 		//	MAINSYS_BOOT_ROM_END=       0x3FFE0,
@@ -461,4 +469,10 @@ void FM77AV::ForceRender(class FM77AVRender &render,class Outside_World *outside
 	}
 	outside_world->Render(render.GetImage(),*this);
 	outside_world->UpdateStatusBitmap(*this);
+}
+
+void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
+{
+	auto &p=gameport.state.ports[port&1];
+	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.fm77avTime);
 }

@@ -28,6 +28,27 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Specify 400 as size to make 2D disk with 1024-byte per sector, 5 sectors per track." << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
 	std::cout << "  Run VM without adjusting time for the wall-clock time." << std::endl;
+	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
+	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
+	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
+	std::cout << "  PHYS0,PHYS1,PHYS2,PHYS3 use physical game pad direction button (or hat switch) as up/down/left/right." << std::endl;
+	std::cout << "  ANA0,ANA1,ANA2,ANA3 use physical game pad analog stick as up/down/left/right." << std::endl;
+	std::cout << "  KEYMOUSE use arrow keys and ZX keys for mouse cursor and buttons." << std::endl;
+	std::cout << "  NUMPADMOUSE use NUMPAD number keys and /* keys for mouse cursor and buttons." << std::endl;
+	std::cout << "  PHYS0MOUSE,PHYS1MOUSE,PHYS2MOUSE,PHYS3MOUSE use physical game pad digital axis for mouse." << std::endl;
+	std::cout << "  ANA0MOUSE,ANA1MOUSE,ANA2MOUSE,ANA3MOUSE use physical game pad analog axis for mouse." << std::endl;
+	std::cout << "-BUTTONHOLDTIME0 0|1 time_in_millisec" << std::endl;
+	std::cout << "-BUTTONHOLDTIME1 0|1 time_in_millisec" << std::endl;
+	std::cout << "  In some games, when you click on a menu or a button, you end up selecting the next menu" << std::endl;
+	std::cout << "  or the button that happens to appear in the next options.  Daikoukai Jidai (KOEI)" << std::endl;
+	std::cout << "  is virtually unplayable.  Super Daisenryaku keeps scrolling to the end when you want" << std::endl;
+	std::cout << "  to scroll only by one screen width.  You really had to press the button and release" << std::endl;
+	std::cout << "  immediately.  How patient we were!" << std::endl;
+	std::cout << "  It is due to the bad programming.  When the program reads button state as DOWN, it must" << std::endl;
+	std::cout << "  wait until the state changes to UP before making a next selection.  But, we cannot go" << std::endl;
+	std::cout << "  in to all of the programs and write patches.  Instead, this option let you limit" << std::endl;
+	std::cout << "  maximum time that the button is sent as DOWN to the virtual machine even when" << std::endl;
+	std::cout << "  you keep it down for 100 seconds." << std::endl;
 }
 bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 {
@@ -203,6 +224,31 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 				return false;
 			}
 			++i;
+		}
+		else if(("-GAMEPORT0"==ARG || "-GAMEPORT1"==ARG) && i+1<argc)
+		{
+			int portId=(ARG.back()-'0')&1;
+			std::string DEV=argv[i+1];
+			cpputil::Capitalize(DEV);
+			gamePort[portId]=StrToGamePortEmu(DEV);
+			if(FM77AV_GAMEPORTEMU_NONE==gamePort[portId])
+			{
+				std::cout << "Undefined game-port device." << std::endl;
+				std::cout << "Possible options:" << std::endl;
+				for(int i=0; i<FM77AV_GAMEPORTEMU_NUM_DEVICES; ++i)
+				{
+					std::cout << GamePortEmuToStr(i) << std::endl;
+				}
+			}
+			++i;
+		}
+		else if(("-BUTTONHOLDTIME0"==ARG || "-BUTTONHOLDTIME1"==ARG) && i+2<argc)
+		{
+			int portId=(ARG.back()-'0')&1;
+			int button=cpputil::Atoi(argv[i+1])&1;
+			long long int holdTime=cpputil::Atoi(argv[i+2]);
+			maxButtonHoldTime[portId][button]=holdTime*1000000; // Make it nano sec.
+			i+=2;
 		}
 		else
 		{
