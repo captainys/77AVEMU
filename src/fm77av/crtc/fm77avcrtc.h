@@ -57,7 +57,6 @@ public:
 
 
 		// $D430
-		bool lineBusy=false;
 		uint64_t lineBusyBy=0;
 		// $D420,$D421
 		uint16_t addrOffset=0;

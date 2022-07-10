@@ -65,6 +65,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["HWDRAW"]=BREAK_ON_HARDWARE_VRAM_WRITE;
+	breakEventMap["HWLINE"]=BREAK_ON_HARDWARE_LINE_DRAWING;
 
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["TAPE"]=DUMP_TAPE;
@@ -1093,6 +1094,9 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Comm
 			case BREAK_ON_HARDWARE_VRAM_WRITE:
 				Execute_BreakOnHardwareVRAMWrite(thr,av,cmd);
 				break;
+			case BREAK_ON_HARDWARE_LINE_DRAWING:
+				av.crtc.BreakOnHardwareLineDrawing();
+				break;
 			}
 		}
 		else
@@ -1150,6 +1154,9 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 				break;
 			case BREAK_ON_HARDWARE_VRAM_WRITE:
 				Execute_DontBreakOnHardwareVRAMWrite(thr,av,cmd);
+				break;
+			case BREAK_ON_HARDWARE_LINE_DRAWING:
+				av.crtc.ClearBreakOnHardwareLineDrawing();
 				break;
 			}
 		}

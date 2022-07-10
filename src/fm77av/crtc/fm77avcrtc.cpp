@@ -49,7 +49,6 @@ void FM77AVCRTC::HardwareDrawing::Reset(void)
 	}
 
 	// $D430
-	lineBusy=false;
 	lineBusyBy=0;
 	// $D420,$D421
 	addrOffset=0;
@@ -212,7 +211,7 @@ uint8_t FM77AVCRTC::NonDestructiveReadD430(void) const
 	{
 		data&=0x7F;
 	}
-	if(true==state.hardDraw.lineBusy)
+	if(fm77avPtr->state.fm77avTime<=state.hardDraw.lineBusyBy)
 	{
 		data&=0xEF;
 	}
@@ -479,14 +478,14 @@ void FM77AVCRTC::WriteD41E(uint8_t data)
 void FM77AVCRTC::WriteD420(uint8_t data)
 {
 	uint16_t orPtn=data&0x1F;
-	orPtn<<9;
+	orPtn<<=9;
 	state.hardDraw.addrOffset&=0x1FF;
 	state.hardDraw.addrOffset|=orPtn;
 }
 void FM77AVCRTC::WriteD421(uint8_t data)
 {
 	uint16_t orPtn=data;
-	orPtn<<1;
+	orPtn<<=1;
 	state.hardDraw.addrOffset&=0xFE00;
 	state.hardDraw.addrOffset|=orPtn;
 }
@@ -556,6 +555,78 @@ void FM77AVCRTC::WriteD42B(uint8_t data)
 
 void FM77AVCRTC::DrawLine(void)
 {
+	auto fm77avPtr=(FM77AV *)vmPtr;
+
+	int vx,vy,dx,dy;
+	dx=state.hardDraw.x1-state.hardDraw.x0;
+	dy=state.hardDraw.y1-state.hardDraw.y0;
+	if(0<=dx)
+	{
+		vx=1;
+	}
+	else
+	{
+		vx=-1;
+		dx=-dx;
+	}
+	if(0<=dy)
+	{
+		vy=1;
+	}
+	else
+	{
+		vy=-1;
+		dy=-dy;
+	}
+
+	unsigned int balance=0;
+	int x=state.hardDraw.x0;
+	int y=state.hardDraw.x0;
+	// PutDot(x,y);
+	if(0==dx) // Vertical
+	{
+		while(y!=state.hardDraw.y1)
+		{
+			y+=vy;
+			// PutDot(x,y);
+		}
+	}
+	else if(0==dy) // Horizontal
+	{
+		while(x!=state.hardDraw.x1)
+		{
+			x+=vx;
+			// PutDot(x,y);
+		}
+	}
+	else if(dy<dx) // Long in X
+	{
+		while(x!=state.hardDraw.x1 || y!=state.hardDraw.y1)
+		{
+			x+=vx;
+			balance+=dy;
+			if(dx<=balance)
+			{
+				y+=vy;
+				balance-=dx;
+			}
+			// PutDot(x,y);
+		}
+	}
+	else // if(dx<dy) // Long in Y
+	{
+		while(x!=state.hardDraw.x1 || y!=state.hardDraw.y1)
+		{
+			y+=vy;
+			balance+=dx;
+			if(dy<=balance)
+			{
+				x+=vx;
+				balance-=dy;
+			}
+			// PutDot(x,y);
+		}
+	}
 }
 
 std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
@@ -649,12 +720,26 @@ std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
 	text.back()+="BankMask:";
 	text.back()+=cpputil::Ubtox(state.hardDraw.bankMask);
 
-	text.back()+="TilePtn:";
+	text.back()+=" TilePtn:";
 	text.back()+=cpputil::Ubtox(state.hardDraw.tile[0]);
 	text.back().push_back(' ');
 	text.back()+=cpputil::Ubtox(state.hardDraw.tile[1]);
 	text.back().push_back(' ');
 	text.back()+=cpputil::Ubtox(state.hardDraw.tile[2]);
+
+	text.push_back("");
+	text.back()+="LINE AddrOffset="+cpputil::Ustox(state.hardDraw.addrOffset);
+	text.back()+=" Style=";
+	text.back()+=cpputil::Ustox(state.hardDraw.lineStipple);
+	text.back()+=" (";
+	text.back()+=cpputil::Itoa(state.hardDraw.x0);
+	text.back()+=",";
+	text.back()+=cpputil::Itoa(state.hardDraw.y0);
+	text.back()+=")-(";
+	text.back()+=cpputil::Itoa(state.hardDraw.x1);
+	text.back()+=",";
+	text.back()+=cpputil::Itoa(state.hardDraw.y1);
+	text.back()+=")";
 
 	return text;
 }
