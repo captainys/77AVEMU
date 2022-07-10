@@ -49,6 +49,14 @@ void FM77AVArgv::Help(void)
 	std::cout << "  in to all of the programs and write patches.  Instead, this option let you limit" << std::endl;
 	std::cout << "  maximum time that the button is sent as DOWN to the virtual machine even when" << std::endl;
 	std::cout << "  you keep it down for 100 seconds." << std::endl;
+	std::cout << "-SCALE X" << std::endl;
+	std::cout << "  Screen scaling X percent." << std::endl;
+	std::cout << "-AUTOSCALE" << std::endl;
+	std::cout << "  Auto scaleing screen to match the window size." << std::endl;
+	std::cout << "-MAXIMIZE" << std::endl;
+	std::cout << "  Maximize the window on start up" << std::endl;
+	std::cout << "-FULLSCREEN" << std::endl;
+	std::cout << "  Fullscreen on start up" << std::endl;
 }
 bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 {
@@ -70,6 +78,31 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			Help();
 			dontStart=true;
+		}
+		else if("-SCALE"==ARG && i+1<argc)
+		{
+			scaling=atoi(argv[i+1]);
+			if(scaling<SCALING_MIN)
+			{
+				scaling=SCALING_MIN;
+			}
+			else if(SCALING_MAX<scaling)
+			{
+				scaling=SCALING_MAX;
+			}
+			++i;
+		}
+		else if("-AUTOSCALE"==ARG)
+		{
+			autoScaling=true;
+		}
+		else if("-MAXIMIZE"==ARG)
+		{
+			windowModeOnStartUp=WINDOW_MAXIMIZE;
+		}
+		else if("-FULLSCREEN"==ARG)
+		{
+			windowModeOnStartUp=WINDOW_FULLSCREEN;
 		}
 		else if("-PAUSE"==ARG)
 		{

@@ -113,6 +113,11 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR  ]=0xFE;
 	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR+1]=0x00;
 
+	outside_world->scaling=param.scaling;
+	outside_world->windowShift=param.windowShift;
+	outside_world->autoScaling=param.autoScaling;
+	outside_world->windowModeOnStartUp=param.windowModeOnStartUp;
+
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
 	outside_world->keyboardMode=param.keyboardMode;
 

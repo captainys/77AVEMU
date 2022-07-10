@@ -139,6 +139,7 @@ void FM77AVFDC::MakeReady(void)
 						state.data=secPtr->sectorData;
 						state.dataReadPointer=0;
 						state.DRQ=true;
+						state.CRCErrorAfterRead=(0!=secPtr->crcStatus);
 						// Should I raise IRQ?
 
 						// CPU needs to read a byte from the data register and clear DRQ before this schedule.
@@ -385,6 +386,7 @@ void FM77AVFDC::MakeReady(void)
 					MakeReady();
 				}
 			}
+			state.lastStatus=MakeUpStatus(state.lastCmd);
 		}
 		state.drive[DriveSelect()].dataReg=data;
 		break;
@@ -410,6 +412,7 @@ void FM77AVFDC::MakeReady(void)
 			state.drive[DriveSelect()].dataReg=state.data[state.dataReadPointer++];
 			if(state.data.size()<=state.dataReadPointer)
 			{
+				state.CRCError=state.CRCErrorAfterRead;
 				if(0x90==(state.lastCmd&0xF0) && nullptr!=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg+1)) // Read Sector + MultiRecordFlag
 				{
 					state.data.clear();
@@ -423,6 +426,7 @@ void FM77AVFDC::MakeReady(void)
 				}
 			}
 		}
+		state.lastStatus=MakeUpStatus(state.lastCmd);
 	}
 	else if(FM77AVIO_FDC_STATUS_COMMAND==ioport)//=      0xFD18,
 	{

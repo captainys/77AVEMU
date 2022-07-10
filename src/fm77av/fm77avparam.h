@@ -25,6 +25,13 @@ public:
 		MAX_NUM_SCSI_DEVICES=7,
 	};
 
+	enum
+	{
+		SCALING_DEFAULT=100,
+		SCALING_MIN=50,
+		SCALING_MAX=1000,
+	};
+
 	class VirtualKey
 	{
 	public:
@@ -40,6 +47,11 @@ public:
 		bool ctrl,shift;
 		std::string cmdStr;
 	};
+
+	unsigned int scaling=100;
+	bool autoScaling=false;
+	unsigned int windowModeOnStartUp=WINDOW_NORMAL;
+	bool windowShift=false;
 
 	unsigned int machineType=MACHINETYPE_AUTO;
 	std::string ROMPath;
