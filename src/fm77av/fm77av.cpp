@@ -18,7 +18,8 @@ FM77AV::FM77AV() :
 	keyboard(this),
 	fdc(this),
 	dataRecorder(this),
-	sound(this)
+	sound(this),
+	gameport(this)
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);
@@ -30,6 +31,7 @@ FM77AV::FM77AV() :
 	allDevices.push_back(&fdc);
 	allDevices.push_back(&dataRecorder);
 	allDevices.push_back(&sound);
+	allDevices.push_back(&gameport);
 	VMBase::CacheDeviceIndex();
 
 	for(auto &b : var.breakOnSubCmd)

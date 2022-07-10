@@ -11,6 +11,7 @@ add_compile_definitions(MUTSU_FM77AV)
 set(TSUGARU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../TOWNSEMU/src)
 
 add_subdirectory(${TSUGARU_SOURCE_DIR}/cpputil ${CMAKE_BINARY_DIR}/cpputil)
+add_subdirectory(${TSUGARU_SOURCE_DIR}/cheapmath ${CMAKE_BINARY_DIR}/cheapmath)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/device ${CMAKE_BINARY_DIR}/device)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/vmbase ${CMAKE_BINARY_DIR}/vmbase)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/lineparser ${CMAKE_BINARY_DIR}/lineparser)

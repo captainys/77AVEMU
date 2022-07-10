@@ -14,6 +14,7 @@
 #include "fm77avkeyboard.h"
 #include "fm77avtape.h"
 #include "fm77avsound.h"
+#include "fm77avgameport.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -45,6 +46,7 @@ public:
 	FM77AVKeyboard keyboard;
 	FM77AVDataRecorder dataRecorder;
 	FM77AVSound sound;
+	FM77AVGamePort gameport;
 	// Devices <<
 
 	enum
