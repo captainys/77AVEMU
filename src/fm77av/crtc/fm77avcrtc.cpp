@@ -65,6 +65,16 @@ FM77AVCRTC::FM77AVCRTC(VMBase *vmBase) : Device(vmBase)
 {
 	Reset();
 }
+
+void FM77AVCRTC::AddBreakOnHardwareVRAMWriteType(uint8_t opType)
+{
+	breakOnHardwareVRAMWriteOpBits|=(1<<opType);
+}
+void FM77AVCRTC::ClearBreakOnHardwareVRAMWriteType(uint8_t opType)
+{
+	breakOnHardwareVRAMWriteOpBits&=~(1<<opType);
+}
+
 void FM77AVCRTC::Reset(void)
 {
 	Device::Reset();
@@ -222,6 +232,11 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 		auto fm77avPtr=(FM77AV *)vmPtr;
 		auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
 
+		if(0!=((1<<state.hardDraw.cmd)&breakOnHardwareVRAMWriteOpBits))
+		{
+			fm77avPtr->mainCPU.debugger.ExternalBreak("CRTC Hardware VRAM Write");
+		}
+
 		VRAMAddrIn&=VRAM_PLANE_MASK;
 		uint16_t VRAMAddr[3]=
 		{
@@ -244,15 +259,25 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 				goto NEXT;
 			}
 
-			if(0!=(state.hardDraw.condition&2) && 0==state.hardDraw.compareColor[i]&0x80) // Or should it be compareColor[7-i]&0x80?
+			if(0!=(state.hardDraw.condition&2))
 			{
 				uint8_t srcColor=0;
 				srcColor|=(0!=(VRAM[VRAMAddr[0]]&bit) ? 1 : 0);
 				srcColor|=(0!=(VRAM[VRAMAddr[1]]&bit) ? 2 : 0);
 				srcColor|=(0!=(VRAM[VRAMAddr[2]]&bit) ? 4 : 0);
 
-				if((0==(state.hardDraw.condition&1) && state.hardDraw.compareColor[i]==srcColor) ||
-				   (0!=(state.hardDraw.condition&1) && state.hardDraw.compareColor[i]!=srcColor))
+				bool match=false;
+				for(auto cmpColor : state.hardDraw.compareColor) // Should it work this way?
+				{
+					if(cmpColor==srcColor)
+					{
+						match=true;
+						break;
+					}
+				}
+
+				if((0==(state.hardDraw.condition&1) && true==match) ||
+				   (0!=(state.hardDraw.condition&1) && true!=match))
 				{
 					// Pass
 					state.hardDraw.compareResult|=bit;

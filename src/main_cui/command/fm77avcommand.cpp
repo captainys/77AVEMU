@@ -64,6 +64,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["MEMR"]=BREAK_ON_MEM_READ;
 	breakEventMap["MEMWRITE"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
+	breakEventMap["HWDRAW"]=BREAK_ON_HARDWARE_VRAM_WRITE;
 
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["TAPE"]=DUMP_TAPE;
@@ -187,6 +188,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Memory Read/Write." << std::endl;
 	std::cout << "  For memory range, do something like main:0000 00FF." << std::endl;
 	std::cout << "  For clearing range, do main:0000 00FF or sub:D380 D38F." << std::endl;
+	std::cout << "HWDRAW type" << std::endl;
+	std::cout << "  Break on hardware VRAM write.  Type can be" << std::endl;
+	std::cout << "  0:PSET 1:N/A 2:OR 3:AND 4:XOR 5:NOT 6:TILE 7:COMPARE" << std::endl;
 
 	std::cout << "<< Printable >>" << std::endl;
 	std::cout << "FDC" << std::endl;
@@ -1086,6 +1090,9 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Comm
 			case BREAK_ON_MEM_WRITE:
 				Execute_BreakOnMemoryWrite(thr,av,cmd);
 				break;
+			case BREAK_ON_HARDWARE_VRAM_WRITE:
+				Execute_BreakOnHardwareVRAMWrite(thr,av,cmd);
+				break;
 			}
 		}
 		else
@@ -1140,6 +1147,9 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 				break;
 			case BREAK_ON_MEM_WRITE:
 				Execute_DontBreakOnMemoryWrite(thr,av,cmd);
+				break;
+			case BREAK_ON_HARDWARE_VRAM_WRITE:
+				Execute_DontBreakOnHardwareVRAMWrite(thr,av,cmd);
 				break;
 			}
 		}
@@ -1736,6 +1746,55 @@ void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AVThread &thr,FM77AV 
 				std::cout << " " << cpu.debugger.breakPoints[addr].passed << "/" << cpu.debugger.breakPoints[addr].passCount;
 			}
 			std::cout << std::endl;
+		}
+	}
+}
+
+void FM77AVCommandInterpreter::Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd)
+{
+	if(cmd.argv.size()<=2)
+	{
+		av.crtc.AddBreakOnHardwareVRAMWriteType(0);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(1);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(2);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(3);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(4);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(5);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(6);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(7);
+		std::cout << "Break on all hardware VRAM write (logic op)" << std::endl;
+	}
+	else if(3<=cmd.argv.size())
+	{
+		for(int i=2; i<cmd.argv.size(); ++i)
+		{
+			auto t=cpputil::Xtoi(cmd.argv[i].c_str());
+			av.crtc.AddBreakOnHardwareVRAMWriteType(t);
+			std::cout << "Break on all hardware VRAM write (logic op) Type=" << cpputil::Ubtox(t) << std::endl;
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd)
+{
+	if(cmd.argv.size()<=2)
+	{
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(0);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(1);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(2);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(3);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(4);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(5);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(6);
+		av.crtc.ClearBreakOnHardwareVRAMWriteType(7);
+		std::cout << "Do not Break on all hardware VRAM write (logic op)" << std::endl;
+	}
+	else if(3<=cmd.argv.size())
+	{
+		for(int i=2; i<cmd.argv.size(); ++i)
+		{
+			auto t=cpputil::Xtoi(cmd.argv[i].c_str());
+			av.crtc.ClearBreakOnHardwareVRAMWriteType(t);
+			std::cout << "Do Not Break on all hardware VRAM write (logic op) Type=" << cpputil::Ubtox(t) << std::endl;
 		}
 	}
 }

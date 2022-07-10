@@ -85,6 +85,7 @@ public:
 		BREAK_ON_SUBCMD,
 		BREAK_ON_MEM_READ,
 		BREAK_ON_MEM_WRITE,
+		BREAK_ON_HARDWARE_VRAM_WRITE,
 	};
 
 	enum
@@ -155,6 +156,8 @@ public:
 	void Execute_ListBreakPoints(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_DontBreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 };
 
 /* } */

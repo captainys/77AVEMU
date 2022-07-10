@@ -91,6 +91,9 @@ public:
 		uint8_t displayPage=0;
 		uint8_t activePage=0;
 	};
+
+	uint8_t breakOnHardwareVRAMWriteOpBits=0;
+
 	FM77AVCRTC(VMBase *vmBase);
 	void Reset(void);
 	State state;
@@ -102,6 +105,9 @@ public:
 	{
 		return InVSYNC(fm77avTime)||InHSYNC(fm77avTime);
 	}
+
+	void AddBreakOnHardwareVRAMWriteType(uint8_t opType);
+	void ClearBreakOnHardwareVRAMWriteType(uint8_t opType);
 
 	void WriteFD30(uint8_t data);
 	void WriteFD31(uint8_t data);
