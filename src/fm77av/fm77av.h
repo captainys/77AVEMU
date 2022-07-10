@@ -270,6 +270,8 @@ public:
 	void Reset(void);
 	unsigned int RunOneInstruction(void);
 
+	void ForceRender(class FM77AVRender &render,class Outside_World *outside_world);
+
 	void DetectMainCPUBIOSCall(void);
 
 	std::string MachineTypeStr(void) const;

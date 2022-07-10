@@ -2,6 +2,7 @@
 #include <iostream>
 #include "fm77av.h"
 #include "fm77avdef.h"
+#include "fm77avrender.h"
 #include "outside_world.h"
 
 
@@ -446,4 +447,16 @@ void FM77AV::RunFastDevicePollingInternal(void)
 {
 	sound.SoundPolling(state.fm77avTime);
 	state.nextFastDevicePollingTime=state.fm77avTime+FAST_DEVICE_POLLING_INTERVAL;
+}
+
+void FM77AV::ForceRender(class FM77AVRender &render,class Outside_World *outside_world)
+{
+	render.Prepare(*this);
+	render.BuildImage(crtc.GetPalette());
+	if(true==outside_world->ImageNeedsFlip())
+	{
+		render.FlipUpsideDown();
+	}
+	outside_world->Render(render.GetImage(),*this);
+	outside_world->UpdateStatusBitmap(*this);
 }
