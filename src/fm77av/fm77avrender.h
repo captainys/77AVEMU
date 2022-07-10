@@ -3,6 +3,7 @@
 /* { */
 
 #include "fm77av.h"
+#include "fm77avdef.h"
 #include "fm77avcrtc.h"
 
 class FM77AVRender
@@ -12,7 +13,7 @@ private:
 	std::vector <unsigned char> rgba;
 
 	unsigned int scrnMode;
-	unsigned int VRAMOffset;
+	unsigned int VRAMOffset[FM77AV40_NUM_VRAM_BANKS];
 	unsigned int VRAMAccessMask;
 
 	unsigned char VRAM[FM77AV40_VRAM_SIZE];

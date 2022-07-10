@@ -86,7 +86,7 @@ public:
 		Palette palette;
 		HardwareDrawing hardDraw;
 		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
-		uint16_t VRAMOffset=0,VRAMOffsetMask=0xffe0;
+		uint16_t VRAMOffset[FM77AV40_NUM_VRAM_BANKS]={0,0,0},VRAMOffsetMask=0xffe0;
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
 		uint8_t activePage=0;
@@ -105,6 +105,10 @@ public:
 	{
 		return InVSYNC(fm77avTime)||InHSYNC(fm77avTime);
 	}
+	inline uint16_t GetActiveVRAMOffset(void) const
+	{
+		return state.VRAMOffset[state.activePage];
+	}
 
 	void AddBreakOnHardwareVRAMWriteType(uint8_t opType);
 	void ClearBreakOnHardwareVRAMWriteType(uint8_t opType);
@@ -117,6 +121,9 @@ public:
 
 	void WriteFD12(uint8_t data);
 	const int NonDestructiveReadFD12(void) const;
+
+	void WriteD40E(uint8_t data);
+	void WriteD40F(uint8_t data);
 
 	void WriteD430(uint8_t data);
 	uint8_t NonDestructiveReadD430(void) const;
@@ -177,7 +184,7 @@ public:
 	}
 	inline uint32_t TransformVRAMAddress(uint32_t addr) const
 	{
-		return TransformVRAMAddress(addr,state.scrnMode,state.VRAMOffset&state.VRAMOffsetMask);
+		return TransformVRAMAddress(addr,state.scrnMode,GetActiveVRAMOffset()&state.VRAMOffsetMask);
 	}
 
 	/*

@@ -268,16 +268,14 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		state.subSysBusy=true;
 		break;
 	case FM77AVIO_VRAM_OFFSET_HIGH:// =        0xD40E,
-		crtc.state.VRAMOffset&=0xFF;
-		crtc.state.VRAMOffset|=(value<<8);
+		crtc.WriteD40E(value);
 		break;
 	case FM77AVIO_VRAM_OFFSET_LOW: // =         0xD40F,
-		crtc.state.VRAMOffset&=0xFF00;
-		crtc.state.VRAMOffset|=value;
 		if(state.machineType<MACHINETYPE_FM77AV)
 		{
-			crtc.state.VRAMOffset&=~0x1F;
+			value&=~0x1F;
 		}
+		crtc.WriteD40F(value);
 		break;
 
 

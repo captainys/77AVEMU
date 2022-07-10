@@ -26,7 +26,9 @@ FM77AVRender::Image FM77AVRender::GetImage(void) const
 void FM77AVRender::Prepare(const FM77AV &fm77av)
 {
 	this->scrnMode=fm77av.crtc.state.scrnMode;
-	this->VRAMOffset=fm77av.crtc.state.VRAMOffset&fm77av.crtc.state.VRAMOffsetMask;
+	this->VRAMOffset[0]=fm77av.crtc.state.VRAMOffset[0]&fm77av.crtc.state.VRAMOffsetMask;
+	this->VRAMOffset[1]=fm77av.crtc.state.VRAMOffset[1]&fm77av.crtc.state.VRAMOffsetMask;
+	this->VRAMOffset[2]=fm77av.crtc.state.VRAMOffset[2]&fm77av.crtc.state.VRAMOffsetMask;
 	this->VRAMAccessMask=fm77av.crtc.state.VRAMAccessMask;
 
 	switch(fm77av.crtc.state.scrnMode)
@@ -38,6 +40,7 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 		memcpy(this->VRAM,
 		       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),
 		       fm77av.physMem.GetVRAMBankSize(fm77av.crtc.state.displayPage));
+		this->VRAMOffset[0]=this->VRAMOffset[fm77av.crtc.state.displayPage];
 		break;
 	case SCRNMODE_320X200_4096COL:
 		memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
@@ -74,7 +77,7 @@ void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 				for(unsigned int x=0; x<640; x+=8)
 				{
 					unsigned int addr=y*80+(x>>3);
-					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset);
+					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset[0]);
 					unsigned int B=VRAM[addr];
 					unsigned int R=VRAM[addr+0x4000];
 					unsigned int G=VRAM[addr+0x8000];
@@ -126,23 +129,24 @@ void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 
 				for(unsigned int x=0; x<320; x+=8)
 				{
-					unsigned int addr=y*40+(x>>3);
-					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset);
+					unsigned int addrBase=y*40+(x>>3);
+					unsigned int addrBank0=FM77AVCRTC::TransformVRAMAddress(addrBase,scrnMode,VRAMOffset[0]);
+					unsigned int addrBank1=FM77AVCRTC::TransformVRAMAddress(addrBase,scrnMode,VRAMOffset[1]);
 
-					unsigned int B3=VRAM[addr];
-					unsigned int B2=VRAM[addr+ 0x2000];
-					unsigned int B1=VRAM[addr+ 0xC000];
-					unsigned int B0=VRAM[addr+ 0xE000];
+					unsigned int B3=VRAM[addrBank0];
+					unsigned int B2=VRAM[addrBank0+ 0x2000];
+					unsigned int B1=VRAM[addrBank1+ 0xC000];
+					unsigned int B0=VRAM[addrBank1+ 0xE000];
 
-					unsigned int R3=VRAM[addr+ 0x4000];
-					unsigned int R2=VRAM[addr+ 0x6000];
-					unsigned int R1=VRAM[addr+0x10000];
-					unsigned int R0=VRAM[addr+0x12000];
+					unsigned int R3=VRAM[addrBank0+ 0x4000];
+					unsigned int R2=VRAM[addrBank0+ 0x6000];
+					unsigned int R1=VRAM[addrBank1+0x10000];
+					unsigned int R0=VRAM[addrBank1+0x12000];
 
-					unsigned int G3=VRAM[addr+ 0x8000];
-					unsigned int G2=VRAM[addr+ 0xA000];
-					unsigned int G1=VRAM[addr+0x14000];
-					unsigned int G0=VRAM[addr+0x16000];
+					unsigned int G3=VRAM[addrBank0+ 0x8000];
+					unsigned int G2=VRAM[addrBank0+ 0xA000];
+					unsigned int G1=VRAM[addrBank1+0x14000];
+					unsigned int G0=VRAM[addrBank1+0x16000];
 
 					if(0!=(VRAMAccessMask&1)) // Is this flag valid in 4096-color mode?
 					{

@@ -81,7 +81,10 @@ void FM77AVCRTC::Reset(void)
 	state.palette.Reset();
 	state.hardDraw.Reset();
 	state.scrnMode=SCRNMODE_640X200_SINGLE;
-	state.VRAMOffset=0;
+	for(auto &o : state.VRAMOffset)
+	{
+		o=0;
+	}
 	state.VRAMOffsetMask=0xFFE0;
 	state.VRAMAccessMask=0;
 	state.displayPage=0;
@@ -165,6 +168,18 @@ const int FM77AVCRTC::NonDestructiveReadFD12(void) const
 	}
 	return byteData;
 }
+
+void FM77AVCRTC::WriteD40E(uint8_t value)
+{
+	state.VRAMOffset[state.activePage]&=0xFF;
+	state.VRAMOffset[state.activePage]|=(value<<8);
+}
+void FM77AVCRTC::WriteD40F(uint8_t value)
+{
+	state.VRAMOffset[state.activePage]&=0xFF00;
+	state.VRAMOffset[state.activePage]|=value;
+}
+
 void FM77AVCRTC::WriteD430(uint8_t data)
 {
 	state.displayPage=((0!=(data&0x40)) ? 1 : 0);
@@ -503,7 +518,9 @@ std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
 	text.push_back("MODE:");
 	text.back()+=ScrnModeToStr(state.scrnMode);
 	text.back()+=" VRAMOffset:";
-	text.back()+=cpputil::Ustox(state.VRAMOffset);
+	text.back()+=cpputil::Ustox(state.VRAMOffset[0]);
+	text.back()+="/";
+	text.back()+=cpputil::Ustox(state.VRAMOffset[1]);
 	if(0xFFFF==state.VRAMOffsetMask)
 	{
 		text.back()+=" VRAMOffsetLowBits:Enabled";
