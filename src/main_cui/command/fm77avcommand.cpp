@@ -644,6 +644,38 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 				}
 				std::cout << "Enabled IO Monitor All IO Addresses Read and Write" << std::endl;
 			}
+			else if(3==cmd.argv.size())
+			{
+				auto addr=cpputil::Xtoi(cmd.argv[2].c_str());
+				if(0xFD00==(addr&0xFF00))
+				{
+					fm77av.var.monitorIOReadMain[addr&0xFF]=true;
+					std::cout << "Enabled IO Monitor for main-CPU " << cpputil::Ustox(addr) << std::endl;
+				}
+				if(0xD400==(addr&0xFF00))
+				{
+					fm77av.var.monitorIOReadSub[addr&0xFF]=true;
+					std::cout << "Enabled IO Monitor for sub-CPU " << cpputil::Ustox(addr) << std::endl;
+				}
+			}
+			else if(4==cmd.argv.size())
+			{
+				auto addrFrom=cpputil::Xtoi(cmd.argv[2].c_str());
+				auto addrTo=cpputil::Xtoi(cmd.argv[3].c_str());
+				for(auto addr=addrFrom; addr<addrTo; ++addr)
+				{
+					if(0xFD00==(addr&0xFF00))
+					{
+						fm77av.var.monitorIOReadMain[addr&0xFF]=true;
+						std::cout << "Enabled IO Monitor for main-CPU " << cpputil::Ustox(addr) << std::endl;
+					}
+					if(0xD400==(addr&0xFF00))
+					{
+						fm77av.var.monitorIOReadSub[addr&0xFF]=true;
+						std::cout << "Enabled IO Monitor for sub-CPU " << cpputil::Ustox(addr) << std::endl;
+					}
+				}
+			}
 			break;
 		case ENABLE_SUBSYSCMD_MONITOR:
 			fm77av.var.monitorSubSysCmd=true;

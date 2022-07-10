@@ -282,18 +282,18 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 
 			switch(state.hardDraw.cmd)
 			{
-			case HD_CMD_TILE:
+			case HD_CMD_TILE://6
 				VRAM[VRAMAddr[i]]&=~writeBits;
 				VRAM[VRAMAddr[i]]|=(state.hardDraw.tile[i]&writeBits);
 				break;
-			case HD_CMD_PSET:
+			case HD_CMD_PSET://0
 				VRAM[VRAMAddr[i]]&=~writeBits;
 				VRAM[VRAMAddr[i]]|=(rgb&writeBits);
 				break;
-			case HD_CMD_OR:
+			case HD_CMD_OR://2
 				VRAM[VRAMAddr[i]]|=(rgb&writeBits);
 				break;
-			case HD_CMD_AND:
+			case HD_CMD_AND://3
 				VRAM[VRAMAddr[i]]=(src&~writeBits)|(src&rgb&writeBits);
 				break;
 			case HD_CMD_XOR://4,
