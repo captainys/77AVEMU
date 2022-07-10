@@ -371,7 +371,9 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		{
 			return state.data[addr];
 		}
-		return state.extVRAM[addr&VRAM_PAGE_MASK];
+		addr&=0xFFFF;
+		addr%=0xC000;
+		return state.extVRAM[addr];
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
 		if(SUBMON_C==state.subMonType)
@@ -517,7 +519,9 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		}
 		else
 		{
-			state.extVRAM[addr&VRAM_PAGE_MASK]=d;
+			addr&=0xFFFF;
+			addr%=0xC000;
+			state.extVRAM[addr]=d;
 		}
 		return;
 
