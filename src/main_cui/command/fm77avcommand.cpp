@@ -1099,6 +1099,44 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77
 				std::cout << str << std::endl;
 			}
 		}
+		else if(FM77AV::ADDR_VRAM==addr.type || FM77AV::ADDR_VRAM_RAW==addr.type)
+		{
+			std::vector <unsigned char> data;
+			for(uint32_t offset=0; offset<(wid*hei); ++offset)
+			{
+				uint32_t ptr=addr.addr+offset;
+				uint8_t byte=0xFF;
+				unsigned int bank=0xffffffff;
+				if(ptr<fm77av.physMem.GetVRAMBankSize(0))
+				{
+					bank=0;
+				}
+				else if(ptr<fm77av.physMem.GetVRAMBankSize(0)+fm77av.physMem.GetVRAMBankSize(1))
+				{
+					bank=1;
+					ptr-=fm77av.physMem.GetVRAMBankSize(0);
+				}
+				else if(ptr<fm77av.physMem.GetVRAMBankSize(0)+fm77av.physMem.GetVRAMBankSize(1)+fm77av.physMem.GetVRAMBankSize(2))
+				{
+					bank=2;
+					ptr-=(fm77av.physMem.GetVRAMBankSize(0)+fm77av.physMem.GetVRAMBankSize(1));
+				}
+				auto VRAM=fm77av.physMem.GetVRAMBank(bank);
+				if(nullptr!=VRAM)
+				{
+					if(FM77AV::ADDR_VRAM_RAW==addr.type)
+					{
+						ptr=fm77av.crtc.TransformVRAMAddress(ptr,fm77av.crtc.state.scrnMode,fm77av.crtc.state.VRAMOffset[bank]&fm77av.crtc.state.VRAMOffsetMask);
+					}
+					byte=VRAM[ptr&0xFFFF];
+				}
+				data.push_back(byte);
+			}
+			for(auto str : miscutil::MakeDump(data.data(),addr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
+			{
+				std::cout << str << std::endl;
+			}
+		}
 		else
 		{
 			std::cout << "Address type not implemented yet." << std::endl;

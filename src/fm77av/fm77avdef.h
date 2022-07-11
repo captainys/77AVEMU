@@ -54,7 +54,7 @@ enum
 {
 	CPU_MAIN,     // Keep CPU_MAIN=0
 	CPU_SUB,      // Keep CPU_SUB=1
-	CPU_UNKNOWN=0xFFFFFFFF,  // Keep it same as FM77AV::ADDR_NONE never make it collide with other ADDR_s.
+	CPU_UNKNOWN=0xFF,  // Keep it same as FM77AV::ADDR_NONE never make it collide with other ADDR_s.
 };
 std::string CPUToStr(unsigned int cpuMainOrSub);
 unsigned int StrToCPU(std::string str);
