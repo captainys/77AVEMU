@@ -457,19 +457,30 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
+
+	// Memo to self:  Never ever overwrite addr before FetchByteConst.
+	//                I wasted 12 hours to debug this.
+	//                If address-transformation is needed (I hope no more though)
+	//                do it in a separate variable.
+
 	switch(memType[addr])
 	{
 	case MEMTYPE_SUBSYS_VRAM:
 		if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
 		{
-			addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
-			fm77avPtr->crtc.VRAMDummyRead(addr);
+			fm77avPtr->crtc.VRAMDummyRead(fm77avPtr->crtc.TransformVRAMAddress(addr));
 		}
 		break;
 	case MEMTYPE_SUBSYS_IO:
 	case MEMTYPE_MAINSYS_IO:
 		return fm77avPtr->IORead(addr&0xFFFF);
 	}
+
+	// Memo to self:  Never ever overwrite addr before FetchByteConst.
+	//                I wasted 12 hours to debug this.
+	//                If address-transformation is needed (I hope no more though)
+	//                do it in a separate variable.
+
 	return FetchByteConst(addr);
 }
 uint16_t PhysicalMemory::FetchWord(uint32_t addr0,uint32_t addr1)
