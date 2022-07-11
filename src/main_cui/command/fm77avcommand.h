@@ -122,15 +122,17 @@ public:
 	void Error_IllegalSubCommand(const Command &cmd);
 	void Error_WrongParameter(const Command &cmd);
 	void Error_CannotSaveFile(const Command &cmd);
+	void Error_Addressing(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
 
 	/*! If thread is given, and the CPU main or sub is not given, try the unmuted CPU if one is muted and one is unmuted.
 	*/
+	static FM77AV::Address DecodeAddress(const FM77AV &fm77av,std::string arg,uint8_t defaultCPU,uint8_t defaultAddrType=FM77AV::ADDR_NONE);
 	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AV &fm77av,std::string arg);
 	static FM77AV::CPUAddr MakeCPUandAddress(const FM77AVThread &thr,const FM77AV &fm77av,std::string arg);
 	static uint32_t DecodePhysicalAddress(const FM77AV &fm77av,std::string arg);
-	static uint16_t MakeAddressForCPU(const MC6809 &cpu,std::string arg);
+	static uint16_t MakeAddressForCPU(const FM77AV &fm77av,const MC6809 &cpu,std::string arg);
 
 	/*! Executes a command.
 	    VM must be locked before calling.

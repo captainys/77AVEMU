@@ -274,7 +274,61 @@ void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
 	std::cout << "Cannot Save File." << std::endl;
 	Error_Common(cmd);
 }
+void FM77AVCommandInterpreter::Error_Addressing(const Command &cmd)
+{
+	std::cout << "Error in addressing." << std::endl;
+	Error_Common(cmd);
+}
 
+FM77AV::Address FM77AVCommandInterpreter::DecodeAddress(const FM77AV &fm77av,std::string arg,uint8_t defaultCPU,uint8_t defaultAddrType)
+{
+	FM77AV::Address addr;
+	addr.type=defaultAddrType;
+
+	const MC6809 *defCPU=nullptr;
+	if(CPU_MAIN==defaultCPU || CPU_SUB==defaultCPU)
+	{
+		defCPU=&fm77av.CPU(defaultCPU);
+	}
+
+	for(int i=0; i<arg.size(); ++i)
+	{
+		if(':'==arg[i])
+		{
+			auto addrStr=arg.substr(0,i);
+			addr.type=FM77AV::StrToAddressType(addrStr);
+			if(FM77AV::ADDR_MAIN==addr.type)
+			{
+				defCPU=&fm77av.mainCPU;
+			}
+			if(FM77AV::ADDR_SUB==addr.type)
+			{
+				defCPU=&fm77av.subCPU;
+			}
+			arg=arg.substr(i+1);
+			break;
+		}
+	}
+
+	FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,defCPU);
+	if(true==parser.Analyze(arg))
+	{
+		addr.addr=parser.Evaluate();
+		if(true==parser.evaluationError)
+		{
+			std::cout << "Error in offset description." << std::endl;
+			addr.type=FM77AV::ADDR_NONE;
+			addr.addr=0;
+		}
+	}
+	else
+	{
+		std::cout << "Error in offset description." << std::endl;
+		addr.type=FM77AV::ADDR_NONE;
+		addr.addr=0;
+	}
+	return addr;
+}
 /* static */ FM77AV::CPUAddr FM77AVCommandInterpreter::MakeCPUandAddress(const FM77AV &fm77av,std::string arg)
 {
 	FM77AV::CPUAddr ptr;
@@ -289,7 +343,7 @@ void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
 			ptr.cpu=StrToCPU(cpuStr);
 			if(CPU_UNKNOWN!=ptr.cpu)
 			{
-				FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
+				FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&fm77av.CPU(ptr.cpu));
 				if(true==parser.Analyze(addrStr))
 				{
 					ptr.addr=parser.Evaluate();
@@ -317,7 +371,7 @@ void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
 		ptr.cpu=thr.OnlyOneCPUIsUnmuted();
 		if(CPU_UNKNOWN!=ptr.cpu)
 		{
-			FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
+			FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&fm77av.CPU(ptr.cpu));
 			if(true==parser.Analyze(arg))
 			{
 				ptr.addr=parser.Evaluate();
@@ -343,7 +397,7 @@ void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
 			cpputil::Capitalize(cpuStr);
 			if("P"==cpuStr || "PHYS"==cpuStr)
 			{
-				FM77AVLineParserHexadecimal parser(&fm77av.mainCPU);
+				FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&fm77av.mainCPU);
 				if(true==parser.Analyze(addrStr))
 				{
 					return parser.Evaluate();
@@ -362,9 +416,9 @@ void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
 	}
 	return 0xFFFFFFFF;
 }
-/* static */ uint16_t FM77AVCommandInterpreter::MakeAddressForCPU(const MC6809 &cpu,std::string arg)
+/* static */ uint16_t FM77AVCommandInterpreter::MakeAddressForCPU(const FM77AV &fm77av,const MC6809 &cpu,std::string arg)
 {
-	FM77AVLineParserHexadecimal parser(&cpu);
+	FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&cpu);
 	if(true==parser.Analyze(arg))
 	{
 		return parser.Evaluate();
@@ -574,7 +628,7 @@ void FM77AVCommandInterpreter::Execute_Run(FM77AVThread &thr,FM77AV &fm77av,clas
 		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 		if(CPU_UNKNOWN!=ptr.cpu)
 		{
-			FM77AVLineParserHexadecimal parser(&fm77av.CPU(ptr.cpu));
+			FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&fm77av.CPU(ptr.cpu));
 			parser.Analyze(cmd.argv[2].data());
 			auto endAddr=parser.Evaluate();
 			fm77av.CPU(ptr.cpu).debugger.SetOneTimeBreakPoint(ptr.addr,endAddr);
@@ -803,7 +857,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV
 	}
 	else
 	{
-		PC=MakeAddressForCPU(cpu,cmd.argv[1]);
+		PC=MakeAddressForCPU(fm77av,cpu,cmd.argv[1]);
 	}
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
@@ -825,7 +879,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 	}
 	else
 	{
-		PC=MakeAddressForCPU(cpu,cmd.argv[1]);
+		PC=MakeAddressForCPU(fm77av,cpu,cmd.argv[1]);
 	}
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
@@ -1018,36 +1072,36 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77
 			ascii=(0!=cpputil::Atoi(cmd.argv[5].c_str()));
 		}
 
-		uint32_t addr0=DecodePhysicalAddress(fm77av,cmd.argv[1]);
-		if(addr0<FM77AV_MAX_RAM_SIZE)
+
+		auto addr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		if(FM77AV::ADDR_NONE==addr.type)
+		{
+			Error_Addressing(cmd);
+		}
+		else if(FM77AV::ADDR_PHYS==addr.type)
 		{
 			std::vector <unsigned char> data;
-			for(uint32_t addr=0; addr<(wid*hei); ++addr)
+			for(uint32_t offset=0; offset<(wid*hei); ++offset)
 			{
-				data.push_back(fm77av.physMem.NonDestructiveFetchByte((addr0+addr)&(FM77AV_MAX_RAM_SIZE-1)));
+				data.push_back(fm77av.physMem.NonDestructiveFetchByte((addr.addr+offset)&(FM77AV_MAX_RAM_SIZE-1)));
 			}
-			for(auto str : miscutil::MakeDump(data.data(),addr0,wid,hei,skip,/*shiftJIS*/false,ascii))
+			for(auto str : miscutil::MakeDump(data.data(),addr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
+			{
+				std::cout << str << std::endl;
+			}
+		}
+		else if(FM77AV::ADDR_MAIN==addr.type || FM77AV::ADDR_SUB==addr.type)
+		{
+			auto &cpu=fm77av.CPU(addr.type);
+			auto &mem=fm77av.MemAccess(addr.type);
+			for(auto str : miscutil::MakeMemDump2(cpu,mem,addr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
 			{
 				std::cout << str << std::endl;
 			}
 		}
 		else
 		{
-			auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
-			if(CPU_UNKNOWN!=ptr.cpu)
-			{
-				auto &cpu=fm77av.CPU(ptr.cpu);
-				auto &mem=fm77av.MemAccess(ptr.cpu);
-				for(auto str : miscutil::MakeMemDump2(cpu,mem,ptr.addr,wid,hei,skip,/*shiftJIS*/false,ascii))
-				{
-					std::cout << str << std::endl;
-				}
-			}
-			else
-			{
-				Error_CPUOrAddress(cmd);
-				return;
-			}
+			std::cout << "Address type not implemented yet." << std::endl;
 		}
 	}
 }

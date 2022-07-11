@@ -39,6 +39,31 @@ FM77AV::FM77AV() :
 		b=0;
 	}
 }
+/* static */ unsigned int FM77AV::StrToAddressType(std::string str)
+{
+	cpputil::Capitalize(str);
+	if("M"==str || "MAIN"==str)
+	{
+		return ADDR_MAIN;
+	}
+	else if("S"==str || "SUB"==str)
+	{
+		return ADDR_SUB;
+	}
+	else if("P"==str || "PHYS"==str)
+	{
+		return ADDR_PHYS;
+	}
+	else if("V"==str || "VRAM"==str)
+	{
+		return ADDR_VRAM;
+	}
+	else if("VR"==str || "VRAMR"==str || "VRAMRAW"==str)
+	{
+		return ADDR_VRAM_RAW;
+	}
+	else ADDR_NONE;
+}
 
 bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 {

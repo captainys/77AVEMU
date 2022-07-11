@@ -51,6 +51,24 @@ public:
 
 	enum
 	{
+		ADDR_MAIN,  // Keep it zero, same as CPU_MAIN
+		ADDR_SUB,   // Keep it one, same as CPU_AUB
+		ADDR_PHYS,
+		ADDR_VRAM,  // VRAM address 
+		ADDR_VRAM_RAW,  // If RAW, VRAM offset should not apply.
+
+		ADDR_NONE=CPU_UNKNOWN, // Keep it same as CPU_UNKNOWN
+	};
+	static unsigned int StrToAddressType(std::string str);
+	class Address
+	{
+	public:
+		unsigned int type;
+		unsigned int addr;
+	};
+
+	enum
+	{
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 		CATCHUP_DEFICIT_CUTOFF=2000000, // If the deficit is above this threshold, just don't increase.
