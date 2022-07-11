@@ -692,9 +692,78 @@ void FM77AVCRTC::DrawLine(void)
 
 void FM77AVCRTC::PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned int count)
 {
-	VRAM[VRAMAddr       ]|=(1<<(7-bit));
-	VRAM[VRAMAddr+0x4000]|=(1<<(7-bit));
-	VRAM[VRAMAddr+0x8000]|=(1<<(7-bit));
+	if(0!=(state.hardDraw.condition&2))
+	{
+		uint8_t srcColor=0;
+		srcColor|=(0!=(VRAM[VRAMAddr       ]&bit) ? 1 : 0);
+		srcColor|=(0!=(VRAM[VRAMAddr+0x4000]&bit) ? 2 : 0);
+		srcColor|=(0!=(VRAM[VRAMAddr+0x8000]&bit) ? 4 : 0);
+
+		bool match=false;
+		for(auto cmpColor : state.hardDraw.compareColor) // Should it work this way?
+		{
+			if(cmpColor==srcColor)
+			{
+				match=true;
+				break;
+			}
+		}
+
+		if((0==(state.hardDraw.condition&1) && true==match) ||
+		   (0!=(state.hardDraw.condition&1) && true!=match))
+		{
+			// Pass
+		}
+		else
+		{
+			return;
+		}
+	}
+
+//	VRAM[VRAMAddr       ]|=(1<<(7-bit));
+//	VRAM[VRAMAddr+0x4000]|=(1<<(7-bit));
+//	VRAM[VRAMAddr+0x8000]|=(1<<(7-bit));
+
+	uint8_t writeBit=(1<<(7-bit));
+	uint8_t bankMask=state.hardDraw.bankMask;
+	uint8_t col=state.hardDraw.color;
+	for(int i=0; i<3; ++i,bankMask>>=1,col>>=1)
+	{
+		if(0!=(bankMask&1))
+		{
+			continue;
+		}
+
+		uint8_t rgb=(0!=(col&1) ? 255 : 0);
+		uint8_t src=VRAM[VRAMAddr+0x4000*i];
+
+		switch(state.hardDraw.cmd)
+		{
+		case HD_CMD_TILE://6
+			// Wait.... Should I take bit from X?
+			// Or should I take bit from count?
+			break;
+		case HD_CMD_PSET://0
+			VRAM[VRAMAddr+0x4000*i]&=~writeBit;
+			VRAM[VRAMAddr+0x4000*i]|=(rgb&writeBit);
+			break;
+		case HD_CMD_OR://2
+			VRAM[VRAMAddr+0x4000*i]|=(rgb&writeBit);
+			break;
+		case HD_CMD_AND://3
+			VRAM[VRAMAddr+0x4000*i]=(src&~writeBit)|(src&rgb&writeBit);
+			break;
+		case HD_CMD_XOR://4,
+			VRAM[VRAMAddr+0x4000*i]^=(writeBit&rgb);
+			break;
+		case HD_CMD_NOT://5,
+			VRAM[VRAMAddr+0x4000*i]&=~writeBit;
+			VRAM[VRAMAddr+0x4000*i]|=((~rgb)&writeBit);
+			break;
+		case HD_CMD_CMP://7,
+			break;
+		}
+	}
 }
 
 std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
