@@ -34,8 +34,6 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 	switch(fm77av.crtc.state.scrnMode)
 	{
 	case SCRNMODE_640X200_SINGLE:
-		memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0)); // Bank 0 always.
-		break;
 	case SCRNMODE_640X200_DOUBLE:
 		memcpy(this->VRAM,
 		       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),

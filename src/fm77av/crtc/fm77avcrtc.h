@@ -78,6 +78,16 @@ public:
 		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
 		CRT_HORIZONTAL_DURATION= 30000,
 
+		// From FM77AV40 Hardware Manual
+		// In 200-line mode
+		//   Horizontal cycle is 63.5us.  23.8us blank and then 39.7us display
+		//   Vertical cycle is 1/60sec.   3.94ms blank and 12.7ms display    (12.7ms is 63.5us times 200)
+		//   VSYNC starts 1.52ms after vertical blank and lasts for 0.51ms
+		// In 400-line mode
+		//   Horizontal cycle is 41.04us. 10.64us blank and then 30.4us display
+		//   Vertical cycle is 18.06ms.   1.64ms blank and then 16.42ms display
+		//   VSYNC starts 0.34ms after vertical blank and lasts for 0.32ms
+
 		VRAM_PLANE_SIZE=0x4000,
 		VRAM_PLANE_MASK=0x3FFF,
 	};

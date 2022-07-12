@@ -195,13 +195,13 @@ const int FM77AVCRTC::NonDestructiveReadFD12(void) const
 	//	byteData&=0xBF;
 	//}
 
-	if(true==InVSYNC(fm77avPtr->state.fm77avTime))
+	if(true!=InVSYNC(fm77avPtr->state.fm77avTime)) // Better getting VSYNC and BLANK together.  Same calculation.
 	{
-		byteData&=0xFD; // VSYNC=1, DISPTMG=0
+		byteData&=0xFE;
 	}
-	else
+	if(true==InBlank(fm77avPtr->state.fm77avTime))
 	{
-		byteData&=0xFE; // VSYNC=1, DISPTMG=0
+		byteData&=0xFD;
 	}
 	return byteData;
 }
