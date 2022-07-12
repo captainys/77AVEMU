@@ -33,8 +33,7 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 
 	switch(fm77av.crtc.state.scrnMode)
 	{
-	case SCRNMODE_640X200_SINGLE:
-	case SCRNMODE_640X200_DOUBLE:
+	case SCRNMODE_640X200:
 		memcpy(this->VRAM,
 		       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),
 		       fm77av.physMem.GetVRAMBankSize(fm77av.crtc.state.displayPage));
@@ -48,9 +47,8 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 
 	switch(fm77av.crtc.state.scrnMode)
 	{
-	case SCRNMODE_640X200_SINGLE:
-	case SCRNMODE_640X200_DOUBLE:
-	case SCRNMODE_640X400_SINGLE:
+	case SCRNMODE_640X200:
+	case SCRNMODE_640X400:
 		Create(640,400);
 		break;
 	case SCRNMODE_320X200_4096COL:
@@ -64,8 +62,7 @@ void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 {
 	switch(scrnMode)
 	{
-	case SCRNMODE_640X200_SINGLE:
-	case SCRNMODE_640X200_DOUBLE:
+	case SCRNMODE_640X200:
 		{
 			for(unsigned int y=0; y<200; ++y)
 			{

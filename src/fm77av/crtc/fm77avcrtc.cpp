@@ -70,9 +70,8 @@ unsigned int FM77AVCRTC::GetBytesPerLine(void) const
 {
 	switch(state.scrnMode)
 	{
-	case SCRNMODE_640X200_SINGLE:
-	case SCRNMODE_640X200_DOUBLE:
-	case SCRNMODE_640X400_SINGLE:
+	case SCRNMODE_640X200:
+	case SCRNMODE_640X400:
 		return 80;
 	case SCRNMODE_320X200_4096COL:
 	case SCRNMODE_320X200_260KCOL:
@@ -84,9 +83,8 @@ unsigned int FM77AVCRTC::GetPlaneVRAMMask(void) const
 {
 	switch(state.scrnMode)
 	{
-	case SCRNMODE_640X200_SINGLE:
-	case SCRNMODE_640X200_DOUBLE:
-	case SCRNMODE_640X400_SINGLE:
+	case SCRNMODE_640X200:
+	case SCRNMODE_640X400:
 		return 0x3FFF;
 	case SCRNMODE_320X200_4096COL:
 	case SCRNMODE_320X200_260KCOL:
@@ -117,7 +115,7 @@ void FM77AVCRTC::Reset(void)
 	Device::Reset();
 	state.palette.Reset();
 	state.hardDraw.Reset();
-	state.scrnMode=SCRNMODE_640X200_SINGLE;
+	state.scrnMode=SCRNMODE_640X200;
 	for(auto &o : state.VRAMOffset)
 	{
 		o=0;
@@ -174,7 +172,7 @@ void FM77AVCRTC::WriteFD12(uint8_t data)
 {
 	if(0==(data&0x40))
 	{
-		state.scrnMode=SCRNMODE_640X200_SINGLE;
+		state.scrnMode=SCRNMODE_640X200;
 	}
 	else
 	{
@@ -185,15 +183,11 @@ const int FM77AVCRTC::NonDestructiveReadFD12(void) const
 {
 	auto fm77avPtr=(const FM77AV *)vmPtr;
 
-	uint8_t byteData=0xBF;
+	uint8_t byteData=0xBF; // Bit4 should be clear in 640x200 mode.
 	if(SCRNMODE_320X200_4096COL==state.scrnMode)
 	{
 		byteData|=0x40;
 	}
-	// else if(SCRNMODE_640X200_SINGLE==state.scrnMode)
-	//{
-	//	byteData&=0xBF;
-	//}
 
 	if(true!=InVSYNC(fm77avPtr->state.fm77avTime)) // Better getting VSYNC and BLANK together.  Same calculation.
 	{

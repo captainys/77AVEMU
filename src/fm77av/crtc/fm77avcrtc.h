@@ -97,7 +97,7 @@ public:
 	public:
 		Palette palette;
 		HardwareDrawing hardDraw;
-		unsigned int scrnMode=SCRNMODE_640X200_SINGLE;
+		unsigned int scrnMode=SCRNMODE_640X200;
 		uint16_t VRAMOffset[FM77AV40_NUM_VRAM_BANKS]={0,0,0},VRAMOffsetMask=0xffe0;
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
@@ -195,8 +195,7 @@ public:
 		uint32_t addrHI,addrLO;
 		switch(scrnMode)
 		{
-		case SCRNMODE_640X200_SINGLE:
-		case SCRNMODE_640X200_DOUBLE:
+		case SCRNMODE_640X200:
 			addrHI=addr&~0x3FFF;
 			addrLO=(addr+VRAMOffset)&0x3FFF;
 			return addrHI|addrLO;

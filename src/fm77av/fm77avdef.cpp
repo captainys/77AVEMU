@@ -215,16 +215,14 @@ std::string ScrnModeToStr(int scrnMode)
 {
 	switch(scrnMode)
 	{
-	case SCRNMODE_640X200_SINGLE:
-		return "640X200_SINGLE";
-	case SCRNMODE_640X200_DOUBLE:
-		return "640X200_DOUBLE";
+	case SCRNMODE_640X200:
+		return "640X200";
 	case SCRNMODE_320X200_4096COL:
 		return "320X200_4096COL";
 	case SCRNMODE_320X200_260KCOL:
 		return "320X200_260KCOL";
-	case SCRNMODE_640X400_SINGLE:
-		return "640X400_SINGLE";
+	case SCRNMODE_640X400:
+		return "640X400";
 	}
 	return "SCRNMODE_?";
 }
