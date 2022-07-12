@@ -2784,15 +2784,45 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_SWI: //       0x3F,
-		Abort("Instruction not supported yet.");
+		state.CC|=EF;
+		PushS16(mem,state.PC);
+		PushS16(mem,state.U);
+		PushS16(mem,state.Y);
+		PushS16(mem,state.X);
+		PushS8(mem,state.DP);
+		PushS8(mem,state.B());
+		PushS8(mem,state.A());
+		PushS8(mem,state.CC);
+		state.CC|=(IRQMASK|FIRQMASK);
+		state.PC=mem.FetchWord(SWI_VECTOR_ADDR);
 		inst.length=0;
 		break;
 	case INST_SWI2: //      0x13F,  // 10 3F
-		Abort("Instruction not supported yet.");
+		state.CC|=EF;
+		PushS16(mem,state.PC);
+		PushS16(mem,state.U);
+		PushS16(mem,state.Y);
+		PushS16(mem,state.X);
+		PushS8(mem,state.DP);
+		PushS8(mem,state.B());
+		PushS8(mem,state.A());
+		PushS8(mem,state.CC);
+		state.CC|=(IRQMASK|FIRQMASK);
+		state.PC=mem.FetchWord(SWI2_VECTOR_ADDR);
 		inst.length=0;
 		break;
 	case INST_SWI3: //      0x23F,  // 11 3F
-		Abort("Instruction not supported yet.");
+		state.CC|=EF;
+		PushS16(mem,state.PC);
+		PushS16(mem,state.U);
+		PushS16(mem,state.Y);
+		PushS16(mem,state.X);
+		PushS8(mem,state.DP);
+		PushS8(mem,state.B());
+		PushS8(mem,state.A());
+		PushS8(mem,state.CC);
+		state.CC|=(IRQMASK|FIRQMASK);
+		state.PC=mem.FetchWord(SWI3_VECTOR_ADDR);
 		inst.length=0;
 		break;
 
