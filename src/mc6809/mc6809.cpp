@@ -2785,7 +2785,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 
 	case INST_SWI: //       0x3F,
 		state.CC|=EF;
-		PushS16(mem,state.PC);
+		PushS16(mem,state.PC+inst.length);
 		PushS16(mem,state.U);
 		PushS16(mem,state.Y);
 		PushS16(mem,state.X);
@@ -2799,7 +2799,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SWI2: //      0x13F,  // 10 3F
 		state.CC|=EF;
-		PushS16(mem,state.PC);
+		PushS16(mem,state.PC+inst.length);
 		PushS16(mem,state.U);
 		PushS16(mem,state.Y);
 		PushS16(mem,state.X);
@@ -2813,7 +2813,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_SWI3: //      0x23F,  // 11 3F
 		state.CC|=EF;
-		PushS16(mem,state.PC);
+		PushS16(mem,state.PC+inst.length);
 		PushS16(mem,state.U);
 		PushS16(mem,state.Y);
 		PushS16(mem,state.X);
