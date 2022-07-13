@@ -162,6 +162,11 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			}
 			else
 			{
+				if(0x2D<=state.ym2203cAddrLatch && state.ym2203cAddrLatch<=0x2F)
+				{
+					std::cout << "Pre-Scaler [" << cpputil::Ubtox(state.ym2203cAddrLatch) << "]=" << cpputil::Ubtox(state.ym2203cDataWrite) << std::endl;
+				}
+
 				// YM2203C does not have additional 3 channels. Channel base is always 0.
 				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite);
 				if(REG_PORTB==state.ym2203cAddrLatch)
