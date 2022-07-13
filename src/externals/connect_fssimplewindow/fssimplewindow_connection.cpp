@@ -1098,9 +1098,9 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
 	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
 
-	/*glRasterPos2i(0,winHei-1);
+	glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
-	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap); */
+	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
 
 	switch(lowerRightIcon)
 	{
