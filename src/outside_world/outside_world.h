@@ -100,6 +100,7 @@ public:
 	};
 	unsigned char *statusBitmap;
 	bool fdAccessLamp[4]={false,false,false,false};
+	unsigned int tapeStatusBitmap=0;
 	bool insLED=false,capsLED=false,kanaLED=false;
 	bool autoScaling=false;
 	unsigned int windowModeOnStartUp=FM77AVParam::WINDOW_NORMAL;
@@ -137,6 +138,9 @@ public:
 
 	void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
 	void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+
+	void PutWx16Invert(int x0,int y0,int W,const unsigned char icon[]);
+	void ClearWx16(int x0,int y0,int W);
 
 	/*! Implementation should call this function for each inkey for application-specific augmentation to work correctly.
 	*/

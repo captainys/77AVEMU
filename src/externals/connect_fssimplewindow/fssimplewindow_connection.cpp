@@ -157,6 +157,24 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	}
 }
 
+static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,int hei)
+{
+	std::vector <unsigned char> rgba;
+	rgba.resize(4*wid*hei);
+	for(int y=0; y<hei; ++y)
+	{
+		int Y=hei-1-y;
+		for(int x=0; x<wid; ++x)
+		{
+			rgba[(y*wid+x)*4  ]=src[(Y*wid+x)*4  ];
+			rgba[(y*wid+x)*4+1]=src[(Y*wid+x)*4+1];
+			rgba[(y*wid+x)*4+2]=src[(Y*wid+x)*4+2];
+			rgba[(y*wid+x)*4+3]=src[(Y*wid+x)*4+3];
+		}
+	}
+	return rgba;
+}
+
 /* virtual */ void FsSimpleWindowConnection::Start(void)
 {
 	int wid=640*scaling/100;
@@ -173,30 +191,17 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 	// unless bitmaps are ready.  Do it before FsResizeWindow.
 
 	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
-	// PAUSEicon.resize(4*PAUSE_wid*PAUSE_hei);
-	// MENUicon.resize(4*MENU_wid*MENU_hei);
-	// for(int y=0; y<PAUSE_hei; ++y)
-	// {
-	// 	int Y=PAUSE_hei-1-y;
-	// 	for(int x=0; x<PAUSE_wid; ++x)
-	// 	{
-	// 		PAUSEicon[(y*PAUSE_wid+x)*4  ]=PAUSE[(Y*PAUSE_wid+x)*4  ];
-	// 		PAUSEicon[(y*PAUSE_wid+x)*4+1]=PAUSE[(Y*PAUSE_wid+x)*4+1];
-	// 		PAUSEicon[(y*PAUSE_wid+x)*4+2]=PAUSE[(Y*PAUSE_wid+x)*4+2];
-	// 		PAUSEicon[(y*PAUSE_wid+x)*4+3]=PAUSE[(Y*PAUSE_wid+x)*4+3];
-	// 	}
-	// }
-	// for(int y=0; y<MENU_hei; ++y)
-	// {
-	// 	int Y=MENU_hei-1-y;
-	// 	for(int x=0; x<MENU_wid; ++x)
-	// 	{
-	// 		MENUicon[(y*MENU_wid+x)*4  ]=MENU[(Y*MENU_wid+x)*4  ];
-	// 		MENUicon[(y*MENU_wid+x)*4+1]=MENU[(Y*MENU_wid+x)*4+1];
-	// 		MENUicon[(y*MENU_wid+x)*4+2]=MENU[(Y*MENU_wid+x)*4+2];
-	// 		MENUicon[(y*MENU_wid+x)*4+3]=MENU[(Y*MENU_wid+x)*4+3];
-	// 	}
-	// }
+	PAUSEicon=MakeIcon(PAUSE,PAUSE_wid,PAUSE_hei);
+	MENUicon=MakeIcon(MENU,MENU_wid,MENU_hei);
+	CAPSicon=MakeIcon(CAPS,CAPS_wid,CAPS_hei);
+	KANAicon=MakeIcon(KANA,KANA_wid,KANA_hei);
+	INSicon=MakeIcon(INS,INS_wid,INS_hei);
+
+	FD_IDLEicon=MakeIcon(FD_IDLE,16,16);
+	FD_BUSYicon=MakeIcon(FD_BUSY,16,16);
+	TAPE_IDLEicon=MakeIcon(TAPE_IDLE,16,16);
+	TAPE_LOADINGicon=MakeIcon(TAPE_LOADING,16,16);
+	TAPE_SAVINGicon=MakeIcon(TAPE_SAVING,16,16);
 
 
 
@@ -340,8 +345,6 @@ void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) cons
 		}
 	}
 
-	// For the time translation mode only.
-	// if(true==keyTranslationMode)
 	if(FM77AV_KEYBOARD_MODE_DIRECT!=keyboardMode) // Means one of the translation modes.
 	{
 		unsigned int c;
@@ -982,16 +985,62 @@ void FsSimpleWindowConnection::PollGamePads(void)
 /* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FM77AV &fm77av)
 {
 	// Update Status Bitmap
+	for(int fd=0; fd<4; ++fd)
+	{
+		bool busy=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
+		if(fdAccessLamp[fd]!=busy)
+		{
+			Put16x16SelectInvert(16+16*fd,15,FD_IDLEicon.data(),FD_BUSYicon.data(),busy);
+			fdAccessLamp[fd]=busy;
+		}
+	}
+
+	// if tape status changed
+	// unsigned int tapeStatusBitmap=0;
+	// Tape icon will take 16 pixels from X=64
+
+
 	// Don't forget ins, caps, kana LEDs.
-	// for(int fd=0; fd<2; ++fd)
-	// {
-	// 	bool busy=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
-	// 	if(fdAccessLamp[fd]!=busy)
-	// 	{
-	// 		Put16x16SelectInvert(16+16*fd,15,FD_IDLE,FD_BUSY,busy);
-	// 		fdAccessLamp[fd]=busy;
-	// 	}
-	// }
+	int iconX=80;
+	if(capsLED!=fm77av.keyboard.state.CAPS)
+	{
+		if(true==fm77av.keyboard.state.CAPS)
+		{
+			PutWx16Invert(iconX,15,CAPS_wid,CAPSicon.data());
+		}
+		else
+		{
+			ClearWx16(iconX,15,CAPS_wid);
+		}
+		capsLED=fm77av.keyboard.state.CAPS;
+	}
+	iconX+=CAPS_wid;
+	if(kanaLED!=fm77av.keyboard.state.KANA)
+	{
+		if(true==fm77av.keyboard.state.KANA)
+		{
+			PutWx16Invert(iconX,15,KANA_wid,KANAicon.data());
+		}
+		else
+		{
+			ClearWx16(iconX,15,KANA_wid);
+		}
+		kanaLED=fm77av.keyboard.state.KANA;
+	}
+	iconX+=KANA_wid;
+	if(insLED!=fm77av.keyboard.state.INSLED)
+	{
+		if(true==fm77av.keyboard.state.INSLED)
+		{
+			PutWx16Invert(iconX,15,KANA_wid,INSicon.data());
+		}
+		else
+		{
+			ClearWx16(iconX,15,INS_wid);
+		}
+		insLED=fm77av.keyboard.state.INSLED;
+	}
+
 }
 /* virtual */ void FsSimpleWindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
 {

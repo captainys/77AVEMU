@@ -72,7 +72,7 @@ public:
 	void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
 	void DrawTextureRect(int x0,int y0,int x1,int y1) const;
 
-	std::vector <unsigned char> PAUSEicon,MENUicon;
+	std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
 
 	std::vector <struct YsGamePadReading> gamePads,prevGamePads;
 

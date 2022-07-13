@@ -143,6 +143,33 @@ void Outside_World::Put16x16SelectInvert(int x0,int y0,const unsigned char idleI
 	}
 }
 
+void Outside_World::PutWx16Invert(int x0,int y0,int W,const unsigned char icon[])
+{
+	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;
+	auto srcPtr=icon;
+	for(auto y=0; y<16; ++y)
+	{
+		for(auto x=0; x<W*4; ++x)
+		{
+			dstPtr[x]=*srcPtr;
+			++srcPtr;
+		}
+		dstPtr-=STATUS_WID*4;
+	}
+}
+void Outside_World::ClearWx16(int x0,int y0,int W)
+{
+	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;
+	for(auto y=0; y<16; ++y)
+	{
+		for(auto x=0; x<W*4; ++x)
+		{
+			dstPtr[x]=0xFF;
+		}
+		dstPtr-=STATUS_WID*4;
+	}
+}
+
 /* virtual */ std::vector <std::string> Outside_World::MakeKeyMappingText(void) const
 {
 	std::vector <std::string> text;

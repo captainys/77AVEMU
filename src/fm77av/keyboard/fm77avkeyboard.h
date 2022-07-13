@@ -61,6 +61,7 @@ public:
 		std::queue <uint8_t> encoderQueue;
 
 		bool CAPS=false,KANA=false;
+		bool INSLED=false;
 		uint8_t videoCaptureMode; // Should I implement video digitize/superimpose?  I guess video capture card for Tsugaru before that.
 		uint8_t videoCaptureBrightness;
 		bool keyRepeat=true;
