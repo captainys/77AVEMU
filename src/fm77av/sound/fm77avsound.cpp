@@ -130,31 +130,6 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 		switch(data&0x0F)
 		{
 		case 0: // High impedance
-			switch(state.ym2203cCommand)
-			{
-			case 3: // Address Latch
-				state.ym2203cAddrLatch=state.ym2203cDataWrite;
-				break;
-			case 2: // Data Write
-				if(state.ym2203cAddrLatch<=0x0F)
-				{
-					state.ay38910.Write(state.ym2203cAddrLatch,state.ym2203cDataWrite);
-					if(REG_GAMEPORTENABLE==state.ym2203cAddrLatch)
-					{
-						// Question: Should I care?
-					}
-				}
-				else
-				{
-					// YM2203C does not have additional 3 channels. Channel base is always 0.
-					state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite);
-					if(REG_PORTB==state.ym2203cAddrLatch)
-					{
-						fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(data&0x10),data&3);
-						fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(data&0x20),(data>>2)&3);
-					}
-				}
-			}
 			break;
 		case 1: // Data Read
 			if(state.ym2203cAddrLatch<=0x0F)
@@ -173,6 +148,29 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 				state.ym2203cDataRead=state.ym2203c.ReadRegister(0,state.ym2203cAddrLatch);
 			}
 			break;
+		case 3: // Address Latch
+			state.ym2203cAddrLatch=state.ym2203cDataWrite;
+			break;
+		case 2: // Data Write
+			if(state.ym2203cAddrLatch<=0x0F)
+			{
+				state.ay38910.Write(state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				if(REG_GAMEPORTENABLE==state.ym2203cAddrLatch)
+				{
+					// Question: Should I care?
+				}
+			}
+			else
+			{
+				// YM2203C does not have additional 3 channels. Channel base is always 0.
+				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				if(REG_PORTB==state.ym2203cAddrLatch)
+				{
+					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(data&0x10),data&3);
+					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(data&0x20),(data>>2)&3);
+				}
+			}
+			break;
 		case 4: // Status Read
 			state.ym2203cDataRead=0b01111100;
 			state.ym2203cDataRead|=(true==state.ym2203c.TimerAUp() ? 1 : 0);
@@ -185,11 +183,19 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 				state.ym2203cDataRead|=0xC0;
 			}
 			break;
+		default:
+			std::cout << "Warning!  Undefined YM2203C I/O command!  " << cpputil::Ubtox(data&0x0F) << std::endl;
+			break;
 		}
 		state.ym2203cCommand=data&0x0F;
 		break;
 	case FM77AVIO_YM2203C_DATA://=            0xFD16,
 		state.ym2203cDataWrite=data;
+		if(0!=state.ym2203cCommand)
+		{
+			std::cout << "Warning!  YM2203C Data Register Written while not High-Impedance state!" << std::endl;
+			break;
+		}
 		break;
 
 	case FM77AVIO_BEEP://=                    0xD403,
