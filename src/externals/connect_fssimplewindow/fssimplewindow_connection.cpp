@@ -248,16 +248,17 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	mainTexId=GenTexture();
 	statusTexId=GenTexture();
 
-	// pauseIconTexId=GenTexture();
-	// UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
-	// menuIconTexId=GenTexture();
-	// UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
+	pauseIconTexId=GenTexture();
+	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
+	menuIconTexId=GenTexture();
+	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
 
 	// Make initial status bitmap
-	// for(int fd=0; fd<2; ++fd)
-	// {
-	// 	Put16x16Invert(16+16*fd,15,FD_IDLE);
-	// }
+	for(int fd=0; fd<4; ++fd)
+	{
+		Put16x16Invert(16*fd,15,FD_IDLE);
+	}
+	Put16x16Invert(64,15,TAPE_IDLE);
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
@@ -990,7 +991,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 		bool busy=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
 		if(fdAccessLamp[fd]!=busy)
 		{
-			Put16x16SelectInvert(16+16*fd,15,FD_IDLEicon.data(),FD_BUSYicon.data(),busy);
+			Put16x16SelectInvert(16*fd,15,FD_IDLE,FD_BUSY,busy);
 			fdAccessLamp[fd]=busy;
 		}
 	}
@@ -1006,7 +1007,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	{
 		if(true==fm77av.keyboard.state.CAPS)
 		{
-			PutWx16Invert(iconX,15,CAPS_wid,CAPSicon.data());
+			PutWx16Invert(iconX,15,CAPS_wid,::CAPS);
 		}
 		else
 		{
@@ -1019,7 +1020,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	{
 		if(true==fm77av.keyboard.state.KANA)
 		{
-			PutWx16Invert(iconX,15,KANA_wid,KANAicon.data());
+			PutWx16Invert(iconX,15,KANA_wid,::KANA);
 		}
 		else
 		{
@@ -1032,7 +1033,7 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	{
 		if(true==fm77av.keyboard.state.INSLED)
 		{
-			PutWx16Invert(iconX,15,KANA_wid,INSicon.data());
+			PutWx16Invert(iconX,15,KANA_wid,::INS);
 		}
 		else
 		{
@@ -1098,9 +1099,9 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
 	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
 
-	glRasterPos2i(0,winHei-1);
+	/* glRasterPos2i(0,winHei-1);
 	glPixelZoom(1,1);
-	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap);
+	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap); */
 
 	switch(lowerRightIcon)
 	{
