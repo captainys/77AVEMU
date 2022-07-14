@@ -70,13 +70,17 @@ public:
 
 	enum
 	{
-		// VSYNC_CYCLE is 1670000, but it is close enough to 0x1000000(16777216)
-		VSYNC_CYCLE=         0x1000000,
+		// VSYNC_CYCLE is 1/60sec.
+		VSYNC_CYCLE=         16666667,
 		// Measurement taken from actual FM TOWNS II MX hardware tells VSYNC lasts for 60us.
-		CRT_VERTICAL_DURATION=0x1000000-60000, // Time CRTC spends for drawing.  VSYNC_CYCLE-CRT_VERTICAL_DURATION gives duration of VSYNC.
+		CRT_VERTICAL_DURATION=16666667-3940000, // FM77AV40 Hardware Manual tells Vertical Blank is 3.94ms
+		// Beginning of vertical blank to VSYNC
+		CRT_VBLANK_TO_VSYNC=1520000,  // 1.52ms FM77AV40 Hardware Manual pp.182
+		//
+		CRT_VSYNC_DURATION=510000,    // 0.51ms FM77AV40 Hardware Manual pp.182
 		// HSYNC_CYCLE should be 32000, but it is close enough to 0x8000(32768)
-		HSYNC_CYCLE=            0x8000, // Not accurate.  Fixed at 31K
-		CRT_HORIZONTAL_DURATION= 30000,
+		HSYNC_CYCLE=            63500, // 63.5us FM77AV40 Hardware Manual pp.180
+		CRT_HORIZONTAL_DURATION= 39700, // 39.7us FM77AV40 Hardware Manual pp.180
 
 		// From FM77AV40 Hardware Manual
 		// In 200-line mode
@@ -113,10 +117,11 @@ public:
 	Palette &GetPalette(void);
 	const Palette &GetPalette(void) const;
 	bool InVSYNC(uint64_t fm77avTime) const;
+	bool InVBLANK(uint64_t fm77avTime) const;
 	bool InHSYNC(uint64_t fm77avTime) const;
 	inline bool InBlank(uint64_t fm77avTime) const
 	{
-		return InVSYNC(fm77avTime)||InHSYNC(fm77avTime);
+		return InVBLANK(fm77avTime)||InHSYNC(fm77avTime);
 	}
 	inline uint16_t GetActiveVRAMOffset(void) const
 	{

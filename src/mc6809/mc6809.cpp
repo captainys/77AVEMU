@@ -2807,7 +2807,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS8(mem,state.B());
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
-		state.CC|=(IRQMASK|FIRQMASK);
+		// Motorola 6809 and Hitatchi 6309 Programming Reference pp. 134.  SWI2 and SWI3 does not mask IRQ and FIRQ.
 		state.PC=mem.FetchWord(SWI2_VECTOR_ADDR);
 		inst.length=0;
 		break;
@@ -2821,7 +2821,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS8(mem,state.B());
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
-		state.CC|=(IRQMASK|FIRQMASK);
+		// Motorola 6809 and Hitatchi 6309 Programming Reference pp. 134.  SWI2 and SWI3 does not mask IRQ and FIRQ.
 		state.PC=mem.FetchWord(SWI3_VECTOR_ADDR);
 		inst.length=0;
 		break;

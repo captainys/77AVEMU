@@ -289,6 +289,8 @@ void FM77AVThread::PrintStatus(FM77AV &fm77av,bool muteMain,bool muteSub) const
 		std::cout << fm77av.vmAbortReason << std::endl;
 	}
 
+	std::cout << "VMTime " << fm77av.state.fm77avTime << " nanosec" << std::endl;
+
 	if(true!=muteMain && true!=muteSub)
 	{
 		if(0<fm77av.state.timeBalance)

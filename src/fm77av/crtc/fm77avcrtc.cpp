@@ -141,10 +141,23 @@ const FM77AVCRTC::Palette &FM77AVCRTC::GetPalette(void) const
 // Then, VSYNC should be 1.34ms long.
 // Will take screenmode into account eventually.
 // Also should take HSYNC into account.
-bool FM77AVCRTC::InVSYNC(const uint64_t fm77avTime) const
+bool FM77AVCRTC::InVBLANK(const uint64_t fm77avTime) const
 {
 	unsigned int intoFrame=((unsigned long long)fm77avTime)%VSYNC_CYCLE;
 	return  (CRT_VERTICAL_DURATION<intoFrame);
+}
+bool FM77AVCRTC::InVSYNC(uint64_t fm77avTime) const
+{
+	unsigned int intoFrame=((unsigned long long)fm77avTime)%VSYNC_CYCLE;
+	if(CRT_VERTICAL_DURATION<intoFrame)
+	{
+		unsigned int intoVBLANK=intoFrame-CRT_VERTICAL_DURATION;
+		if(CRT_VBLANK_TO_VSYNC<=intoVBLANK)
+		{
+			return (intoVBLANK-CRT_VBLANK_TO_VSYNC)<CRT_VSYNC_DURATION;
+		}
+	}
+	return false;
 }
 bool FM77AVCRTC::InHSYNC(const uint64_t fm77avTime) const
 {
