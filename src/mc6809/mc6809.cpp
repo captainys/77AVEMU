@@ -2880,14 +2880,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0==(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBCC_IMM16: //0x124, // 10 24
 		if(0==(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2895,14 +2893,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBCS_IMM16: //0x125, // 10 25
 		if(0!=(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2910,14 +2906,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBEQ_IMM16: //0x127, // 10 27
 		if(0!=(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2925,14 +2919,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if((0!=(state.CC&SF))==(0!=(state.CC&VF)))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBGE_IMM16: //0x12C, // 10 2C
 		if((0!=(state.CC&SF))==(0!=(state.CC&VF)))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2940,14 +2932,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if((0!=(state.CC&SF))==(0!=(state.CC&VF)) && 0==(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBGT_IMM16: //0x12E, // 10 2E
 		if((0!=(state.CC&SF))==(0!=(state.CC&VF)) && 0==(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2955,14 +2945,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0==(state.CC&ZF) && 0==(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBHI_IMM16: //0x122, // 10 22
 		if(0==(state.CC&ZF) && 0==(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2970,14 +2958,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if((0!=(state.CC&SF))!=(0!=(state.CC&VF)) || 0!=(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBLE_IMM16: //0x12F, // 10 2F
 		if((0!=(state.CC&SF))!=(0!=(state.CC&VF)) || 0!=(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -2985,14 +2971,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&ZF) || 0!=(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBLS_IMM16: //0x123, // 10 23
 		if(0!=(state.CC&ZF) || 0!=(state.CC&CF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -3000,14 +2984,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if((0!=(state.CC&SF))!=(0!=(state.CC&VF)))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBLT_IMM16: //0x12D, // 10 2D
 		if((0!=(state.CC&SF))!=(0!=(state.CC&VF)))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -3015,14 +2997,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&SF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBMI_IMM16: //0x12B, // 10 2B
 		if(0!=(state.CC&SF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -3030,14 +3010,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0==(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBNE_IMM16: //0x126, // 10 26
 		if(0==(state.CC&ZF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -3045,14 +3023,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0==(state.CC&SF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBPL_IMM16: //0x12A, // 10 2A
 		if(0==(state.CC&SF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -3082,14 +3058,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0==(state.CC&VF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBVC_IMM16: //0x128, // 10 28
 		if(0==(state.CC&VF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 
@@ -3097,14 +3071,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&VF))
 		{
 			state.PC+=inst.BranchOffset8();
-			++inst.clocks;
 		}
 		break;
 	case INST_LBVS_IMM16: //0x129, // 10 29
 		if(0!=(state.CC&VF))
 		{
 			state.PC+=inst.BranchOffset16();
-			++inst.clocks;
 		}
 		break;
 	default:
