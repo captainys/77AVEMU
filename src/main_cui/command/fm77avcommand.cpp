@@ -28,7 +28,10 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["DIS"]=CMD_DISABLE;
 	primaryCmdMap["STARTAUDIOREC"]=CMD_START_AUDIO_RECORDING;
 	primaryCmdMap["ENDAUDIOREC"]=CMD_END_AUDIO_RECORDING;
+	primaryCmdMap["STOPAUDIOREC"]=CMD_END_AUDIO_RECORDING;
 	primaryCmdMap["SAVEAUDIOREC"]=CMD_SAVE_AUDIO_RECORDING;
+	primaryCmdMap["FMCH"]=CMD_FMCH;
+	primaryCmdMap["PSGCH"]=CMD_PSGCH;
 	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
 	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
 	primaryCmdMap["U"]=CMD_DISASM;
@@ -161,6 +164,14 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Don't break on event." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
+
+	std::cout << "STARTAUDIOREC" << std::endl;
+	std::cout << "STOPAUDIOREC / ENDAUDIOREC" << std::endl;
+	std::cout << "SAVEAUDIOREC filename.wav" << std::endl;
+	std::cout << "  Start/stop/save audio recording." << std::endl;
+	std::cout << "FMCH 0/1 0/1 0/1" << std::endl;
+	std::cout << "PSGCH 0/1 0/1 0/1" << std::endl;
+	std::cout << "  Turn on or off FM/PSG channels." << std::endl;
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "DEBUG/DEBUGGER" << std::endl;
@@ -529,6 +540,30 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		if(2<=cmd.argv.size())
 		{
 			fm77av.sound.SaveRecording(cmd.argv[1]);
+		}
+		break;
+	case CMD_FMCH:
+		if(4<=cmd.argv.size())
+		{
+			fm77av.sound.state.ym2203c.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
+			fm77av.sound.state.ym2203c.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
+			fm77av.sound.state.ym2203c.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
+		break;
+	case CMD_PSGCH:
+		if(4<=cmd.argv.size())
+		{
+			fm77av.sound.state.ay38910.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
+			fm77av.sound.state.ay38910.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
+			fm77av.sound.state.ay38910.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
 		}
 		break;
 
