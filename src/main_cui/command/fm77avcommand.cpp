@@ -53,6 +53,12 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
+	primaryCmdMap["TAPEWP"]=CMD_TAPE_WRITE_PROTECT;
+	primaryCmdMap["TAPEUP"]=CMD_TAPE_WRITE_UNPROTECT;
+	primaryCmdMap["TAPEREWIND"]=CMD_TAPE_REWIND;
+	primaryCmdMap["TAPEREC"]=CMD_TAPE_REC_BUTTON_ON;
+	primaryCmdMap["TAPEPLAY"]=CMD_TAPE_REC_BUTTON_RELEASE;
+
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -100,6 +106,18 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  TRANS3 will make virtual BREAK from physical ESC." << std::endl;
 	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
 	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
+
+	std::cout << "TAPEWP" << std::endl;
+	std::cout << "  Write protect tape." << std::endl;
+	std::cout << "TAPEUP" << std::endl;
+	std::cout << "  Write unprotect tape." << std::endl;
+	std::cout << "TAPEREWIND" << std::endl;
+	std::cout << "  Rewind tape." << std::endl;
+	std::cout << "TAPEREC" << std::endl;
+	std::cout << "  Press REC button." << std::endl;
+	std::cout << "TAPEPLAY" << std::endl;
+	std::cout << "  Release REC button." << std::endl;
+
 	std::cout << "RUN" << std::endl;
 	std::cout << "  Run." << std::endl;
 	std::cout << "RUN M:addr/S:addr" << std::endl;
@@ -460,6 +478,28 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_YESWAIT:
 		fm77av.var.noWait=false;
 		break;
+
+	case CMD_TAPE_WRITE_PROTECT:
+		fm77av.dataRecorder.state.t77.writeProtect=true;
+		std::cout << "Write Protect TAPE." << std::endl;
+		break;
+	case CMD_TAPE_WRITE_UNPROTECT:
+		fm77av.dataRecorder.state.t77.writeProtect=false;
+		std::cout << "Write Unprotect TAPE." << std::endl;
+		break;
+	case CMD_TAPE_REWIND:
+		fm77av.dataRecorder.Rewind();
+		std::cout << "Rewind TAPE." << std::endl;
+		break;
+	case CMD_TAPE_REC_BUTTON_ON:
+		fm77av.dataRecorder.state.recButton=true;
+		std::cout << "REC Button ON." << std::endl;
+		break;
+	case CMD_TAPE_REC_BUTTON_RELEASE:
+		fm77av.dataRecorder.state.recButton=false;
+		std::cout << "REC Button OFF." << std::endl;
+		break;
+
 	case CMD_FORCE_QUIT:
 		exit(0);
 		break;

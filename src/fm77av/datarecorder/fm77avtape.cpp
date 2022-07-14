@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include <stdio.h>
 #include "fm77avtape.h"
 #include "cpputil.h"
@@ -130,10 +131,16 @@ void FM77AVDataRecorder::MotorOn(uint64_t fm77avTime)
 	{
 		state.t77.MotorOn(state.ptr,fm77avTime);
 		state.motor=true;
+		state.motorOnTime=fm77avTime;
+		state.lastBitFlipTime=fm77avTime;
 	}
 }
-void FM77AVDataRecorder::MotorOff(void)
+void FM77AVDataRecorder::MotorOff(uint64_t fm77avTime)
 {
+	if(true==state.motor && true==state.recButton && true!=state.t77.writeProtect)
+	{
+		WriteBit(fm77avTime);
+	}
 	state.motor=false;
 }
 void FM77AVDataRecorder::Move(uint64_t fm77avTime)
@@ -151,6 +158,69 @@ bool FM77AVDataRecorder::Read(void) const
 	}
 	return false;
 }
+void FM77AVDataRecorder::Rewind(void)
+{
+	state.t77.Rewind(state.ptr);
+}
+void FM77AVDataRecorder::WriteBit(uint64_t fm77avTime)
+{
+	if(true!=state.t77.writeProtect && true==state.recButton)
+	{
+		uint8_t out[2];
+		uint32_t sinceLastFlip=fm77avTime-state.lastBitFlipTime;
+		if(state.motorOnTime==state.lastBitFlipTime && HEAD_SILENT_TIME<=sinceLastFlip) // First flip since the last motor on
+		{
+			out[0]=0x7F;
+			out[1]=0xFF;
+		}
+		else
+		{
+			if(true==state.writeData)
+			{
+				out[0]=0xC0;
+			}
+			else
+			{
+				out[0]=0x40;
+			}
+
+			uint32_t t77Count=sinceLastFlip/(FM77AVTape::MICROSEC_PER_T77_ONE*1000);
+			out[1]=std::max<uint32_t>(t77Count,0xFF);
+		}
+		if(state.ptr.dataPtr+1<state.t77.data.size())
+		{
+			state.t77.data[state.ptr.dataPtr++]=out[0];
+			state.t77.data[state.ptr.dataPtr++]=out[1];
+		}
+		else
+		{
+			state.t77.data.push_back(out[0]);
+			state.t77.data.push_back(out[1]);
+			state.ptr.dataPtr=state.t77.data.size();
+		}
+		state.ptr.fm77avTime=fm77avTime;
+	}
+}
+
+void FM77AVDataRecorder::WriteFD00(uint64_t fm77avTime,uint8_t data)
+{
+	if(0!=(data&2)) // MOTOR ON
+	{
+		MotorOn(fm77avTime);
+	}
+	else
+	{
+		MotorOff(fm77avTime);
+	}
+	bool nextWriteData=(0!=(data&1));
+	if(nextWriteData!=state.writeData)
+	{
+		WriteBit(fm77avTime);
+		state.lastBitFlipTime=fm77avTime;
+	}
+	state.writeData=nextWriteData;
+}
+
 std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime) const
 {
 	std::vector <std::string> text;

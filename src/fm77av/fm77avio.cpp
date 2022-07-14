@@ -25,14 +25,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	{
 	// Main-CPU I/O
 	case FM77AVIO_KEYCODE_PRINTER_CASSETTE://=0xFD00,
-		if(0!=(value&2)) // MOTOR ON
-		{
-			dataRecorder.MotorOn(state.fm77avTime);
-		}
-		else
-		{
-			dataRecorder.MotorOff();
-		}
+		dataRecorder.WriteFD00(state.fm77avTime,value);
 		break;
 	case FM77AVIO_CASSETTE_IRQMASK://=        0xFD02,
 		state.main.irqEnableBits=value|SystemState::MAIN_IRQ_ENABLE_ALWAYS_ON;
