@@ -12,6 +12,8 @@ class AY38910
 public:
 	enum
 	{
+		PRESCALING_DEFAULT=2,
+
 		NUM_CHANNELS=3,
 		NUM_REGS=16,
 		REG_MASK=NUM_REGS-1,
@@ -65,6 +67,8 @@ public:
 		unsigned int envOut=0;
 		unsigned int envPeriodBalance=0;
 		unsigned int envPatternSeg=0;  // 0 to 3.  Index to envPtn[PTN].
+
+		unsigned int preScaler=2;
 
 		uint32_t LFSR=1;
 		unsigned int noisePeriodBalance=0;

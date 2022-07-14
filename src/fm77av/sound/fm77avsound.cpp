@@ -146,6 +146,19 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			{
 				// YM2203C does not have additional 3 channels. Channel base is always 0.
 				state.ym2203cDataRead=state.ym2203c.ReadRegister(0,state.ym2203cAddrLatch);
+				// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
+				if(YM2612::REG_PRESCALER_0==state.ym2203cAddrLatch)
+				{
+					state.ay38910.state.preScaler=4;
+				}
+				if(YM2612::REG_PRESCALER_1==state.ym2203cAddrLatch)
+				{
+					state.ay38910.state.preScaler=2;
+				}
+				if(YM2612::REG_PRESCALER_2==state.ym2203cAddrLatch)
+				{
+					state.ay38910.state.preScaler=1;
+				}
 			}
 			break;
 		case 3: // Address Latch
@@ -173,6 +186,19 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 				{
 					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(data&0x10),data&3);
 					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(data&0x20),(data>>2)&3);
+				}
+				// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
+				if(YM2612::REG_PRESCALER_0==state.ym2203cAddrLatch)
+				{
+					state.ay38910.state.preScaler=4;
+				}
+				if(YM2612::REG_PRESCALER_1==state.ym2203cAddrLatch)
+				{
+					state.ay38910.state.preScaler=2;
+				}
+				if(YM2612::REG_PRESCALER_2==state.ym2203cAddrLatch)
+				{
+					state.ay38910.state.preScaler=1;
 				}
 			}
 			break;

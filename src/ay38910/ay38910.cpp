@@ -39,6 +39,7 @@ void AY38910::Reset(void)
 	state.envPeriodBalance=0;
 	state.envPatternSeg=0;
 	state.LFSR=1;
+	state.preScaler=2;
 
 }
 uint8_t AY38910::Read(uint8_t reg) const
@@ -68,6 +69,7 @@ inline unsigned int AY38910::ChannelFrequencyX1000(int ch) const
 	if(0<F_NUM)
 	{
 		unsigned int freq=FREQ_CONST*1000/16;
+		freq=freq*PRESCALING_DEFAULT/state.preScaler;
 		freq/=F_NUM;
 		return freq;
 	}
@@ -114,6 +116,7 @@ inline unsigned int AY38910::EnvelopeFreqX1000(void) const
 	if(0<D)
 	{
 		unsigned int freq=FREQ_CONST*1000/256;
+		freq=freq*PRESCALING_DEFAULT/state.preScaler;
 		freq/=D;
 		return freq;
 	}
