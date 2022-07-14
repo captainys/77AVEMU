@@ -128,6 +128,8 @@ public:
 		uint8_t subMonType=SUBMON_C;
 		uint8_t subFontType=0;
 		bool subROMSwitch=false;
+
+		unsigned int kanjiAddr=0;
 	};
 	State state;
 
@@ -139,6 +141,11 @@ public:
 	bool LoadROMFiles(std::string ROMPath);
 
 	void IOWriteByte(unsigned int ioport,unsigned int data);
+
+	void WriteFD20(uint8_t data);
+	void WriteFD21(uint8_t data);
+	uint8_t ReadFD22(void) const;
+	uint8_t ReadFD23(void) const;
 
 	void WriteFD13(uint8_t data);
 	void WriteD430(uint8_t data);

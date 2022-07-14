@@ -172,6 +172,13 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		fdc.IOWriteByte(ioAddr,value);
 		break;
 
+	case FM77AVIO_KANJI_ADDR_HIGH://=         0xFD20,
+		physMem.WriteFD20(value);
+		break;
+	case FM77AVIO_KANJI_ADDR_LOW://=          0xFD21,
+		physMem.WriteFD21(value);
+		break;
+
 	case FM77AVIO_ANALOG_PALETTE_NUM_HIGH://= 0xFD30,
 		crtc.WriteFD30(value);
 		break;
@@ -548,7 +555,6 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		break;
 
 
-
 	// Sub-CPU I/O
 	case FM77AVIO_KEY_LOW: //=                 0xD401,
 		ClearKeyIRQFlag();
@@ -678,6 +684,14 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
 		byteData=fdc.NonDestructiveIORead(ioAddr);
 		break;
+
+	case FM77AVIO_KANJI_DATA_L://=          0xFD22,
+		byteData=physMem.ReadFD22();
+		break;
+	case FM77AVIO_KANJI_DATA_R://=         0xFD23,
+		byteData=physMem.ReadFD23();
+		break;
+
 
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
 	case FM77AVIO_DIGITAL_PALETTE_1: //=       0xFD39,

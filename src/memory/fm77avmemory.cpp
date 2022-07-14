@@ -242,6 +242,28 @@ void PhysicalMemory::IOWriteByte(unsigned int ioport,unsigned int data)
 	}
 }
 
+void PhysicalMemory::WriteFD20(uint8_t data)
+{
+	uint16_t data16=data;
+	state.kanjiAddr&=0xFF;
+	state.kanjiAddr|=(data16<<8);
+}
+void PhysicalMemory::WriteFD21(uint8_t data)
+{
+	state.kanjiAddr&=0xFF00;
+	state.kanjiAddr|=data;
+}
+uint8_t PhysicalMemory::ReadFD22(void) const
+{
+	uint32_t ptr=state.kanjiAddr;
+	return ROM_KANJI[ptr<<1];
+}
+uint8_t PhysicalMemory::ReadFD23(void) const
+{
+	uint32_t ptr=state.kanjiAddr;
+	return ROM_KANJI[(ptr<<1)+1];
+}
+
 void PhysicalMemory::WriteFD13(uint8_t data)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
