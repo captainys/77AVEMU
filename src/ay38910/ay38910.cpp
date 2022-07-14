@@ -314,19 +314,26 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 					{
 						ampl=-ampl;
 					}
-					WordOp_Add(dataPtr  ,ampl);
-					WordOp_Add(dataPtr+2,ampl);
+
+					if(true!=channelMute[ch])
+					{
+						WordOp_Add(dataPtr  ,ampl);
+						WordOp_Add(dataPtr+2,ampl);
+					}
 				}
 			}
 			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX1000)
 			{
-				int ampl=GetAmplitude(ch);
-				if(0!=(state.LFSR&1))
+				if(true!=channelMute[ch])
 				{
-					ampl=-ampl;
+					int ampl=GetAmplitude(ch);
+					if(0!=(state.LFSR&1))
+					{
+						ampl=-ampl;
+					}
+					WordOp_Add(dataPtr  ,ampl);
+					WordOp_Add(dataPtr+2,ampl);
 				}
-				WordOp_Add(dataPtr  ,ampl);
-				WordOp_Add(dataPtr+2,ampl);
 			}
 		}
 

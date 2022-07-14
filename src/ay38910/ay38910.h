@@ -75,6 +75,8 @@ public:
 	};
 	State state;
 
+	bool channelMute[NUM_CHANNELS]={false,false,false};
+
 	static const uint8_t envPtn[16][4];
 	static const unsigned int DAConvOut[16];
 
