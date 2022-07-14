@@ -14,7 +14,7 @@ class FM77AVTape
 {
 public:
 	std::string fName;
-	char header[16];
+	char header[18];
 	std::vector <unsigned char> data;
 	bool writeProtect=false;
 

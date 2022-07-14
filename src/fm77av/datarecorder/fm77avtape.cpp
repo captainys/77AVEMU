@@ -12,13 +12,13 @@ bool FM77AVTape::Load(std::string fName)
 		ifp.seekg(0,ifp.end);
 		uint64_t size=ifp.tellg();
 		ifp.seekg(0,ifp.beg);
-		if(size<16)
+		if(size<18)
 		{
 			return false;
 		}
 
-		ifp.read((char *)header,16);
-		data.resize(size-16);
+		ifp.read((char *)header,18);
+		data.resize(size-18);
 		ifp.read((char *)data.data(),size-16);
 
 		this->fName=fName;
@@ -32,6 +32,19 @@ bool FM77AVTape::Save(void) const
 }
 bool FM77AVTape::SaveAs(std::string fName) const
 {
+	std::ofstream ofp(fName,std::ios::binary);
+	if(true==ofp.is_open())
+	{
+		char header[18]={"XM7 TAPE IMAGE 0"};
+		header[16]=0x00; // Wasn't these two bytes intended for storing information like write-protect?
+		header[17]=0x00;
+
+		ofp.write(header,18);
+
+		ofp.write((char *)data.data(),data.size());
+
+		return true;
+	}
 	return false; // Will do.
 }
 void FM77AVTape::Rewind(TapePointer &ptr) const
@@ -141,6 +154,7 @@ void FM77AVDataRecorder::MotorOff(uint64_t fm77avTime)
 	{
 		WriteBit(fm77avTime);
 	}
+	std::cout << "Motor Off Tape Pointer=" << state.ptr.dataPtr << std::endl;
 	state.motor=false;
 }
 void FM77AVDataRecorder::Move(uint64_t fm77avTime)
@@ -185,7 +199,7 @@ void FM77AVDataRecorder::WriteBit(uint64_t fm77avTime)
 			}
 
 			uint32_t t77Count=sinceLastFlip/(FM77AVTape::MICROSEC_PER_T77_ONE*1000);
-			out[1]=std::max<uint32_t>(t77Count,0xFF);
+			out[1]=std::min<uint32_t>(t77Count,0xFF);
 		}
 		if(state.ptr.dataPtr+1<state.t77.data.size())
 		{

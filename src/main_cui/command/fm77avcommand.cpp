@@ -58,7 +58,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["TAPEREWIND"]=CMD_TAPE_REWIND;
 	primaryCmdMap["TAPEREC"]=CMD_TAPE_REC_BUTTON_ON;
 	primaryCmdMap["TAPEPLAY"]=CMD_TAPE_REC_BUTTON_RELEASE;
-
+	primaryCmdMap["TAPESAVEAS"]=CMD_TAPE_SAVE_AS;
+	primaryCmdMap["SAVETAPEAS"]=CMD_TAPE_SAVE_AS;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -117,6 +118,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Press REC button." << std::endl;
 	std::cout << "TAPEPLAY" << std::endl;
 	std::cout << "  Release REC button." << std::endl;
+	std::cout << "SAVETAPEAS filename.t77" << std::endl;
+	std::cout << "TAPESAVEAS filename.t77" << std::endl;
+	std::cout << "  Save tape image as filename." << std::endl;
 
 	std::cout << "RUN" << std::endl;
 	std::cout << "  Run." << std::endl;
@@ -499,7 +503,23 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		fm77av.dataRecorder.state.recButton=false;
 		std::cout << "REC Button OFF." << std::endl;
 		break;
-
+	case CMD_TAPE_SAVE_AS:
+		if(2<=cmd.argv.size())
+		{
+			if(true==fm77av.dataRecorder.state.t77.SaveAs(cmd.argv[1]))
+			{
+				std::cout << "Saved tape image." << std::endl;
+			}
+			else
+			{
+				Error_CannotSaveFile(cmd);
+			}
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
+		break;
 	case CMD_FORCE_QUIT:
 		exit(0);
 		break;
