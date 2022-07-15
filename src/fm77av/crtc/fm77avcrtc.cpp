@@ -307,12 +307,10 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 		}
 
 		VRAMAddrIn&=VRAM_PLANE_MASK;
-		uint16_t VRAMAddr[3]=
-		{
-			VRAMAddrIn,
-			VRAMAddrIn+VRAM_PLANE_SIZE,
-			VRAMAddrIn+VRAM_PLANE_SIZE*2,
-		};
+		uint16_t VRAMAddr[3];
+		VRAMAddr[0]=VRAMAddrIn;
+		VRAMAddr[1]=VRAMAddrIn+VRAM_PLANE_SIZE;
+		VRAMAddr[2]=VRAMAddrIn+VRAM_PLANE_SIZE*2;
 
 		if(0!=(state.hardDraw.condition&2))
 		{

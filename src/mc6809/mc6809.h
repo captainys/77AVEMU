@@ -836,6 +836,7 @@ public:
 					debugger.stop=true;
 				}
 			}
+			return data;
 		}
 	}
 	inline uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
