@@ -25,24 +25,28 @@ FM77AVRender::Image FM77AVRender::GetImage(void) const
 }
 void FM77AVRender::Prepare(const FM77AV &fm77av)
 {
-	this->scrnMode=fm77av.crtc.state.scrnMode;
-	this->VRAMOffset[0]=fm77av.crtc.state.VRAMOffset[0]&fm77av.crtc.state.VRAMOffsetMask;
-	this->VRAMOffset[1]=fm77av.crtc.state.VRAMOffset[1]&fm77av.crtc.state.VRAMOffsetMask;
-	this->VRAMOffset[2]=fm77av.crtc.state.VRAMOffset[2]&fm77av.crtc.state.VRAMOffsetMask;
-	this->VRAMAccessMask=fm77av.crtc.state.VRAMAccessMask;
-
-	switch(fm77av.crtc.state.scrnMode)
+	this->CRTEnabled=fm77av.crtc.state.CRTEnabled;
+	if(true==fm77av.crtc.state.CRTEnabled)
 	{
-	case SCRNMODE_640X200:
-		memcpy(this->VRAM,
-		       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),
-		       fm77av.physMem.GetVRAMBankSize(fm77av.crtc.state.displayPage));
-		this->VRAMOffset[0]=this->VRAMOffset[fm77av.crtc.state.displayPage];
-		break;
-	case SCRNMODE_320X200_4096COL:
-		memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
-		memcpy(this->VRAM+fm77av.physMem.GetVRAMBankSize(0),fm77av.physMem.GetVRAMBank(1),fm77av.physMem.GetVRAMBankSize(1));
-		break;
+		this->scrnMode=fm77av.crtc.state.scrnMode;
+		this->VRAMOffset[0]=fm77av.crtc.state.VRAMOffset[0]&fm77av.crtc.state.VRAMOffsetMask;
+		this->VRAMOffset[1]=fm77av.crtc.state.VRAMOffset[1]&fm77av.crtc.state.VRAMOffsetMask;
+		this->VRAMOffset[2]=fm77av.crtc.state.VRAMOffset[2]&fm77av.crtc.state.VRAMOffsetMask;
+		this->VRAMAccessMask=fm77av.crtc.state.VRAMAccessMask;
+
+		switch(fm77av.crtc.state.scrnMode)
+		{
+		case SCRNMODE_640X200:
+			memcpy(this->VRAM,
+			       fm77av.physMem.GetVRAMBank(fm77av.crtc.state.displayPage),
+			       fm77av.physMem.GetVRAMBankSize(fm77av.crtc.state.displayPage));
+			this->VRAMOffset[0]=this->VRAMOffset[fm77av.crtc.state.displayPage];
+			break;
+		case SCRNMODE_320X200_4096COL:
+			memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
+			memcpy(this->VRAM+fm77av.physMem.GetVRAMBankSize(0),fm77av.physMem.GetVRAMBank(1),fm77av.physMem.GetVRAMBankSize(1));
+			break;
+		}
 	}
 
 	switch(fm77av.crtc.state.scrnMode)
@@ -60,6 +64,12 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 
 void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 {
+	if(true!=this->CRTEnabled)
+	{
+		memset(rgba.data(),0,rgba.size());
+		return;
+	}
+
 	switch(scrnMode)
 	{
 	case SCRNMODE_640X200:

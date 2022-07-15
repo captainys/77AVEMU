@@ -124,6 +124,7 @@ void FM77AVCRTC::Reset(void)
 	state.VRAMAccessMask=0;
 	state.displayPage=0;
 	state.activePage=0;
+	state.CRTEnabled=true;
 }
 FM77AVCRTC::Palette &FM77AVCRTC::GetPalette(void)
 {
@@ -179,6 +180,15 @@ uint64_t FM77AVCRTC::NextVSYNCEndTime(uint64_t fm77avTime) const
 {
 	uint64_t mod=fm77avTime%VSYNC_CYCLE;
 	return fm77avTime-mod+VSYNC_CYCLE;
+}
+
+void FM77AVCRTC::WriteD408(void)
+{
+	state.CRTEnabled=false;
+}
+void FM77AVCRTC::ReadD408(void)
+{
+	state.CRTEnabled=true;
 }
 
 void FM77AVCRTC::WriteFD12(uint8_t data)

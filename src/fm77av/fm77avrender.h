@@ -12,6 +12,8 @@ private:
 	unsigned int wid,hei;
 	std::vector <unsigned char> rgba;
 
+	bool CRTEnabled;
+
 	unsigned int scrnMode;
 	unsigned int VRAMOffset[FM77AV40_NUM_VRAM_BANKS];
 	unsigned int VRAMAccessMask;

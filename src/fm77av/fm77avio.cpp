@@ -264,6 +264,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		// Which is true?
 		SetSubToMainFIRQFlag();
 		break;
+
+	case FM77AVIO_CRT_ON_OFF://=              0xD408,
+		crtc.WriteD408();
+		break;
+
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
 		break;
@@ -561,6 +566,9 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		break;
 	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
 		SetSubToMainFIRQFlag();
+		break;
+	case FM77AVIO_CRT_ON_OFF://=              0xD408,
+		crtc.ReadD408();
 		break;
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=false;

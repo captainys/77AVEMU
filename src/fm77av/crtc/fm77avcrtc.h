@@ -106,6 +106,7 @@ public:
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
 		uint8_t activePage=0;
+		bool CRTEnabled=true;
 	};
 
 	uint8_t breakOnHardwareVRAMWriteOpBits=0;
@@ -158,6 +159,8 @@ public:
 
 	// Graphics Accelerator >>
 	void VRAMDummyRead(uint16_t VRAMAddr);
+	void WriteD408(void);
+	void ReadD408(void);
 	void WriteD410(uint8_t data);
 	uint8_t NonDestructiveReadD410(void) const;
 	void WriteD411(uint8_t data);
