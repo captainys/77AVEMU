@@ -804,11 +804,13 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 				if(0xFD00==(addr&0xFF00))
 				{
 					fm77av.var.monitorIOReadMain[addr&0xFF]=true;
+					fm77av.var.monitorIOWriteMain[addr&0xFF]=true;
 					std::cout << "Enabled IO Monitor for main-CPU " << cpputil::Ustox(addr) << std::endl;
 				}
 				if(0xD400==(addr&0xFF00))
 				{
 					fm77av.var.monitorIOReadSub[addr&0xFF]=true;
+					fm77av.var.monitorIOWriteSub[addr&0xFF]=true;
 					std::cout << "Enabled IO Monitor for sub-CPU " << cpputil::Ustox(addr) << std::endl;
 				}
 			}
@@ -821,11 +823,13 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 					if(0xFD00==(addr&0xFF00))
 					{
 						fm77av.var.monitorIOReadMain[addr&0xFF]=true;
+						fm77av.var.monitorIOWriteMain[addr&0xFF]=true;
 						std::cout << "Enabled IO Monitor for main-CPU " << cpputil::Ustox(addr) << std::endl;
 					}
 					if(0xD400==(addr&0xFF00))
 					{
 						fm77av.var.monitorIOReadSub[addr&0xFF]=true;
+						fm77av.var.monitorIOWriteSub[addr&0xFF]=true;
 						std::cout << "Enabled IO Monitor for sub-CPU " << cpputil::Ustox(addr) << std::endl;
 					}
 				}

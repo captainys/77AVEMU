@@ -1064,7 +1064,15 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	}
 	else
 	{
-		if(this->winWid!=img.wid || this->winHei!=img.hei)
+		if(320==img.wid)
+		{
+			this->scaling=200;
+		}
+		else
+		{
+			this->scaling=100;
+		}
+		if(this->winWid!=img.wid*this->scaling/100 || this->winHei!=img.hei*this->scaling/100)
 		{
 			this->winWid=img.wid;
 			this->winHei=img.hei;
