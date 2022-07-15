@@ -43,6 +43,8 @@ bool FM77AVTape::SaveAs(std::string fName) const
 
 		ofp.write((char *)data.data(),data.size());
 
+		modified=false;
+
 		return true;
 	}
 	return false; // Will do.
@@ -52,6 +54,12 @@ void FM77AVTape::Rewind(TapePointer &ptr) const
 	ptr.dataPtr=0;
 	ptr.fm77avTime=0;
 	ptr.eot=false;
+}
+void FM77AVTape::Dniwer(TapePointer &ptr) const
+{
+	ptr.dataPtr=data.size();
+	ptr.fm77avTime=0;
+	ptr.eot=true;
 }
 void FM77AVTape::Seek(TapePointer &ptr,unsigned int dataPtr) const
 {
@@ -124,6 +132,17 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 
 ////////////////////////////////////////////////////////////
 
+void FM77AVDataRecorder::TapePointerPair::Rewind(void)
+{
+	t77.Rewind(ptr);
+}
+void FM77AVDataRecorder::TapePointerPair::Dniwer(void)
+{
+	t77.Dniwer(ptr);
+}
+
+////////////////////////////////////////////////////////////
+
 void FM77AVDataRecorder::Reset(void)
 {
 	Device::Reset();
@@ -131,9 +150,9 @@ void FM77AVDataRecorder::Reset(void)
 }
 bool FM77AVDataRecorder::LoadT77(std::string fName)
 {
-	if(true==state.t77.Load(fName))
+	if(true==state.primary.t77.Load(fName))
 	{
-		state.t77.Rewind(state.ptr);
+		state.primary.t77.Rewind(state.primary.ptr);
 		return true;
 	}
 	return false;
@@ -142,7 +161,7 @@ void FM77AVDataRecorder::MotorOn(uint64_t fm77avTime)
 {
 	if(true!=state.motor)
 	{
-		state.t77.MotorOn(state.ptr,fm77avTime);
+		state.primary.t77.MotorOn(state.primary.ptr,fm77avTime);
 		state.motor=true;
 		state.motorOnTime=fm77avTime;
 		state.lastBitFlipTime=fm77avTime;
@@ -150,35 +169,48 @@ void FM77AVDataRecorder::MotorOn(uint64_t fm77avTime)
 }
 void FM77AVDataRecorder::MotorOff(uint64_t fm77avTime)
 {
-	if(true==state.motor && true==state.recButton && true!=state.t77.writeProtect)
+	if(true==state.motor)
 	{
-		WriteBit(fm77avTime);
+		if(true==state.recButton && true!=state.primary.t77.writeProtect)
+		{
+			WriteBit(state.primary,fm77avTime);
+		}
+		else if(state.motorOnTime!=state.lastBitFlipTime)
+		{
+			// Probably the user forgot to push REC button, or intended to write to the auto-save tape.
+			WriteBit(state.toSave,fm77avTime);
+			std::cout << "Written to Auto-Save TAPE image." << std::endl;
+			std::cout << "Tape Pointer=" << state.toSave.ptr.dataPtr << std::endl;
+			goto RETURN;
+		}
 	}
-	std::cout << "Motor Off Tape Pointer=" << state.ptr.dataPtr << std::endl;
+	std::cout << "Motor Off Tape Pointer=" << state.primary.ptr.dataPtr << std::endl;
+
+RETURN:
 	state.motor=false;
 }
 void FM77AVDataRecorder::Move(uint64_t fm77avTime)
 {
-	if(true==state.motor && true!=state.ptr.eot)
+	if(true==state.motor && true!=state.primary.ptr.eot)
 	{
-		state.t77.MoveTapePointer(state.ptr,fm77avTime);
+		state.primary.t77.MoveTapePointer(state.primary.ptr,fm77avTime);
 	}
 }
 bool FM77AVDataRecorder::Read(void) const
 {
-	if(true==state.motor && true!=state.ptr.eot)
+	if(true==state.motor && true!=state.primary.ptr.eot)
 	{
-		return 0x80<state.t77.GetLevel(state.ptr);
+		return 0x80<state.primary.t77.GetLevel(state.primary.ptr);
 	}
 	return false;
 }
 void FM77AVDataRecorder::Rewind(void)
 {
-	state.t77.Rewind(state.ptr);
+	state.primary.Rewind();
 }
-void FM77AVDataRecorder::WriteBit(uint64_t fm77avTime)
+void FM77AVDataRecorder::WriteBit(TapePointerPair &tape,uint64_t fm77avTime)
 {
-	if(true!=state.t77.writeProtect && true==state.recButton)
+	if(true!=tape.t77.writeProtect)
 	{
 		uint8_t out[2];
 		uint32_t sinceLastFlip=fm77avTime-state.lastBitFlipTime;
@@ -201,18 +233,20 @@ void FM77AVDataRecorder::WriteBit(uint64_t fm77avTime)
 			uint32_t t77Count=sinceLastFlip/(FM77AVTape::MICROSEC_PER_T77_ONE*1000);
 			out[1]=std::min<uint32_t>(t77Count,0xFF);
 		}
-		if(state.ptr.dataPtr+1<state.t77.data.size())
+		if(tape.ptr.dataPtr+1<tape.t77.data.size())
 		{
-			state.t77.data[state.ptr.dataPtr++]=out[0];
-			state.t77.data[state.ptr.dataPtr++]=out[1];
+			tape.t77.data[tape.ptr.dataPtr++]=out[0];
+			tape.t77.data[tape.ptr.dataPtr++]=out[1];
 		}
 		else
 		{
-			state.t77.data.push_back(out[0]);
-			state.t77.data.push_back(out[1]);
-			state.ptr.dataPtr=state.t77.data.size();
+			tape.t77.data.push_back(out[0]);
+			tape.t77.data.push_back(out[1]);
+			tape.ptr.dataPtr=tape.t77.data.size();
 		}
-		state.ptr.fm77avTime=fm77avTime;
+		tape.ptr.fm77avTime=fm77avTime;
+		tape.t77.modified=true;
+		tape.t77.lastModifiedTime=fm77avTime;
 	}
 }
 
@@ -229,7 +263,14 @@ void FM77AVDataRecorder::WriteFD00(uint64_t fm77avTime,uint8_t data)
 	bool nextWriteData=(0!=(data&1));
 	if(nextWriteData!=state.writeData)
 	{
-		WriteBit(fm77avTime);
+		if(true!=state.primary.t77.writeProtect && true==state.recButton)
+		{
+			WriteBit(state.primary,fm77avTime);
+		}
+		else
+		{
+			WriteBit(state.toSave,fm77avTime);
+		}
 		state.lastBitFlipTime=fm77avTime;
 	}
 	state.writeData=nextWriteData;
@@ -252,22 +293,22 @@ std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime)
 	text.push_back(str);
 
 	char cstr[256];
-	sprintf(cstr,"Tape Pointer: %llu",state.ptr.dataPtr);
+	sprintf(cstr,"Tape Pointer: %llu",state.primary.ptr.dataPtr);
 	text.back()+=cstr;
-	if(state.ptr.dataPtr+1<state.t77.data.size())
+	if(state.primary.ptr.dataPtr+1<state.primary.t77.data.size())
 	{
-		uint32_t segTime=state.t77.data[state.ptr.dataPtr+1];
+		uint32_t segTime=state.primary.t77.data[state.primary.ptr.dataPtr+1];
 		sprintf(cstr,"SegmentTime:%u(%02x)",segTime*FM77AVTape::MICROSEC_PER_T77_ONE,segTime);
 		text.push_back(cstr);
 	}
 
-	sprintf(cstr,"Time:%llu  SegStartTime:%llu  TimeIntoSeg:%llu",fm77avTime,state.ptr.fm77avTime,fm77avTime-state.ptr.fm77avTime);
+	sprintf(cstr,"Time:%llu  SegStartTime:%llu  TimeIntoSeg:%llu",fm77avTime,state.primary.ptr.fm77avTime,fm77avTime-state.primary.ptr.fm77avTime);
 	text.push_back(cstr);
 
 	for(int i=0; i<66; i+=2)
 	{
-		uint64_t I=state.ptr.dataPtr+i;
-		if(state.t77.data.size()<=I+1)
+		uint64_t I=state.primary.ptr.dataPtr+i;
+		if(state.primary.t77.data.size()<=I+1)
 		{
 			break;
 		}
@@ -276,9 +317,9 @@ std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime)
 		{
 			text.push_back("");
 		}
-		text.back()+=cpputil::Ubtox(state.t77.data[I]);
+		text.back()+=cpputil::Ubtox(state.primary.t77.data[I]);
 		text.back()+=" ";
-		text.back()+=cpputil::Ubtox(state.t77.data[I+1]);
+		text.back()+=cpputil::Ubtox(state.primary.t77.data[I+1]);
 		text.back()+="  ";
 	}
 

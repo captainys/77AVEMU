@@ -484,11 +484,11 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 
 	case CMD_TAPE_WRITE_PROTECT:
-		fm77av.dataRecorder.state.t77.writeProtect=true;
+		fm77av.dataRecorder.state.primary.t77.writeProtect=true;
 		std::cout << "Write Protect TAPE." << std::endl;
 		break;
 	case CMD_TAPE_WRITE_UNPROTECT:
-		fm77av.dataRecorder.state.t77.writeProtect=false;
+		fm77av.dataRecorder.state.primary.t77.writeProtect=false;
 		std::cout << "Write Unprotect TAPE." << std::endl;
 		break;
 	case CMD_TAPE_REWIND:
@@ -506,7 +506,7 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_TAPE_SAVE_AS:
 		if(2<=cmd.argv.size())
 		{
-			if(true==fm77av.dataRecorder.state.t77.SaveAs(cmd.argv[1]))
+			if(true==fm77av.dataRecorder.state.primary.t77.SaveAs(cmd.argv[1]))
 			{
 				std::cout << "Saved tape image." << std::endl;
 			}

@@ -18,6 +18,9 @@ public:
 	std::vector <unsigned char> data;
 	bool writeProtect=false;
 
+	mutable bool modified=false;
+	uint64_t lastModifiedTime=0;
+
 	bool Load(std::string fName);
 	bool Save(void) const;
 	bool SaveAs(std::string fName) const;
@@ -42,6 +45,7 @@ public:
 	//   - For long silence, it can be
 	//       0x7F 0xFF
 	void Rewind(TapePointer &ptr) const;
+	void Dniwer(TapePointer &ptr) const;
 	void Seek(TapePointer &ptr,unsigned int dataPtr) const;
 	void MotorOn(TapePointer &pointer,uint64_t fm77avTimeNanoSec) const; // First byte=16
 	void MoveTapePointer(TapePointer &pointer,uint64_t fm77avTimeNanoSec) const;
@@ -58,11 +62,20 @@ public:
 		HEAD_SILENT_TIME=1000000000, // 1.0sec
 	};
 
-	class State
+	class TapePointerPair
 	{
 	public:
 		FM77AVTape t77;
 		FM77AVTape::TapePointer ptr;
+
+		void Rewind(void);
+		void Dniwer(void);
+	};
+
+	class State
+	{
+	public:
+		TapePointerPair primary,toSave;
 		bool motor;
 		bool recButton=false;
 		bool writeData=false;
@@ -82,8 +95,9 @@ public:
 	bool Read(void) const;
 
 	void Rewind(void);
+	void FastForwardAllTheWay(void);
 
-	void WriteBit(uint64_t fm77avTime);
+	void WriteBit(TapePointerPair &tape,uint64_t fm77avTime);
 
 	void WriteFD00(uint64_t fm77avTime,uint8_t data);
 
