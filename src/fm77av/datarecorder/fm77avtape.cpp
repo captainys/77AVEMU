@@ -152,7 +152,16 @@ bool FM77AVDataRecorder::LoadT77(std::string fName)
 {
 	if(true==state.primary.t77.Load(fName))
 	{
-		state.primary.t77.Rewind(state.primary.ptr);
+		state.primary.Rewind();
+		return true;
+	}
+	return false;
+}
+bool FM77AVDataRecorder::LoadAutoSaveT77(std::string fName)
+{
+	if(true==state.toSave.t77.Load(fName))
+	{
+		state.toSave.Rewind();
 		return true;
 	}
 	return false;
@@ -274,6 +283,45 @@ void FM77AVDataRecorder::WriteFD00(uint64_t fm77avTime,uint8_t data)
 		state.lastBitFlipTime=fm77avTime;
 	}
 	state.writeData=nextWriteData;
+}
+
+void FM77AVDataRecorder::SaveModifiedTapeImagesAfterOneSecond(uint64_t fm77avTime)
+{
+	if(true==state.primary.t77.modified && state.primary.t77.lastModifiedTime+1000000000<=fm77avTime)
+	{
+		if(true!=state.primary.t77.Save())
+		{
+			std::cout << "Auto Save T77 (primary)failed." << std::endl;
+			state.primary.t77.modified=false;
+		}
+	}
+	if(true==state.toSave.t77.modified && state.toSave.t77.lastModifiedTime+1000000000<=fm77avTime)
+	{
+		if(true!=state.toSave.t77.Save())
+		{
+			std::cout << "Auto Save T77 (save-only) failed." << std::endl;
+			state.toSave.t77.modified=false;
+		}
+	}
+}
+void FM77AVDataRecorder::SaveModifiedTapeImages(void)
+{
+	if(true==state.primary.t77.modified)
+	{
+		if(true!=state.primary.t77.Save())
+		{
+			std::cout << "Auto Save T77 (primary)failed." << std::endl;
+			state.primary.t77.modified=false;
+		}
+	}
+	if(true==state.toSave.t77.modified)
+	{
+		if(true!=state.toSave.t77.Save())
+		{
+			std::cout << "Auto Save T77 (save-only) failed." << std::endl;
+			state.toSave.t77.modified=false;
+		}
+	}
 }
 
 std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime) const

@@ -100,7 +100,12 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 			return false;
 		}
 	}
-
+	if(""!=param.t77SavePath)
+	{
+		dataRecorder.LoadAutoSaveT77(param.t77SavePath);
+		dataRecorder.state.toSave.Dniwer();
+		dataRecorder.state.toSave.t77.fName=param.t77SavePath; // If not exist, force set file name.
+	}
 
 	fdc.searchPaths=param.imgSearchPaths;
 	for(int drv=0; drv<4; ++drv)

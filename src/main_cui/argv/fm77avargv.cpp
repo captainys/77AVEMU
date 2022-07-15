@@ -15,6 +15,16 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Image search path." << std::endl;
 	std::cout << "-T77|-TAPE t77file.t77" << std::endl;
 	std::cout << "  Set T77 cassette data recorder dump." << std::endl;
+	std::cout << "-T77AUTOSAVE|-AUTOSAVETAPE t77file.t77" << std::endl;
+	std::cout << "  In old days, we were saving programs/data in audio cassette tapes.  I had to press REC" << std::endl;
+	std::cout << "  button before writing, and must release REC button before reading.  If I forgot pressing" << std::endl;
+	std::cout << "  REC and thought I was saving data, it was not saved, and gone as soon as I turned off" << std::endl;
+	std::cout << "  the PC.  If I forgot releasing the REC button before reading, I accidentally erased" << std::endl;
+	std::cout << "  the tape instead of reading from it.  Not to repeat such tragedy, you can specify" << std::endl;
+	std::cout << "  auto-save tape image.  The file does not have to exist.  The program will create it." << std::endl;
+	std::cout << "  If you don't virtually press REC button in the emulator, or if you write-protect the" << std::endl;
+	std::cout << "  primary tape image, data will be saved to this auto-save image.  You can later mount it" << std::endl;
+	std::cout << "  for reading." << std::endl;
 	std::cout << "-FD0 filename" << std::endl;
 	std::cout << "  Floppy disk image file name for Drive A." << std::endl;
 	std::cout << "-FD1 filename" << std::endl;
@@ -115,6 +125,11 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if(("-T77"==ARG || "-TAPE"==ARG) && i+1<argc)
 		{
 			t77Path=argv[i+1];
+			++i;
+		}
+		else if(("-T77AUTOSAVE"==ARG || "-AUTOSAVETAPE"==ARG) && i+1<argc)
+		{
+			t77SavePath=argv[i+1];
 			++i;
 		}
 		else if("-IMGPATH"==ARG && i+1<argc)

@@ -175,11 +175,13 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		{
 			fm77avPtr->state.nextSecondInfm77avTime+=FM77AVTIME_ONE_SECOND;
 			fm77avPtr->fdc.SaveModifiedDiskImages();
+			fm77avPtr->dataRecorder.SaveModifiedTapeImagesAfterOneSecond(fm77avPtr->state.fm77avTime);
 		}
 
 		if(RUNMODE_PAUSE==runModeCopy)
 		{
 			fm77avPtr->fdc.SaveModifiedDiskImages();
+			fm77avPtr->dataRecorder.SaveModifiedTapeImages();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			if(true==returnOnPause)
 			{

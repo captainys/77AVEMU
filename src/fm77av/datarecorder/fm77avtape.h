@@ -89,6 +89,7 @@ public:
 
 	void Reset(void);  // Don't rewind
 	bool LoadT77(std::string fName);
+	bool LoadAutoSaveT77(std::string fName);
 	void MotorOn(uint64_t fm77avTime);
 	void MotorOff(uint64_t fm77avTime);
 	void Move(uint64_t fm77avTime);
@@ -100,6 +101,9 @@ public:
 	void WriteBit(TapePointerPair &tape,uint64_t fm77avTime);
 
 	void WriteFD00(uint64_t fm77avTime,uint8_t data);
+
+	void SaveModifiedTapeImagesAfterOneSecond(uint64_t fm77avTime);
+	void SaveModifiedTapeImages(void);
 
 	std::vector <std::string> GetStatusText(uint64_t fm77avTime) const;
 };
