@@ -24,7 +24,7 @@ public:
 
 	enum
 	{
-		MICROSEC_PER_T77_ONE=9
+		MICROSEC_PER_T77_ONE=8
 	};
 
 	class TapePointer

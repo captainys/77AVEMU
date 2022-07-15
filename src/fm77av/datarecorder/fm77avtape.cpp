@@ -191,11 +191,11 @@ void FM77AVDataRecorder::WriteBit(uint64_t fm77avTime)
 		{
 			if(true==state.writeData)
 			{
-				out[0]=0xC0;
+				out[0]=0x80;
 			}
 			else
 			{
-				out[0]=0x40;
+				out[0]=0x00;
 			}
 
 			uint32_t t77Count=sinceLastFlip/(FM77AVTape::MICROSEC_PER_T77_ONE*1000);
