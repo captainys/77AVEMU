@@ -69,6 +69,11 @@ public:
 	std::string t77Path,t77SavePath;
 	std::string fdImgFName[NUM_FDDRIVES];
 	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};
+
+	bool unitTest=false; // If true, CUI will not be attached.  Implies termination condition.
+
+	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
+	uint16_t powerOffAtAddr=0;
 };
 
 

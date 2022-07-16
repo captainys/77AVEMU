@@ -38,6 +38,8 @@ FM77AV::FM77AV() :
 	{
 		b=0;
 	}
+
+	var.powerOffAt.type=ADDR_NONE;
 }
 /* static */ unsigned int FM77AV::StrToAddressType(std::string str)
 {
@@ -142,6 +144,13 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 
 	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR  ]=0xFE;
 	physMem.state.data[PhysicalMemory::MAINSYS_RESET_VECTOR+1]=0x00;
+
+	if(CPU_UNKNOWN!=param.powerOffAtCPUType)
+	{
+		var.powerOffAt.type=param.powerOffAtCPUType;
+		var.powerOffAt.addr=param.powerOffAtAddr;
+		CPU(param.powerOffAtCPUType).debugger.SetBreakPoint(param.powerOffAtAddr,param.powerOffAtAddr);
+	}
 
 	outside_world->scaling=param.scaling;
 	outside_world->windowShift=param.windowShift;

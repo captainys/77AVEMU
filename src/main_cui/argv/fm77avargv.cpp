@@ -298,6 +298,16 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			maxButtonHoldTime[portId][button]=holdTime*1000000; // Make it nano sec.
 			i+=2;
 		}
+		else if("-POWEROFFAT"==ARG && i+2<argc)
+		{
+			powerOffAtCPUType=StrToCPU(argv[i+1]);
+			powerOffAtAddr=cpputil::Xtoi(argv[i+2]);
+			i+=2;
+		}
+		else if("-UNITTEST"==ARG)
+		{
+			unitTest=true;
+		}
 		else
 		{
 			std::cout << "Unknown option " << argv[i] << std::endl;

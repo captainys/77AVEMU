@@ -95,14 +95,16 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 						{
 							if(true==cpu.debugger.stop)
 							{
-								// if(fm77avPtr->cpu.state.CS().value==fm77avPtr->var.powerOffAt.SEG &&
-								//    fm77avPtr->cpu.state.EIP==fm77avPtr->var.powerOffAt.OFFSET)
-								// {
-								// 	std::cout << "Break at the power-off point." << std::endl;
-								// 	std::cout << "Normal termination of a unit testing." << std::endl;
-								// 	fm77avPtr->var.powerOff=true;
-								// 	break;
-								// }
+								if((CPU_MAIN==fm77avPtr->var.powerOffAt.type &&
+								    fm77avPtr->mainCPU.state.PC==fm77avPtr->var.powerOffAt.addr) ||
+							       (CPU_SUB==fm77avPtr->var.powerOffAt.type &&
+								    fm77avPtr->subCPU.state.PC==fm77avPtr->var.powerOffAt.addr))
+								{
+									std::cout << "Break at the power-off point." << std::endl;
+									std::cout << "Normal termination of a unit testing." << std::endl;
+									terminate=true;
+									break;
+								}
 								if(true==cpu.debugger.PollMonitorPoint())
 								{
 									cpu.debugger.hitMonitorPoint=false;

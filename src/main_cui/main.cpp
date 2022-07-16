@@ -31,20 +31,32 @@ int main(int argc,char *argv[])
 		return 1;
 	}
 
-	FM77AVCUIThread cui;
-	std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
-
 	static FM77AVThread vm;
 	if(true==fm77avargv.pauseOnStart)
 	{
 		vm.SetRunMode(FM77AVThread::RUNMODE_PAUSE);
 	}
 
-	vm.VMStart(fm77av.get(),outside_world.get(),&cui);
-	vm.VMMainLoop(fm77av.get(),outside_world.get(),&cui);
-	vm.VMEnd(fm77av.get(),outside_world.get(),&cui);
+	if(true!=fm77avargv.unitTest)
+	{
+		FM77AVCUIThread cui;
+		std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
 
-	cuiThread.join();
+		vm.VMStart(fm77av.get(),outside_world.get(),&cui);
+		vm.VMMainLoop(fm77av.get(),outside_world.get(),&cui);
+		vm.VMEnd(fm77av.get(),outside_world.get(),&cui);
+
+		cuiThread.join();
+	}
+	else
+	{
+		FM77AVUIThread noUI;
+		vm.VMStart(fm77av.get(),outside_world.get(),&noUI);
+		vm.VMMainLoop(fm77av.get(),outside_world.get(),&noUI);
+		vm.VMEnd(fm77av.get(),outside_world.get(),&noUI);
+
+		// Test Success Condition
+	}
 
 	return 0;
 }

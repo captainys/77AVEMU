@@ -6,3 +6,39 @@ add_subdirectory(cuithread)
 set(TARGET_NAME Mutsu_CUI)
 add_executable(${TARGET_NAME} MACOSX_BUNDLE main.cpp)
 target_link_libraries(${TARGET_NAME} fssimplewindow_connection fm77av fm77avthread fm77avdef fm77avargv fm77avcommand fm77avcuithread)
+
+
+
+set(FM7ROMDIR ${CMAKE_SOURCE_DIR}/../../77AVTEST/ROMS/7)
+set(FM77AVROMDIR ${CMAKE_SOURCE_DIR}/../../77AVTEST/ROMS/AV)
+set(FM77AV40ROMDIR ${CMAKE_SOURCE_DIR}/../../77AVTEST/ROMS/AV40)
+set(DISKIMAGE_DIR ${CMAKE_SOURCE_DIR}/../../77AVTEST/DISK)
+set(TAPEIMAGE_DIR ${CMAKE_SOURCE_DIR}/../../77AVTEST/TAPE)
+
+add_test(
+	NAME YS2_OPENING
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/YS2_PROG.D77"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		2144
+		-NOWAIT
+)
+
+add_test(
+	NAME DRAGON_BUSTER_AUTODEMO
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/DragonBuster.D77"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		0395
+		-NOWAIT
+)

@@ -170,6 +170,8 @@ public:
 		unsigned int timeAdjustLogPtr=0;
 		int64_t timeAdjustLog[TIME_ADJUSTMENT_LOG_LEN];
 		int64_t timeDeficitLog[TIME_ADJUSTMENT_LOG_LEN];
+
+		Address powerOffAt;
 	};
 	Variable var;
 
