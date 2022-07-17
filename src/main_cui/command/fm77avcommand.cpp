@@ -60,6 +60,14 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["TAPEPLAY"]=CMD_TAPE_REC_BUTTON_RELEASE;
 	primaryCmdMap["TAPESAVEAS"]=CMD_TAPE_SAVE_AS;
 	primaryCmdMap["SAVETAPEAS"]=CMD_TAPE_SAVE_AS;
+	primaryCmdMap["FD0LOAD"]=CMD_FD0LOAD;
+	primaryCmdMap["FD0EJECT"]=CMD_FD0EJECT;
+	primaryCmdMap["FD0WP"]=CMD_FD0WRITEPROTECT;
+	primaryCmdMap["FD0UP"]=CMD_FD0WRITEUNPROTECT;
+	primaryCmdMap["FD1LOAD"]=CMD_FD1LOAD;
+	primaryCmdMap["FD1EJECT"]=CMD_FD1EJECT;
+	primaryCmdMap["FD1WP"]=CMD_FD1WRITEPROTECT;
+	primaryCmdMap["FD1UP"]=CMD_FD1WRITEUNPROTECT;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["SUBCMDMON"]=ENABLE_SUBSYSCMD_MONITOR;
@@ -107,6 +115,19 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  TRANS3 will make virtual BREAK from physical ESC." << std::endl;
 	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
 	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
+
+	std::cout << "FD0LOAD filename" << std::endl;
+	std::cout << "FD1LOAD filename" << std::endl;
+	std::cout << "  Load FD image.  The number 0 or 1 is the drive number." << std::endl;
+	std::cout << "FD0EJECT" << std::endl;
+	std::cout << "FD1EJECT" << std::endl;
+	std::cout << "  Eject FD." << std::endl;
+	std::cout << "FD0WP" << std::endl;
+	std::cout << "FD1WP" << std::endl;
+	std::cout << "  Write protect floppy disk." << std::endl;
+	std::cout << "FD0UP" << std::endl;
+	std::cout << "FD1UP" << std::endl;
+	std::cout << "  Write un-protect floppy disk." << std::endl;
 
 	std::cout << "TAPEWP" << std::endl;
 	std::cout << "  Write protect tape." << std::endl;
@@ -481,6 +502,31 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_YESWAIT:
 		fm77av.var.noWait=false;
+		break;
+
+	case CMD_FD0LOAD:
+		Execute_FDLoad(0,fm77av,cmd);
+		break;
+	case CMD_FD1LOAD:
+		Execute_FDLoad(1,fm77av,cmd);
+		break;
+	case CMD_FD0EJECT:
+		Execute_FDEject(0,fm77av,cmd);
+		break;
+	case CMD_FD1EJECT:
+		Execute_FDEject(1,fm77av,cmd);
+		break;
+	case CMD_FD0WRITEPROTECT:
+		fm77av.fdc.SetWriteProtect(0,true);
+		break;
+	case CMD_FD0WRITEUNPROTECT:
+		fm77av.fdc.SetWriteProtect(0,false);
+		break;
+	case CMD_FD1WRITEPROTECT:
+		fm77av.fdc.SetWriteProtect(1,true);
+		break;
+	case CMD_FD1WRITEUNPROTECT:
+		fm77av.fdc.SetWriteProtect(1,false);
 		break;
 
 	case CMD_TAPE_WRITE_PROTECT:
@@ -1995,4 +2041,24 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread
 			std::cout << "Do Not Break on all hardware VRAM write (logic op) Type=" << cpputil::Ubtox(t) << std::endl;
 		}
 	}
+}
+
+void FM77AVCommandInterpreter::Execute_FDLoad(int drv,FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		if(true==fm77av.fdc.LoadD77orRAW(drv,cmd.argv[1].c_str(),false))
+		{
+			std::cout << "Loaded FD image." << std::endl;
+		}
+		else
+		{
+			std::cout << "Failed to load FD image." << std::endl;
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd)
+{
+	fm77av.fdc.Eject(drv);
+	std::cout << "Ejected Floppy Drive " << drv << std::endl;
 }

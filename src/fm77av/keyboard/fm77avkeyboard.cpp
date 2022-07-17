@@ -90,7 +90,7 @@ void FM77AVKeyboard::Reset(void)
 	AVKeyToScanCode[AVKEY_P]=0x1A;
 	AVKeyToScanCode[AVKEY_AT]=0x1B;
 	AVKeyToScanCode[AVKEY_LEFT_SQUARE_BRACKET]=0x1C;
-	AVKeyToScanCode[AVKEY_RETURN]=0x1E;
+	AVKeyToScanCode[AVKEY_RETURN]=0x1D;
 
 	AVKeyToScanCode[AVKEY_CTRL]=0x52;
 	AVKeyToScanCode[AVKEY_A]=0x1E;

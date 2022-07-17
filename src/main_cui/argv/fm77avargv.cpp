@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <iostream>
 #include "fm77avargv.h"
 #include "cpputil.h"
@@ -36,6 +37,10 @@ void FM77AVArgv::Help(void)
 	std::cout << "-GENFD filename.d77 320|640" << std::endl;
 	std::cout << "  Generate an empty disk. Need to specify 320KB disk (2D) or 640KB disk (2DD)" << std::endl;
 	std::cout << "  Specify 400 as size to make 2D disk with 1024-byte per sector, 5 sectors per track." << std::endl;
+	std::cout << "-DIVD77 filename.d77" << std::endl;
+	std::cout << "  Divides multi-disk D77 file into single-disk D77 files." << std::endl;
+	std::cout << "  Suffix  _1, _2, _3, ... will be added after each file name." << std::endl;
+	std::cout << "  Does nothing if the file is already a single-disk image." << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
 	std::cout << "  Run VM without adjusting time for the wall-clock time." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
@@ -78,7 +83,7 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 	ROMPath=argv[1];
 
 	bool dontStart=false;
-	for(int i=2; i<argc; ++i)
+	for(int i=1; i<argc; ++i)
 	{
 		std::string arg=argv[i];
 		auto ARG=arg;
@@ -152,6 +157,14 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			int drv=ARG[3]-'0';
 			fdImgWriteProtect[drv]=false;
+		}
+		else if("-DIVD77"==ARG && i+1<argc)
+		{
+			if(true!=DivideD77(argv[i+1]))
+			{
+				return false;
+			}
+			++i;
 		}
 		else if("-GENFD"==ARG && i+2<argc)
 		{
@@ -310,8 +323,11 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		}
 		else
 		{
-			std::cout << "Unknown option " << argv[i] << std::endl;
-			return false;
+			if(1!=i) // First arg probably was a ROM dir, if not an option.
+			{
+				std::cout << "Unknown option " << argv[i] << std::endl;
+				return false;
+			}
 		}
 	}
 
@@ -320,4 +336,47 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		return false;
 	}
 	return true;
+}
+
+/* static */ bool FM77AVArgv::DivideD77(std::string d77FName)
+{
+	auto d77Bin=cpputil::ReadBinaryFile(d77FName);
+
+	D77File d77;
+	if(0<d77Bin.size())
+	{
+		d77.SetData(d77Bin);
+
+		if(d77.GetNumDisk()<=1)
+		{
+			// Already a single-disk image.
+			return true;
+		}
+
+		auto fNameBase=cpputil::RemoveExtension(d77FName.c_str());
+
+		for(int diskId=0; diskId<d77.GetNumDisk(); ++diskId)
+		{
+			auto diskPtr=d77.GetDisk(diskId);
+			std::cout << "Disk Label: " << diskPtr->header.diskName << std::endl;
+
+			char suffix[8];
+			sprintf(suffix,"_%d.D77",diskId+1);
+
+			auto outFName=fNameBase+suffix;
+			std::cout << "Saved as:" << outFName << std::endl;
+
+			auto d77Img=diskPtr->MakeD77Image();
+			if(true!=cpputil::WriteBinaryFile(outFName,d77Img.size(),d77Img.data()))
+			{
+				std::cout << "Could not write file." << std::endl;
+				return false;
+			}
+		}
+	}
+	else
+	{
+		std::cout << "Could not read the source file." << std::endl;
+		return false;
+	}
 }

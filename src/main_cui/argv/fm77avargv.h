@@ -9,6 +9,8 @@ class FM77AVArgv : public FM77AVParam
 public:
 	void Help(void);
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
+
+	static bool DivideD77(std::string d77FName);
 };
 
 /* } */

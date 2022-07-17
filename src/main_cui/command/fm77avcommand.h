@@ -49,6 +49,15 @@ public:
 		CMD_TAPE_REC_BUTTON_RELEASE,
 		CMD_TAPE_SAVE_AS,
 
+		CMD_FD0LOAD,
+		CMD_FD0EJECT,
+		CMD_FD0WRITEPROTECT,
+		CMD_FD0WRITEUNPROTECT,
+		CMD_FD1LOAD,
+		CMD_FD1EJECT,
+		CMD_FD1WRITEPROTECT,
+		CMD_FD1WRITEUNPROTECT,
+
 		CMD_START_AUDIO_RECORDING,
 		CMD_END_AUDIO_RECORDING,
 		CMD_SAVE_AUDIO_RECORDING,
@@ -171,6 +180,8 @@ public:
 	void Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_FDLoad(int drv,FM77AV &fm77av,Command &cmd);
+	void Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
