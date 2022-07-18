@@ -344,6 +344,78 @@ void FM77AVFDC::MakeReady(void)
 		{
 			fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data));
 		}
+		if(true==monitorFDC)
+		{
+			std::cout << "FDC CMD "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data);
+			switch(data&0xF0)
+			{
+			case 0x00: // Restore
+				break;
+			case 0x10: // Seek
+				std::cout << " To Track " << drv.dataReg;
+				break;
+			case 0x20: // Step?
+			case 0x30: // Step?
+				std::cout << " Dir " << drv.lastSeekDir << " To Track " << drv.trackPos;
+				break;
+			case 0x40: // Step In
+			case 0x50: // Step In
+				std::cout << " To Track " << drv.trackPos;
+				break;
+			case 0x60: // Step Out
+			case 0x70: // Step Out
+				std::cout << " To Track " << drv.trackPos;
+				break;
+
+			case 0x80: // Read Data (Read Sector)
+			case 0x90: // Read Data (Read Sector)
+				std::cout << " C " << drv.trackPos << " H " << state.side << " R " << drv.sectorReg;
+				{
+					if(nullptr!=diskPtr)
+					{
+						auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+						if(nullptr!=secPtr && 0!=(0!=secPtr->crcStatus))
+						{
+							std::cout << " CRC Error";
+						}
+						else if(nullptr==secPtr)
+						{
+							std::cout << " Sector Not Exist";
+						}
+					}
+				}
+				break;
+			case 0xA0: // Write Data (Write Sector)
+			case 0xB0: // Write Data (Write Sector)
+				std::cout << " C " << drv.trackPos << " H " << state.side << " R " << drv.sectorReg;
+				{
+					if(nullptr!=diskPtr)
+					{
+						auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+						if(nullptr!=secPtr && 0!=(0!=secPtr->crcStatus))
+						{
+							std::cout << " CRC Error";
+						}
+						else if(nullptr==secPtr)
+						{
+							std::cout << " Sector Not Exist";
+						}
+					}
+				}
+				break;
+			case 0xC0: // Read Address
+				break;
+			case 0xE0: // Read Track
+				break;
+			case 0xF0: // Write Track
+				break;
+
+			default:
+			case 0xD0: // Force Interrupt
+				break;
+			}
+			std::cout << std::endl;
+		}
 		break;
 	case FM77AVIO_FDC_TRACK://=               0xFD19,
 		state.drive[DriveSelect()].trackReg=data;

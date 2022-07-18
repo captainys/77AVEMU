@@ -9,7 +9,7 @@ class FM77AVFDC : public DiskDrive
 public:
 	enum
 	{
-		// 2D/2DD 300rpm.
+		// 2D/2DD 300rpm.  Confirmed on actual FM77AV.  (300 index-hole detection for 60.95 seconds)
 		// 5 rotation per seconds.
 		// 200 ms per rotation.
 		// Track Read returns 0x17BB bytes (6075 bytes) on actual hardwarre.
@@ -24,6 +24,7 @@ public:
 	class FM77AV *fm77avPtr;
 
 	bool debugBreakOnCommandWrite=false;
+	bool monitorFDC=false;
 
 	virtual const char *DeviceName(void) const{return "FDC";}
 
