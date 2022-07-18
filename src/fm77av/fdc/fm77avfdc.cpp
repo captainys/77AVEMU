@@ -139,11 +139,12 @@ void FM77AVFDC::MakeReady(void)
 						state.data=secPtr->sectorData;
 						state.dataReadPointer=0;
 						state.DRQ=true;
+						state.lastDRQTime=fm77avTime;
 						state.CRCErrorAfterRead=(0!=secPtr->crcStatus);
 						// Should I raise IRQ?
 
 						// CPU needs to read a byte from the data register and clear DRQ before this schedule.
-						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
 					}
 					else
 					{
@@ -165,7 +166,15 @@ void FM77AVFDC::MakeReady(void)
 			{
 				// Pointer is incremented at IORead.
 				state.DRQ=true;
-				fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+				state.lastDRQTime+=NANOSEC_PER_BYTE;
+				fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
+
+				// Memo to myself:
+				//   I was scheduling next DRQ as fm77avTime+NANOSEC_PER_BYTE, which was incorrect.
+				//   FDC doesn't care when CPU reads a byte, therefore next DRQ will come
+				//   one-byte-length on the disk after the last DRQ.
+				//   YsII for FM77AV measures time for reading one sector by counting loop between DRQs.
+				//   This difference matters.
 			}
 			else // Data was not read in time.
 			{
@@ -191,8 +200,9 @@ void FM77AVFDC::MakeReady(void)
 					{
 						state.expectedWriteLength=secPtr->sectorData.size();
 						state.DRQ=true;
+						state.lastDRQTime=fm77avTime;
 						// Should I raise IRQ?
-						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
 					}
 					else
 					{
@@ -211,7 +221,8 @@ void FM77AVFDC::MakeReady(void)
 		{
 			state.DRQ=true;
 			// Should I raise IRQ?
-			fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+			state.lastDRQTime+=NANOSEC_PER_BYTE;
+			fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
 		}
 		else // Data didn't come in time.  In fact, I may need to write partial and mark it as CRC error.
 		{
@@ -249,8 +260,9 @@ void FM77AVFDC::MakeReady(void)
 						state.data=CHRN_CRC;
 						state.dataReadPointer=0;
 						state.DRQ=true;
+						state.lastDRQTime=fm77avTime;
 						// Should I raise IRQ?
-						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
 						++state.addrMarkReadCount;
 					}
 				}
@@ -264,8 +276,9 @@ void FM77AVFDC::MakeReady(void)
 		else if(true!=state.DRQ)
 		{
 			state.DRQ=true;
+			state.lastDRQTime+=NANOSEC_PER_BYTE;
 			// Should I raise IRQ?
-			fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+			fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
 		}
 		else
 		{
@@ -291,8 +304,9 @@ void FM77AVFDC::MakeReady(void)
 				{
 					state.expectedWriteLength=FORMAT_WRITE_LENGTH_2D_2DD;
 					state.DRQ=true;
+					state.lastDRQTime=fm77avTime;
 					// Should I raise IRQ?
-					fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+					fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
 				}
 				else
 				{
@@ -304,8 +318,9 @@ void FM77AVFDC::MakeReady(void)
 		else if(true!=state.DRQ)
 		{
 			state.DRQ=true;
+			state.lastDRQTime+=NANOSEC_PER_BYTE;
 			// Should I raise IRQ?
-			fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_PER_BYTE);
+			fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
 		}
 		else // Data didn't come in time.  In fact, I may need to write partial and mark it as CRC error.
 		{
