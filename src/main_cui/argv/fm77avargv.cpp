@@ -64,6 +64,10 @@ void FM77AVArgv::Help(void)
 	std::cout << "  in to all of the programs and write patches.  Instead, this option let you limit" << std::endl;
 	std::cout << "  maximum time that the button is sent as DOWN to the virtual machine even when" << std::endl;
 	std::cout << "  you keep it down for 100 seconds." << std::endl;
+	std::cout << "-QUICKSSDIR dir" << std::endl;
+	std::cout << "  Specify quick screen shot directory." << std::endl;
+	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
+	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 	std::cout << "-SCALE X" << std::endl;
 	std::cout << "  Screen scaling X percent." << std::endl;
 	std::cout << "-AUTOSCALE" << std::endl;
@@ -320,6 +324,21 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-UNITTEST"==ARG)
 		{
 			unitTest=true;
+		}
+		else if("-QUICKSSDIR"==ARG && i+1<argc)
+		{
+			quickScrnShotDir=argv[i+1];
+			++i;
+		}
+		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
+		{
+			HostShortCut hsc;
+			hsc.hostKey=argv[i+1];
+			hsc.ctrl=(0!=cpputil::Atoi(argv[i+2]));
+			hsc.shift=(0!=cpputil::Atoi(argv[i+3]));
+			hsc.cmdStr=argv[i+4];
+			hostShortCutKeys.push_back(hsc);
+			i+=4;
 		}
 		else
 		{

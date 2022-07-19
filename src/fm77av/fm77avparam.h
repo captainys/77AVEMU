@@ -65,6 +65,9 @@ public:
 	bool noWait=false;
 
 	std::vector <std::string> imgSearchPaths;
+	std::vector <HostShortCut> hostShortCutKeys;
+
+	std::string quickScrnShotDir;
 
 	std::string t77Path,t77SavePath;
 	std::string fdImgFName[NUM_FDDRIVES];

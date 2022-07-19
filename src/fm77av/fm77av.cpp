@@ -152,6 +152,13 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		CPU(param.powerOffAtCPUType).debugger.SetBreakPoint(param.powerOffAtAddr,param.powerOffAtAddr);
 	}
 
+	var.quickScrnShotDir=param.quickScrnShotDir;
+
+
+	for(auto hsc : param.hostShortCutKeys)
+	{
+		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
+	}
 	outside_world->scaling=param.scaling;
 	outside_world->windowShift=param.windowShift;
 	outside_world->autoScaling=param.autoScaling;
