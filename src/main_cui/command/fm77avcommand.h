@@ -87,6 +87,13 @@ public:
 		CMD_DONT_BREAK_ON,
 
 		CMD_KEYBOARD,
+
+		CMD_LOAD_EVENTLOG,
+		CMD_PLAY_EVENTLOG,
+		CMD_STOP_EVENTLOG,
+
+		CMD_QUICK_SCREENSHOT,
+		CMD_QUICK_SCREENSHOT_DIR,
 	};
 
 	enum
@@ -142,6 +149,7 @@ public:
 	void Error_IllegalSubCommand(const Command &cmd);
 	void Error_WrongParameter(const Command &cmd);
 	void Error_CannotSaveFile(const Command &cmd);
+	void Error_CannotOpenFile(const Command &cmd);
 	void Error_Addressing(const Command &cmd);
 
 	Command Interpret(const std::string &cmdline) const;
@@ -183,6 +191,8 @@ public:
 	void Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_FDLoad(int drv,FM77AV &fm77av,Command &cmd);
 	void Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd);
+	void Execute_QuickScreenShotDirectory(FM77AV &fm77av,Command &cmd);
+	void Execute_QuickScreenShot(FM77AV &fm77av,Command &cmd);
 };
 
 /* } */

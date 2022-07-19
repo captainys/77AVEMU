@@ -135,6 +135,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 				}
 			}
 			fm77avPtr->ProcessSound(outside_world);
+			eventLog.RunOneStep(*fm77avPtr);
 
 			renderingThread->CheckRenderingTimer(*fm77avPtr,render);
 			renderingThread->CheckImageReady(*fm77avPtr,*outside_world);

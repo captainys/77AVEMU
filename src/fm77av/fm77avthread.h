@@ -6,6 +6,7 @@
 #include <mutex>
 #include "fm77av.h"
 #include "fm77avrenderthread.h"
+#include "fm77aveventlog.h"
 
 class FM77AVUIThread
 {
@@ -53,6 +54,7 @@ public:
 	};
 
 	OutputControl output;
+	FM77AVEventLog eventLog;
 
 public:
 	FM77AVThread();

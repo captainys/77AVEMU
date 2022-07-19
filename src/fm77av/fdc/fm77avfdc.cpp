@@ -141,10 +141,11 @@ void FM77AVFDC::MakeReady(void)
 						state.DRQ=true;
 						state.lastDRQTime=fm77avTime;
 						state.CRCErrorAfterRead=(0!=secPtr->crcStatus);
+						state.nanosecPerByte=(0==secPtr->nanosecPerByte ? NANOSEC_PER_BYTE : secPtr->nanosecPerByte);
 						// Should I raise IRQ?
 
 						// CPU needs to read a byte from the data register and clear DRQ before this schedule.
-						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
+						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+state.nanosecPerByte);
 					}
 					else
 					{
@@ -166,8 +167,8 @@ void FM77AVFDC::MakeReady(void)
 			{
 				// Pointer is incremented at IORead.
 				state.DRQ=true;
-				state.lastDRQTime+=NANOSEC_PER_BYTE;
-				fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
+				state.lastDRQTime+=state.nanosecPerByte;
+				fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+state.nanosecPerByte);
 
 				// Memo to myself:
 				//   I was scheduling next DRQ as fm77avTime+NANOSEC_PER_BYTE, which was incorrect.

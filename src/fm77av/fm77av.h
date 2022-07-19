@@ -171,6 +171,8 @@ public:
 		int64_t timeAdjustLog[TIME_ADJUSTMENT_LOG_LEN];
 		int64_t timeDeficitLog[TIME_ADJUSTMENT_LOG_LEN];
 
+		std::string quickScrnShotDir;
+
 		Address powerOffAt;
 	};
 	Variable var;
@@ -297,6 +299,8 @@ public:
 	unsigned int RunOneInstruction(void);
 
 	void ForceRender(class FM77AVRender &render,class Outside_World *outside_world);
+
+	void RenderQuiet(class FM77AVRender &render);
 
 	void DetectMainCPUBIOSCall(void);
 

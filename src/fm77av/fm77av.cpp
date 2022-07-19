@@ -515,6 +515,12 @@ void FM77AV::ForceRender(class FM77AVRender &render,class Outside_World *outside
 	outside_world->UpdateStatusBitmap(*this);
 }
 
+void FM77AV::RenderQuiet(class FM77AVRender &render)
+{
+	render.Prepare(*this);
+	render.BuildImage(crtc.GetPalette());
+}
+
 void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause)
 {
 	auto &p=gameport.state.ports[port&1];

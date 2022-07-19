@@ -4,6 +4,7 @@
 #include "fm77avcommand.h"
 #include "fm77avlineparser.h"
 #include "outside_world.h"
+#include "yspngenc.h"
 
 
 FM77AVCommandInterpreter::FM77AVCommandInterpreter()
@@ -68,6 +69,11 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["FD1EJECT"]=CMD_FD1EJECT;
 	primaryCmdMap["FD1WP"]=CMD_FD1WRITEPROTECT;
 	primaryCmdMap["FD1UP"]=CMD_FD1WRITEUNPROTECT;
+	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
+	primaryCmdMap["PLAYEVT"]=CMD_PLAY_EVENTLOG;
+	primaryCmdMap["STOPEVT"]=CMD_STOP_EVENTLOG;
+	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
+	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -231,6 +237,21 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "BIOSMON" << std::endl;
 	std::cout << "  Monitor BIOS Call." << std::endl;
 
+	std::cout << "LOADEVT filename.txt" << std::endl;
+	std::cout << "  Load Event Log." << std::endl;
+	std::cout << "PLAYEVT" << std::endl;
+	std::cout << "  Playback Event Log." << std::endl;
+	std::cout << "STOPEVT" << std::endl;
+	std::cout << "  Stop Playback Event Log." << std::endl;
+
+	std::cout << "QSS" << std::endl;
+	std::cout << "  Quick Screen Shot.  File name is automatically given." << std::endl;
+	std::cout << "  File is saved in the quick-screenshot directory." << std::endl;
+	std::cout << "  Optionally, can specify page 0 or 1 as a parameter." << std::endl;
+	std::cout << "QSSDIR dir" << std::endl;
+	std::cout << "  Specify quick-screenshot directory." << std::endl;
+
+
 	std::cout << "<< Event that can break >>" << std::endl;
 	std::cout << "SUBUNHALT | UNHALTSUB" << std::endl;
 	std::cout << "  Sub-CPU Unhalted." << std::endl;
@@ -329,6 +350,11 @@ void FM77AVCommandInterpreter::Error_WrongParameter(const Command &cmd)
 void FM77AVCommandInterpreter::Error_CannotSaveFile(const Command &cmd)
 {
 	std::cout << "Cannot Save File." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_CannotOpenFile(const Command &cmd)
+{
+	std::cout << "Cannot Open File." << std::endl;
 	Error_Common(cmd);
 }
 void FM77AVCommandInterpreter::Error_Addressing(const Command &cmd)
@@ -761,6 +787,31 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 				Error_WrongParameter(cmd);
 			}
 		}
+		break;
+	case CMD_LOAD_EVENTLOG:
+		if(true==thr.eventLog.LoadEventLog(cmd.argv[1]))
+		{
+			std::cout << "Loaded event log." << std::endl;
+			std::cout << "PLAYEVT command for play back.\n" << std::endl;
+		}
+		else
+		{
+			Error_CannotOpenFile(cmd);
+		}
+		break;
+	case CMD_PLAY_EVENTLOG:
+		std::cout << "Start Event-Log Playback." << std::endl;
+		thr.eventLog.BeginPlayback(fm77av.state.fm77avTime);
+		break;
+	case CMD_STOP_EVENTLOG:
+		std::cout << "Stop Event-Log Playback." << std::endl;
+		thr.eventLog.StopPlayback();
+		break;
+	case CMD_QUICK_SCREENSHOT:
+		Execute_QuickScreenShot(fm77av,cmd);
+		break;
+	case CMD_QUICK_SCREENSHOT_DIR:
+		Execute_QuickScreenShotDirectory(fm77av,cmd);
 		break;
 	}
 }
@@ -2072,4 +2123,63 @@ void FM77AVCommandInterpreter::Execute_FDEject(int drv,FM77AV &fm77av,Command &c
 {
 	fm77av.fdc.Eject(drv);
 	std::cout << "Ejected Floppy Drive " << drv << std::endl;
+}
+void FM77AVCommandInterpreter::Execute_QuickScreenShot(FM77AV &fm77av,Command &cmd)
+{
+	auto now=time(nullptr);
+	auto tm=localtime(&now);
+
+	auto year=tm->tm_year+1900;
+	auto month=tm->tm_mon+1;
+	auto date=tm->tm_mday;
+	auto hour=tm->tm_hour;
+	auto min=tm->tm_min;
+	auto sec=tm->tm_sec;
+
+	std::string ful;
+	for(int count=0; count<100; ++count)
+	{
+		char fmt[256];
+		sprintf(fmt,"%04d%02d%02d%02d%02d%02d%02d.png",year,month,date,hour,min,sec,count);
+
+		if(""!=fm77av.var.quickScrnShotDir)
+		{
+			ful=cpputil::MakeFullPathName(fm77av.var.quickScrnShotDir,fmt);
+		}
+		else
+		{
+			ful=fmt;
+		}
+
+		if(true!=cpputil::FileExists(ful))
+		{
+			break;
+		}
+	}
+
+	FM77AVRender render;
+	fm77av.RenderQuiet(render);
+
+	auto img=render.GetImage();
+
+	YsRawPngEncoder encoder;
+	if(YSOK==encoder.EncodeToFile(ful.c_str(),img.wid,img.hei,8,6,img.rgba))
+	{
+		std::cout << "Saved to " << ful << std::endl;
+	}
+	else
+	{
+		std::cout << "Save error." << std::endl;
+	}
+}
+void FM77AVCommandInterpreter::Execute_QuickScreenShotDirectory(FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		fm77av.var.quickScrnShotDir=cmd.argv[1];
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
