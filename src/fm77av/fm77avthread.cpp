@@ -43,6 +43,14 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 
 	PrintStatus(*fm77avPtr);	
 
+	for(auto cmdStr : fm77avPtr->var.initialCmd)
+	{
+		std::cout << cmdStr << std::endl;
+		FM77AVCommandInterpreter interpreter;
+		auto cmd=interpreter.Interpret(cmdStr);
+		interpreter.Execute(*this,*fm77avPtr,outside_world,cmd);
+	}
+
 	FM77AVRender render;
 	bool terminate=false;
 	for(;true!=terminate;)

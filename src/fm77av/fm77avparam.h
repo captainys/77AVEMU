@@ -66,6 +66,7 @@ public:
 
 	std::vector <std::string> imgSearchPaths;
 	std::vector <HostShortCut> hostShortCutKeys;
+	std::vector <std::string> initialCmd;
 
 	std::string quickScrnShotDir;
 

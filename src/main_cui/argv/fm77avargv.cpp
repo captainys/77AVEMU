@@ -68,6 +68,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Specify quick screen shot directory." << std::endl;
 	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
+	std::cout << "-INITCMD cmd" << std::endl;
+	std::cout << "  Specify initial command." << std::endl;
 	std::cout << "-SCALE X" << std::endl;
 	std::cout << "  Screen scaling X percent." << std::endl;
 	std::cout << "-AUTOSCALE" << std::endl;
@@ -339,6 +341,11 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			hsc.cmdStr=argv[i+4];
 			hostShortCutKeys.push_back(hsc);
 			i+=4;
+		}
+		else if("-INITCMD"==ARG && i+1<argc)
+		{
+			initialCmd.push_back(argv[i+1]);
+			++i;
 		}
 		else
 		{

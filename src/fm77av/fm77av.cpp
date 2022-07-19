@@ -153,6 +153,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	}
 
 	var.quickScrnShotDir=param.quickScrnShotDir;
+	var.initialCmd=param.initialCmd;
 
 
 	for(auto hsc : param.hostShortCutKeys)

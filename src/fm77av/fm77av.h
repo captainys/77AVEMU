@@ -172,6 +172,7 @@ public:
 		int64_t timeDeficitLog[TIME_ADJUSTMENT_LOG_LEN];
 
 		std::string quickScrnShotDir;
+		std::vector <std::string> initialCmd;
 
 		Address powerOffAt;
 	};
