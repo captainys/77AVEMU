@@ -593,7 +593,19 @@ void FM77AVCRTC::WriteD42B(uint8_t data)
 	state.hardDraw.y1&=0xFF00;
 	state.hardDraw.y1|=data;
 	DrawLine();
-	state.hardDraw.lineBusyBy=fm77avPtr->state.fm77avTime+HD_LINE_DURATION;
+
+	int32_t dx=state.hardDraw.x1-state.hardDraw.x0;
+	int32_t dy=state.hardDraw.y1-state.hardDraw.y0;
+	if(dx<0)
+	{
+		dx=-dx;
+	}
+	if(dy<0)
+	{
+		dy=-dy;
+	}
+
+	state.hardDraw.lineBusyBy=fm77avPtr->state.fm77avTime+(std::max(dx,dy)+1)*HD_LINE_TIME_PER_PIXEL;
 }
 
 void FM77AVCRTC::DrawLine(void)

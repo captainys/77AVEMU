@@ -31,7 +31,9 @@ public:
 		HD_CMD_TILE=6,
 		HD_CMD_CMP=7, // Compare? What is it?
 
-		HD_LINE_DURATION=1000000, // 1000 lines per second?  I need to do experiment to see the average line-drawing time.
+		// OK.  I should measure in the actual hardware.  But, for the time being,
+		// Let's make a wild guess.  1 pixel per clock.
+		HD_LINE_TIME_PER_PIXEL=500,
 	};
 
 	class HardwareDrawing
