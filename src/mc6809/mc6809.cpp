@@ -2439,8 +2439,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			inst.length=0; // Don't increment.
 			inst.clocks+=2;
 		}
-		// Presumably the CPU may dummy-read an extra byte just like PULS instruction.
-		FetchByte(mem,state.S);
+		// Confirmed the same behavior as PULS instruction on actual FM77AV.
+		// It reads and discards an extra byte.
+		FetchByte(mem,state.U);
 		break;
 
 	case INST_ROLA: //      0x49,
