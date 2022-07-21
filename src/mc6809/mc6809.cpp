@@ -2389,6 +2389,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				debugger.PopCallStack(state.S,state.PC);
 			}
 		}
+		// Confirmed on actual FM77AV:
+		// PULS instruction dummy-reads one extra byte.
+		// The byte read from the RAM won't affect any registor, however, the hardware-drawing chip
+		// detects and reacts to the memory-read.  Unless it is taken into account, Dragon Buster FM77AV
+		// leaves uncleared VRAM bytes.
+		FetchByte(mem,state.S);
 		break;
 	case INST_PULU_REG: //	0x37,
 		if(0!=(inst.operand[0]&PSH_CC))
@@ -2433,6 +2439,8 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			inst.length=0; // Don't increment.
 			inst.clocks+=2;
 		}
+		// Presumably the CPU may dummy-read an extra byte just like PULS instruction.
+		FetchByte(mem,state.S);
 		break;
 
 	case INST_ROLA: //      0x49,
