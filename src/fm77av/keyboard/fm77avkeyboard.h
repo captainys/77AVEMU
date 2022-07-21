@@ -81,6 +81,9 @@ public:
 	void ProcessKeyCodeInQueue(void);
 
 	void Reset(void);
+
+	bool Type(unsigned int ASCIICode); // Virtually type a letter.
+
 	void Press(unsigned int keyFlags,unsigned int keyCode);
 	void Release(unsigned int keyFlags,unsigned int keyCode);
 };

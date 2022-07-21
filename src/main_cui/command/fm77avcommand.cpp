@@ -54,6 +54,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
+	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
 	primaryCmdMap["TAPEWP"]=CMD_TAPE_WRITE_PROTECT;
 	primaryCmdMap["TAPEUP"]=CMD_TAPE_WRITE_UNPROTECT;
 	primaryCmdMap["TAPEREWIND"]=CMD_TAPE_REWIND;
@@ -126,6 +127,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  TRANS3 will make virtual BREAK from physical ESC." << std::endl;
 	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
 	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
+	std::cout << "TYPE string" << std::endl;
+	std::cout << "  Virtually type string." << std::endl;
 
 	std::cout << "FD0LOAD filename" << std::endl;
 	std::cout << "FD1LOAD filename" << std::endl;
@@ -763,6 +766,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DONT_BREAK_ON:
 		Execute_DontBreakOn(thr,fm77av,cmd);
+		break;
+	case CMD_TYPE_KEYBOARD:
+		Execute_TypeKeyboard(fm77av,cmd);
 		break;
 	case CMD_KEYBOARD:
 		if (cmd.argv.size() < 2) {
@@ -2285,5 +2291,24 @@ void FM77AVCommandInterpreter::Execute_PrintCallStack(FM77AVThread &thr,FM77AV &
 	for(auto s : fm77av.CPU(mainOrSub).debugger.GetCallStackText())
 	{
 		std::cout << s << std::endl;
+	}
+}
+void FM77AVCommandInterpreter::Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd)
+{
+	bool start=false;
+	for(int i=0; i<cmd.cmdline.size(); ++i)
+	{
+		if(true==start)
+		{
+			fm77av.keyboard.Type(cmd.cmdline[i]);
+		}
+		else if(' '==cmd.cmdline[i] || '\t'==cmd.cmdline[i])
+		{
+			start=true;
+		}
+	}
+	if(true==start)
+	{
+		fm77av.keyboard.Type(0x0D);
 	}
 }

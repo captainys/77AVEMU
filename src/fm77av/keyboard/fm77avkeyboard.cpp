@@ -161,6 +161,32 @@ void FM77AVKeyboard::ClearEncoderQueue(void)
 	std::queue <uint8_t> empty;
 	state.encoderQueue.swap(empty);
 }
+
+bool FM77AVKeyboard::Type(unsigned int ASCIICode)
+{
+	FM77AV *fm77av=(FM77AV *)vmPtr;
+	switch(state.encodingMode)
+	{
+	case ENCODING_JIS:
+	case ENCODING_FM16BETA:
+		if(true!=fm77av->KeyIRQFlagSet())
+		{
+			fm77av->SetKeyIRQFlag();
+			state.lastKeyCode=ASCIICode;
+		}
+		else
+		{
+			state.keyCodeQueue.push(ASCIICode);
+		}
+		return true;
+
+	case ENCODING_SCANCODE:
+		std::cout << "Auto Typing Not Supported in the Scan mode." << std::endl;
+		break;
+	}
+	return false;
+}
+
 void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 {
 	FM77AV *fm77av=(FM77AV *)vmPtr;
@@ -174,6 +200,7 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 			if(AVKEY_BREAK==keyCode)
 			{
 				fm77av->SetBreakKeyFIRQFlag();
+				break;
 			}
 
 			FM77AVKeyCombination keyComb;
