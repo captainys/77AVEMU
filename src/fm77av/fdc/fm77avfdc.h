@@ -36,7 +36,7 @@ public:
 	*/
 	void MakeReady(void);
 
-	virtual void RunScheduledTask(unsigned long long int townsTime);
+	virtual void RunScheduledTask(unsigned long long int fm77avTime);
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
 

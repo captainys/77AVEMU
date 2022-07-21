@@ -162,29 +162,53 @@ void FM77AVKeyboard::ClearEncoderQueue(void)
 	state.encoderQueue.swap(empty);
 }
 
-bool FM77AVKeyboard::Type(unsigned int ASCIICode)
+/* virtual */ void FM77AVKeyboard::RunScheduledTask(unsigned long long int fm77avTime)
 {
 	FM77AV *fm77av=(FM77AV *)vmPtr;
-	switch(state.encodingMode)
+	if(true!=var.autoType.empty())
 	{
-	case ENCODING_JIS:
-	case ENCODING_FM16BETA:
-		if(true!=fm77av->KeyIRQFlagSet())
+		if(true==fm77av->KeyIRQFlagSet())
 		{
+			// Previous key was not read.
+			fm77av->ScheduleDeviceCallBack(*this,fm77avTime+AUTOTYPE_INTERVAL);
+			return;
+		}
+
+		auto ASCIICode=var.autoType.front();
+		var.autoType.pop();
+
+		switch(state.encodingMode)
+		{
+		case ENCODING_JIS:
+		case ENCODING_FM16BETA:
 			fm77av->SetKeyIRQFlag();
 			state.lastKeyCode=ASCIICode;
-		}
-		else
-		{
-			state.keyCodeQueue.push(ASCIICode);
-		}
-		return true;
+			break;
 
-	case ENCODING_SCANCODE:
-		std::cout << "Auto Typing Not Supported in the Scan mode." << std::endl;
-		break;
+		case ENCODING_SCANCODE:
+			std::cout << "Auto Typing Not Supported in the Scan mode." << std::endl;
+			break;
+		}
+
+		if(true!=var.autoType.empty())
+		{
+			if(0x0D==state.lastKeyCode)
+			{
+				fm77av->ScheduleDeviceCallBack(*this,fm77avTime+AUTOTYPE_INTERVAL_RETURN);
+			}
+			else
+			{
+				fm77av->ScheduleDeviceCallBack(*this,fm77avTime+AUTOTYPE_INTERVAL);
+			}
+		}
 	}
-	return false;
+}
+
+void FM77AVKeyboard::Type(unsigned int ASCIICode)
+{
+	FM77AV *fm77av=(FM77AV *)vmPtr;
+	var.autoType.push(ASCIICode);
+	fm77av->ScheduleDeviceCallBack(*this,fm77av->state.fm77avTime+AUTOTYPE_INTERVAL);
 }
 
 void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)

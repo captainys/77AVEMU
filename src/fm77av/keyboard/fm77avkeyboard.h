@@ -26,6 +26,12 @@ public:
 		ENCODING_SCANCODE
 	};
 
+	enum
+	{
+		AUTOTYPE_INTERVAL=50000000, // 20 chars per sec.
+		AUTOTYPE_INTERVAL_RETURN=500000000, // Longer wait after RETURN key.
+	};
+
 	enum  // FM77AV40 Hardware Reference pp.230
 	{
 		CMD_SET_CODING=0x00, // 1-byte 00:FM-7  01:FM-16beta  02:Scan Code  -> 0-byte
@@ -69,6 +75,13 @@ public:
 	};
 	State state;
 
+	class Variable
+	{
+	public:
+		std::queue <uint16_t> autoType;
+	};
+	Variable var;
+
 	FM77AVKeyboard(VMBase *vmBase) : Device(vmBase){}
 
 	void WriteD431(uint8_t data);
@@ -80,9 +93,11 @@ public:
 	void ClearEncoderQueue(void);
 	void ProcessKeyCodeInQueue(void);
 
+	virtual void RunScheduledTask(unsigned long long int fm77avTime);
+
 	void Reset(void);
 
-	bool Type(unsigned int ASCIICode); // Virtually type a letter.
+	void Type(unsigned int ASCIICode); // Virtually type a letter.
 
 	void Press(unsigned int keyFlags,unsigned int keyCode);
 	void Release(unsigned int keyFlags,unsigned int keyCode);
