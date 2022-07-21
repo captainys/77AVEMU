@@ -90,6 +90,23 @@ bool FM77AVEventLog::LoadEventLog(std::string fName)
 					}
 					eventLog.back().code=FM77AVKeyLabelToKeyCode(ARGV[1]);
 				}
+				else if("TYPECOMMAND"==ARGV[0] && 0<eventLog.size())
+				{
+					eventLog.back().type=EVEYTTYPE_TYPE_COMMAND;
+					bool start=false;
+					eventLog.back().str="";
+					for(auto c : str)
+					{
+						if(true==start)
+						{
+							eventLog.back().str.push_back(c);
+						}
+						else if(' '==c || '\t'==c)
+						{
+							start=true;
+						}
+					}
+				}
 				else if("GOTO"==ARGV[0] && 2<=ARGV.size() && 0<eventLog.size())
 				{
 					eventLog.back().type=EVENTTYPE_GOTO;
@@ -148,6 +165,13 @@ void FM77AVEventLog::Playback(FM77AV &fm77av)
 					goto NO_INCREMENT;
 				}
 			}
+			break;
+		case EVEYTTYPE_TYPE_COMMAND:
+			for(auto c : evt.str)
+			{
+				fm77av.keyboard.Type(c);
+			}
+			fm77av.keyboard.Type(0x0D);
 			break;
 		}
 

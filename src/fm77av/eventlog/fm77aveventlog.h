@@ -21,6 +21,7 @@ public:
 		EVENTTYPE_KEYPRESS,
 		EVENTTYPE_KEYRELEASE,
 		EVENTTYPE_GOTO,
+		EVEYTTYPE_TYPE_COMMAND,
 	};
 	static std::string EventTypeToStr(unsigned int eventType);
 	static unsigned int StrToEventType(std::string str);
