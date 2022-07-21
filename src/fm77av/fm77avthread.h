@@ -54,7 +54,6 @@ public:
 	};
 
 	OutputControl output;
-	FM77AVEventLog eventLog;
 
 public:
 	FM77AVThread();

@@ -155,6 +155,14 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	var.quickScrnShotDir=param.quickScrnShotDir;
 	var.initialCmd=param.initialCmd;
 
+	if(0<param.playbackEventLogFName.size())
+	{
+		if(true==eventLog.LoadEventLog(param.playbackEventLogFName))
+		{
+			eventLog.BeginPlayback(state.fm77avTime);
+		}
+	}
+
 
 	for(auto hsc : param.hostShortCutKeys)
 	{

@@ -70,6 +70,8 @@ public:
 
 	std::string quickScrnShotDir;
 
+	std::string playbackEventLogFName;
+
 	std::string t77Path,t77SavePath;
 	std::string fdImgFName[NUM_FDDRIVES];
 	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};

@@ -70,6 +70,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 	std::cout << "-INITCMD cmd" << std::endl;
 	std::cout << "  Specify initial command." << std::endl;
+	std::cout << "-EVTLOG filename.evt" << std::endl;
+	std::cout << "  Specify event-log file to play back." << std::endl;
 	std::cout << "-SCALE X" << std::endl;
 	std::cout << "  Screen scaling X percent." << std::endl;
 	std::cout << "-AUTOSCALE" << std::endl;
@@ -345,6 +347,11 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-INITCMD"==ARG && i+1<argc)
 		{
 			initialCmd.push_back(argv[i+1]);
+			++i;
+		}
+		else if("-EVTLOG"==ARG && i+1<argc)
+		{
+			playbackEventLogFName=argv[i+1];
 			++i;
 		}
 		else

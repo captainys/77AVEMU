@@ -15,6 +15,7 @@
 #include "fm77avtape.h"
 #include "fm77avsound.h"
 #include "fm77avgameport.h"
+#include "fm77aveventlog.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -177,6 +178,8 @@ public:
 		Address powerOffAt;
 	};
 	Variable var;
+
+	FM77AVEventLog eventLog;
 
 	class CPUAddr
 	{

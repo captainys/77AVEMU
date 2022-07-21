@@ -805,7 +805,7 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		}
 		break;
 	case CMD_LOAD_EVENTLOG:
-		if(true==thr.eventLog.LoadEventLog(cmd.argv[1]))
+		if(true==fm77av.eventLog.LoadEventLog(cmd.argv[1]))
 		{
 			std::cout << "Loaded event log." << std::endl;
 			std::cout << "PLAYEVT command for play back.\n" << std::endl;
@@ -817,11 +817,11 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_PLAY_EVENTLOG:
 		std::cout << "Start Event-Log Playback." << std::endl;
-		thr.eventLog.BeginPlayback(fm77av.state.fm77avTime);
+		fm77av.eventLog.BeginPlayback(fm77av.state.fm77avTime);
 		break;
 	case CMD_STOP_EVENTLOG:
 		std::cout << "Stop Event-Log Playback." << std::endl;
-		thr.eventLog.StopPlayback();
+		fm77av.eventLog.StopPlayback();
 		break;
 	case CMD_QUICK_SCREENSHOT:
 		Execute_QuickScreenShot(fm77av,cmd);
