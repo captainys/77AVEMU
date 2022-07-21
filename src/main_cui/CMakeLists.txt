@@ -42,3 +42,35 @@ add_test(
 		0395
 		-NOWAIT
 )
+
+add_test(
+	NAME SPACE_HARRIER_MENU
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/SpaceHarrierA.D77"
+		-FD1
+		"${DISKIMAGE_DIR}/SpaceHarrierB.D77"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		4E56
+		-NOWAIT
+)
+
+add_test(
+	NAME SILPHEED_OPENING
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/Silpheed_1.D77"
+		-FD1
+		"${DISKIMAGE_DIR}/Silpheed_2.D77"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		D645
+		-NOWAIT
+)
