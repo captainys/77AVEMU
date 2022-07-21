@@ -103,6 +103,7 @@ public:
 		ENABLE_SUBSYSCMD_MONITOR,
 		ENABLE_BIOSCMD_MONITOR,
 		ENABLE_DEBUGGER,
+		ENABLE_CALLSTACK,
 	};
 
 	enum
@@ -124,7 +125,8 @@ public:
 		DUMP_CRTC,
 		DUMP_PC_LOG,
 		DUMP_SOUND,
-		DUMP_MEMORY
+		DUMP_MEMORY,
+		DUMP_CALLSTACK,
 	};
 
 	class Command
@@ -193,6 +195,9 @@ public:
 	void Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd);
 	void Execute_QuickScreenShotDirectory(FM77AV &fm77av,Command &cmd);
 	void Execute_QuickScreenShot(FM77AV &fm77av,Command &cmd);
+	void Execute_EnableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_DisableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_PrintCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */

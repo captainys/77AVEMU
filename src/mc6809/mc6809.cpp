@@ -1102,6 +1102,10 @@ void MC6809::NMI(class MemoryAccess &mem)
 {
 	if(true==state.nmiEnabled)
 	{
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_NMI,state.S,state.PC,0,mem.NonDestructiveFetchWord(NMI_VECTOR_ADDR));
+		}
 		state.CC|=EF;
 		PushS16(mem,state.PC);
 		PushS16(mem,state.U);
@@ -1113,12 +1117,17 @@ void MC6809::NMI(class MemoryAccess &mem)
 		PushS8(mem,state.CC);
 		state.CC|=(IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(NMI_VECTOR_ADDR);
+		debugger.OnNMI(*this,mem);
 	}
 }
 void MC6809::IRQ(class MemoryAccess &mem)
 {
 	if(0==(state.CC&IRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
 	{
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_IRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(IRQ_VECTOR_ADDR));
+		}
 		state.CC|=EF;
 		PushS16(mem,state.PC);
 		PushS16(mem,state.U);
@@ -1137,6 +1146,10 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 {
 	if(0==(state.CC&FIRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
 	{
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_FIRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(FIRQ_VECTOR_ADDR));
+		}
 		state.CC&=~EF;
 		PushS16(mem,state.PC);
 		PushS8(mem,state.CC);
@@ -1887,12 +1900,20 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_JSR_DP: //    0x9D,
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,DecodeDirectPageAddress(inst));
+		}
 		PushS16(mem,state.PC+inst.length);
 		state.PC=DecodeDirectPageAddress(inst);
 		inst.length=0;
 		break;
 	case INST_JSR_IDX: //   0xAD,
 		{
+			if(true==debugger.enableCallStack)
+			{
+				debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,DecodeIndexedAddress(inst,mem));
+			}
 			// JSR [,S++] found in Polar Star III.
 			// The correct behavior is probably:
 			//   (1) Calculate Index Address, and S+=2
@@ -1905,6 +1926,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_JSR_EXT: //   0xBD,
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,inst.ExtendedAddress());
+		}
 		PushS16(mem,state.PC+inst.length);
 		state.PC=inst.ExtendedAddress();
 		inst.length=0;
@@ -2359,6 +2384,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			state.PC=PullS16(mem);
 			inst.length=0; // Don't increment.
 			inst.clocks+=2;
+			if(true==debugger.enableCallStack)
+			{
+				debugger.PopCallStack(state.S,state.PC);
+			}
 		}
 		break;
 	case INST_PULU_REG: //	0x37,
@@ -2472,10 +2501,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		state.PC=PullS16(mem);
 		inst.length=0;
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PopCallStack(state.S,state.PC);
+		}
 		break;
 	case INST_RTS: //       0x39,
 		state.PC=PullS16(mem);
 		inst.length=0;
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PopCallStack(state.S,state.PC);
+		}
 		break;
 
 	case INST_SBCA_IMM: //  0x82,
@@ -2784,6 +2821,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_SWI: //       0x3F,
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI_VECTOR_ADDR));
+		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
 		PushS16(mem,state.U);
@@ -2798,6 +2839,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_SWI2: //      0x13F,  // 10 3F
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI2,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI2_VECTOR_ADDR));
+		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
 		PushS16(mem,state.U);
@@ -2812,6 +2857,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		inst.length=0;
 		break;
 	case INST_SWI3: //      0x23F,  // 11 3F
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI3,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI3_VECTOR_ADDR));
+		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
 		PushS16(mem,state.U);
@@ -3046,10 +3095,18 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_BSR_IMM: //   0x8D,
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,state.PC+inst.length+inst.BranchOffset8());
+		}
 		PushS16(mem,state.PC+inst.length);
 		state.PC+=inst.BranchOffset8();
 		break;
 	case INST_LBSR_IMM16: // 0x17
+		if(true==debugger.enableCallStack)
+		{
+			debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,state.PC+inst.length+inst.BranchOffset16());
+		}
 		PushS16(mem,state.PC+inst.length);
 		state.PC+=inst.BranchOffset16();
 		break;

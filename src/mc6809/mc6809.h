@@ -3,6 +3,8 @@
 /* { */
 
 #include <stdint.h>
+#include <string>
+#include <vector>
 #include <iostream>
 #include "cpputil.h"
 #include "vmbase.h"
@@ -632,6 +634,30 @@ public:
 		MemAccessOption memRead[65536];
 		MemAccessOption memWrite[65536];
 
+
+		enum
+		{
+			CALLTYPE_BSR_JSR,
+			CALLTYPE_NMI,
+			CALLTYPE_IRQ,
+			CALLTYPE_FIRQ,
+			CALLTYPE_SWI,
+			CALLTYPE_SWI2,
+			CALLTYPE_SWI3,
+		};
+		class CallStack
+		{
+		public:
+			// In 80386, AX is very often used as a request.
+			// Is it worth remembering value of A?
+			uint8_t type=CALLTYPE_BSR_JSR;
+			unsigned int instLength=0; // Zero for NMI, IRQ, and FIRQ
+			unsigned int fromS,fromPC,toPC;
+		};
+		bool enableCallStack=false;
+		std::vector <CallStack> callStack;
+
+
 		Debugger();
 
 		void CleanUp(void);
@@ -668,6 +694,14 @@ public:
 				nextDisassemblyAddr=cpu.state.PC;
 			}
 		}
+		inline void OnNMI(MC6809 &cpu,const MemoryAccess &mem)
+		{
+			if(true==enabled)
+			{
+				CheckBreakCondition(cpu,mem);
+				nextDisassemblyAddr=cpu.state.PC;
+			}
+		}
 		inline void OnIRQ(MC6809 &cpu,const MemoryAccess &mem)
 		{
 			if(true==enabled)
@@ -697,6 +731,11 @@ public:
 
 		std::vector <PCLogType> GetPCLog(void);
 		std::vector <PCLogType> GetPCLog(unsigned int steps);
+
+		void PushCallStack(uint8_t callType,uint16_t S,uint16_t fromPC,uint16_t instLength,uint16_t toPC);
+		void PopCallStack(uint16_t S,uint16_t returnPC);
+		std::vector <std::string> GetCallStackText(void) const;
+		void ClearCallStack(void);
 	};
 	Debugger debugger;
 

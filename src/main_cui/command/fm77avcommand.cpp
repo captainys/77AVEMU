@@ -81,6 +81,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["BIOSMON"]=ENABLE_BIOSCMD_MONITOR;
 	featureMap["DEBUG"]=ENABLE_DEBUGGER;
 	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
+	featureMap["CALLSTACK"]=ENABLE_CALLSTACK;
+	featureMap["CST"]=ENABLE_CALLSTACK;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -98,6 +100,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["SOUND"]=DUMP_SOUND;
 	dumpableMap["MEM"]=DUMP_MEMORY;
 	dumpableMap["CRTC"]=DUMP_CRTC;
+	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
+	dumpableMap["CST"]=DUMP_CALLSTACK;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -223,6 +227,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "PSGCH 0/1 0/1 0/1" << std::endl;
 	std::cout << "  Turn on or off FM/PSG channels." << std::endl;
 
+
+
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
 	std::cout << "DEBUG/DEBUGGER" << std::endl;
 	std::cout << "  Debugger." << std::endl;
@@ -251,6 +257,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "QSSDIR dir" << std::endl;
 	std::cout << "  Specify quick-screenshot directory." << std::endl;
 
+	std::cout << "CALLSTACK main/sub" << std::endl;
+	std::cout << "CST main/sub" << std::endl;
+	std::cout << "  Call stack.  In Mutsu, call stack is not automatically enabled" << std::endl;
+	std::cout << "  when you enable debugger.  You can specify main or sub." << std::endl;
 
 	std::cout << "<< Event that can break >>" << std::endl;
 	std::cout << "SUBUNHALT | UNHALTSUB" << std::endl;
@@ -947,6 +957,9 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.var.monitorBIOSCall=true;
 			std::cout << "Enabled BIOS Monitor." << std::endl;
 			break;
+		case ENABLE_CALLSTACK:
+			Execute_EnableCallStack(thr,fm77av,cmd);
+			break;
 		}
 	}
 	else
@@ -1006,6 +1019,9 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		case ENABLE_BIOSCMD_MONITOR:
 			fm77av.var.monitorBIOSCall=false;
 			std::cout << "Disabled BIOS Monitor." << std::endl;
+			break;
+		case ENABLE_CALLSTACK:
+			Execute_DisableCallStack(thr,fm77av,cmd);
 			break;
 		}
 	}
@@ -1147,6 +1163,9 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				{
 					std::cout << str << std::endl;
 				}
+				break;
+			case DUMP_CALLSTACK:
+				Execute_PrintCallStack(thr,fm77av,cmd);
 				break;
 			}
 		}
@@ -2181,5 +2200,90 @@ void FM77AVCommandInterpreter::Execute_QuickScreenShotDirectory(FM77AV &fm77av,C
 	else
 	{
 		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_EnableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<=2) // Just ENA CST, no CPU specification.
+	{
+		auto mainOrSub=thr.OnlyOneCPUIsUnmuted();
+		if(CPU_UNKNOWN==mainOrSub)
+		{
+			fm77av.mainCPU.debugger.enableCallStack=true;
+			fm77av.subCPU.debugger.enableCallStack=true;
+			std::cout << "Enabled Call Stack for Main and Sub CPUs" << std::endl;
+		}
+		else
+		{
+			fm77av.CPU(mainOrSub).debugger.enableCallStack=true;
+			std::cout << "Enable Call Stack for " << CPUToStr(mainOrSub) << " CPU" << std::endl;
+		}
+	}
+	else
+	{
+		auto mainOrSub=StrToCPU(cmd.argv[2]);
+		if(CPU_UNKNOWN==mainOrSub)
+		{
+			Error_UnknownCPU(cmd);
+		}
+		else
+		{
+			fm77av.CPU(mainOrSub).debugger.enableCallStack=true;
+			std::cout << "Enable Call Stack for " << CPUToStr(mainOrSub) << " CPU" << std::endl;
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_DisableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<=2) // Just ENA CST, no CPU specification.
+	{
+		std::cout << "Disabled Call Stack for Main and Sub CPUs." << std::endl;
+		fm77av.mainCPU.debugger.enableCallStack=false;
+		fm77av.subCPU.debugger.enableCallStack=false;
+		fm77av.mainCPU.debugger.ClearCallStack();
+		fm77av.subCPU.debugger.ClearCallStack();
+	}
+	else
+	{
+		auto mainOrSub=StrToCPU(cmd.argv[2]);
+		if(CPU_UNKNOWN==mainOrSub)
+		{
+			Error_UnknownCPU(cmd);
+		}
+		else
+		{
+			fm77av.CPU(mainOrSub).debugger.enableCallStack=false;
+			fm77av.CPU(mainOrSub).debugger.ClearCallStack();
+			std::cout << "Disabled Call Stack for " << CPUToStr(mainOrSub) << " CPU" << std::endl;
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_PrintCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	int mainOrSub=CPU_UNKNOWN;
+	if(cmd.argv.size()<=2) // Just ENA CST, no CPU specification.
+	{
+		mainOrSub=thr.OnlyOneCPUIsUnmuted();
+	}
+	else
+	{
+		mainOrSub=StrToCPU(cmd.argv[2]);
+	}
+
+	if(CPU_UNKNOWN==mainOrSub)
+	{
+		Error_UnknownCPU(cmd);
+		return;
+	}
+	if(true!=fm77av.CPU(mainOrSub).debugger.enableCallStack)
+	{
+		std::cout << "Call Stack Not Enabled for " << CPUToStr(mainOrSub) << " CPU" << std::endl;
+		return;
+	}
+
+	std::cout << "Call Stack for " << CPUToStr(mainOrSub) << " CPU" << std::endl;
+	for(auto s : fm77av.CPU(mainOrSub).debugger.GetCallStackText())
+	{
+		std::cout << s << std::endl;
 	}
 }

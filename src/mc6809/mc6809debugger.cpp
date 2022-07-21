@@ -245,3 +245,90 @@ std::vector <MC6809::Debugger::PCLogType> MC6809::Debugger::GetPCLog(unsigned in
 	}
 	return list;
 }
+void MC6809::Debugger::PushCallStack(uint8_t callType,uint16_t S,uint16_t fromPC,uint16_t instLength,uint16_t toPC)
+{
+	CallStack cst;
+	cst.type=callType;
+	cst.instLength=instLength;
+	cst.fromS=S;
+	cst.fromPC=fromPC;
+	cst.toPC=toPC;
+	callStack.push_back(cst);
+}
+void MC6809::Debugger::PopCallStack(uint16_t S,uint16_t returnPC)
+{
+	if(true!=callStack.empty())
+	{
+		int nPop=1;
+		bool match=false;
+		for(auto iter=callStack.rbegin(); iter!=callStack.rend(); ++iter)
+		{
+			// I have seen jump by RTS, in which case, none of the above calls should match.
+			if(iter->fromPC==returnPC)
+			{
+				match=true;
+				break;
+			}
+			++nPop;
+		}
+
+		if(true!=match) // Prob: Jump by RTS?
+		{
+			nPop=0;
+		}
+		while(0<nPop)
+		{
+			callStack.pop_back();
+			--nPop;
+		}
+	}
+}
+std::vector <std::string> MC6809::Debugger::GetCallStackText(void) const
+{
+	// auto &symTable=GetSymTable();   I've got to do it.
+	std::vector <std::string> text;
+	for(auto &s : callStack)
+	{
+		std::string str;
+		str+="FR="+cpputil::Ustox(s.fromPC)+"  ";
+		str+="TO="+cpputil::Ustox(s.toPC)+"  ";
+		str+="RET="+cpputil::Ustox(s.fromPC+s.instLength);
+		// auto symbolPtr=symTable.Find(s.procCS,s.procEIP);
+		//if(nullptr!=symbolPtr && (SYM_PROCEDURE==symbolPtr->symType || SYM_ANY==symbolPtr->symType))
+		//{
+		//	str+="{";
+		//	str+=symbolPtr->Format();
+		//	str+="}";
+		//}
+
+		switch(s.type)
+		{
+		case CALLTYPE_BSR_JSR:
+			break;
+		case CALLTYPE_NMI:
+			str+=" NMI";
+			break;
+		case CALLTYPE_IRQ:
+			str+=" IRQ";
+			break;
+		case CALLTYPE_FIRQ:
+			str+=" FIRQ";
+			break;
+		case CALLTYPE_SWI:
+			str+=" SWI";
+			break;
+		case CALLTYPE_SWI2:
+			str+=" SWI2";
+			break;
+		case CALLTYPE_SWI3:
+			str+=" SWI3";
+			break;
+		}
+		text.push_back((std::string &&)str);
+	}
+	return text;
+}
+void MC6809::Debugger::ClearCallStack(void)
+{
+	callStack.clear();
+}
