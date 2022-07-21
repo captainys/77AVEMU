@@ -264,7 +264,7 @@ void MC6809::Debugger::PopCallStack(uint16_t S,uint16_t returnPC)
 		for(auto iter=callStack.rbegin(); iter!=callStack.rend(); ++iter)
 		{
 			// I have seen jump by RTS, in which case, none of the above calls should match.
-			if(iter->fromPC==returnPC)
+			if(iter->fromPC+iter->instLength==returnPC)
 			{
 				match=true;
 				break;

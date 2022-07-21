@@ -362,7 +362,8 @@ void FM77AVFDC::MakeReady(void)
 		}
 		if(true==monitorFDC)
 		{
-			std::cout << "FDC CMD "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data);
+			std::cout << "At PC=" + cpputil::Ustox(fm77avPtr->mainCPU.state.PC);
+			std::cout << " FDC CMD "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data);
 			switch(data&0xF0)
 			{
 			case 0x00: // Restore
