@@ -770,8 +770,30 @@ public:
 
 	/*! Check value and set or reset SF and ZF.  VF will be zero.
 	*/
-	void Test8(uint8_t value);
-	void Test16(uint16_t value);
+	inline void MC6809::Test8(uint8_t value)
+	{
+		state.CC&=~(ZF|SF|VF);
+		if(0!=(0x80&value))
+		{
+			state.CC|=SF;
+		}
+		else if(0==value)
+		{
+			state.CC|=ZF;
+		}
+	}
+	inline void MC6809::Test16(uint16_t value)
+	{
+		state.CC&=~(ZF|SF|VF);
+		if(0!=(0x8000&value))
+		{
+			state.CC|=SF;
+		}
+		else if(0==value)
+		{
+			state.CC|=ZF;
+		}
+	}
 
 	/*! This function will pre-decrement or post-increment index registers.
 	*/

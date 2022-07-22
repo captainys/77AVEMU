@@ -3266,46 +3266,6 @@ uint8_t MC6809::ROR(uint8_t data)
 	return data;
 }
 
-void MC6809::Test8(uint8_t value)
-{
-	if(0==value)
-	{
-		state.CC|=ZF;
-	}
-	else
-	{
-		state.CC&=(~ZF);
-	}
-	if(0!=(0x80&value))
-	{
-		state.CC|=SF;
-	}
-	else
-	{
-		state.CC&=(~SF);
-	}
-	state.CC&=(~VF);
-}
-void MC6809::Test16(uint16_t value)
-{
-	if(0==value)
-	{
-		state.CC|=ZF;
-	}
-	else
-	{
-		state.CC&=(~ZF);
-	}
-	if(0!=(0x8000&value))
-	{
-		state.CC|=SF;
-	}
-	else
-	{
-		state.CC&=(~SF);
-	}
-	state.CC&=(~VF);
-}
 uint16_t MC6809::DecodeIndexedAddress(const Instruction &inst,MemoryAccess &mem)
 {
 	auto &indexReg=RegisterRef16(inst.indexReg);
