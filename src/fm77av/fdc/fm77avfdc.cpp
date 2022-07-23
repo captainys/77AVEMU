@@ -354,8 +354,18 @@ void FM77AVFDC::MakeReady(void)
 	case FM77AVIO_FDC_STATUS_COMMAND://=      0xFD18,
 		SendCommand(data);
 		state.drive[DriveSelect()].diskChange=false; // Is this the right timing to erase diskChange flag?
-		fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_FDC;
-		state.IRQ=false;
+
+		if(0xD0==(data&0xF0))
+		{
+			fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_FDC;
+			state.IRQ=true;
+		}
+		else
+		{
+			fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_FDC;
+			state.IRQ=false;
+		}
+
 		if(true==debugBreakOnCommandWrite)
 		{
 			fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data));
