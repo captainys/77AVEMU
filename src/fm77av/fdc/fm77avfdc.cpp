@@ -133,7 +133,8 @@ void FM77AVFDC::MakeReady(void)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
-					auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,drv.sectorReg);
+					unsigned int nSteps=0;
+					auto secPtr=diskPtr->GetSectorFrom(drv.trackPos,state.side,drv.sectorReg,state.sectorPositionInTrack,nSteps);
 					if(nullptr!=secPtr)
 					{
 						state.data=secPtr->sectorData;
