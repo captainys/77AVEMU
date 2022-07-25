@@ -20,6 +20,9 @@ public:
 		FORMAT_WRITE_LENGTH_2D_2DD=6144,
 		FORMAT_WRITE_LENGTH_2HD_1232KB=10416,
 		FORMAT_WRITE_LENFTH_2HD_1440KB=12934,
+
+		INDEXHOLE_INTERVAL=3333333,
+		INDEXHOLE_DURATION=20000,
 	};
 	class FM77AV *fm77avPtr;
 
@@ -41,6 +44,8 @@ public:
 	virtual unsigned int IOReadByte(unsigned int ioport);
 
 	unsigned int NonDestructiveIORead(unsigned int ioport) const;
+
+	bool IndexHole(unsigned long long fm77avTime) const;
 
 	virtual void Reset(void);
 	void WriteTrack(const std::vector <uint8_t> &data);

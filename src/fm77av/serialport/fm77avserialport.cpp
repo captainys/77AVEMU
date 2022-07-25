@@ -118,7 +118,6 @@ void FM77AVSerialPort::DefaultClient::XMODEM_TO_VM_TransferNextBlock(uint32_t pa
 		fromVM.push_back(data);
 		if(0x0D==data)
 		{
-			fromVM.push_back(0x0A);
 			if(true==printRecvText)
 			{
 				std::cout << "TX from VM:" << recvLine << std::endl;

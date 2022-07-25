@@ -841,24 +841,10 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		Execute_QuickScreenShotDirectory(fm77av,cmd);
 		break;
 	case CMD_SAVE_COM0OUT:
-		if(2<=cmd.argv.size())
-		{
-			if(true!=cpputil::WriteBinaryFile(cmd.argv[1],fm77av.serialport.cli0.fromVM.size(),fm77av.serialport.cli0.fromVM.data()))
-			{
-				std::cout << "Saved COM0 log." << std::endl;
-			}
-			else
-			{
-				Error_CannotSaveFile(cmd);
-			}
-		}
-		else
-		{
-			Error_TooFewArgs(cmd);
-		}
+		Execute_SaveCOM0Out(fm77av,cmd);
 		break;
 	case CMD_CLEAR_COM0OUT:
-		std::cout << "Cleared COM0 log" << std::endl;
+		Execute_ClearCom0Out(fm77av,cmd);
 		break;
 	}
 }
@@ -2353,7 +2339,24 @@ void FM77AVCommandInterpreter::Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd)
 }
 void FM77AVCommandInterpreter::Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd)
 {
+	if(2<=cmd.argv.size())
+	{
+		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],fm77av.serialport.cli0.fromVM.size(),fm77av.serialport.cli0.fromVM.data()))
+		{
+			std::cout << "Saved COM0 log." << std::endl;
+		}
+		else
+		{
+			Error_CannotSaveFile(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
 void FM77AVCommandInterpreter::Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd)
 {
+	std::cout << "Cleared COM0 log" << std::endl;
+	fm77av.serialport.cli0.fromVM.clear();
 }

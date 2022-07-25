@@ -289,9 +289,49 @@ void FM77AVFDC::MakeReady(void)
 		}
 		break;
 	case 0xE0: // Read Track
-		std::cout << __FUNCTION__ << std::endl;
-		std::cout << "Command " << cpputil::Ubtox(state.lastCmd) << " not supported yet." << std::endl;
-		MakeReady();
+		if(0==state.data.size())
+		{
+			if(nullptr!=diskPtr)
+			{
+				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
+				{
+					// Copy CHRN and CRC CRC to DMA.
+					auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
+					if(nullptr!=trkPtr)
+					{
+						std::vector <unsigned char> rawRead;
+						for(int i=0; i<0x1800; ++i)
+						{
+							rawRead.push_back(0x4E);
+						}
+
+						std::swap(state.data,rawRead);
+						state.dataReadPointer=0;
+						state.DRQ=true;
+						state.lastDRQTime=fm77avTime;
+						// Should I raise IRQ?
+						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
+					}
+				}
+				else
+				{
+					MakeReady();
+					state.recordNotFound=true;
+				}
+			}
+		}
+		else if(true!=state.DRQ)
+		{
+			state.DRQ=true;
+			state.lastDRQTime+=NANOSEC_PER_BYTE;
+			// Should I raise IRQ?
+			fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
+		}
+		else
+		{
+			state.lostData=true;
+			MakeReady();
+		}
 		break;
 	case 0xF0: // Write Track
 		if(state.expectedWriteLength==0)
@@ -551,6 +591,31 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 		{
 			data&=0x7F;
 		}
+
+		switch(state.lastCmd&0xF0)
+		{
+		case 0x00: // Restore
+		case 0x10: // Seek
+		case 0x20: // Step?
+		case 0x30: // Step?
+		case 0x40: // Step In
+		case 0x50: // Step In
+		case 0x60: // Step Out
+		case 0x70: // Step Out
+		case 0xD0: // Force Interrupt
+			data|=(true==IndexHole(fm77avPtr->state.fm77avTime) ? 0x02 : 0);
+			break;
+
+		case 0x80: // Read Data (Read Sector)
+		case 0x90: // Read Data (Read Sector)
+		case 0xA0: // Write Data (Write Sector)
+		case 0xB0: // Write Data (Write Sector)
+		case 0xC0: // Read Address
+		case 0xE0: // Read Track
+		case 0xF0: // Write Track
+			break;
+		}
+
 		return data;
 	case FM77AVIO_FDC_TRACK://=               0xFD19,
 		return state.drive[DriveSelect()].trackReg;
@@ -723,4 +788,8 @@ void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
 			diskPtr->ForceWriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
 		}
 	}
+}
+bool FM77AVFDC::IndexHole(unsigned long long fm77avTime) const
+{
+	return (fm77avTime%INDEXHOLE_INTERVAL<INDEXHOLE_DURATION);
 }
