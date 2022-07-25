@@ -78,6 +78,8 @@ public:
 
 	bool unitTest=false; // If true, CUI will not be attached.  Implies termination condition.
 
+	bool enableCOM[FM7_MAX_NUM_COMPORTS]={false,false,false,false};
+
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
 };

@@ -25,16 +25,11 @@ class FM77AVSerialPort : public Device
 public:
 	virtual const char *DeviceName(void) const{return "SERIALPORT";}
 
-	enum
-	{
-		MAX_NUM_COMPORTS=4,
-	};
-
 	class State
 	{
 	public:
-		bool enabled[MAX_NUM_COMPORTS];
-		i8251 COM[MAX_NUM_COMPORTS];
+		bool enabled[FM7_MAX_NUM_COMPORTS];
+		i8251 COM[FM7_MAX_NUM_COMPORTS];
 	};
 	State state;
 

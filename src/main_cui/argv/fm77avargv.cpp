@@ -64,6 +64,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  in to all of the programs and write patches.  Instead, this option let you limit" << std::endl;
 	std::cout << "  maximum time that the button is sent as DOWN to the virtual machine even when" << std::endl;
 	std::cout << "  you keep it down for 100 seconds." << std::endl;
+	std::cout << "-COM0, -COM1, -COM2, -COM3" << std::endl;
+	std::cout << "  Enable COM port." << std::endl;
 	std::cout << "-QUICKSSDIR dir" << std::endl;
 	std::cout << "  Specify quick screen shot directory." << std::endl;
 	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
@@ -353,6 +355,10 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			playbackEventLogFName=argv[i+1];
 			++i;
+		}
+		else if("-COM0"==ARG || "-COM1"==ARG || "-COM2"==ARG || "-COM3"==ARG)
+		{
+			enableCOM[ARG[4]-'0']=true;
 		}
 		else
 		{

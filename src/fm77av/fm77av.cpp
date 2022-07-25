@@ -165,6 +165,10 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		}
 	}
 
+	for(int i=0; i<FM7_MAX_NUM_COMPORTS; ++i)
+	{
+		serialport.state.enabled[i]=param.enableCOM[i];
+	}
 
 	for(auto hsc : param.hostShortCutKeys)
 	{
