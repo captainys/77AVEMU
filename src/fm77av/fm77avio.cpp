@@ -241,7 +241,8 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			if(0x3F<value)
 			{
 				std::cout << "MMR write greater than 3F" << std::endl;
-				mainCPU.debugger.stop=true;
+				std::cout << "Will need work to correctly support FM77AV40." << std::endl;
+				value&=0x3F;
 			}
 			mainMemAcc.IOWriteByte(ioAddr,value);
 		}
