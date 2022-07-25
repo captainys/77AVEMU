@@ -108,6 +108,20 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			state.sub.irqSource|=SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
 		}
 		break;
+
+	case FM77AVIO_RS232C_DATA://=             0xFD06,
+		if(true==serialport.state.enabled[0])
+		{
+			serialport.state.COM[0].VMWriteData(value,state.fm77avTime);
+		}
+		break;
+	case FM77AVIO_RS232C_COMMAND_STATUS://=   0xFD07,
+		if(true==serialport.state.enabled[0])
+		{
+			serialport.state.COM[0].VMWriteCommnand(value);
+		}
+		break;
+
 	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,
 		// In FM-7, $FD0B works same as write to $FD0F.
 		// Confirmed on actual hardware.
@@ -147,11 +161,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
 			physMem.WriteFD13(value);
-			if(true==physMem.state.subROMSwitch)
-			{
-				subCPU.Reset();
-				subCPU.state.PC=subMemAcc.FetchWord(0xFFFE);
-			}
+			// Confirmed on actual FM77AV.  Sub-CPU resets even if the monitor type
+			// doesn't change.  POKE &HFD13,0 from F-BASIC will reset sub-CPU.
+			subCPU.Reset();
+			subCPU.state.PC=subMemAcc.FetchWord(0xFFFE);
+			state.subSysBusy=true; // Busy on reset.
 		}
 		break;
 
@@ -513,6 +527,16 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		// Probably break-key FIRQ not.
 		state.main.firqSource&=~SystemState::MAIN_FIRQ_SOURCE_ATTENTION;
 		break;
+
+	case FM77AVIO_RS232C_DATA://=             0xFD06,
+		if(true==serialport.state.enabled[0])
+		{
+			byteData=serialport.state.COM[0].VMReadData(state.fm77avTime);
+		}
+		break;
+	case FM77AVIO_RS232C_COMMAND_STATUS://=   0xFD07,
+		break;
+
 	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,
 		// In FM-7, $FD0B works same as write to $FD0F.
 		// Confirmed on actual hardware.
@@ -638,6 +662,20 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 			byteData|=0x80;
 		}
 		break;
+
+	case FM77AVIO_RS232C_DATA://=             0xFD06,
+		if(true==serialport.state.enabled[0])
+		{
+			byteData=serialport.state.COM[0].VMPeekData();
+		}
+		break;
+	case FM77AVIO_RS232C_COMMAND_STATUS://=   0xFD07,
+		if(true==serialport.state.enabled[0])
+		{
+			byteData=serialport.state.COM[0].VMReadState();
+		}
+		break;
+
 	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{

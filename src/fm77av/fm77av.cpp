@@ -19,7 +19,8 @@ FM77AV::FM77AV() :
 	fdc(this),
 	dataRecorder(this),
 	sound(this),
-	gameport(this)
+	gameport(this),
+	serialport(this)
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);
@@ -32,6 +33,7 @@ FM77AV::FM77AV() :
 	allDevices.push_back(&dataRecorder);
 	allDevices.push_back(&sound);
 	allDevices.push_back(&gameport);
+	allDevices.push_back(&serialport);
 	VMBase::CacheDeviceIndex();
 
 	for(auto &b : var.breakOnSubCmd)
