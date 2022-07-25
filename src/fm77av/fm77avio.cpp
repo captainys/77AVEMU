@@ -535,6 +535,11 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		}
 		break;
 	case FM77AVIO_RS232C_COMMAND_STATUS://=   0xFD07,
+		if(true==serialport.state.enabled[0])
+		{
+			serialport.state.COM[0].Update(state.fm77avTime);
+			byteData=serialport.state.COM[0].VMReadState();
+		}
 		break;
 
 	case FM77AVIO_RS232C_ENABLE_AV40: //=      0xFD0B,

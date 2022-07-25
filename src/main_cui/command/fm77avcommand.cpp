@@ -84,6 +84,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["DEBUGGER"]=ENABLE_DEBUGGER;
 	featureMap["CALLSTACK"]=ENABLE_CALLSTACK;
 	featureMap["CST"]=ENABLE_CALLSTACK;
+	featureMap["COM0TX"]=ENABLE_PRINT_COM0;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -264,6 +265,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "CST main/sub" << std::endl;
 	std::cout << "  Call stack.  In Mutsu, call stack is not automatically enabled" << std::endl;
 	std::cout << "  when you enable debugger.  You can specify main or sub." << std::endl;
+	std::cout << "COM0TX" << std::endl;
+	std::cout << "  Print tx from COM0" << std::endl;
+
 
 	std::cout << "<< Event that can break >>" << std::endl;
 	std::cout << "SUBUNHALT | UNHALTSUB" << std::endl;
@@ -966,6 +970,10 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 		case ENABLE_CALLSTACK:
 			Execute_EnableCallStack(thr,fm77av,cmd);
 			break;
+		case ENABLE_PRINT_COM0:
+			fm77av.serialport.cli0.printRecvText=true;
+			std::cout << "Enabled COM0 Print." << std::endl;
+			break;
 		}
 	}
 	else
@@ -1028,6 +1036,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 			break;
 		case ENABLE_CALLSTACK:
 			Execute_DisableCallStack(thr,fm77av,cmd);
+			break;
+		case ENABLE_PRINT_COM0:
+			fm77av.serialport.cli0.printRecvText=false;
+			std::cout << "Disabled COM0 Print." << std::endl;
 			break;
 		}
 	}
