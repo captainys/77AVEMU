@@ -75,6 +75,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["STOPEVT"]=CMD_STOP_EVENTLOG;
 	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
 	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
+	primaryCmdMap["SAVECOM0"]=CMD_SAVE_COM0OUT;
+	primaryCmdMap["CLEARCOM0"]=CMD_CLEAR_COM0OUT;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -230,6 +232,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "FMCH 0/1 0/1 0/1" << std::endl;
 	std::cout << "PSGCH 0/1 0/1 0/1" << std::endl;
 	std::cout << "  Turn on or off FM/PSG channels." << std::endl;
+
+	std::cout << "SAVECOM0 filename" << std::endl;
+	std::cout << "  Save COM0 log to file." << std::endl;
+	std::cout << "CLEARCOM0" << std::endl;
+	std::cout << "  Clear COM0 log." << std::endl;
 
 
 
@@ -832,6 +839,26 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_QUICK_SCREENSHOT_DIR:
 		Execute_QuickScreenShotDirectory(fm77av,cmd);
+		break;
+	case CMD_SAVE_COM0OUT:
+		if(2<=cmd.argv.size())
+		{
+			if(true!=cpputil::WriteBinaryFile(cmd.argv[1],fm77av.serialport.cli0.fromVM.size(),fm77av.serialport.cli0.fromVM.data()))
+			{
+				std::cout << "Saved COM0 log." << std::endl;
+			}
+			else
+			{
+				Error_CannotSaveFile(cmd);
+			}
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
+		break;
+	case CMD_CLEAR_COM0OUT:
+		std::cout << "Cleared COM0 log" << std::endl;
 		break;
 	}
 }
@@ -2323,4 +2350,10 @@ void FM77AVCommandInterpreter::Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd)
 	{
 		fm77av.keyboard.Type(0x0D);
 	}
+}
+void FM77AVCommandInterpreter::Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd)
+{
+}
+void FM77AVCommandInterpreter::Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd)
+{
 }

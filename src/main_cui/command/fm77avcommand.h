@@ -95,6 +95,9 @@ public:
 
 		CMD_QUICK_SCREENSHOT,
 		CMD_QUICK_SCREENSHOT_DIR,
+
+		CMD_SAVE_COM0OUT,
+		CMD_CLEAR_COM0OUT,
 	};
 
 	enum
@@ -201,6 +204,8 @@ public:
 	void Execute_DisableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_PrintCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd);
+	void Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd);
+	void Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
