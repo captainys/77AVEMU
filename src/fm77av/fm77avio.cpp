@@ -238,6 +238,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
+			if(0x3F<value)
+			{
+				std::cout << "MMR write greater than 3F" << std::endl;
+				mainCPU.debugger.stop=true;
+			}
 			mainMemAcc.IOWriteByte(ioAddr,value);
 		}
 		break;

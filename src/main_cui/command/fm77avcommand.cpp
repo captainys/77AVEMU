@@ -2341,7 +2341,7 @@ void FM77AVCommandInterpreter::Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd)
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true!=cpputil::WriteBinaryFile(cmd.argv[1],fm77av.serialport.cli0.fromVM.size(),fm77av.serialport.cli0.fromVM.data()))
+		if(true==cpputil::WriteBinaryFile(cmd.argv[1],fm77av.serialport.cli0.fromVM.size(),fm77av.serialport.cli0.fromVM.data()))
 		{
 			std::cout << "Saved COM0 log." << std::endl;
 		}
