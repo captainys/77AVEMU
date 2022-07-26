@@ -246,16 +246,13 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	return true;
 }
 
-void PhysicalMemory::IOWriteByte(unsigned int ioport,unsigned int data)
+void PhysicalMemory::WriteFD04(uint8_t data)
 {
-	switch(ioport)
-	{
-	case FM77AVIO_INITIATOR_ROM://=           0xFD10,
-		state.avBootROM=(0==(data&2));
-		break;
-	}
 }
-
+void PhysicalMemory::WriteFD10(uint8_t data)
+{
+	state.avBootROM=(0==(data&2));
+}
 void PhysicalMemory::WriteFD20(uint8_t data)
 {
 	uint16_t data16=data;
@@ -288,7 +285,15 @@ void PhysicalMemory::WriteFD13(uint8_t data)
 	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
 	{
 		auto prev=state.subMonType;
-		switch(data&3)
+		if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType)
+		{
+			data&=7;
+		}
+		else
+		{
+			data&=3;
+		}
+		switch(data)
 		{
 		case 0:
 			state.subMonType=SUBMON_C;
@@ -298,6 +303,12 @@ void PhysicalMemory::WriteFD13(uint8_t data)
 			break;
 		case 2:
 			state.subMonType=SUBMON_B;
+			break;
+		case 4:
+			if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType)
+			{
+				state.subMonType=SUBMON_RAM;
+			}
 			break;
 		}
 		if(prev!=state.subMonType)
@@ -316,6 +327,12 @@ void PhysicalMemory::WriteFD2E(uint8_t data)
 		state.av40DicROMBank=(data&0x3F);
 	}
 }
+void PhysicalMemory::WriteD42E(uint8_t data)
+{
+}
+void PhysicalMemory::WriteD42F(uint8_t data)
+{
+}
 void PhysicalMemory::WriteD430(uint8_t data)
 {
 	auto prev=state.subFontType;
@@ -332,6 +349,9 @@ void PhysicalMemory::Reset(void)
 	state.av40DicRAMEnabled=false;
 	state.av40DicROMEnabled=false;
 	state.av40DicROMBank=0;
+	state.av40SubRAMBWriteProtect=false;
+	state.av40SubRAMABank=0;
+	state.av40SubRAMBBank=0;
 	state.subROMSwitch=false;
 
 	auto fm77avPtr=(FM77AV *)vmPtr;

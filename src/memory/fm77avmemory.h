@@ -106,6 +106,7 @@ public:
 		SUBMON_A,
 		SUBMON_B,
 		SUBMON_C,
+		SUBMON_RAM,
 	};
 
 	uint8_t ROM_BOOT_DOS[BOOT_ROM_SIZE];
@@ -139,6 +140,10 @@ public:
 		uint8_t extVRAM[EXTVRAM_SIZE];
 		uint8_t av40DicRAM[AV40_DICRAM_SIZE];
 
+		bool av40SubRAMBWriteProtect=false;
+		uint32_t av40SubRAMABank=0;
+		uint32_t av40SubRAMBBank=0;
+
 		uint8_t subMonType=SUBMON_C;
 		uint8_t subFontType=0;
 		bool subROMSwitch=false;
@@ -154,15 +159,17 @@ public:
 
 	bool LoadROMFiles(std::string ROMPath);
 
-	void IOWriteByte(unsigned int ioport,unsigned int data);
-
 	void WriteFD20(uint8_t data);
 	void WriteFD21(uint8_t data);
 	uint8_t ReadFD22(void) const;
 	uint8_t ReadFD23(void) const;
 
+	void WriteFD04(uint8_t data);
+	void WriteFD10(uint8_t data);
 	void WriteFD13(uint8_t data);
 	void WriteFD2E(uint8_t data);
+	void WriteD42E(uint8_t data);
+	void WriteD42F(uint8_t data);
 	void WriteD430(uint8_t data);
 
 	const uint8_t *GetVRAMBank(int bank) const;

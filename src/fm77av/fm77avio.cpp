@@ -44,6 +44,13 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		sound.IOWriteByte(ioAddr,value);
 		break;
 
+	case FM77AVIO_FIRQ_SUBSYS_INTERFACE://=   0xFD04,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			physMem.WriteFD04(value);
+		}
+		break;
+
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
 		if(0!=(0x80&value))
 		{
@@ -139,7 +146,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_INITIATOR_ROM://=           0xFD10,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
-			physMem.IOWriteByte(ioAddr,value);
+			physMem.WriteFD10(value);
 		}
 		break;
 
@@ -483,6 +490,19 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
 			crtc.WriteD42B(value);
+		}
+		break;
+
+	case FM77AVIO_AV40_SUB_RAM_BANK://       0xD42E,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			physMem.WriteD42E(value);
+		}
+		break;
+	case FM77AVIO_AV40_400LINE_VRAMBANK://   0xD42F,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			physMem.WriteD42F(value);
 		}
 		break;
 
