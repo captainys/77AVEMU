@@ -106,6 +106,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["CRTC"]=DUMP_CRTC;
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
+	dumpableMap["IRQ"]=DUMP_IRQ;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -1197,6 +1198,12 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				break;
 			case DUMP_CALLSTACK:
 				Execute_PrintCallStack(thr,fm77av,cmd);
+				break;
+			case DUMP_IRQ:
+				for(auto str : fm77av.GetIRQStatusText())
+				{
+					std::cout << str << std::endl;
+				}
 				break;
 			}
 		}

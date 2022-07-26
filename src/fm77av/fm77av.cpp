@@ -549,3 +549,90 @@ void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool r
 	auto &p=gameport.state.ports[port&1];
 	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.fm77avTime);
 }
+
+std::vector <std::string> FM77AV::GetIRQStatusText(void) const
+{
+	std::vector <std::string> text;
+	text.push_back("Main CPU");
+
+	text.push_back("Pending IRQ:");
+	if(0==state.main.irqSource)
+	{
+		text.back()+="None";
+	}
+	else
+	{
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_KEY&state.main.irqSource))
+		{
+			text.back()+="KEY ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_PRINTER&state.main.irqSource))
+		{
+			text.back()+="PRINTER ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_TIMER&state.main.irqSource))
+		{
+			text.back()+="TIMER ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_FDC&state.main.irqSource))
+		{
+			text.back()+="FDC ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_EXT&state.main.irqSource))
+		{
+			text.back()+="EXT ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_YM2203C&state.main.irqSource))
+		{
+			text.back()+="YM2203C ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_DMA&state.main.irqSource))
+		{
+			text.back()+="DMA ";
+		}
+	}
+	text.push_back("Pending FIRQ:");
+	if(0==state.main.firqSource)
+	{
+		text.back()+="None";
+	}
+	else
+	{
+		if(0!=(SystemState::MAIN_FIRQ_SOURCE_ATTENTION&state.main.firqSource))
+		{
+			text.back()+="ATTENTION ";
+		}
+		if(0!=(SystemState::MAIN_FIRQ_SOURCE_BREAK_KEY&state.main.firqSource))
+		{
+			text.back()+="BREAKKEY";
+		}
+	}
+
+	text.push_back("Sub CPU");
+
+	text.push_back("Pending IRQ:");
+	if(0==state.sub.irqSource)
+	{
+		text.back()+="None";
+	}
+	else
+	{
+		if(0!=(SystemState::SUB_IRQ_SOURCE_CANCEL_REQ&state.sub.irqSource))
+		{
+			text.back()+="CANCEL ";
+		}
+	}
+	text.push_back("Pending FIRQ:");
+	if(0==state.sub.firqSource)
+	{
+		text.back()+="None";
+	}
+	else
+	{
+		if(0!=(SystemState::SUB_FIRQ_SOURCE_KEY&state.sub.firqSource))
+		{
+			text.back()+="KEY ";
+		}
+	}
+	return text;
+}

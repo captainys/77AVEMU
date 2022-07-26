@@ -109,6 +109,7 @@ public:
 
 			// Read $FD17
 			MAIN_IRQ_SOURCE_YM2203C=0x100, // Bit 3, Active-Low
+			MAIN_IRQ_SOURCE_DMA=0x200,
 		};
 		enum
 		{
@@ -314,6 +315,8 @@ public:
 
 	std::string MachineTypeStr(void) const;
 	void PrintSubSystemCommand(void) const;
+
+	std::vector <std::string> GetIRQStatusText(void) const;
 };
 
 /* } */

@@ -132,6 +132,7 @@ public:
 		DUMP_SOUND,
 		DUMP_MEMORY,
 		DUMP_CALLSTACK,
+		DUMP_IRQ,
 	};
 
 	class Command
