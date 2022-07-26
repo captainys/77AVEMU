@@ -20,7 +20,8 @@ FM77AV::FM77AV() :
 	dataRecorder(this),
 	sound(this),
 	gameport(this),
-	serialport(this)
+	serialport(this),
+	dmac(this)
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);

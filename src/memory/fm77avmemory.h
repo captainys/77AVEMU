@@ -11,7 +11,7 @@ public:
 	// IO *io;
 	enum
 	{
-		PHYSMEM_SIZE=256*1024,
+		PHYSMEM_SIZE=512*1024,     // Max RAM for FM77AV40 MMR
 		BOOT_ROM_SIZE=512,         // 0xFE00 to 0xFFFF
 		FBASIC_ROM_SIZE=0x7C00,    // 0x8000 to 0xFBFF
 		INITIATOR_ROM_SIZE=0x2000, // 0x6000 to 0x7FFF
@@ -216,6 +216,9 @@ public:
 	virtual void StoreWord(uint16_t addr,uint16_t data);
 	virtual uint8_t NonDestructiveFetchByte(uint16_t addr) const;
 	virtual uint16_t NonDestructiveFetchWord(uint16_t addr) const;
+
+	void WriteFD8x(uint16_t ioAddr,uint8_t data);
+	void WriteFD94(uint8_t data);
 
 	std::vector <std::string> GetStatusText(void) const;
 };

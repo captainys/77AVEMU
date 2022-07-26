@@ -758,8 +758,7 @@ void MainCPUAccess::Reset(void)
 	case FM77AVIO_MMR_D://=                   0xFD8D,
 	case FM77AVIO_MMR_E://=                   0xFD8E,
 	case FM77AVIO_MMR_F://=                   0xFD8F,
-		MMR[MMRSEG][ioport-FM77AVIO_MMR_0]=data;
-		MMR[MMRSEG][ioport-FM77AVIO_MMR_0]<<=12;
+		// Moved to WriteFD8x
 		break;
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
 		// Oh!FM May 1989 issue pp.45 implies that there are 8 MMR segments in total.
@@ -788,8 +787,28 @@ void MainCPUAccess::Reset(void)
 		// Bit 0 will be done in fm77avio.cpp
 		break;
 	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
+		// Moved to WriteFD94
 		break;
 	}
+}
+
+void MainCPUAccess::WriteFD8x(uint16_t ioAddr,uint8_t data)
+{
+	if(true!=exMMR)
+	{
+		data&=0x3F;
+	}
+	else
+	{
+		data&=0x7F;
+	}
+	MMR[MMRSEG][ioAddr-FM77AVIO_MMR_0]=data;
+	MMR[MMRSEG][ioAddr-FM77AVIO_MMR_0]<<=12;
+}
+
+void MainCPUAccess::WriteFD94(uint8_t data)
+{
+	exMMR=(0!=(data&0x80));
 }
 uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 {

@@ -17,6 +17,7 @@
 #include "fm77avgameport.h"
 #include "fm77aveventlog.h"
 #include "fm77avserialport.h"
+#include "fm77av40dmac.h"
 
 class FM77AV : public VMBase, public Device
 {
@@ -50,6 +51,7 @@ public:
 	FM77AVSound sound;
 	FM77AVGamePort gameport;
 	FM77AVSerialPort serialport;
+	FM77AV40DMAC dmac;
 	// Devices <<
 
 	enum

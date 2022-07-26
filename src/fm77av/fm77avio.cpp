@@ -234,16 +234,15 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_MMR_D://=                   0xFD8D,
 	case FM77AVIO_MMR_E://=                   0xFD8E,
 	case FM77AVIO_MMR_F://=                   0xFD8F,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			mainMemAcc.WriteFD8x(ioAddr,value);
+		}
+		break;
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
 	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
 		if(MACHINETYPE_FM77AV<=state.machineType)
 		{
-			if(0x3F<value)
-			{
-				std::cout << "MMR write greater than 3F" << std::endl;
-				std::cout << "Will need work to correctly support FM77AV40." << std::endl;
-				value&=0x3F;
-			}
 			mainMemAcc.IOWriteByte(ioAddr,value);
 		}
 		break;
@@ -264,10 +263,22 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_AV40_EXTMMR://=             0xFD94,
 		if(MACHINETYPE_FM77AV40<=state.machineType)
 		{
-			mainMemAcc.IOWriteByte(ioAddr,value);
+			mainMemAcc.WriteFD94(value);
 		}
 		break;
 
+	case FM77AVIO_AV40_DMAC_REG://           0xFD98,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			dmac.WriteFD98(value);
+		}
+		break;
+	case FM77AVIO_AV40_DMAC_DATA://          0xFD99,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			dmac.WriteFD99(value);
+		}
+		break;
 
 
 	// Sub-CPU I/O
