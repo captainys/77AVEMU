@@ -809,6 +809,17 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		}
 		break;
 
+	case FM77AVIO_AV40_DMAC_REG://           0xFD98,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+		}
+		break;
+	case FM77AVIO_AV40_DMAC_DATA://          0xFD99,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			byteData=dmac.NonDestructiveReadFD99();
+		}
+		break;
 
 
 	// Sub-CPU I/O
