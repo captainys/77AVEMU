@@ -3727,7 +3727,7 @@ MC6809::Instruction MC6809::FetchInstructionTemplate(ConstOrNonConstMemoryAccess
 			case 0b10011011: // D reg as offset Indirect
 				inst.clocks+=7;
 				inst.indexType=INDEX_ACCUM_OFFSET_FROM_REG;
-				inst.indexIndir=false;
+				inst.indexIndir=true;
 				inst.offset=REG_D;
 				break;
 			case 0b10000000: // Post-Inc by 1 Direct
