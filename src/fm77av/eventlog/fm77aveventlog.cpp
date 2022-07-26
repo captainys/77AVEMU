@@ -61,6 +61,15 @@ bool FM77AVEventLog::LoadEventLog(std::string fName)
 			auto STR=str;
 			cpputil::Capitalize(STR);
 
+			for(int i=0; i<STR.size(); ++i)
+			{
+				if('#'==STR[i])
+				{
+					STR.resize(i);
+					break;
+				}
+			}
+
 			std::cout << STR << std::endl;
 
 			auto ARGV=cpputil::Parser(STR.c_str());
