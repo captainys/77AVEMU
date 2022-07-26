@@ -56,7 +56,8 @@ public:
 	{
 	public:
 		uint16_t encodingMode=ENCODING_JIS;
-		uint16_t lastKeyCode=0;
+		// Death Force Expects non-zero read from $FD01 on reset.
+		uint16_t lastKeyCode=0xFF;
 		std::queue <uint16_t> keyCodeQueue;
 
 		uint64_t encoderAcknowledgeBy=0;

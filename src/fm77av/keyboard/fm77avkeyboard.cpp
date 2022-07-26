@@ -27,6 +27,9 @@ void FM77AVKeyboard::Reset(void)
 	state.keyRepeatStartTime=700000000;
 	state.keyRepeatInterval=  70000000;
 
+	// Death Force Expects non-zero read from $FD01 on reset.
+	state.lastKeyCode=0xFF;
+
 	decltype(state.keyCodeQueue) emptyKeyCodeQueue;
 	std::swap(state.keyCodeQueue,emptyKeyCodeQueue);
 
