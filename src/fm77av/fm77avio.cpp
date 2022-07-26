@@ -186,6 +186,13 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		physMem.WriteFD21(value);
 		break;
 
+	case FM77AV40IO_DICTIONARY_RAM_ROM://    0xFD2E,
+		if(MACHINETYPE_FM77AV40<=state.machineType)
+		{
+			physMem.WriteFD2E(value);
+		}
+		break;
+
 	case FM77AVIO_ANALOG_PALETTE_NUM_HIGH://= 0xFD30,
 		crtc.WriteFD30(value);
 		break;

@@ -17,6 +17,10 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		d=0;
 	}
+	for(auto &d : state.av40DicRAM)
+	{
+		d=0;
+	}
 	for(auto &d : ROM_BOOT_DOS)
 	{
 		d=0xFF;
@@ -86,6 +90,16 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		memType[addr]=MEMTYPE_SUBSYS_MONITOR_ROM;
 	}
+
+	for(unsigned int addr=AV40_DICRAM_BEGIN; addr<AV40_DICRAM_END; ++addr)
+	{
+		memType[addr]=MEMTYPE_AV40_DICRAM;
+	}
+	for(unsigned int addr=AV40_DICROM_BEGIN; addr<AV40_DICROM_END; ++addr)
+	{
+		memType[addr]=MEMTYPE_AV40_DICROM;
+	}
+
 	for(unsigned int addr=MAINSYS_INITIATOR_ROM_BEGIN; addr<MAINSYS_INITIATOR_ROM_END; ++addr)
 	{
 		memType[addr]=MEMTYPE_MAINSYS_INITIATOR_ROM;
@@ -292,6 +306,16 @@ void PhysicalMemory::WriteFD13(uint8_t data)
 		}
 	}
 }
+void PhysicalMemory::WriteFD2E(uint8_t data)
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType)
+	{
+		state.av40DicRAMEnabled=(0!=(data&0x80));
+		state.av40DicROMEnabled=(0!=(data&0x40));
+		state.av40DicROMBank=(data&0x3F);
+	}
+}
 void PhysicalMemory::WriteD430(uint8_t data)
 {
 	auto prev=state.subFontType;
@@ -305,6 +329,9 @@ void PhysicalMemory::Reset(void)
 	state.FE00ROMMode=true;
 	state.shadowRAMEnabled=false;
 	state.avBootROM=false;
+	state.av40DicRAMEnabled=false;
+	state.av40DicROMEnabled=false;
+	state.av40DicROMBank=0;
 	state.subROMSwitch=false;
 
 	auto fm77avPtr=(FM77AV *)vmPtr;
@@ -467,6 +494,20 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		return 0;
 
 
+	case MEMTYPE_AV40_DICRAM:
+		if(true==state.av40DicRAMEnabled)
+		{
+			return state.av40DicRAM[addr-AV40_DICRAM_BEGIN];
+		}
+		return state.data[addr];
+	case MEMTYPE_AV40_DICROM:
+		if(true==state.av40DicROMEnabled)
+		{
+			return ROM_DIC[(0x1000*state.av40DicROMBank)+addr-AV40_DICROM_BEGIN];
+		}
+		return state.data[addr];
+
+
 	case MEMTYPE_SUBSYS_IO:
 	case MEMTYPE_MAINSYS_IO:
 		Abort("Not supposed to come here. (1)");
@@ -587,6 +628,22 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 	case MEMTYPE_MAINSYS_BOOT_ROM:
 	case MEMTYPE_MAIN_RESET_VECTOR:
 		if(true!=state.FE00ROMMode)
+		{
+			state.data[addr]=d;
+		}
+		return;
+	case MEMTYPE_AV40_DICRAM:
+		if(true!=state.av40DicRAMEnabled)
+		{
+			state.data[addr]=d;
+		}
+		else
+		{
+			state.av40DicRAM[addr-AV40_DICRAM_BEGIN]=d;
+		}
+		return;
+	case MEMTYPE_AV40_DICROM:
+		if(true!=state.av40DicROMEnabled)
 		{
 			state.data[addr]=d;
 		}

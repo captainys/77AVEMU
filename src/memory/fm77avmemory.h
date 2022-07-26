@@ -22,6 +22,8 @@ public:
 		SUBSYS_MONITOR_ROM_SIZE=0x2000, // 0xE000 to 0xFFFF
 
 		EXTVRAM_SIZE=96*1024,
+
+		AV40_DICRAM_SIZE=0x2000,
 	};
 
 	enum
@@ -50,6 +52,12 @@ public:
 
 		RAM1_BEGIN=0x20000,
 		RAM1_END=0x30000,
+
+		AV40_DICRAM_BEGIN=0x28000,
+		AV40_DICRAM_END=0x2A000,
+
+		AV40_DICROM_BEGIN=0x2E000,
+		AV40_DICROM_END=0x2F000,
 
 		MAINSYS_BEGIN=0x30000,
 			MAINSYS_INITIATOR_ROM_BEGIN=0x36000,
@@ -90,6 +98,8 @@ public:
 		MEMTYPE_MAINSYS_IO,
 		MEMTYPE_MAINSYS_BOOT_ROM,
 		MEMTYPE_MAIN_RESET_VECTOR,
+		MEMTYPE_AV40_DICRAM,
+		MEMTYPE_AV40_DICROM,
 	};
 	enum
 	{
@@ -122,8 +132,12 @@ public:
 		uint8_t VRAMAccessMask=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
 		bool avBootROM=false;
+		bool av40DicRAMEnabled=false;
+		bool av40DicROMEnabled=false;
+		uint32_t av40DicROMBank=0;
 		uint8_t data[PHYSMEM_SIZE];
 		uint8_t extVRAM[EXTVRAM_SIZE];
+		uint8_t av40DicRAM[AV40_DICRAM_SIZE];
 
 		uint8_t subMonType=SUBMON_C;
 		uint8_t subFontType=0;
@@ -148,6 +162,7 @@ public:
 	uint8_t ReadFD23(void) const;
 
 	void WriteFD13(uint8_t data);
+	void WriteFD2E(uint8_t data);
 	void WriteD430(uint8_t data);
 
 	const uint8_t *GetVRAMBank(int bank) const;
