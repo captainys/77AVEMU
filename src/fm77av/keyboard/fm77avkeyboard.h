@@ -71,7 +71,7 @@ public:
 		uint8_t videoCaptureMode; // Should I implement video digitize/superimpose?  I guess video capture card for Tsugaru before that.
 		uint8_t videoCaptureBrightness;
 		bool keyRepeat=true;
-		unsigned int keyRepeatStartTime=50,keyRepeatInterval=100;
+		uint64_t keyRepeatStartTime=700,keyRepeatInterval=70;
 	};
 	State state;
 
@@ -101,6 +101,9 @@ public:
 
 	void Press(unsigned int keyFlags,unsigned int keyCode);
 	void Release(unsigned int keyFlags,unsigned int keyCode);
+
+	uint64_t GetKeyRepeatStartTime(void) const;
+	uint64_t GetKeyRepeatInterval(void) const;
 };
 
 /* } */

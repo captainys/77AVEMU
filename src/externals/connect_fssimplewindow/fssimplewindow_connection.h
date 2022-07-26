@@ -42,6 +42,7 @@ So, my best decision is to use streaming mode in macOS, which should work perfec
 #include "ysgamepad.h"
 #include "fssimplewindow.h"
 #include <vector>
+#include <stdint.h>
 
 class FsSimpleWindowConnection : public Outside_World
 {
@@ -78,6 +79,9 @@ public:
 
 	// For mouse emulation by pad digital axes.
 	int mouseDX=0,mouseDY=0;
+
+	unsigned int lastPressedFsKey=0;
+	uint64_t nextKeyRepeatTime=0;
 
 	int winWid=640,winHei=480;
 	unsigned int sinceLastResize=0;

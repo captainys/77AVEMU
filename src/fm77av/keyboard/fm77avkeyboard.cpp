@@ -24,8 +24,8 @@ void FM77AVKeyboard::Reset(void)
 	state.videoCaptureMode=0;
 	state.videoCaptureBrightness=0;
 	state.keyRepeat=true;
-	state.keyRepeatStartTime=50;
-	state.keyRepeatInterval=100;
+	state.keyRepeatStartTime=700000000;
+	state.keyRepeatInterval=  70000000;
 
 	decltype(state.keyCodeQueue) emptyKeyCodeQueue;
 	std::swap(state.keyCodeQueue,emptyKeyCodeQueue);
@@ -300,7 +300,7 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 // Sub-System Monitor A writes $80 to $D431 and waits for $D432 bit 0 to clear on start up.
 void FM77AVKeyboard::WriteD431(uint8_t data)
 {
-std::cout << cpputil::Ustox(data) << std::endl;
+std::cout << cpputil::Ubtox(data) << std::endl;
 
 	switch(state.encoderCmd)
 	{
@@ -370,10 +370,12 @@ std::cout << cpputil::Ustox(data) << std::endl;
 		if(2<=state.nEncoderParam)
 		{
 			state.keyRepeatStartTime=state.encoderParam[0]*10;
+			state.keyRepeatStartTime*=1000000;  // Convert to nanosec
 			state.keyRepeatInterval=state.encoderParam[1]*10;
+			state.keyRepeatInterval*=1000000;  // Convert to nanosec
 			state.nEncoderParam=0;
+			state.encoderCmd=CMD_NULL;
 		}
-		state.encoderCmd=CMD_NULL;
 		break;
 	case CMD_REAL_TIME_CLOCK://0x80, // 1-byte 00:Read -> 7-bytes  01:Write+7 more parameters.
 		if(0==state.nEncoderParam)
@@ -456,4 +458,12 @@ uint8_t FM77AVKeyboard::NonDestructiveReadD432(void) const
 		byteData&=0x7F;
 	}
 	return byteData;
+}
+uint64_t FM77AVKeyboard::GetKeyRepeatStartTime(void) const
+{
+	return state.keyRepeatStartTime;
+}
+uint64_t FM77AVKeyboard::GetKeyRepeatInterval(void) const
+{
+	return state.keyRepeatInterval;
 }
