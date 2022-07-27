@@ -129,6 +129,12 @@ public:
 	{
 	public:
 		bool DOSMode=false;
+
+		// Confirmed on actual FM77AV
+		// This flag ($FD93 bit0) does not work like Shadow RAM and F-BASIC ROM, which
+		// if I disable Shadow RAM, F-BASIC ROM will re-appear.
+		// Once I set to RAM mode, change bytes in FE00 to FFE0, change back to ROM mode,
+		// the changed bytes stays.  Original DOS or BASIC BOOT ROM won't re-appear.
 		bool FE00ROMMode=true;
 		uint8_t VRAMAccessMask=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.

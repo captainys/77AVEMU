@@ -359,6 +359,18 @@ void PhysicalMemory::Reset(void)
 	{
 		state.avBootROM=true;
 	}
+
+	for(unsigned int addr=MAINSYS_BOOT_ROM_BEGIN; addr<MAINSYS_BOOT_ROM_END; ++addr)
+	{
+		if(true==state.DOSMode)
+		{
+			state.data[addr]=ROM_BOOT_DOS[addr-MAINSYS_BOOT_ROM_BEGIN];
+		}
+		else
+		{
+			state.data[addr]=ROM_BOOT_BASIC[addr-MAINSYS_BOOT_ROM_BEGIN];
+		}
+	}
 }
 
 const uint8_t *PhysicalMemory::GetVRAMBank(int bank) const
@@ -486,15 +498,7 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		}
 		return 0xFF;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
-		if(true!=state.FE00ROMMode)
-		{
-			return state.data[addr];
-		}
-		if(true==state.DOSMode)
-		{
-			return ROM_BOOT_DOS[addr&(BOOT_ROM_SIZE-1)];
-		}
-		return ROM_BOOT_BASIC[addr&(BOOT_ROM_SIZE-1)];
+		return state.data[addr];
 	case MEMTYPE_MAIN_RESET_VECTOR:
 		if(true!=state.FE00ROMMode)
 		{
