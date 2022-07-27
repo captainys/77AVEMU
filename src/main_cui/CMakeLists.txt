@@ -53,6 +53,24 @@ add_test(
 )
 
 add_test(
+	NAME DEATH_FORCE_GAMEPLAY
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/DeathForce_1.D77"
+		-FD1
+		"${DISKIMAGE_DIR}/DeathForceUser.D77"
+		-EVTLOG
+		"${EVENTLOG_DIR}/DEATHFORCETEST.evt"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		2632
+		-NOWAIT
+)
+
+add_test(
 	NAME YS1_START
 	COMMAND
 		${TARGET_NAME}

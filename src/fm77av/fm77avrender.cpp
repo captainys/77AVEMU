@@ -29,9 +29,9 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 	if(true==fm77av.crtc.state.CRTEnabled)
 	{
 		this->scrnMode=fm77av.crtc.state.scrnMode;
-		this->VRAMOffset[0]=fm77av.crtc.state.VRAMOffset[0]&fm77av.crtc.state.VRAMOffsetMask;
-		this->VRAMOffset[1]=fm77av.crtc.state.VRAMOffset[1]&fm77av.crtc.state.VRAMOffsetMask;
-		this->VRAMOffset[2]=fm77av.crtc.state.VRAMOffset[2]&fm77av.crtc.state.VRAMOffsetMask;
+		this->VRAMOffset[0]=fm77av.crtc.state.VRAMOffset[0];
+		this->VRAMOffset[1]=fm77av.crtc.state.VRAMOffset[1];
+		this->VRAMOffset[2]=fm77av.crtc.state.VRAMOffset[2];
 		this->VRAMAccessMask=fm77av.crtc.state.VRAMAccessMask;
 
 		switch(fm77av.crtc.state.scrnMode)

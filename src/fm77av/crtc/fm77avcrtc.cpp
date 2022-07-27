@@ -232,6 +232,7 @@ void FM77AVCRTC::WriteD40F(uint8_t value)
 {
 	state.VRAMOffset[state.activePage]&=0xFF00;
 	state.VRAMOffset[state.activePage]|=value;
+	state.VRAMOffset[state.activePage]&=state.VRAMOffsetMask;
 }
 
 void FM77AVCRTC::WriteD430(uint8_t data)

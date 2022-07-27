@@ -218,7 +218,7 @@ public:
 	}
 	inline uint32_t TransformVRAMAddress(uint32_t addr) const
 	{
-		return TransformVRAMAddress(addr,state.scrnMode,GetActiveVRAMOffset()&state.VRAMOffsetMask);
+		return TransformVRAMAddress(addr,state.scrnMode,GetActiveVRAMOffset());
 	}
 
 	/*
