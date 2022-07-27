@@ -71,6 +71,24 @@ add_test(
 )
 
 add_test(
+	NAME VALIS_START
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/Valis_1.D77"
+		-FD1
+		"${DISKIMAGE_DIR}/Valis_2.D77"
+		-EVTLOG
+		"${EVENTLOG_DIR}/VALISTEST.evt"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		5FFF
+		-NOWAIT
+)
+
+add_test(
 	NAME YS1_START
 	COMMAND
 		${TARGET_NAME}
