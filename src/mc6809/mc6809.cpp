@@ -2893,9 +2893,9 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		{
 			uint8_t reg[2];
 			DecodeExgTfrReg(reg,inst.operand[0]);
-			if(regBits[reg[0]]!=regBits[reg[1]])
+			if(regBits[reg[0]]<regBits[reg[1]])
 			{
-				Abort("TFR to different size register not supported yet.");
+				Abort("TFR to larger-size register not supported yet.");
 				inst.length=0;
 			}
 
@@ -2905,7 +2905,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				value+=inst.length;
 			}
 
-			SetRegisterValue(reg[1],value);
+			SetRegisterValue(reg[1],value); // If 16bit to 8bit TFR, high byte will be erased in SetRegisterValue.
 			if(REG_S==reg[1])
 			{
 				state.nmiEnabled=true;
