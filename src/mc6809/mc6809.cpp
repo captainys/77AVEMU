@@ -2260,6 +2260,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_PSHS_REG: //	0x34,
+		mem.Address(state.S);
 		if(0!=(inst.operand[0]&PSH_PC))
 		{
 			PushS16(mem,state.PC);
@@ -2302,6 +2303,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_PSHU_REG: //	0x36,
+		mem.Address(state.U);
 		if(0!=(inst.operand[0]&PSH_PC))
 		{
 			PushU16(mem,state.PC);
@@ -2394,7 +2396,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		// The byte read from the RAM won't affect any registor, however, the hardware-drawing chip
 		// detects and reacts to the memory-read.  Unless it is taken into account, Dragon Buster FM77AV
 		// leaves uncleared VRAM bytes.
-		FetchByte(mem,state.S);
+
+		// Turned out, FM77AV's hardware drawing even reacts to memory-write operation.
+		// And, for PSHU instruction, it writes to the address before U is decremented.
+		// Obviously, 6809 is not writing to that address.  My guess is 6809 just addresses
+		// or connets S or U register to the address, and then do push or pull.
+		// FM77AV's hardware drawing may just be looking at the addressing.
+		mem.Address(state.S);
 		break;
 	case INST_PULU_REG: //	0x37,
 		if(0!=(inst.operand[0]&PSH_CC))
@@ -2441,7 +2449,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		// Confirmed the same behavior as PULS instruction on actual FM77AV.
 		// It reads and discards an extra byte.
-		FetchByte(mem,state.U);
+		mem.Address(state.U);
 		break;
 
 	case INST_ROLA: //      0x49,

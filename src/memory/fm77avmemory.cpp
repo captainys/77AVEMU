@@ -411,6 +411,15 @@ uint8_t *PhysicalMemory::GetCurrentVRAMBank(void)
 	return state.extVRAM;
 }
 
+void PhysicalMemory::Address(uint32_t addr)
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType &&
+	  MEMTYPE_SUBSYS_VRAM==memType[addr])
+	{
+		fm77avPtr->crtc.VRAMDummyRead(fm77avPtr->crtc.TransformVRAMAddress(addr));
+	}
+}
 uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 {
 	auto fm77avPtr=(const FM77AV *)vmPtr;
@@ -944,6 +953,21 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	}
 	return 0xFF;
 }
+/* virtual */ void MainCPUAccess::Address(uint16_t addr)
+{
+	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
+	{
+		physMemPtr->Address(TWRAddressTranslation(addr));
+	}
+	else if(true==MMREnabled)
+	{
+		physMemPtr->Address(MMRAddressTranslation(addr));
+	}
+	else
+	{
+		physMemPtr->Address(MAINCPU_ADDR_BASE+addr);
+	}
+}
 /* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
 {
 	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
@@ -1055,6 +1079,10 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Device(vmPtr)
 {
 	this->physMemPtr=physMemPtr;
+}
+/* virtual */ void SubCPUAccess::Address(uint16_t addr)
+{
+	return physMemPtr->Address(SUBCPU_ADDR_BASE+addr);
 }
 /* virtual */ uint8_t SubCPUAccess::FetchByte(uint16_t addr)
 {

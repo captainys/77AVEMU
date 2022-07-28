@@ -10,6 +10,12 @@
 class MemoryAccess
 {
 public:
+	// Apparently, PSHS/PSHU/PULU/PULS instruction just emits address to the address bus
+	// one byte more than it actually reads/writes.  FM77AV's hardware drawing seems to
+	// reacts to the extra address bus emission and writes to the VRAM.  Regardless of
+	// read or write.  To emulate that, in addition to read/write, I need Address function.
+	virtual void Address(uint16_t addr){};
+
 	virtual uint8_t FetchByte(uint16_t addr)=0;
 	virtual uint16_t FetchWord(uint16_t addr)=0;
 	virtual void StoreByte(uint16_t addr,uint8_t data)=0;
