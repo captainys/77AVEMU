@@ -586,6 +586,15 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 	case MEMTYPE_NOT_EXIST:
 		return;
 	case MEMTYPE_SUBSYS_VRAM:
+		if(true==fm77avPtr->crtc.state.hardDraw.enabled)
+		{
+			// Hardware drawing is supposed to be dummy-READ a VRAM byte.
+			// However, Pro Baseball Fan (Telenet) is dummy-writing to a VRAM byte to use hardware drawing.
+			// So, apparently reading and writing both work.
+			fm77avPtr->crtc.VRAMDummyRead(fm77avPtr->crtc.TransformVRAMAddress(addr));
+			return;
+		}
+
 		addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
 		{
 			uint16_t addr16=addr;
