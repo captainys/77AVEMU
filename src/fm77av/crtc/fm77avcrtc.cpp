@@ -393,8 +393,7 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 				VRAM[VRAMAddr[i]]^=(writeBits&rgb);
 				break;
 			case HD_CMD_NOT://5,
-				VRAM[VRAMAddr[i]]&=~writeBits;
-				VRAM[VRAMAddr[i]]|=((~rgb)&writeBits);
+				VRAM[VRAMAddr[i]]^=writeBits;
 				break;
 			case HD_CMD_CMP://7,
 				break;
@@ -785,8 +784,7 @@ void FM77AVCRTC::PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned
 			VRAM[VRAMAddr+0x4000*i]^=(writeBit&rgb);
 			break;
 		case HD_CMD_NOT://5,
-			VRAM[VRAMAddr+0x4000*i]&=~writeBit;
-			VRAM[VRAMAddr+0x4000*i]|=((~rgb)&writeBit);
+			VRAM[VRAMAddr+0x4000*i]^=writeBit;
 			break;
 		case HD_CMD_CMP://7,
 			break;
