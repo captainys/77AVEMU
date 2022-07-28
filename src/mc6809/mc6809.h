@@ -447,6 +447,8 @@ public:
 
 		INST_BVS_IMM=   0x29,
 		INST_LBVS_IMM16=0x129, // 10 29
+
+		INST_UNDEF_COMNEGA=0x42,
 	};
 
 	unsigned char instOperaType[0x300];

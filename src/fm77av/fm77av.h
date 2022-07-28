@@ -144,6 +144,19 @@ public:
 		uint64_t next2msTimer=FM77AVTIME_MILLISEC*2;
 		uint64_t nextSecondInfm77avTime=0;
 
+		// Based on the observation of MAGUS on real FM-7 and FM77AV, sub-CPU BUSY flag
+		// can be cleared by bombarding CLR $FD05 in the main CPU and CLR $D40A in the
+		// sub-CPU.  It is an undocumented, but a real behavior of FM-7 series.
+		// To emulate this behavior, it is necessary to log when $FD05 and $D40A were
+		// cleared.
+		enum
+		{
+			UNDOCUMENTED_SUBCPU_BUSY_CLEAR_TIME_MAIN=8000, // In the last 14 clocks, which takes 7 microseconds... to be safe 8.
+			UNDOCUMENTED_SUBCPU_BUSY_CLEAR_TIME_SUB=11000, // In the last 22 clocks, which takes 11 microseconds.
+		};
+		uint64_t lastFD05CLRTime[2]={0,0};
+		uint64_t lastD40ACLRTime[2]={0,0};
+
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 
 		/*! Nanoseconds VM is lagging behind the real time.

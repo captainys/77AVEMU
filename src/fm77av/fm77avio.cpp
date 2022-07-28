@@ -54,11 +54,6 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
 		if(0!=(0x80&value))
 		{
-			if(true==state.subSysBusy)
-			{
-				std::cout << "Warning!  Sub-Sys Halt request while sub-CPU is busy." << std::endl;
-			}
-
 			state.subSysHalt=true;
 			state.subSysBusy=true;
 			// Question: What's going to happen if the main CPU writes $80 to $FD05
@@ -113,6 +108,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		if(0!=(0x40&value))
 		{
 			state.sub.irqSource|=SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
+		}
+		if(0==value)
+		{
+			state.lastFD05CLRTime[0]=state.lastFD05CLRTime[1];
+			state.lastFD05CLRTime[1]=state.fm77avTime;
 		}
 		break;
 
@@ -316,6 +316,11 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
+		if(0==value)
+		{
+			state.lastD40ACLRTime[0]=state.lastD40ACLRTime[1];
+			state.lastD40ACLRTime[1]=state.fm77avTime;
+		}
 		break;
 	case FM77AVIO_VRAM_OFFSET_HIGH:// =        0xD40E,
 		crtc.WriteD40E(value);
@@ -700,7 +705,7 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_FIRQ_SUBSYS_INTERFACE: // =   0xFD04,
 		byteData=~state.main.firqSource; // Active-Low
 		break;
-	case FM77AVIO_SUBSYS_BUSY_HALT:
+	case FM77AVIO_SUBSYS_BUSY_HALT:  // 0xFD05
 		byteData=0x7E; // Bit0=0 means has disk, RS232C, or ext device.
 		if(true!=ExternalDevicePresent())
 		{
@@ -709,6 +714,18 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		if(true==state.subSysBusy)
 		{
 			byteData|=0x80;
+		}
+		// Undocumented behavior.  MAGUS used it most likely unintentionally.
+		if(state.fm77avTime<=state.lastFD05CLRTime[0]+State::UNDOCUMENTED_SUBCPU_BUSY_CLEAR_TIME_MAIN &&
+		   state.fm77avTime<=state.lastD40ACLRTime[0]+State::UNDOCUMENTED_SUBCPU_BUSY_CLEAR_TIME_SUB)
+		{
+			static int MAGUSWarning=7;
+			if(0<MAGUSWarning)
+			{
+				std::cout << "Is it MAGUS?" << std::endl;
+				--MAGUSWarning;
+			}
+			byteData&=0x7F;
 		}
 		break;
 

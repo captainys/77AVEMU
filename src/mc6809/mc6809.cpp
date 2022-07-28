@@ -1068,6 +1068,8 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instLabel[INST_BVS_IMM]=      "BVS";
 	instLabel[INST_LBVS_IMM16]=   "LBVS";
 
+	instLabel[INST_UNDEF_COMNEGA]="UNDEF_COMNEGA";
+
 	regToReg[ 0]=REG_D;
 	regToReg[ 1]=REG_X;
 	regToReg[ 2]=REG_Y;
@@ -3151,6 +3153,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&VF))
 		{
 			state.PC+=inst.BranchOffset16();
+		}
+		break;
+	case INST_UNDEF_COMNEGA: // 0x42
+		// Motorola 6809 and Hitachi 6309 Programming Reference pp.153
+		// "execute as a NEG instruction when the Carry bit in CC is 0, and as a COM instruction when the Carry bit is 1."
+		if(0==(state.CC&CF))
+		{
+			state.SetA(NEG(state.A()));
+		}
+		else
+		{
+			auto reg=~state.A();
+			Test8(reg);
+			state.CC|=CF;
+			state.SetA(reg);
 		}
 		break;
 	default:
