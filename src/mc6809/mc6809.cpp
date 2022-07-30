@@ -1438,19 +1438,34 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_CLR_DP: //    0x0F,
-		StoreByte(mem,DecodeDirectPageAddress(inst),0);
-		state.CC&=~(SF|VF|CF);
-		state.CC|=ZF;
+		{
+			auto addr=DecodeDirectPageAddress(inst);
+			FetchByte(mem,addr); // Dummy Read before clearing
+			StoreByte(mem,addr,0);
+			state.CC&=~(SF|VF|CF);
+			state.CC|=ZF;
+			mem.CLR(addr);
+		}
 		break;
 	case INST_CLR_IDX: //   0x6F,
-		StoreByte(mem,DecodeIndexedAddress(inst,mem),0);
-		state.CC&=~(SF|VF|CF);
-		state.CC|=ZF;
+		{
+			auto addr=DecodeIndexedAddress(inst,mem);
+			FetchByte(mem,addr); // Dummy Read before clearing
+			StoreByte(mem,addr,0);
+			state.CC&=~(SF|VF|CF);
+			state.CC|=ZF;
+			mem.CLR(addr);
+		}
 		break;
 	case INST_CLR_EXT: //   0x7F,
-		StoreByte(mem,inst.ExtendedAddress(),0);
-		state.CC&=~(SF|VF|CF);
-		state.CC|=ZF;
+		{
+			auto addr=inst.ExtendedAddress();
+			FetchByte(mem,addr); // Dummy Read before clearing
+			StoreByte(mem,addr,0);
+			state.CC&=~(SF|VF|CF);
+			state.CC|=ZF;
+			mem.CLR(addr);
+		}
 		break;
 
 	case INST_CMPA_IMM: //  0x81,
@@ -2262,7 +2277,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_PSHS_REG: //	0x34,
-		mem.Address(state.S);
+		FetchByte(mem,state.S);
 		if(0!=(inst.operand[0]&PSH_PC))
 		{
 			PushS16(mem,state.PC);
@@ -2305,7 +2320,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 	case INST_PSHU_REG: //	0x36,
-		mem.Address(state.U);
+		FetchByte(mem,state.U);
 		if(0!=(inst.operand[0]&PSH_PC))
 		{
 			PushU16(mem,state.PC);
@@ -2404,7 +2419,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		// Obviously, 6809 is not writing to that address.  My guess is 6809 just addresses
 		// or connets S or U register to the address, and then do push or pull.
 		// FM77AV's hardware drawing may just be looking at the addressing.
-		mem.Address(state.S);
+		FetchByte(mem,state.S);
 		break;
 	case INST_PULU_REG: //	0x37,
 		if(0!=(inst.operand[0]&PSH_CC))
@@ -2451,7 +2466,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		// Confirmed the same behavior as PULS instruction on actual FM77AV.
 		// It reads and discards an extra byte.
-		mem.Address(state.U);
+		FetchByte(mem,state.U);
 		break;
 
 	case INST_ROLA: //      0x49,
