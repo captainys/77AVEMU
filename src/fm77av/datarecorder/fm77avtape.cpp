@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "fm77avtape.h"
 #include "cpputil.h"
+#include "outside_world.h"
 
 bool FM77AVTape::Load(std::string fName)
 {
@@ -203,6 +204,7 @@ void FM77AVDataRecorder::Move(uint64_t fm77avTime)
 	if(true==state.motor && true!=state.primary.ptr.eot)
 	{
 		state.primary.t77.MoveTapePointer(state.primary.ptr,fm77avTime);
+		outside_world->indicatedTapePosition=state.primary.ptr.dataPtr;
 	}
 }
 bool FM77AVDataRecorder::Read(void) const
@@ -256,6 +258,7 @@ void FM77AVDataRecorder::WriteBit(TapePointerPair &tape,uint64_t fm77avTime)
 		tape.ptr.fm77avTime=fm77avTime;
 		tape.t77.modified=true;
 		tape.t77.lastModifiedTime=fm77avTime;
+		outside_world->indicatedTapePosition=tape.ptr.dataPtr;
 	}
 }
 

@@ -57,6 +57,11 @@ public:
 
 	#define DEFAULT_PAUSE_KEY_CODE FSKEY_SCROLLLOCK
 
+	enum
+	{
+		STATUS_TAPEPOS_X=320,
+	};
+
 	GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
@@ -85,6 +90,7 @@ public:
 
 	int winWid=640,winHei=480;
 	unsigned int sinceLastResize=0;
+	unsigned int prevTapePosition=0;
 
 
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;

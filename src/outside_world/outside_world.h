@@ -101,6 +101,7 @@ public:
 	unsigned char *statusBitmap;
 	bool fdAccessLamp[4]={false,false,false,false};
 	unsigned int tapeStatusBitmap=0;
+	unsigned int indicatedTapePosition=0;
 	bool insLED=false,capsLED=false,kanaLED=false;
 	bool autoScaling=false;
 	unsigned int windowModeOnStartUp=FM77AVParam::WINDOW_NORMAL;
