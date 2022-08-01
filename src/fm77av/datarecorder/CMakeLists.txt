@@ -1,3 +1,3 @@
 add_library(fm77avdatarecorder fm77avtape.h fm77avtape.cpp)
-target_link_libraries(fm77avdatarecorder device fm77avdef cpputil)
+target_link_libraries(fm77avdatarecorder device fm77avdef cpputil outside_world)
 target_include_directories(fm77avdatarecorder PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

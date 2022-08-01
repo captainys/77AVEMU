@@ -183,13 +183,9 @@ public:
 	uint32_t GetVRAMBankSize(int bank) const;
 	uint8_t *GetCurrentVRAMBank(void);
 
-	/*!
-	PSHS/PSHU/PULS/PULU instructions apparently addresses an extra byte than
-	the instruction actually reads/writes.  FM77AV's hardware drawing apparently
-	reacts to this addressing and draws to the VRAM.  To emulate the feature,
-	I need an additional function.
+	/*! See comment in memory.h
 	*/
-	void Address(uint32_t addr);
+	void CLR(uint32_t addr);
 
 	uint8_t FetchByteConst(uint32_t addr) const;
 
@@ -246,7 +242,7 @@ public:
 	uint8_t NonDestructiveIOReadByte(unsigned int ioport) const;
 
 	MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr);
-	virtual void Address(uint16_t addr);
+	virtual void CLR(uint16_t addr);
 	virtual uint8_t FetchByte(uint16_t addr);
 	virtual uint16_t FetchWord(uint16_t addr);
 	virtual void StoreByte(uint16_t addr,uint8_t data);
@@ -273,7 +269,7 @@ public:
 	PhysicalMemory *physMemPtr;
 
 	SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr);
-	virtual void Address(uint16_t addr);
+	virtual void CLR(uint16_t addr);
 	virtual uint8_t FetchByte(uint16_t addr);
 	virtual uint16_t FetchWord(uint16_t addr);
 	virtual void StoreByte(uint16_t addr,uint8_t data);

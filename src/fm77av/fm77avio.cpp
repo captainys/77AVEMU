@@ -109,11 +109,6 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		{
 			state.sub.irqSource|=SystemState::SUB_IRQ_SOURCE_CANCEL_REQ;
 		}
-		if(0==value)
-		{
-			state.lastFD05CLRTime[0]=state.lastFD05CLRTime[1];
-			state.lastFD05CLRTime[1]=state.fm77avTime;
-		}
 		break;
 
 	case FM77AVIO_RS232C_DATA://=             0xFD06,
@@ -316,11 +311,6 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
-		if(0==value)
-		{
-			state.lastD40ACLRTime[0]=state.lastD40ACLRTime[1];
-			state.lastD40ACLRTime[1]=state.fm77avTime;
-		}
 		break;
 	case FM77AVIO_VRAM_OFFSET_HIGH:// =        0xD40E,
 		crtc.WriteD40E(value);
@@ -716,11 +706,10 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 			byteData|=0x80;
 		}
 		// Undocumented behavior.  MAGUS used it most likely unintentionally.
-		if(state.fm77avTime<=state.lastFD05CLRTime[0]+State::UNDOCUMENTED_SUBCPU_BUSY_CLEAR_TIME_MAIN &&
-		   state.fm77avTime<=state.lastD40ACLRTime[0]+State::UNDOCUMENTED_SUBCPU_BUSY_CLEAR_TIME_SUB)
+		if(state.fm77avTime<=state.subCPUTemporaryReadyTime)
 		{
 			static int MAGUSWarning=7;
-			if(0<MAGUSWarning)
+			if(0<MAGUSWarning && 0!=(byteData&0x80))
 			{
 				std::cout << "Is it MAGUS?" << std::endl;
 				--MAGUSWarning;

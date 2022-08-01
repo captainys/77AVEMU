@@ -84,6 +84,7 @@ public:
 		uint64_t lastBitFlipTime=0;
 	};
 	State state;
+	class Outside_World *outside_world=nullptr;
 
 	FM77AVDataRecorder(VMBase *vmPtr) : Device(vmPtr){}
 

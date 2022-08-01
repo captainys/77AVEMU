@@ -386,6 +386,12 @@ unsigned int FM77AV::RunOneInstruction(void)
 
 	state.fm77avTime+=nanosec;
 
+	if(0!=state.subCPUTemporaryReadyTimeDelta)
+	{
+		state.subCPUTemporaryReadyTime=state.fm77avTime+state.subCPUTemporaryReadyTimeDelta;
+		state.subCPUTemporaryReadyTimeDelta=0;
+	}
+
 	return nanosec;
 }
 

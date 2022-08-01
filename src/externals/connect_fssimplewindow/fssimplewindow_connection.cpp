@@ -18,6 +18,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "fssimplewindow.h"
 #include "yssimplesound.h"
 #include "fssimplewindow_connection.h"
+#include "ysglfontdata.h"
 
 // G** D*** Windows headers! >>
 #ifdef REG_NONE
@@ -1014,7 +1015,40 @@ void FsSimpleWindowConnection::PollGamePads(void)
 	// if tape status changed
 	// unsigned int tapeStatusBitmap=0;
 	// Tape icon will take 16 pixels from X=64
-
+	if(prevTapePosition!=indicatedTapePosition)
+	{
+		char str[256];
+		sprintf(str,"%u        ",indicatedTapePosition);
+		for(int i=0; i<8; ++i)
+		{
+			int x0=STATUS_TAPEPOS_X+i*8;
+			auto fontPtr=YsFont8x12[str[i]];
+			auto rgbaPtr=statusBitmap+(2*STATUS_WID+x0)*4;
+			for(int y=0; y<12; ++y)
+			{
+				auto byteData=fontPtr[y*4];
+				for(int x=0; x<8; ++x)
+				{
+					if(0!=(byteData&0x80))
+					{
+						*(rgbaPtr++)=0;
+						*(rgbaPtr++)=0;
+						*(rgbaPtr++)=0;
+						*(rgbaPtr++)=255;
+					}
+					else
+					{
+						*(rgbaPtr++)=255;
+						*(rgbaPtr++)=255;
+						*(rgbaPtr++)=255;
+						*(rgbaPtr++)=255;
+					}
+					byteData<<=1;
+				}
+				rgbaPtr+=4*(STATUS_WID-8);
+			}
+		}
+	}
 
 	// Don't forget ins, caps, kana LEDs.
 	int iconX=80;

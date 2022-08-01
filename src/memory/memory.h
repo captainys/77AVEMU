@@ -10,11 +10,19 @@
 class MemoryAccess
 {
 public:
-	// Apparently, PSHS/PSHU/PULU/PULS instruction just emits address to the address bus
-	// one byte more than it actually reads/writes.  FM77AV's hardware drawing seems to
-	// reacts to the extra address bus emission and writes to the VRAM.  Regardless of
-	// read or write.  To emulate that, in addition to read/write, I need Address function.
-	virtual void Address(uint16_t addr){};
+	// OK, OK.  Now things got much more clear.  Thank you, Mr. Apollo for the information.
+	// MC6809 data sheet has a flow-chart for every instruction, and PSHS,PSHU,PULS, and PULU,
+	// does dummy-read a byte.  So, not just addressing.
+
+	// Also, CLR instruction is in the same path as INC, NEG, COM, etc.  So, even though
+	// CLR always writes a value zero, it does dummy read, and it takes 2 clocks after dummy
+	// read til zero is written.
+
+	// A FM-7 masterpiece MAGUS was doing CLR $D40A to clear BUSY flag.  It is a bug,
+	// and it is most likely unintentional.  It does not vindicate MAGUS.  However,
+	// now we know why the main-CPU thought the sub-CPU was ready.
+
+	virtual void CLR(uint16_t addr){}; // Special treatment for CLR.
 
 	virtual uint8_t FetchByte(uint16_t addr)=0;
 	virtual uint16_t FetchWord(uint16_t addr)=0;

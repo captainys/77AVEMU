@@ -35,6 +35,7 @@ void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,
 	// In Tsugaru,
 	//   Set outside_world pointers to devices
 	outside_world->Start();
+	fm77avPtr->dataRecorder.outside_world=outside_world;
 }
 void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
 {
