@@ -98,6 +98,8 @@ public:
 
 		CMD_SAVE_COM0OUT,
 		CMD_CLEAR_COM0OUT,
+
+		CMD_LET,
 	};
 
 	enum
@@ -151,6 +153,7 @@ public:
 	void Error_Common(const Command &cmd);
 	void Error_TooFewArgs(const Command &cmd);
 	void Error_UnknownCPU(const Command &cmd);
+	void Error_UnknownRegister(const Command &cmd);
 	void Error_CPUOrAddress(const Command &cmd);
 	void Error_UnknownFeature(const Command &cmd);
 	void Error_UnknownEvent(const Command &cmd);
@@ -207,6 +210,7 @@ public:
 	void Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd);
 	void Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd);
 	void Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd);
+	void Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */

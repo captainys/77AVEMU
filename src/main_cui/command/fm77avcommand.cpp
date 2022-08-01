@@ -77,6 +77,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
 	primaryCmdMap["SAVECOM0"]=CMD_SAVE_COM0OUT;
 	primaryCmdMap["CLEARCOM0"]=CMD_CLEAR_COM0OUT;
+	primaryCmdMap["LET"]=CMD_LET;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -239,6 +240,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "CLEARCOM0" << std::endl;
 	std::cout << "  Clear COM0 log." << std::endl;
 
+	std::cout << "LET main/sub:register value" << std::endl;
+	std::cout << "  Load a register value." << std::endl;
+
 
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -345,6 +349,11 @@ void FM77AVCommandInterpreter::Error_TooFewArgs(const Command &cmd)
 void FM77AVCommandInterpreter::Error_UnknownCPU(const Command &cmd)
 {
 	std::cout << "Unknown CPU." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_UnknownRegister(const Command &cmd)
+{
+	std::cout << "Unknown Register." << std::endl;
 	Error_Common(cmd);
 }
 void FM77AVCommandInterpreter::Error_CPUOrAddress(const Command &cmd)
@@ -846,6 +855,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_CLEAR_COM0OUT:
 		Execute_ClearCom0Out(fm77av,cmd);
+		break;
+	case CMD_LET:
+		Execute_Let(thr,fm77av,cmd);
 		break;
 	}
 }
@@ -2366,4 +2378,68 @@ void FM77AVCommandInterpreter::Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd)
 {
 	std::cout << "Cleared COM0 log" << std::endl;
 	fm77av.serialport.cli0.fromVM.clear();
+}
+
+void FM77AVCommandInterpreter::Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	// Can be LET M:A=4F or LET M:A 4F
+	std::string cpuStr,regStr,valueStr;
+	if(2<=cmd.argv.size())
+	{
+		for(int i=0; i<cmd.argv[1].size(); ++i)
+		{
+			if(cmd.argv[1][i]==':')
+			{
+				cpuStr=cmd.argv[1].substr(0,i);
+				regStr="";
+			}
+			else if(cmd.argv[1][i]=='=')
+			{
+				valueStr=cmd.argv[1].substr(i+1);
+				break;
+			}
+			else
+			{
+				regStr.push_back(cmd.argv[1][i]);
+			}
+		}
+
+		if(0==valueStr.size())
+		{
+			if(3<=cmd.argv.size())
+			{
+				valueStr=cmd.argv[2];
+			}
+			else
+			{
+				Error_TooFewArgs(cmd);
+				return;
+			}
+		}
+
+		unsigned int cpu=thr.OnlyOneCPUIsUnmuted();
+		if(0!=cpuStr.size())
+		{
+			cpu=StrToCPU(cpuStr);
+		}
+		if(CPU_UNKNOWN==cpu)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+
+		auto reg=MC6809::StrToReg(regStr);
+		if(MC6809::REG_NULL==reg)
+		{
+			Error_UnknownRegister(cmd);
+			return;
+		}
+
+		fm77av.CPU(cpu).SetRegisterValue(reg,cpputil::Xtoi(valueStr.c_str()));
+		std::cout << "Register " << regStr << "=" << valueStr << std::endl;
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
