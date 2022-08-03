@@ -24,6 +24,8 @@ public:
 		EXTVRAM_SIZE=96*1024,
 
 		AV40_DICRAM_SIZE=0x2000,
+		AV40_SUBRAMA_SIZE=0x3000, // 4KB times 4 banks. 1 bank covered by default RAM.
+		AV40_SUBRAMB_SIZE=0x800*7, // 2KB times 8 banks.  1 bank covered by default RAM.
 	};
 
 	enum
@@ -149,10 +151,14 @@ public:
 		uint8_t data[PHYSMEM_SIZE];
 		uint8_t extVRAM[EXTVRAM_SIZE];
 		uint8_t av40DicRAM[AV40_DICRAM_SIZE];
+		uint8_t av40SubRAMA[AV40_SUBRAMA_SIZE];
+		uint8_t av40SubRAMB[AV40_SUBRAMB_SIZE];
 
+		// bool av40SubRAMMode=false;  Rather use subMonType==SUBMON_RAM
 		bool av40SubRAMBWriteProtect=false;
 		uint32_t av40SubRAMABank=0;
 		uint32_t av40SubRAMBBank=0;
+		uint8_t av40SubKanjiLevel=0;
 
 		uint8_t subMonType=SUBMON_C;
 		uint8_t subFontType=0;

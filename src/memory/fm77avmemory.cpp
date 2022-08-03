@@ -252,6 +252,11 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 
 void PhysicalMemory::WriteFD04(uint8_t data)
 {
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType)
+	{
+		state.av40SubRAMBWriteProtect=(0==(data&4));
+	}
 }
 void PhysicalMemory::WriteFD10(uint8_t data)
 {
@@ -282,10 +287,6 @@ uint8_t PhysicalMemory::ReadFD23(void) const
 void PhysicalMemory::WriteFD13(uint8_t data)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
-	// if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType)
-	// { Can make sub-system all RAM.
-	// }
-	// else
 	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
 	{
 		auto prev=state.subMonType;
@@ -333,6 +334,9 @@ void PhysicalMemory::WriteFD2E(uint8_t data)
 }
 void PhysicalMemory::WriteD42E(uint8_t data)
 {
+	state.av40SubRAMABank=((data>>3)&3);
+	state.av40SubRAMBBank=(data&7);
+	state.av40SubKanjiLevel=(data>>7);
 }
 void PhysicalMemory::WriteD42F(uint8_t data)
 {
@@ -356,6 +360,7 @@ void PhysicalMemory::Reset(void)
 	state.av40SubRAMBWriteProtect=false;
 	state.av40SubRAMABank=0;
 	state.av40SubRAMBBank=0;
+	state.av40SubKanjiLevel=0;
 	state.subROMSwitch=false;
 
 	auto fm77avPtr=(FM77AV *)vmPtr;
@@ -473,10 +478,23 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		return state.extVRAM[addr];
 
 	case MEMTYPE_SUBSYS_RAM_C000:
+		// Question is if RAM-A Bank is only enable in the all-RAM mode.  If so, this needs an additional check.
+		if(0!=state.av40SubRAMABank)
+		{
+			return state.av40SubRAMA[0x1000*(state.av40SubRAMABank-1)+addr-SUBSYS_RAM_C000_BEGIN];
+		}
 		return state.data[addr];
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
-		if(SUBMON_C==state.subMonType)
+		if(SUBMON_RAM==state.subMonType)
+		{
+			if(0!=state.av40SubRAMBBank)
+			{
+				return state.av40SubRAMB[0x800*(state.av40SubRAMBBank-1)+addr-SUBSYS_FONT_ROM_BEGIN];
+			}
+			return state.data[addr];
+		}
+		else if(SUBMON_C==state.subMonType)
 		{
 			return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
 		}
@@ -497,6 +515,10 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		else if(SUBMON_B==state.subMonType)
 		{
 			return ROM_SUBSYS_B[addr-SUBSYS_MONITOR_ROM_BEGIN];
+		}
+		else if(SUBMON_RAM==state.subMonType)
+		{
+			return state.data[addr];
 		}
 		return ROM_SUBSYS_C[addr-SUBSYS_FONT_ROM_BEGIN];
 	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
@@ -673,6 +695,12 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		return;
 
 	case MEMTYPE_SUBSYS_RAM_C000:
+		// Question is if RAM-A Bank is only enable in the all-RAM mode.  If so, this needs an additional check.
+		if(0!=state.av40SubRAMABank)
+		{
+			state.av40SubRAMA[0x1000*(state.av40SubRAMABank-1)+addr-SUBSYS_RAM_C000_BEGIN]=d;
+			return;
+		}
 		state.data[addr]=d;
 		return;
 
@@ -682,7 +710,20 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		return;
 
 	case MEMTYPE_SUBSYS_FONT_ROM:
+		if(SUBMON_RAM==state.subMonType && true!=state.av40SubRAMBWriteProtect)
+		{
+			if(0!=state.av40SubRAMBBank)
+			{
+				state.av40SubRAMB[0x800*(state.av40SubRAMBBank-1)+addr-SUBSYS_FONT_ROM_BEGIN]=d;
+			}
+			state.data[addr]=d;
+		}
+		return;
 	case MEMTYPE_SUBSYS_MONITOR_ROM:
+		if(SUBMON_RAM==state.subMonType && true!=state.av40SubRAMBWriteProtect)
+		{
+			state.data[addr]=d;
+		}
 		return;
 	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
 		if(true!=state.avBootROM)
@@ -807,6 +848,9 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	case SUBMON_C:
 		text.back()+="TypeC ";
 		break;
+	case SUBMON_RAM:
+		text.back()+="RAM ";
+		break;
 	}
 	text.back()+="FontROM:";
 	switch(state.subFontType)
@@ -827,6 +871,13 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 		text.back()+="Corrupt ";
 		break;
 	}
+
+	text.back()+=" RAMABank:";
+	text.back()+=cpputil::Ubtox(state.av40SubRAMABank);
+	text.back()+=" RAMBBank:";
+	text.back()+=cpputil::Ubtox(state.av40SubRAMBBank);
+	text.back()+=" RAMWriteProtect:";
+	text.back()+=cpputil::Ubtox(state.av40SubRAMBWriteProtect);
 
 	return text;
 }
