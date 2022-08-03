@@ -159,6 +159,7 @@ public:
 		uint32_t av40SubRAMABank=0;
 		uint32_t av40SubRAMBBank=0;
 		uint8_t av40SubKanjiLevel=0;
+		uint8_t av40VRAMBank=0;
 
 		uint8_t subMonType=SUBMON_C;
 		uint8_t subFontType=0;

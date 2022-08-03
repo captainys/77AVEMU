@@ -340,6 +340,7 @@ void PhysicalMemory::WriteD42E(uint8_t data)
 }
 void PhysicalMemory::WriteD42F(uint8_t data)
 {
+	state.av40VRAMBank=(data&3);
 }
 void PhysicalMemory::WriteD430(uint8_t data)
 {
@@ -362,6 +363,7 @@ void PhysicalMemory::Reset(void)
 	state.av40SubRAMBBank=0;
 	state.av40SubKanjiLevel=0;
 	state.subROMSwitch=false;
+	state.av40VRAMBank=0;
 
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
