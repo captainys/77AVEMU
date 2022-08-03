@@ -477,6 +477,7 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		{
 			return ROM_ASCII_FONT[state.subFontType*ASCII_FONT_ROM_SIZE+(addr-SUBSYS_FONT_ROM_BEGIN)];
 		}
+		break;
 	case MEMTYPE_SUBSYS_MONITOR_ROM:
 		if(SUBMON_C==state.subMonType)
 		{
