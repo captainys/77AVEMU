@@ -74,6 +74,10 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		memType[addr]=MEMTYPE_SUBSYS_VRAM;
 	}
+	for(unsigned int addr=SUBSYS_RAM_C000_BEGIN; addr<SUBSYS_RAM_C000_END; ++addr)
+	{
+		memType[addr]=MEMTYPE_SUBSYS_RAM_C000;
+	}
 	for(unsigned int addr=SUBSYS_SHARED_RAM_BEGIN; addr<SUBSYS_SHARED_RAM_END; ++addr)
 	{
 		memType[addr]=MEMTYPE_SUBSYS_SHARED_RAM;
@@ -468,6 +472,9 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		addr%=0xC000;
 		return state.extVRAM[addr];
 
+	case MEMTYPE_SUBSYS_RAM_C000:
+		return state.data[addr];
+
 	case MEMTYPE_SUBSYS_FONT_ROM:
 		if(SUBMON_C==state.subMonType)
 		{
@@ -663,6 +670,10 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 			addr%=0xC000;
 			state.extVRAM[addr]=d;
 		}
+		return;
+
+	case MEMTYPE_SUBSYS_RAM_C000:
+		state.data[addr]=d;
 		return;
 
 	case MEMTYPE_SUBSYS_IO:
