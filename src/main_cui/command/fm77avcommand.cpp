@@ -1781,8 +1781,8 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 		}
 		else if(std::string::npos!=cmd.argv[i].find(':'))
 		{
-			auto ptr=MakeCPUandAddress(thr,av,cmd.argv[i]);
-			if(CPU_UNKNOWN==ptr.cpu)
+			auto ptr=DecodeAddress(av,cmd.argv[i],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+			if(CPU_UNKNOWN==ptr.type)
 			{
 				Error_UnknownCPU(cmd);
 				return;
@@ -1790,7 +1790,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 
 			if(nAddr<2)
 			{
-				mainOrSub=ptr.cpu;
+				mainOrSub=ptr.type;
 				addr[nAddr]=ptr.addr;
 				++nAddr;
 			}
@@ -1818,51 +1818,60 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 		return;
 	}
 
+	if(1==nAddr)
+	{
+		addr[1]=addr[0];
+		nAddr=2;
+	}
+
 	if(2==nAddr)
 	{
 		if(addr[1]<addr[0])
 		{
 			std::swap(addr[0],addr[1]);
 		}
-		auto &cpu=av.CPU(mainOrSub);
-		auto &mem=av.MemAccess(mainOrSub);
-		for(auto a=addr[0]; a<=addr[1]; ++a)
+		if(FM77AV::ADDR_PHYS==mainOrSub)
 		{
-			if(true!=useValue)
+			for(auto a=addr[0]; a<=addr[1]; ++a)
 			{
-				cpu.debugger.SetBreakOnMemWrite(a,minValue,maxValue);
+				if(a<PhysicalMemory::PHYSMEM_SIZE)
+				{
+					av.physMem.var.memAttr[a].brkOnWrite=true;
+					if(true!=useValue)
+					{
+						av.physMem.var.memAttr[a].brkOnWriteMinMax[0]=minValue;
+						av.physMem.var.memAttr[a].brkOnWriteMinMax[1]=maxValue;
+					}
+					else
+					{
+						av.physMem.var.memAttr[a].brkOnWriteMinMax[0]=value;
+						av.physMem.var.memAttr[a].brkOnWriteMinMax[1]=value;
+					}
+				}
 			}
-			else
+			std::cout << "Break on Memory Write" << std::endl;
+			std::cout << "  from " << "PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
+			std::cout << "  to   " << "PHYS:" << cpputil::Uitox(addr[1]) << std::endl;
+		}
+		else if(FM77AV::ADDR_MAIN==mainOrSub || FM77AV::ADDR_SUB==mainOrSub)
+		{
+			auto &cpu=av.CPU(mainOrSub);
+			auto &mem=av.MemAccess(mainOrSub);
+			for(auto a=addr[0]; a<=addr[1]; ++a)
 			{
-				cpu.debugger.SetBreakOnMemWrite(a,value,value);
+				if(true!=useValue)
+				{
+					cpu.debugger.SetBreakOnMemWrite(a,minValue,maxValue);
+				}
+				else
+				{
+					cpu.debugger.SetBreakOnMemWrite(a,value,value);
+				}
 			}
+			std::cout << "Break on Memory Write" << std::endl;
+			std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
+			std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
 		}
-		std::cout << "Break on Memory Write" << std::endl;
-		std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
-		std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
-		if(true==useValue)
-		{
-			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
-		}
-		if(true==useMinMax)
-		{
-			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
-			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
-		}
-	}
-	else if(1==nAddr)
-	{
-		auto &cpu=av.CPU(mainOrSub);
-		auto &mem=av.MemAccess(mainOrSub);
-		if(true!=useValue)
-		{
-			cpu.debugger.SetBreakOnMemWrite(addr[0],minValue,maxValue);
-		}
-		else
-		{
-			cpu.debugger.SetBreakOnMemWrite(addr[0],value,value);
-		}
-		std::cout << "Break on Memory Write " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
 		if(true==useValue)
 		{
 			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
@@ -1933,10 +1942,10 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,
 {
 	if(4<=cmd.argv.size())
 	{
-		auto ptr0=MakeCPUandAddress(thr,av,cmd.argv[2]);
+		auto ptr0=DecodeAddress(av,cmd.argv[2],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
 		unsigned int addr0=ptr0.addr;
 		unsigned int addr1=cpputil::Xtoi(cmd.argv[3].c_str());
-		if(CPU_UNKNOWN==ptr0.cpu)
+		if(CPU_UNKNOWN==ptr0.type)
 		{
 			Error_UnknownCPU(cmd);
 			return;
@@ -1945,26 +1954,50 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,
 		{
 			std::swap(addr0,addr1);
 		}
-		auto &cpu=av.CPU(ptr0.cpu);
-		for(auto addr=addr0; addr<=addr1; ++addr)
+		if(FM77AV::ADDR_PHYS==ptr0.type)
 		{
-			cpu.debugger.ClearBreakOnMemWrite(addr);
+			for(auto addr=addr0; addr<=addr1 && addr<PhysicalMemory::PHYSMEM_SIZE; ++addr)
+			{
+				av.physMem.var.memAttr[addr].brkOnWrite=false;
+			}
+			std::cout << "Clear Break on Memory Write" << std::endl;
+			std::cout << "  from " << "PHYS:" << cpputil::Uitox(addr0) << std::endl;
+			std::cout << "  to   " << "PHYS:" << cpputil::Uitox(addr1) << std::endl;
 		}
-		std::cout << "Clear Break on Memory Write" << std::endl;
-		std::cout << "  from " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(addr0) << std::endl;
-		std::cout << "  to   " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(addr1) << std::endl;
+		else
+		{
+			auto &cpu=av.CPU(ptr0.type);
+			for(auto addr=addr0; addr<=addr1; ++addr)
+			{
+				cpu.debugger.ClearBreakOnMemWrite(addr);
+			}
+			std::cout << "Clear Break on Memory Write" << std::endl;
+			std::cout << "  from " << CPUToStr(ptr0.type) << ":" << cpputil::Uitox(addr0) << std::endl;
+			std::cout << "  to   " << CPUToStr(ptr0.type) << ":" << cpputil::Uitox(addr1) << std::endl;
+		}
 	}
 	else if(3<=cmd.argv.size())
 	{
-		auto ptr0=MakeCPUandAddress(thr,av,cmd.argv[2]);
-		if(CPU_UNKNOWN==ptr0.cpu)
+		auto ptr0=DecodeAddress(av,cmd.argv[2],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		if(CPU_UNKNOWN==ptr0.type)
 		{
 			Error_UnknownCPU(cmd);
 			return;
 		}
-		auto &cpu=av.CPU(ptr0.cpu);
-		cpu.debugger.ClearBreakOnMemWrite(ptr0.addr);
-		std::cout << "Clear Break on Memory Write " << CPUToStr(ptr0.cpu) << ":" << cpputil::Uitox(ptr0.addr) << std::endl;
+		if(FM77AV::ADDR_PHYS==ptr0.type)
+		{
+			if(ptr0.addr<PhysicalMemory::PHYSMEM_SIZE)
+			{
+				av.physMem.var.memAttr[ptr0.addr].brkOnWrite=false;
+			}
+			std::cout << "Clear Break on Memory Write " << "PHYS:" << cpputil::Uitox(ptr0.addr) << std::endl;
+		}
+		else
+		{
+			auto &cpu=av.CPU(ptr0.type);
+			cpu.debugger.ClearBreakOnMemWrite(ptr0.addr);
+			std::cout << "Clear Break on Memory Write " << CPUToStr(ptr0.type) << ":" << cpputil::Uitox(ptr0.addr) << std::endl;
+		}
 	}
 	else
 	{
@@ -1972,6 +2005,10 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,
 		{
 			av.mainCPU.debugger.ClearBreakOnMemWrite(addr);
 			av.subCPU.debugger.ClearBreakOnMemWrite(addr);
+		}
+		for(uint32_t addr=0; addr<=PhysicalMemory::PHYSMEM_SIZE; ++addr)
+		{
+			av.physMem.var.memAttr[addr].brkOnWrite=false;
 		}
 		std::cout << "Clear All Break on Memory Write on main- and sub-CPUs" << std::endl;
 	}

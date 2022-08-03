@@ -562,6 +562,16 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 	//                If address-transformation is needed (I hope no more though)
 	//                do it in a separate variable.
 
+	if(true==var.memAttr[addr].brkOnRead)
+	{
+		auto data=FetchByteConst(addr);
+		if(var.memAttr[addr].brkOnReadMinMax[0]<=data && data<=var.memAttr[addr].brkOnReadMinMax[1])
+		{
+			std::cout << "Memory Read " << cpputil::Uitox(addr) << " Value=" << cpputil::Ubtox(data) << std::endl;
+			fm77avPtr->mainCPU.debugger.stop=true;
+		}
+	}
+
 	switch(memType[addr])
 	{
 	case MEMTYPE_SUBSYS_VRAM:
@@ -589,6 +599,16 @@ uint16_t PhysicalMemory::FetchWord(uint32_t addr0,uint32_t addr1)
 void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
+
+	if(true==var.memAttr[addr].brkOnWrite)
+	{
+		if(var.memAttr[addr].brkOnWriteMinMax[0]<=d && d<=var.memAttr[addr].brkOnWriteMinMax[1])
+		{
+			std::cout << "Memory Write " << cpputil::Uitox(addr) << " Value=" << cpputil::Ubtox(d) << std::endl;
+			fm77avPtr->mainCPU.debugger.stop=true;
+		}
+	}
+
 	switch(memType[addr])
 	{
 	case MEMTYPE_RAM:

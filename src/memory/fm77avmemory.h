@@ -158,6 +158,23 @@ public:
 	};
 	State state;
 
+
+	class MemoryAttribute
+	{
+	public:
+		bool brkOnWrite=false;
+		uint8_t brkOnWriteMinMax[2]={0,255};
+		bool brkOnRead=false;
+		uint8_t brkOnReadMinMax[2]={0,255};
+	};
+	class Variable
+	{
+	public:
+		MemoryAttribute memAttr[PHYSMEM_SIZE];
+	};
+	Variable var;
+
+
 	virtual const char *DeviceName(void) const{return "PHYSMEM";}
 	PhysicalMemory(VMBase *vmBase);
 
