@@ -43,6 +43,7 @@ public:
 
 	void WriteFD98(uint8_t data);
 	void WriteFD99(uint8_t data);
+	void ReadFD99(void);
 	uint8_t NonDestructiveReadFD99(void) const;
 };
 

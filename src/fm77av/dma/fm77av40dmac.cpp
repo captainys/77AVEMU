@@ -39,7 +39,7 @@ bool FM77AV40DMAC::AddressGoUp(void) const
 }
 bool FM77AV40DMAC::FDCtoMEM(void) const
 {
-	return 0!=(state.regs[0x10]&1);
+	return 0==(state.regs[0x10]&1);
 }
 void FM77AV40DMAC::SetDMAEnd(bool ended)
 {
@@ -78,6 +78,14 @@ void FM77AV40DMAC::WriteFD99(uint8_t data)
 {
 	std::cout << "DMAC Write Reg=" << cpputil::Ubtox(state.addrLatch) << " Value=" << cpputil::Ubtox(data) << std::endl;
 	state.regs[state.addrLatch]=data;
+}
+void FM77AV40DMAC::ReadFD99(void)
+{
+	std::cout << "DMAC Read  Reg=" << cpputil::Ubtox(state.addrLatch) << " Value=" << cpputil::Ubtox(state.regs[state.addrLatch]) << std::endl;
+	if(0x15==state.addrLatch)
+	{
+		state.regs[0x15]&=0x7F;
+	}
 }
 uint8_t FM77AV40DMAC::NonDestructiveReadFD99(void) const
 {

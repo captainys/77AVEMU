@@ -620,6 +620,10 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		byteData=fdc.IOReadByte(ioAddr);
 		break;
 
+	case FM77AVIO_AV40_DMAC_DATA://          0xFD99,
+		dmac.ReadFD99();
+		break;
+
 
 	// Sub-CPU I/O
 	case FM77AVIO_KEY_LOW: //=                 0xD401,

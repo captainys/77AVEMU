@@ -138,15 +138,28 @@ void FM77AVFDC::MakeReady(void)
 					if(nullptr!=secPtr)
 					{
 						state.data=secPtr->sectorData;
-						state.dataReadPointer=0;
-						state.DRQ=true;
-						state.lastDRQTime=fm77avTime;
 						state.CRCErrorAfterRead=(0!=secPtr->crcStatus);
 						state.nanosecPerByte=(0==secPtr->nanosecPerByte ? NANOSEC_PER_BYTE : secPtr->nanosecPerByte);
-						// Should I raise IRQ?
+						if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType &&
+						   true==fm77avPtr->dmac.TxRQ() &&
+						   true==fm77avPtr->dmac.FDCtoMEM())
+						{
+							// DMA Transfer
+							fm77avPtr->dmac.SetDMAEnd(false);
+							fm77avPtr->dmac.SetIRQ(false);
+							fm77avPtr->dmac.SetBusy(true);
+							fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+state.nanosecPerByte*state.data.size());
+						}
+						else
+						{
+							state.dataReadPointer=0;
+							state.DRQ=true;
+							state.lastDRQTime=fm77avTime;
+							// Should I raise IRQ?
 
-						// CPU needs to read a byte from the data register and clear DRQ before this schedule.
-						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+state.nanosecPerByte);
+							// CPU needs to read a byte from the data register and clear DRQ before this schedule.
+							fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+state.nanosecPerByte);
+						}
 					}
 					else
 					{
@@ -163,25 +176,47 @@ void FM77AVFDC::MakeReady(void)
 		}
 		else
 		{
-			auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-			if(true!=state.DRQ && state.dataReadPointer<secPtr->sectorData.size())
+			if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType &&
+			   true==fm77avPtr->dmac.TxRQ() &&
+			   true==fm77avPtr->dmac.FDCtoMEM())
 			{
-				// Pointer is incremented at IORead.
-				state.DRQ=true;
-				state.lastDRQTime+=state.nanosecPerByte;
-				fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+state.nanosecPerByte);
-
-				// Memo to myself:
-				//   I was scheduling next DRQ as fm77avTime+NANOSEC_PER_BYTE, which was incorrect.
-				//   FDC doesn't care when CPU reads a byte, therefore next DRQ will come
-				//   one-byte-length on the disk after the last DRQ.
-				//   YsII for FM77AV measures time for reading one sector by counting loop between DRQs.
-				//   This difference matters.
-			}
-			else // Data was not read in time.
-			{
-				state.lostData=true;
+				auto addr0=fm77avPtr->dmac.Address();
+				for(unsigned int i=0; i<fm77avPtr->dmac.NumBytes() && i<state.data.size(); ++i)
+				{
+					fm77avPtr->mainMemAcc.StoreByte(addr0+i,state.data[i]);
+				}
+				fm77avPtr->dmac.SetDMAEnd(true);
+				fm77avPtr->dmac.SetIRQ(true);
+				fm77avPtr->dmac.SetBusy(false);
+				if(true==fm77avPtr->dmac.IRQEnabled())
+				{
+					fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_DMA;
+				}
+				std::cout << "DMA Transfer" << std::endl;
 				MakeReady();
+			}
+			else
+			{
+				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
+				if(true!=state.DRQ && state.dataReadPointer<secPtr->sectorData.size())
+				{
+					// Pointer is incremented at IORead.
+					state.DRQ=true;
+					state.lastDRQTime+=state.nanosecPerByte;
+					fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+state.nanosecPerByte);
+
+					// Memo to myself:
+					//   I was scheduling next DRQ as fm77avTime+NANOSEC_PER_BYTE, which was incorrect.
+					//   FDC doesn't care when CPU reads a byte, therefore next DRQ will come
+					//   one-byte-length on the disk after the last DRQ.
+					//   YsII for FM77AV measures time for reading one sector by counting loop between DRQs.
+					//   This difference matters.
+				}
+				else // Data was not read in time.
+				{
+					state.lostData=true;
+					MakeReady();
+				}
 			}
 		}
 		break;
