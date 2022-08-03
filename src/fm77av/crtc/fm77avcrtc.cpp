@@ -191,15 +191,36 @@ void FM77AVCRTC::ReadD408(void)
 	state.CRTEnabled=true;
 }
 
+void FM77AVCRTC::WriteFD04(uint8_t data)
+{
+	if(0==(data&8))
+	{
+		state.scrnMode=SCRNMODE_640X400;
+	}
+	else if(0!=(data&0x10))
+	{
+		state.scrnMode=SCRNMODE_320X200_260KCOL;
+	}
+	else
+	{
+		state.scrnMode=state.avScrnMode;
+	}
+}
 void FM77AVCRTC::WriteFD12(uint8_t data)
 {
 	if(0==(data&0x40))
 	{
-		state.scrnMode=SCRNMODE_640X200;
+		state.avScrnMode=SCRNMODE_640X200;
 	}
 	else
 	{
-		state.scrnMode=SCRNMODE_320X200_4096COL;
+		state.avScrnMode=SCRNMODE_320X200_4096COL;
+	}
+
+	if(SCRNMODE_640X200==state.scrnMode ||
+	   SCRNMODE_320X200_4096COL==state.scrnMode)
+	{
+		state.scrnMode=state.avScrnMode;
 	}
 }
 const int FM77AVCRTC::NonDestructiveReadFD12(void) const

@@ -48,6 +48,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		if(MACHINETYPE_FM77AV40<=state.machineType)
 		{
 			physMem.WriteFD04(value);
+			crtc.WriteFD04(value);
 		}
 		break;
 

@@ -104,6 +104,12 @@ public:
 		Palette palette;
 		HardwareDrawing hardDraw;
 		unsigned int scrnMode=SCRNMODE_640X200;
+		unsigned int avScrnMode=SCRNMODE_640X200;
+		// Need to remember FM77AV Screen Mode.
+		// FM77AV40 controls the screen mode with I/O FD04.  When it is
+		// switched back from 640x400 mode or 320x200 260K-color mode,
+		// the screen mode needs to set to FM77AV's screen mode.
+
 		uint16_t VRAMOffset[FM77AV40_NUM_VRAM_BANKS]={0,0,0},VRAMOffsetMask=0xffe0;
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
@@ -150,6 +156,8 @@ public:
 	void WriteFD33(uint8_t data);
 	void WriteFD34(uint8_t data);
 
+	void WriteFD04(uint8_t data);
+	uint8_t ReadFD04(void) const;
 	void WriteFD12(uint8_t data);
 	const int NonDestructiveReadFD12(void) const;
 
