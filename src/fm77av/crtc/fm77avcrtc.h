@@ -221,6 +221,10 @@ public:
 			addrHI=addr&~0x1FFF;
 			addrLO=(addr+VRAMOffset)&0x1FFF;
 			return addrHI|addrLO;
+		case SCRNMODE_640X400:
+			addrHI=addr&~0x7FFF;
+			addrLO=(addr+VRAMOffset)&0x7FFF;
+			return addrHI|addrLO;
 		}
 		return addr;
 	}

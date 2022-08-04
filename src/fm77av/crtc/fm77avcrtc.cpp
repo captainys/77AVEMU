@@ -321,7 +321,6 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 	if(true==state.hardDraw.enabled)
 	{
 		auto fm77avPtr=(FM77AV *)vmPtr;
-		auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
 
 		if(0!=((1<<state.hardDraw.cmd)&breakOnHardwareVRAMWriteOpBits))
 		{
@@ -329,10 +328,20 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 		}
 
 		VRAMAddrIn&=VRAM_PLANE_MASK;
-		uint16_t VRAMAddr[3];
-		VRAMAddr[0]=VRAMAddrIn;
-		VRAMAddr[1]=VRAMAddrIn+VRAM_PLANE_SIZE;
-		VRAMAddr[2]=VRAMAddrIn+VRAM_PLANE_SIZE*2;
+		uint8_t *VRAMByte[3]={nullptr,nullptr,nullptr};
+		if(SCRNMODE_640X400!=state.scrnMode)
+		{
+			auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
+			VRAMByte[0]=&VRAM[VRAMAddrIn];
+			VRAMByte[1]=&VRAM[VRAMAddrIn+VRAM_PLANE_SIZE];
+			VRAMByte[2]=&VRAM[VRAMAddrIn+VRAM_PLANE_SIZE*2];
+		}
+		else
+		{
+			VRAMByte[0]=fm77avPtr->physMem.GetVRAMBank(0)+(VRAMAddrIn&0x7FFF);
+			VRAMByte[1]=fm77avPtr->physMem.GetVRAMBank(1)+(VRAMAddrIn&0x7FFF);
+			VRAMByte[2]=fm77avPtr->physMem.GetVRAMBank(2)+(VRAMAddrIn&0x7FFF);
+		}
 
 		if(0!=(state.hardDraw.condition&2))
 		{
@@ -351,9 +360,9 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 			if(0!=(state.hardDraw.condition&2))
 			{
 				uint8_t srcColor=0;
-				srcColor|=(0!=(VRAM[VRAMAddr[0]]&bit) ? 1 : 0);
-				srcColor|=(0!=(VRAM[VRAMAddr[1]]&bit) ? 2 : 0);
-				srcColor|=(0!=(VRAM[VRAMAddr[2]]&bit) ? 4 : 0);
+				srcColor|=(0!=((*VRAMByte[0])&bit) ? 1 : 0);
+				srcColor|=(0!=((*VRAMByte[1])&bit) ? 2 : 0);
+				srcColor|=(0!=((*VRAMByte[2])&bit) ? 4 : 0);
 
 				bool match=false;
 				for(auto cmpColor : state.hardDraw.compareColor) // Should it work this way?
@@ -392,29 +401,29 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 			}
 
 			uint8_t rgb=(0!=(col&1) ? 255 : 0);
-			uint8_t src=VRAM[VRAMAddr[i]];
+			uint8_t src=*VRAMByte[i];
 
 			switch(state.hardDraw.cmd)
 			{
 			case HD_CMD_TILE://6
-				VRAM[VRAMAddr[i]]&=~writeBits;
-				VRAM[VRAMAddr[i]]|=(state.hardDraw.tile[i]&writeBits);
+				*VRAMByte[i]&=~writeBits;
+				*VRAMByte[i]|=(state.hardDraw.tile[i]&writeBits);
 				break;
 			case HD_CMD_PSET://0
-				VRAM[VRAMAddr[i]]&=~writeBits;
-				VRAM[VRAMAddr[i]]|=(rgb&writeBits);
+				*VRAMByte[i]&=~writeBits;
+				*VRAMByte[i]|=(rgb&writeBits);
 				break;
 			case HD_CMD_OR://2
-				VRAM[VRAMAddr[i]]|=(rgb&writeBits);
+				*VRAMByte[i]|=(rgb&writeBits);
 				break;
 			case HD_CMD_AND://3
-				VRAM[VRAMAddr[i]]=(src&~writeBits)|(src&rgb&writeBits);
+				*VRAMByte[i]=(src&~writeBits)|(src&rgb&writeBits);
 				break;
 			case HD_CMD_XOR://4,
-				VRAM[VRAMAddr[i]]^=(writeBits&rgb);
+				*VRAMByte[i]^=(writeBits&rgb);
 				break;
 			case HD_CMD_NOT://5,
-				VRAM[VRAMAddr[i]]^=writeBits;
+				*VRAMByte[i]^=writeBits;
 				break;
 			case HD_CMD_CMP://7,
 				break;
