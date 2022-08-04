@@ -226,7 +226,7 @@ void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 				for(unsigned int x=0; x<640; x+=8)
 				{
 					unsigned int addr=y*80+(x>>3);
-					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset[0]);
+					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset[addr&1]);
 					unsigned int B=VRAM[addr];
 					unsigned int R=VRAM[addr+FM77AV_VRAM_BANK_SIZE];
 					unsigned int G=VRAM[addr+FM77AV_VRAM_BANK_SIZE*2];

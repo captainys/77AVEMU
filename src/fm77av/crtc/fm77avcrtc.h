@@ -224,14 +224,21 @@ public:
 			return addrHI|addrLO;
 		case SCRNMODE_640X400:
 			addrHI=addr&~0x7FFF;
-			addrLO=(addr+VRAMOffset)&0x7FFF;
+			addrLO=(addr+VRAMOffset*2)&0x7FFF;
 			return addrHI|addrLO;
 		}
 		return addr;
 	}
 	inline uint32_t TransformVRAMAddress(uint32_t addr) const
 	{
-		return TransformVRAMAddress(addr,state.scrnMode,GetActiveVRAMOffset());
+		if(SCRNMODE_640X400!=state.scrnMode)
+		{
+			return TransformVRAMAddress(addr,state.scrnMode,GetActiveVRAMOffset());
+		}
+		else
+		{
+			return TransformVRAMAddress(addr,state.scrnMode,state.VRAMOffset[addr&1]);
+		}
 	}
 
 	/*
