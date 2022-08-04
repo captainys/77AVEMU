@@ -686,14 +686,27 @@ void FM77AVCRTC::DrawLine(void)
 	auto planeMask=GetPlaneVRAMMask();
 
 	unsigned int VRAMLayerBaseAddr=state.hardDraw.addrOffset&~planeMask;
-	unsigned int VRAMInLayerAddr=(state.hardDraw.addrOffset+GetActiveVRAMOffset())&planeMask;
+	unsigned int VRAMInLayerAddr[2];
+	if(SCRNMODE_640X400!=state.scrnMode)
+	{
+		VRAMInLayerAddr[0]=(state.hardDraw.addrOffset+GetActiveVRAMOffset())&planeMask;
+		VRAMInLayerAddr[1]=VRAMInLayerAddr[0];
+	}
+	else
+	{
+		// WTF! WTF! WTF! WTF! WTF! WTF!
+		// 640x400 mode uses VRAM offset register 0 for even address, and register 1 odd address.
+		VRAMInLayerAddr[0]=(state.hardDraw.addrOffset+state.VRAMOffset[0]*2)&planeMask;
+		VRAMInLayerAddr[1]=(state.hardDraw.addrOffset+state.VRAMOffset[1]*2)&planeMask;
+	}
 
 	unsigned int balance=0,count=0;;
 	int x=state.hardDraw.x0;
 	int y=state.hardDraw.y0;
 
-	VRAMInLayerAddr+=y*bytesPerLine+(x>>3);
-	PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+	VRAMInLayerAddr[0]+=y*bytesPerLine+(x>>3);
+	VRAMInLayerAddr[1]+=y*bytesPerLine+(x>>3);
+	PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
 	if(0==dx && 0==dy)
 	{
 		// Done.  Nothing to do.
@@ -703,8 +716,9 @@ void FM77AVCRTC::DrawLine(void)
 		while(y!=state.hardDraw.y1)
 		{
 			y+=vy;
-			VRAMInLayerAddr+=VRAMVy;
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			VRAMInLayerAddr[0]+=VRAMVy;
+			VRAMInLayerAddr[1]+=VRAMVy;
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
 		}
 	}
 	else if(0==dy) // Horizontal
@@ -715,9 +729,10 @@ void FM77AVCRTC::DrawLine(void)
 			x+=vx;
 			if((prevX>>3)!=(x>>3))
 			{
-				VRAMInLayerAddr+=vx;
+				VRAMInLayerAddr[0]+=vx;
+				VRAMInLayerAddr[1]+=vx;
 			}
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
 		}
 	}
 	else if(dy<dx) // Long in X
@@ -729,15 +744,17 @@ void FM77AVCRTC::DrawLine(void)
 			balance+=dy;
 			if((prevX>>3)!=(x>>3))
 			{
-				VRAMInLayerAddr+=vx;
+				VRAMInLayerAddr[0]+=vx;
+				VRAMInLayerAddr[1]+=vx;
 			}
 			if(dx<=balance)
 			{
 				y+=vy;
-				VRAMInLayerAddr+=VRAMVy;
+				VRAMInLayerAddr[0]+=VRAMVy;
+				VRAMInLayerAddr[1]+=VRAMVy;
 				balance-=dx;
 			}
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
 		}
 	}
 	else // if(dx<dy) // Long in Y
@@ -745,7 +762,8 @@ void FM77AVCRTC::DrawLine(void)
 		while(x!=state.hardDraw.x1 || y!=state.hardDraw.y1)
 		{
 			y+=vy;
-			VRAMInLayerAddr+=VRAMVy;
+			VRAMInLayerAddr[0]+=VRAMVy;
+			VRAMInLayerAddr[1]+=VRAMVy;
 			balance+=dx;
 			if(dy<=balance)
 			{
@@ -753,11 +771,12 @@ void FM77AVCRTC::DrawLine(void)
 				x+=vx;
 				if((prevX>>3)!=(x>>3))
 				{
-					VRAMInLayerAddr+=vx;
+					VRAMInLayerAddr[0]+=vx;
+					VRAMInLayerAddr[1]+=vx;
 				}
 				balance-=dy;
 			}
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
 		}
 	}
 }
