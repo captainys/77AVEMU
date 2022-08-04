@@ -144,6 +144,7 @@ public:
 		bool FE00ROMMode=true;
 		uint8_t VRAMAccessMask=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
+		uint8_t VRAMBank=0;
 		bool avBootROM=false;
 		bool av40DicRAMEnabled=false;
 		bool av40DicROMEnabled=false;
@@ -159,7 +160,6 @@ public:
 		uint32_t av40SubRAMABank=0;
 		uint32_t av40SubRAMBBank=0;
 		uint8_t av40SubKanjiLevel=0;
-		uint8_t av40VRAMBank=0;
 
 		uint8_t subMonType=SUBMON_C;
 		uint8_t subFontType=0;

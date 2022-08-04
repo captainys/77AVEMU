@@ -340,10 +340,26 @@ void PhysicalMemory::WriteD42E(uint8_t data)
 }
 void PhysicalMemory::WriteD42F(uint8_t data)
 {
-	state.av40VRAMBank=(data&3);
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(SCRNMODE_320X200_260KCOL==fm77avPtr->crtc.state.scrnMode ||
+	   SCRNMODE_640X400==fm77avPtr->crtc.state.scrnMode)
+	{
+		state.VRAMBank=(data&3);
+		if(3==state.VRAMBank)
+		{
+			state.VRAMBank=0;
+		}
+	}
 }
 void PhysicalMemory::WriteD430(uint8_t data)
 {
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(SCRNMODE_640X200==fm77avPtr->crtc.state.scrnMode ||
+	   SCRNMODE_320X200_4096COL==fm77avPtr->crtc.state.scrnMode)
+	{
+		state.VRAMBank=((data>>5)&1);
+	}
+
 	auto prev=state.subFontType;
 	state.subFontType=data&3;
 }
@@ -363,7 +379,7 @@ void PhysicalMemory::Reset(void)
 	state.av40SubRAMBBank=0;
 	state.av40SubKanjiLevel=0;
 	state.subROMSwitch=false;
-	state.av40VRAMBank=0;
+	state.VRAMBank=0;
 
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
@@ -471,13 +487,13 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 				}
 			}
 		}
-		if(0==fm77avPtr->crtc.state.activePage)
+		if(0==state.VRAMBank)
 		{
 			return state.data[addr];
 		}
 		addr&=0xFFFF;
 		addr%=0xC000;
-		return state.extVRAM[addr];
+		return state.extVRAM[(state.VRAMBank-1)*0xC000+addr];
 
 	case MEMTYPE_SUBSYS_RAM_C000:
 		// Question is if RAM-A Bank is only enable in the all-RAM mode.  If so, this needs an additional check.
@@ -684,7 +700,7 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 				}
 			}
 		}
-		if(0==fm77avPtr->crtc.state.activePage)
+		if(0==state.VRAMBank)
 		{
 			state.data[addr]=d;
 		}
@@ -692,7 +708,7 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		{
 			addr&=0xFFFF;
 			addr%=0xC000;
-			state.extVRAM[addr]=d;
+			state.extVRAM[(state.VRAMBank-1)*0xC000+addr]=d;
 		}
 		return;
 
