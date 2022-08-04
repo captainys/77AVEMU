@@ -808,8 +808,10 @@ void FM77AVCRTC::PutDot(uint8_t *VRAMPlane[3],unsigned int VRAMAddr,uint8_t bit,
 		switch(state.hardDraw.cmd)
 		{
 		case HD_CMD_TILE://6
-			// Wait.... Should I take bit from X?
-			// Or should I take bit from count?
+			// Should I take bit from X? Or should I take bit from count?
+			// F-BASIC V3.4 L20 Tile Box function implies X.
+			VRAMPlane[i][VRAMAddr]&=~writeBit;
+			VRAMPlane[i][VRAMAddr]|=(state.hardDraw.tile[i]&writeBit);
 			break;
 		case HD_CMD_PSET://0
 			VRAMPlane[i][VRAMAddr]&=~writeBit;
