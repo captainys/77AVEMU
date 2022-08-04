@@ -306,6 +306,19 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		SetSubToMainFIRQFlag();
 		break;
 
+	case FM77AVIO_SUB_KANJI_HIGH://=          0xD406,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			physMem.WriteD406(value);
+		}
+		break;
+	case FM77AVIO_SUB_KANJI_LOW://=           0xD407,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			physMem.WriteD407(value);
+		}
+		break;
+
 	case FM77AVIO_CRT_ON_OFF://=              0xD408,
 		crtc.WriteD408();
 		break;
@@ -870,6 +883,19 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		break;
 	case FM77AVIO_KEY_LOW: //=                 0xD401,
 		byteData=keyboard.state.lastKeyCode&0xFF;
+		break;
+
+	case FM77AVIO_SUB_KANJI_HIGH://=          0xD406,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=physMem.NonDestructiveReadD406();
+		}
+		break;
+	case FM77AVIO_SUB_KANJI_LOW://=           0xD407,
+		if(MACHINETYPE_FM77AV<=state.machineType)
+		{
+			byteData=physMem.NonDestructiveReadD407();
+		}
 		break;
 
 

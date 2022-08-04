@@ -206,6 +206,11 @@ public:
 	void WriteD42F(uint8_t data);
 	void WriteD430(uint8_t data);
 
+	void WriteD406(uint8_t data);
+	void WriteD407(uint8_t data);
+	uint8_t NonDestructiveReadD406(void) const;
+	uint8_t NonDestructiveReadD407(void) const;
+
 	const uint8_t *GetVRAMBank(int bank) const;
 	uint8_t *GetVRAMBank(int bank);
 	uint32_t GetVRAMBankSize(int bank) const;

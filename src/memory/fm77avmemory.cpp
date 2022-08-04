@@ -364,6 +364,28 @@ void PhysicalMemory::WriteD430(uint8_t data)
 	state.subFontType=data&3;
 }
 
+void PhysicalMemory::WriteD406(uint8_t data)
+{
+	uint16_t data16=data;
+	state.kanjiAddr&=0xFF;
+	state.kanjiAddr|=(data16<<8);
+}
+void PhysicalMemory::WriteD407(uint8_t data)
+{
+	state.kanjiAddr&=0xFF00;
+	state.kanjiAddr|=data;
+}
+uint8_t PhysicalMemory::NonDestructiveReadD406(void) const
+{
+	uint32_t ptr=state.kanjiAddr;
+	return ROM_KANJI[ptr<<1];
+}
+uint8_t PhysicalMemory::NonDestructiveReadD407(void) const
+{
+	uint32_t ptr=state.kanjiAddr;
+	return ROM_KANJI[(ptr<<1)+1];
+}
+
 void PhysicalMemory::Reset(void)
 {
 	Device::Reset();
