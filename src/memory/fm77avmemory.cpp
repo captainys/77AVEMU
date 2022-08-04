@@ -408,6 +408,8 @@ const uint8_t *PhysicalMemory::GetVRAMBank(int bank) const
 		return state.data+SUBSYS_VRAM_BEGIN;
 	case 1:
 		return state.extVRAM;
+	case 2:
+		return state.extVRAM+FM77AV_VRAM_BANK_SIZE;
 	}
 	std::cout << "Bank not supported." << std::endl;
 	return nullptr;
@@ -420,22 +422,24 @@ uint8_t *PhysicalMemory::GetVRAMBank(int bank)
 		return state.data+SUBSYS_VRAM_BEGIN;
 	case 1:
 		return state.extVRAM;
+	case 2:
+		return state.extVRAM+FM77AV_VRAM_BANK_SIZE;
 	}
 	std::cout << "Bank not supported." << std::endl;
 	return nullptr;
 }
 uint32_t PhysicalMemory::GetVRAMBankSize(int bank) const
 {
-	return 0xC000;
+	return FM77AV_VRAM_BANK_SIZE;
 }
 uint8_t *PhysicalMemory::GetCurrentVRAMBank(void)
 {
 	auto fm77avPtr=(const FM77AV *)vmPtr;
-	if(0==fm77avPtr->crtc.state.activePage)
+	if(0==state.VRAMBank)
 	{
 		return state.data+SUBSYS_VRAM_BEGIN;
 	}
-	return state.extVRAM;
+	return state.extVRAM+(state.VRAMBank-1)*FM77AV_VRAM_BANK_SIZE;
 }
 
 void PhysicalMemory::CLR(uint32_t addr)

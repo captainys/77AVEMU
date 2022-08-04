@@ -46,6 +46,11 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 			memcpy(this->VRAM,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
 			memcpy(this->VRAM+fm77av.physMem.GetVRAMBankSize(0),fm77av.physMem.GetVRAMBank(1),fm77av.physMem.GetVRAMBankSize(1));
 			break;
+		case SCRNMODE_640X400:
+			memcpy(this->VRAM                        ,fm77av.physMem.GetVRAMBank(0),fm77av.physMem.GetVRAMBankSize(0));
+			memcpy(this->VRAM+FM77AV_VRAM_BANK_SIZE  ,fm77av.physMem.GetVRAMBank(1),fm77av.physMem.GetVRAMBankSize(1));
+			memcpy(this->VRAM+FM77AV_VRAM_BANK_SIZE*2,fm77av.physMem.GetVRAMBank(2),fm77av.physMem.GetVRAMBankSize(2));
+			break;
 		}
 	}
 
@@ -207,6 +212,54 @@ void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
 						B2<<=1;
 						B1<<=1;
 						B0<<=1;
+					}
+				}
+			}
+		}
+		break;
+	case SCRNMODE_640X400:
+		{
+			for(unsigned int y=0; y<400; ++y)
+			{
+				auto pixel=rgba.data()+(640*4)*y;
+
+				for(unsigned int x=0; x<640; x+=8)
+				{
+					unsigned int addr=y*80+(x>>3);
+					addr=FM77AVCRTC::TransformVRAMAddress(addr,scrnMode,VRAMOffset[0]);
+					unsigned int B=VRAM[addr];
+					unsigned int R=VRAM[addr+FM77AV_VRAM_BANK_SIZE];
+					unsigned int G=VRAM[addr+FM77AV_VRAM_BANK_SIZE*2];
+
+					if(0!=(VRAMAccessMask&1))
+					{
+						B=0;
+					}
+					if(0!=(VRAMAccessMask&2))
+					{
+						R=0;
+					}
+					if(0!=(VRAMAccessMask&4))
+					{
+						G=0;
+					}
+
+					for(int dx=0; dx<8; ++dx)
+					{
+						uint8_t code=
+							(0!=(G&0x80) ? 4 : 0) |
+							(0!=(R&0x80) ? 2 : 0) |
+							(0!=(B&0x80) ? 1 : 0);
+						code=palette.digitalPalette[code];
+
+						pixel[0]=((code&2) ? 0xFF : 0);
+						pixel[1]=((code&4) ? 0xFF : 0);
+						pixel[2]=((code&1) ? 0xFF : 0);
+						pixel[3]=0xFF;
+						pixel+=4;
+						R<<=1;
+						G<<=1;
+						B<<=1;
 					}
 				}
 			}
