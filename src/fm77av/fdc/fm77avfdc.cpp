@@ -173,6 +173,10 @@ void FM77AVFDC::MakeReady(void)
 					MakeReady();
 				}
 			}
+			else
+			{
+				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
+			}
 		}
 		else
 		{
@@ -253,6 +257,10 @@ void FM77AVFDC::MakeReady(void)
 					MakeReady();
 				}
 			}
+			else
+			{
+				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
+			}
 		}
 		else if(true!=state.DRQ)
 		{
@@ -309,6 +317,10 @@ void FM77AVFDC::MakeReady(void)
 					state.recordNotFound=true;
 				}
 			}
+			else
+			{
+				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
+			}
 		}
 		else if(true!=state.DRQ)
 		{
@@ -354,6 +366,10 @@ void FM77AVFDC::MakeReady(void)
 					state.recordNotFound=true;
 				}
 			}
+			else
+			{
+				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
+			}
 		}
 		else if(true!=state.DRQ)
 		{
@@ -390,6 +406,10 @@ void FM77AVFDC::MakeReady(void)
 					state.writeFault=true;
 					MakeReady();
 				}
+			}
+			else
+			{
+				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
 			}
 		}
 		else if(true!=state.DRQ)
