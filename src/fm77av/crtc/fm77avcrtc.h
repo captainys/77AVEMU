@@ -96,6 +96,7 @@ public:
 
 		VRAM_PLANE_SIZE=0x4000,
 		VRAM_PLANE_MASK=0x3FFF,
+		VRAM_PLANE_MASK_640X400=0x7FFF,
 	};
 
 	class State
@@ -204,7 +205,7 @@ public:
 	void WriteD42A(uint8_t data);
 	void WriteD42B(uint8_t data);
 	void DrawLine(void);
-	void PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned int count); // Count is for line stipple or tile.
+	void PutDot(uint8_t *VRAMPln[3],unsigned int VRAMAddr,uint8_t bit,unsigned int count); // Count is for line stipple or tile.
 	// Graphics Accelerator <<
 
 

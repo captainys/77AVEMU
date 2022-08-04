@@ -84,8 +84,9 @@ unsigned int FM77AVCRTC::GetPlaneVRAMMask(void) const
 	switch(state.scrnMode)
 	{
 	case SCRNMODE_640X200:
-	case SCRNMODE_640X400:
 		return 0x3FFF;
+	case SCRNMODE_640X400:
+		return 0x7FFF;
 	case SCRNMODE_320X200_4096COL:
 	case SCRNMODE_320X200_260KCOL:
 		return 0x1FFF;
@@ -327,17 +328,18 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 			fm77avPtr->mainCPU.debugger.ExternalBreak("CRTC Hardware VRAM Write");
 		}
 
-		VRAMAddrIn&=VRAM_PLANE_MASK;
 		uint8_t *VRAMByte[3]={nullptr,nullptr,nullptr};
 		if(SCRNMODE_640X400!=state.scrnMode)
 		{
 			auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
+			VRAMAddrIn&=VRAM_PLANE_MASK;
 			VRAMByte[0]=&VRAM[VRAMAddrIn];
 			VRAMByte[1]=&VRAM[VRAMAddrIn+VRAM_PLANE_SIZE];
 			VRAMByte[2]=&VRAM[VRAMAddrIn+VRAM_PLANE_SIZE*2];
 		}
 		else
 		{
+			VRAMAddrIn&=VRAM_PLANE_MASK_640X400;
 			VRAMByte[0]=fm77avPtr->physMem.GetVRAMBank(0)+(VRAMAddrIn&0x7FFF);
 			VRAMByte[1]=fm77avPtr->physMem.GetVRAMBank(1)+(VRAMAddrIn&0x7FFF);
 			VRAMByte[2]=fm77avPtr->physMem.GetVRAMBank(2)+(VRAMAddrIn&0x7FFF);
@@ -667,7 +669,20 @@ void FM77AVCRTC::DrawLine(void)
 	unsigned int bytesPerLine=GetBytesPerLine();
 	int VRAMVy=bytesPerLine*vy;
 
-	auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
+	uint8_t *VRAMPlane[3]={nullptr,nullptr,nullptr};
+	if(SCRNMODE_640X400!=state.scrnMode)
+	{
+		auto VRAM=fm77avPtr->physMem.GetCurrentVRAMBank();
+		VRAMPlane[0]=VRAM;
+		VRAMPlane[1]=VRAM+0x4000;
+		VRAMPlane[2]=VRAM+0x8000;
+	}
+	else
+	{
+		VRAMPlane[0]=fm77avPtr->physMem.GetVRAMBank(0);
+		VRAMPlane[1]=fm77avPtr->physMem.GetVRAMBank(1);
+		VRAMPlane[2]=fm77avPtr->physMem.GetVRAMBank(2);
+	}
 	auto planeMask=GetPlaneVRAMMask();
 
 	unsigned int VRAMLayerBaseAddr=state.hardDraw.addrOffset&~planeMask;
@@ -678,7 +693,7 @@ void FM77AVCRTC::DrawLine(void)
 	int y=state.hardDraw.y0;
 
 	VRAMInLayerAddr+=y*bytesPerLine+(x>>3);
-	PutDot(VRAM,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+	PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
 	if(0==dx && 0==dy)
 	{
 		// Done.  Nothing to do.
@@ -689,7 +704,7 @@ void FM77AVCRTC::DrawLine(void)
 		{
 			y+=vy;
 			VRAMInLayerAddr+=VRAMVy;
-			PutDot(VRAM,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
 		}
 	}
 	else if(0==dy) // Horizontal
@@ -702,7 +717,7 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				VRAMInLayerAddr+=vx;
 			}
-			PutDot(VRAM,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
 		}
 	}
 	else if(dy<dx) // Long in X
@@ -722,7 +737,7 @@ void FM77AVCRTC::DrawLine(void)
 				VRAMInLayerAddr+=VRAMVy;
 				balance-=dx;
 			}
-			PutDot(VRAM,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
 		}
 	}
 	else // if(dx<dy) // Long in Y
@@ -742,19 +757,19 @@ void FM77AVCRTC::DrawLine(void)
 				}
 				balance-=dy;
 			}
-			PutDot(VRAM,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
+			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr&planeMask),x&7,count++);
 		}
 	}
 }
 
-void FM77AVCRTC::PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned int count)
+void FM77AVCRTC::PutDot(uint8_t *VRAMPlane[3],unsigned int VRAMAddr,uint8_t bit,unsigned int count)
 {
 	if(0!=(state.hardDraw.condition&2))
 	{
 		uint8_t srcColor=0;
-		srcColor|=(0!=(VRAM[VRAMAddr       ]&bit) ? 1 : 0);
-		srcColor|=(0!=(VRAM[VRAMAddr+0x4000]&bit) ? 2 : 0);
-		srcColor|=(0!=(VRAM[VRAMAddr+0x8000]&bit) ? 4 : 0);
+		srcColor|=(0!=(VRAMPlane[0][VRAMAddr]&bit) ? 1 : 0);
+		srcColor|=(0!=(VRAMPlane[1][VRAMAddr]&bit) ? 2 : 0);
+		srcColor|=(0!=(VRAMPlane[2][VRAMAddr]&bit) ? 4 : 0);
 
 		bool match=false;
 		for(auto cmpColor : state.hardDraw.compareColor) // Should it work this way?
@@ -777,10 +792,6 @@ void FM77AVCRTC::PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned
 		}
 	}
 
-//	VRAM[VRAMAddr       ]|=(1<<(7-bit));
-//	VRAM[VRAMAddr+0x4000]|=(1<<(7-bit));
-//	VRAM[VRAMAddr+0x8000]|=(1<<(7-bit));
-
 	uint8_t writeBit=(1<<(7-bit));
 	uint8_t bankMask=state.hardDraw.bankMask;
 	uint8_t col=state.hardDraw.color;
@@ -792,7 +803,7 @@ void FM77AVCRTC::PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned
 		}
 
 		uint8_t rgb=(0!=(col&1) ? 255 : 0);
-		uint8_t src=VRAM[VRAMAddr+0x4000*i];
+		uint8_t src=VRAMPlane[i][VRAMAddr];
 
 		switch(state.hardDraw.cmd)
 		{
@@ -801,20 +812,20 @@ void FM77AVCRTC::PutDot(uint8_t *VRAM,unsigned int VRAMAddr,uint8_t bit,unsigned
 			// Or should I take bit from count?
 			break;
 		case HD_CMD_PSET://0
-			VRAM[VRAMAddr+0x4000*i]&=~writeBit;
-			VRAM[VRAMAddr+0x4000*i]|=(rgb&writeBit);
+			VRAMPlane[i][VRAMAddr]&=~writeBit;
+			VRAMPlane[i][VRAMAddr]|=(rgb&writeBit);
 			break;
 		case HD_CMD_OR://2
-			VRAM[VRAMAddr+0x4000*i]|=(rgb&writeBit);
+			VRAMPlane[i][VRAMAddr]|=(rgb&writeBit);
 			break;
 		case HD_CMD_AND://3
-			VRAM[VRAMAddr+0x4000*i]=(src&~writeBit)|(src&rgb&writeBit);
+			VRAMPlane[i][VRAMAddr]=(src&~writeBit)|(src&rgb&writeBit);
 			break;
 		case HD_CMD_XOR://4,
-			VRAM[VRAMAddr+0x4000*i]^=(writeBit&rgb);
+			VRAMPlane[i][VRAMAddr]^=(writeBit&rgb);
 			break;
 		case HD_CMD_NOT://5,
-			VRAM[VRAMAddr+0x4000*i]^=writeBit;
+			VRAMPlane[i][VRAMAddr]^=writeBit;
 			break;
 		case HD_CMD_CMP://7,
 			break;

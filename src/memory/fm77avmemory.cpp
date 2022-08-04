@@ -783,7 +783,10 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		}
 		return;
 	case MEMTYPE_AV40_DICROM:
-		if(true!=state.av40DicROMEnabled)
+		// F-BASIC V3.4 L20 writes to this area while Dic ROM is enabled.
+		// There is a possibility that Dic ROM Enable flag only influence READ, and
+		// always writable.
+		// if(true!=state.av40DicROMEnabled)
 		{
 			state.data[addr]=d;
 		}
@@ -900,6 +903,26 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	text.back()+=cpputil::Ubtox(state.av40SubRAMBBank);
 	text.back()+=" RAMWriteProtect:";
 	text.back()+=cpputil::Ubtox(state.av40SubRAMBWriteProtect);
+
+	text.push_back("DicROM:");
+	if(true==state.av40DicROMEnabled)
+	{
+		text.back()+="Enabled";
+	}
+	else
+	{
+		text.back()+="Disabled";
+	}
+	text.back()+="  DicRAM:";
+	if(true==state.av40DicRAMEnabled)
+	{
+		text.back()+="Enabled";
+	}
+	else
+	{
+		text.back()+="Disabled";
+	}
+
 
 	return text;
 }
