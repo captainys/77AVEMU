@@ -124,10 +124,12 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-MAXIMIZE"==ARG)
 		{
 			windowModeOnStartUp=WINDOW_MAXIMIZE;
+			autoScaling=true;
 		}
 		else if("-FULLSCREEN"==ARG)
 		{
 			windowModeOnStartUp=WINDOW_FULLSCREEN;
+			autoScaling=true;
 		}
 		else if("-PAUSE"==ARG)
 		{
