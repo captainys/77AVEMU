@@ -2006,7 +2006,7 @@ void FM77AVCommandInterpreter::Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,
 			av.mainCPU.debugger.ClearBreakOnMemWrite(addr);
 			av.subCPU.debugger.ClearBreakOnMemWrite(addr);
 		}
-		for(uint32_t addr=0; addr<=PhysicalMemory::PHYSMEM_SIZE; ++addr)
+		for(uint32_t addr=0; addr<PhysicalMemory::PHYSMEM_SIZE; ++addr)
 		{
 			av.physMem.var.memAttr[addr].brkOnWrite=false;
 		}
