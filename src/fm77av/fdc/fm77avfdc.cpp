@@ -49,7 +49,13 @@ void FM77AVFDC::MakeReady(void)
 /* virtual */ void FM77AVFDC::RunScheduledTask(unsigned long long int fm77avTime)
 {
 	auto &drv=state.drive[DriveSelect()];
-	auto diskPtr=GetDriveDisk(DriveSelect());
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
+	{
+		imgPtr=&imgFilePtr->img;
+	}
 
 	state.recordType=false;
 	state.recordNotFound=false;
@@ -129,17 +135,21 @@ void FM77AVFDC::MakeReady(void)
 	case 0x90: // Read Data (Read Sector)
 		if(0==state.data.size()) // Need to prepare sector data.
 		{
-			if(nullptr!=diskPtr)
+			if(nullptr!=imgPtr)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
 					unsigned int nSteps=0;
-					auto secPtr=diskPtr->GetSectorFrom(drv.trackPos,state.side,GetSectorReg(),state.sectorPositionInTrack,nSteps);
-					if(nullptr!=secPtr)
+					auto sector=imgPtr->ReadSectorFrom(diskIdx,drv.trackPos,state.side,GetSectorReg(),state.sectorPositionInTrack,nSteps);
+					if(true==sector.exists)
 					{
-						state.data=secPtr->sectorData;
-						state.CRCErrorAfterRead=(0!=secPtr->crcStatus);
-						state.nanosecPerByte=(0==secPtr->nanosecPerByte ? NANOSEC_PER_BYTE : secPtr->nanosecPerByte);
+						std::swap(state.data,sector.data);
+						state.CRCErrorAfterRead=(0!=sector.crcStatus);
+						state.nanosecPerByte=imgPtr->GetNanoSecPerByte(diskIdx,drv.trackPos,state.side,GetSectorReg());
+						if(0==state.nanosecPerByte)
+						{
+							state.nanosecPerByte=NANOSEC_PER_BYTE;
+						}
 						if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType &&
 						   true==fm77avPtr->dmac.TxRQ() &&
 						   true==fm77avPtr->dmac.FDCtoMEM())
@@ -201,8 +211,7 @@ void FM77AVFDC::MakeReady(void)
 			}
 			else
 			{
-				auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-				if(true!=state.DRQ && state.dataReadPointer<secPtr->sectorData.size())
+				if(true!=state.DRQ && state.dataReadPointer<state.data.size())
 				{
 					// Pointer is incremented at IORead.
 					state.DRQ=true;
@@ -228,18 +237,20 @@ void FM77AVFDC::MakeReady(void)
 	case 0xB0: // Write Data (Write Sector)
 		if(state.expectedWriteLength==0)
 		{
-			if(nullptr!=diskPtr)
+			if(nullptr!=imgPtr)
 			{
-				if(true==diskPtr->IsWriteProtected())
+				if(true==imgPtr->WriteProtected(diskIdx))
 				{
 					// Write protected.
 				}
 				else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
-					auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-					if(nullptr!=secPtr)
+					auto sector=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+					if(true==sector.exists && 0<sector.data.size())
 					{
-						state.expectedWriteLength=secPtr->sectorData.size();
+						state.data.resize(sector.data.size());
+						state.expectedWriteLength=sector.data.size();
+						state.dataReadPointer=0; // Maybe I should call it just data pointer.
 						state.DRQ=true;
 						state.lastDRQTime=fm77avTime;
 						// Should I raise IRQ?
@@ -279,30 +290,14 @@ void FM77AVFDC::MakeReady(void)
 	case 0xC0: // Read Address
 		if(0==state.data.size())
 		{
-			if(nullptr!=diskPtr)
+			if(nullptr!=imgPtr)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
 					// Copy CHRN and CRC CRC to DMA.
-					auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
-					if(nullptr!=trkPtr)
+					state.data=imgPtr->ReadAddress(diskIdx,drv.trackPos,state.side,state.addrMarkReadCount);
+					if(0<state.data.size())
 					{
-						if(trkPtr->sector.size()<=state.addrMarkReadCount)
-						{
-							state.addrMarkReadCount=0;
-						}
-						auto &sector=trkPtr->sector[state.addrMarkReadCount];
-
-						std::vector <unsigned char> CHRN_CRC=
-						{
-							sector.cylinder,
-							sector.head,
-							sector.sector,
-							sector.sizeShift,
-							0x7f, // How can I calculate CRC?
-							0x7f
-						};
-						state.data=CHRN_CRC;
 						state.dataReadPointer=0;
 						state.DRQ=true;
 						state.lastDRQTime=fm77avTime;
@@ -338,27 +333,22 @@ void FM77AVFDC::MakeReady(void)
 	case 0xE0: // Read Track
 		if(0==state.data.size())
 		{
-			if(nullptr!=diskPtr)
+			if(nullptr!=imgPtr)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
-					// Copy CHRN and CRC CRC to DMA.
-					auto trkPtr=diskPtr->GetTrack(drv.trackPos,state.side);
-					if(nullptr!=trkPtr)
+					std::vector <unsigned char> rawRead;
+					for(int i=0; i<0x1800; ++i)
 					{
-						std::vector <unsigned char> rawRead;
-						for(int i=0; i<0x1800; ++i)
-						{
-							rawRead.push_back(0x4E);
-						}
-
-						std::swap(state.data,rawRead);
-						state.dataReadPointer=0;
-						state.DRQ=true;
-						state.lastDRQTime=fm77avTime;
-						// Should I raise IRQ?
-						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
+						rawRead.push_back(0x4E);
 					}
+
+					std::swap(state.data,rawRead);
+					state.dataReadPointer=0;
+					state.DRQ=true;
+					state.lastDRQTime=fm77avTime;
+					// Should I raise IRQ?
+					fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
 				}
 				else
 				{
@@ -387,15 +377,17 @@ void FM77AVFDC::MakeReady(void)
 	case 0xF0: // Write Track
 		if(state.expectedWriteLength==0)
 		{
-			if(nullptr!=diskPtr)
+			if(nullptr!=imgPtr)
 			{
-				if(true==diskPtr->IsWriteProtected())
+				if(true==imgPtr->WriteProtected(diskIdx))
 				{
 					// Write protected.
 				}
 				else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
 					state.expectedWriteLength=FORMAT_WRITE_LENGTH_2D_2DD;
+					state.data.resize(state.expectedWriteLength);
+					state.dataReadPointer=0;
 					state.DRQ=true;
 					state.lastDRQTime=fm77avTime;
 					// Should I raise IRQ?
@@ -444,7 +436,14 @@ void FM77AVFDC::MakeReady(void)
 /* virtual */ void FM77AVFDC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
 	auto &drv=state.drive[DriveSelect()];
-	auto diskPtr=GetDriveDisk(DriveSelect());
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
+	{
+		imgPtr=&imgFilePtr->img;
+	}
+
 	switch(ioport)
 	{
 	case FM77AVIO_FDC_STATUS_COMMAND://=      0xFD18,
@@ -495,14 +494,14 @@ void FM77AVFDC::MakeReady(void)
 			case 0x90: // Read Data (Read Sector)
 				std::cout << " C " << drv.trackPos << " H " << state.side << " R " << GetSectorReg();
 				{
-					if(nullptr!=diskPtr)
+					if(nullptr!=imgPtr)
 					{
-						auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-						if(nullptr!=secPtr && 0!=(0!=secPtr->crcStatus))
+						auto sector=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+						if(true==sector.exists && 0!=sector.crcStatus)
 						{
 							std::cout << " CRC Error";
 						}
-						else if(nullptr==secPtr)
+						else if(true!=sector.exists)
 						{
 							std::cout << " Sector Not Exist";
 						}
@@ -513,14 +512,14 @@ void FM77AVFDC::MakeReady(void)
 			case 0xB0: // Write Data (Write Sector)
 				std::cout << " C " << drv.trackPos << " H " << state.side << " R " << GetSectorReg();
 				{
-					if(nullptr!=diskPtr)
+					if(nullptr!=imgPtr)
 					{
-						auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-						if(nullptr!=secPtr && 0!=(0!=secPtr->crcStatus))
+						auto sector=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+						if(true==sector.exists && 0!=sector.crcStatus)
 						{
 							std::cout << " CRC Error";
 						}
-						else if(nullptr==secPtr)
+						else if(true!=sector.exists)
 						{
 							std::cout << " Sector Not Exist";
 						}
@@ -551,20 +550,22 @@ void FM77AVFDC::MakeReady(void)
 		if(true==state.DRQ)
 		{
 			state.DRQ=false;
-			state.data.push_back(data);
+			if(state.dataReadPointer<state.data.size())
+			{
+				state.data[state.dataReadPointer++]=data;
+			}
 			auto &drv=state.drive[DriveSelect()];
 
-			if(state.expectedWriteLength<=state.data.size())
+			if(state.expectedWriteLength<=state.dataReadPointer)
 			{
 				if(0xA0==(state.lastCmd&0xF0) || 0xB0==(state.lastCmd&0xF0)) // Write Data (Write Sector)
 				{
-					auto secPtr=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg());
-					if(nullptr!=secPtr)
+					auto len=imgPtr->GetSectorLength(diskIdx,drv.trackPos,state.side,GetSectorReg());
+					if(0<len)
 					{
-						auto writeSize=std::max(state.data.size(),secPtr->sectorData.size());
-						diskPtr->WriteSector(drv.trackPos,state.side,GetSectorReg(),writeSize,state.data.data());
-						diskPtr->SetModified();
-						if(state.lastCmd&0x10 && diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
+						auto writeSize=std::max(state.dataReadPointer,len);
+						imgPtr->WriteSector(diskIdx,drv.trackPos,state.side,GetSectorReg(),writeSize,state.data.data());
+						if(state.lastCmd&0x10 && 0<imgPtr->GetSectorLength(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Multi Record
 						{
 							SetSectorReg(GetSectorReg()+1);
 							state.expectedWriteLength=0; // Signal new sector
@@ -574,6 +575,10 @@ void FM77AVFDC::MakeReady(void)
 						{
 							MakeReady();
 						}
+					}
+					else
+					{
+						MakeReady();
 					}
 				}
 				else if(0xF0==(state.lastCmd&0xF0)) // // Write Track
@@ -598,7 +603,14 @@ void FM77AVFDC::MakeReady(void)
 /* virtual */ unsigned int FM77AVFDC::IOReadByte(unsigned int ioport)
 {
 	auto &drv=state.drive[DriveSelect()];
-	auto diskPtr=GetDriveDisk(DriveSelect());
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
+	{
+		imgPtr=&imgFilePtr->img;
+	}
+
 	unsigned char data=0xFF;
 	if(FM77AVIO_FDC_DATA==ioport)
 	{
@@ -609,7 +621,7 @@ void FM77AVFDC::MakeReady(void)
 			if(state.data.size()<=state.dataReadPointer)
 			{
 				state.CRCError=state.CRCErrorAfterRead;
-				if(0x90==(state.lastCmd&0xF0) && nullptr!=diskPtr->GetSector(drv.trackPos,state.side,GetSectorReg()+1)) // Read Sector + MultiRecordFlag
+				if(0x90==(state.lastCmd&0xF0) && nullptr!=imgPtr && 0<imgPtr->GetSectorLength(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Read Sector + MultiRecordFlag
 				{
 					state.data.clear();
 					state.dataReadPointer=0;
@@ -708,10 +720,17 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
 {
 	auto &drv=state.drive[DriveSelect()];
-	auto diskPtr=GetDriveDisk(DriveSelect());
-	if(nullptr!=diskPtr)
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
 	{
-		if(true==diskPtr->IsWriteProtected())
+		imgPtr=&imgFilePtr->img;
+	}
+
+	if(nullptr!=imgPtr)
+	{
+		if(true==imgPtr->WriteProtected(diskIdx))
 		{
 			// Write protected.
 		}
@@ -807,7 +826,11 @@ void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
 					}
 				}
 			}
-			auto newDiskMediaType=IdentifyDiskMediaTypeFromTrackCapacity(trackCapacity);
+
+			auto writeSize=std::max<unsigned int>(state.data.size(),state.dataReadPointer);
+			state.data.resize(writeSize);
+			auto newDiskMediaType=imgPtr->WriteTrack(diskIdx,drv.trackPos,state.side,state.data);
+
 			if(MEDIA_UNKNOWN!=newDiskMediaType)
 			{
 				if(drv.mediaType==MEDIA_2D)
@@ -820,28 +843,7 @@ void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
 					// 2D 640KB,720KB can be re-formatted to 720KB,640KB
 					drv.mediaType=newDiskMediaType;
 				}
-				else if((drv.mediaType==MEDIA_2HD_1232KB || drv.mediaType==MEDIA_2HD_1440KB) &&
-				        (newDiskMediaType==MEDIA_2HD_1232KB || newDiskMediaType==MEDIA_2HD_1440KB))
-				{
-					// 2HD 1232KB,1440KB can be re-formatted to 1440KB,1232KB,
-					// and it may change the number of tracks.
-					drv.mediaType=newDiskMediaType;
-					switch(newDiskMediaType)
-					{
-					case MEDIA_2HD_1232KB:
-						diskPtr->SetNumTrack(77);
-						break;
-					case MEDIA_2HD_1440KB:
-						diskPtr->SetNumTrack(80);
-						break;
-					}
-				}
 			}
-			for(auto &s : sectors)
-			{
-				s.nSectorTrack=(unsigned short)sectors.size();
-			}
-			diskPtr->ForceWriteTrack(drv.trackPos,state.side,(int)sectors.size(),sectors.data());
 		}
 	}
 }
