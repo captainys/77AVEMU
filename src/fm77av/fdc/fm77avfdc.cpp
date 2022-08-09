@@ -139,12 +139,16 @@ void FM77AVFDC::MakeReady(void)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
+					bool verifySide=(0!=(state.lastCmd&2));
 					unsigned int nSteps=0;
-					auto sector=imgPtr->ReadSectorFrom(diskIdx,drv.trackPos,state.side,GetSectorReg(),state.sectorPositionInTrack,nSteps);
+					auto sector=imgPtr->ReadSectorFrom(diskIdx,
+					    drv.trackPos,state.side,
+					    drv.trackReg,state.side,GetSectorReg(),verifySide,state.sectorPositionInTrack,nSteps);
 					if(true==sector.exists)
 					{
 						std::swap(state.data,sector.data);
 						state.CRCErrorAfterRead=(0!=sector.crcStatus);
+						state.DDMErrorAfterRead=(0!=sector.DDM);
 						state.nanosecPerByte=imgPtr->GetNanoSecPerByte(diskIdx,drv.trackPos,state.side,GetSectorReg());
 						if(0==state.nanosecPerByte)
 						{
@@ -245,7 +249,10 @@ void FM77AVFDC::MakeReady(void)
 				}
 				else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
-					auto sector=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+					bool verifySide=(0!=(state.lastCmd&2));
+					auto sector=imgPtr->ReadSector(
+					    diskIdx,drv.trackPos,state.side,
+					    drv.trackReg,state.side,GetSectorReg(),verifySide);
 					if(true==sector.exists && 0<sector.data.size())
 					{
 						state.data.resize(sector.data.size());
@@ -294,6 +301,15 @@ void FM77AVFDC::MakeReady(void)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
+					if(state.nextIndexHoleTime<fm77avPtr->state.fm77avTime)
+					{
+						state.addrMarkReadCount=0;
+						state.nextIndexHoleTime=fm77avPtr->state.fm77avTime;
+						state.nextIndexHoleTime/=INDEXHOLE_INTERVAL;
+						state.nextIndexHoleTime*=INDEXHOLE_INTERVAL;
+						state.nextIndexHoleTime+=INDEXHOLE_INTERVAL;
+					}
+
 					// Copy CHRN and CRC CRC to DMA.
 					state.data=imgPtr->ReadAddress(diskIdx,drv.trackPos,state.side,state.addrMarkReadCount);
 					if(0<state.data.size())
@@ -303,7 +319,10 @@ void FM77AVFDC::MakeReady(void)
 						state.lastDRQTime=fm77avTime;
 						// Should I raise IRQ?
 						fm77avPtr->ScheduleDeviceCallBack(*this,fm77avTime+NANOSEC_PER_BYTE);
-						++state.addrMarkReadCount;
+
+						// Trick: Also update sector-read position.
+						// This trick should re-produce Thexder copy protection with no code alteration.
+						state.sectorPositionInTrack=state.addrMarkReadCount;
 					}
 				}
 				else
@@ -496,7 +515,10 @@ void FM77AVFDC::MakeReady(void)
 				{
 					if(nullptr!=imgPtr)
 					{
-						auto sector=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+						bool verifySide=(0!=(state.lastCmd&2));
+						auto sector=imgPtr->ReadSector(
+						    diskIdx,drv.trackPos,state.side,
+						    drv.trackReg,state.side,GetSectorReg(),verifySide);
 						if(true==sector.exists && 0!=sector.crcStatus)
 						{
 							std::cout << " CRC Error";
@@ -514,7 +536,10 @@ void FM77AVFDC::MakeReady(void)
 				{
 					if(nullptr!=imgPtr)
 					{
-						auto sector=imgPtr->ReadSector(diskIdx,drv.trackPos,state.side,GetSectorReg());
+						bool verifySide=(0!=(state.lastCmd&2));
+						auto sector=imgPtr->ReadSector(
+						    diskIdx,drv.trackPos,state.side,
+						    drv.trackReg,state.side,GetSectorReg(),verifySide);
 						if(true==sector.exists && 0!=sector.crcStatus)
 						{
 							std::cout << " CRC Error";
@@ -621,6 +646,7 @@ void FM77AVFDC::MakeReady(void)
 			if(state.data.size()<=state.dataReadPointer)
 			{
 				state.CRCError=state.CRCErrorAfterRead;
+				state.recordType=state.DDMErrorAfterRead;
 				if(0x90==(state.lastCmd&0xF0) && nullptr!=imgPtr && 0<imgPtr->GetSectorLength(diskIdx,drv.trackPos,state.side,GetSectorReg()+1)) // Read Sector + MultiRecordFlag
 				{
 					state.data.clear();
