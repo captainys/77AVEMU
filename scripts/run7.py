@@ -50,6 +50,7 @@ def Run(argv):
 		#os.path.join(MUTSUDIR,"symtables","RUN"+MACHINETYPE+".txt"),
 		#"-DEBUG",
 		#"-PAUSE",
+		"-AUTOSCALE",
 		"-INITCMD","ena cst",
 	]+argv).wait()
 

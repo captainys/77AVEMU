@@ -46,6 +46,7 @@ def Run(argv):
 	subprocess.Popen([
 		MutsuExe(),
 		ROMDIR,
+		"-AUTOSCALE",
 		#"-SYM",
 		#os.path.join(MUTSUDIR,"symtables","RUN"+MACHINETYPE+".txt"),
 		#"-DEBUG",
