@@ -192,6 +192,15 @@ void FM77AVCRTC::ReadD408(void)
 	state.CRTEnabled=true;
 }
 
+void FM77AVCRTC::ReadD409(void)
+{
+	state.VRAMAccessFlag=true;
+}
+void FM77AVCRTC::WriteD409(void)
+{
+	state.VRAMAccessFlag=false;
+}
+
 void FM77AVCRTC::WriteFD04(uint8_t data)
 {
 	if(0==(data&8))

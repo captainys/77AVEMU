@@ -111,6 +111,8 @@ public:
 		// switched back from 640x400 mode or 320x200 260K-color mode,
 		// the screen mode needs to set to FM77AV's screen mode.
 
+		bool VRAMAccessFlag=false;
+
 		uint16_t VRAMOffset[FM77AV40_NUM_VRAM_BANKS]={0,0,0},VRAMOffsetMask=0xffe0;
 		uint8_t VRAMAccessMask=0;
 		uint8_t displayPage=0;
@@ -161,6 +163,9 @@ public:
 	uint8_t ReadFD04(void) const;
 	void WriteFD12(uint8_t data);
 	const int NonDestructiveReadFD12(void) const;
+
+	void ReadD409(void);
+	void WriteD409(void);
 
 	void WriteD40E(uint8_t data);
 	void WriteD40F(uint8_t data);

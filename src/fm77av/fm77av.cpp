@@ -237,6 +237,25 @@ MemoryAccess &FM77AV::MemAccess(unsigned int mainOrSub)
 	return mainMemAcc;
 }
 
+void FM77AV::SetFM8Speed(void)
+{
+	mainCPU.state.freq=1200000;
+	subCPU.state.freq=1200000;
+	state.CRTCHaltsSubCPU=true;
+}
+void FM77AV::SetFM7Speed(void)
+{
+	mainCPU.state.freq=2000000;
+	subCPU.state.freq=2000000;
+	state.CRTCHaltsSubCPU=true;
+}
+void FM77AV::SetFM77Speed(void)
+{
+	mainCPU.state.freq=2000000;
+	subCPU.state.freq=2000000;
+	state.CRTCHaltsSubCPU=false;
+}
+
 void FM77AV::PowerOn(void)
 {
 	Reset();
@@ -293,7 +312,9 @@ void FM77AV::Reset(void)
 bool FM77AV::SubCPUHalt(void) const
 {
 	return true==subCPU.state.halt ||
-	       true==state.subSysHalt;
+	       true==state.subSysHalt ||
+	       (true==state.CRTCHaltsSubCPU && true==crtc.state.VRAMAccessFlag && true!=crtc.InBlank(state.fm77avTime))
+	       ;
 	       // || (machine type==FM-7, VRAM-access is set, VSYNC=false);
 }
 bool FM77AV::ExternalDevicePresent(void) const

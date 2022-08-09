@@ -322,6 +322,9 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_CRT_ON_OFF://=              0xD408,
 		crtc.WriteD408();
 		break;
+	case FM77AVIO_VRAM_ACCESS://=             0xD409,
+		crtc.WriteD409();
+		break;
 
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
@@ -656,6 +659,9 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_CRT_ON_OFF://=              0xD408,
 		crtc.ReadD408();
 		break;
+	case FM77AVIO_VRAM_ACCESS://=             0xD409,
+		crtc.ReadD409();
+		break;
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=false;
 		break;
@@ -688,6 +694,10 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		if(keyboard.state.lastKeyCode&0x100)
 		{
 			byteData|=0x80;
+		}
+		if(mainCPU.state.freq<2000000)
+		{
+			byteData&=0xFE;
 		}
 		break;
 	case FM77AVIO_KEYCODE_PRINTER: // =         0xFD01,

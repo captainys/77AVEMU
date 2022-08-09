@@ -134,6 +134,8 @@ public:
 		bool mainToSubIRQ;
 		bool subNMIMask=false;
 
+		bool CRTCHaltsSubCPU=false;  // True in FM-7/8 speed mode.
+
 		unsigned int machineType=MACHINETYPE_FM7;
 		unsigned int keyboardIRQHandler=CPU_SUB; // Controlled by $FD02 bit 0.  FM-Techknow pp.151.
 		uint64_t fm77avTime=0;
@@ -306,6 +308,10 @@ public:
 	/*! Should implement this function when adding disk drive, rs232c etc.
 	*/
 	bool ExternalDevicePresent(void) const;
+
+	void SetFM8Speed(void);
+	void SetFM7Speed(void);
+	void SetFM77Speed(void);
 
 	void PowerOn(void);
 	void Reset(void);

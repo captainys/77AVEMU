@@ -78,6 +78,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SAVECOM0"]=CMD_SAVE_COM0OUT;
 	primaryCmdMap["CLEARCOM0"]=CMD_CLEAR_COM0OUT;
 	primaryCmdMap["LET"]=CMD_LET;
+	primaryCmdMap["SPEED"]=CMD_SETSPEED;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -119,6 +120,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Quit." << std::endl;
 	std::cout << "NOWAIT" << std::endl;
 	std::cout << "  Run at full-speed without adjusting for real-time." << std::endl;
+	std::cout << "SPEED FM8/FM7/FM77" << std::endl;
+	std::cout << "  Select speed." << std::endl;
+	std::cout << "  FM8 speed is for FM-7 in slow mode (Dip Switch 4)" << std::endl;
+	std::cout << "  FM7 speed is native FM-7 speed or slow mode of FM-77." << std::endl;
+	std::cout << "  FM77 speed is native FM-77 speed." << std::endl;
 	std::cout << "YESWAIT" << std::endl;
 	std::cout << "  Match speed to the wall-clock time." << std::endl;
 	std::cout << "  Albert Einstein said your wall-clock and my wall-clock runs differently," << std::endl;
@@ -858,6 +864,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_LET:
 		Execute_Let(thr,fm77av,cmd);
+		break;
+	case CMD_SETSPEED:
+		Execute_SetSpeed(thr,fm77av,cmd);
 		break;
 	}
 }
@@ -2474,6 +2483,34 @@ void FM77AVCommandInterpreter::Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Comm
 
 		fm77av.CPU(cpu).SetRegisterValue(reg,cpputil::Xtoi(valueStr.c_str()));
 		std::cout << "Register " << regStr << "=" << valueStr << std::endl;
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_SetSpeed(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto STR=cmd.argv[1];
+		cpputil::Capitalize(STR);
+		if("FM8"==STR || "FM-8"==STR)
+		{
+			fm77av.SetFM8Speed();
+		}
+		else if("FM7"==STR || "FM-7"==STR)
+		{
+			fm77av.SetFM7Speed();
+		}
+		else if("FM77"==STR || "FM-77"==STR)
+		{
+			fm77av.SetFM77Speed();
+		}
+		else
+		{
+			std::cout << "Speed can be one of FM8, FM7, or FM77" << std::endl;
+		}
 	}
 	else
 	{

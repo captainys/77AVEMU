@@ -32,6 +32,8 @@ public:
 		CMD_NOWAIT,
 		CMD_YESWAIT,
 
+		CMD_SETSPEED,
+
 		CMD_RUN,
 		CMD_RUN_ONE_INSTRUCTION,
 		CMD_PAUSE,
@@ -211,6 +213,7 @@ public:
 	void Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd);
 	void Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd);
 	void Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_SetSpeed(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
