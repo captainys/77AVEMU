@@ -1927,9 +1927,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 	case INST_JSR_IDX: //   0xAD,
 		{
+			auto nextPC=DecodeIndexedAddress(inst,mem);
 			if(true==debugger.enableCallStack)
 			{
-				debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,DecodeIndexedAddress(inst,mem));
+				debugger.PushCallStack(Debugger::CALLTYPE_BSR_JSR,state.S,state.PC,inst.length,nextPC);
 			}
 			// JSR [,S++] found in Polar Star III.
 			// The correct behavior is probably:
@@ -1937,7 +1938,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			//   (2) Push Return Address
 			//   (3) Jump.
 			auto retAddr=state.PC+inst.length;
-			state.PC=DecodeIndexedAddress(inst,mem);
+			state.PC=nextPC;
 			PushS16(mem,retAddr);
 		}
 		inst.length=0;
