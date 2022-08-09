@@ -43,6 +43,9 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Does nothing if the file is already a single-disk image." << std::endl;
 	std::cout << "-NOWAIT" << std::endl;
 	std::cout << "  Run VM without adjusting time for the wall-clock time." << std::endl;
+	std::cout << "-ALIAS aliasLabel filename" << std::endl;
+	std::cout << "  Define file-name alias.  Alias can later be used as a parameter to FDxLOAD, TAPELOAD commands." << std::endl;
+	std::cout << "  eg. You can use -ALIAS DISKA \"full-path-to-game-diskA\" to ease disk swap from command." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
@@ -361,6 +364,13 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-COM0"==ARG || "-COM1"==ARG || "-COM2"==ARG || "-COM3"==ARG)
 		{
 			enableCOM[ARG[4]-'0']=true;
+		}
+		else if("-ALIAS"==ARG && i+2<argc)
+		{
+			auto LABEL=argv[i+1];
+			cpputil::Capitalize(LABEL);
+			fileNameAlias[LABEL]=argv[i+2];
+			i+=2;
 		}
 		else
 		{

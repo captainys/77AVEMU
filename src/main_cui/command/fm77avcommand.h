@@ -2,6 +2,7 @@
 #define FM77AVCOMMAND_IS_INCLUDED
 /* { */
 
+#include <string>
 #include <unordered_map>
 #include "fm77av.h"
 #include "fm77avthread.h"

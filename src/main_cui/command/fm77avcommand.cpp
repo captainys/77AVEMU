@@ -2224,7 +2224,8 @@ void FM77AVCommandInterpreter::Execute_FDLoad(int drv,FM77AV &fm77av,Command &cm
 {
 	if(2<=cmd.argv.size())
 	{
-		if(true==fm77av.fdc.LoadD77orRAW(drv,cmd.argv[1].c_str(),false))
+		auto fileName=fm77av.FileNameAlias(cmd.argv[1]);
+		if(true==fm77av.fdc.LoadD77orRAW(drv,fileName.c_str(),false))
 		{
 			std::cout << "Loaded FD image." << std::endl;
 		}

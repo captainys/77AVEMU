@@ -91,6 +91,9 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		}
 	}
 
+	std::swap(param.fileNameAlias,var.fileNameAlias);
+
+
 	var.noWait=param.noWait;
 
 	if(""!=param.t77Path)
@@ -540,6 +543,18 @@ void FM77AV::DetectMainCPUBIOSCall(void)
 		}
 		std::cout << " " << BIOSCmdToStr(mainMemAcc.FetchByte(mainCPU.state.X)) << std::endl;
 	}
+}
+
+std::string FM77AV::FileNameAlias(std::string input) const
+{
+	auto INPUT=input;
+	cpputil::Capitalize(INPUT);
+	auto found=var.fileNameAlias.find(INPUT);
+	if(found!=var.fileNameAlias.end())
+	{
+		return found->second;
+	}
+	return input;
 }
 
 bool FM77AV::NoWait(void) const

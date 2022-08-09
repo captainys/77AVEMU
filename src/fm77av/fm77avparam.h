@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 #include "fm77avdef.h"
 
 class FM77AVParam
@@ -67,6 +68,8 @@ public:
 	std::vector <std::string> imgSearchPaths;
 	std::vector <HostShortCut> hostShortCutKeys;
 	std::vector <std::string> initialCmd;
+
+	std::unordered_map <std::string,std::string> fileNameAlias;
 
 	std::string quickScrnShotDir;
 

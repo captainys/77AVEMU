@@ -186,6 +186,8 @@ public:
 		std::string quickScrnShotDir;
 		std::vector <std::string> initialCmd;
 
+		std::unordered_map <std::string,std::string> fileNameAlias;
+
 		Address powerOffAt;
 	};
 	Variable var;
@@ -208,6 +210,11 @@ public:
 	void IOWrite(uint16_t ioAddr,uint8_t value);
 	uint8_t IORead(uint16_t ioAddr);
 	uint8_t NonDestructiveIORead(uint16_t ioAddr) const;
+
+	/*! Returns aliased file name if input matches an alias label.
+	    If not, returns input.
+	*/
+	std::string FileNameAlias(std::string input) const;
 
 	bool NoWait(void) const;
 
