@@ -463,6 +463,79 @@ static const KeyTranslationTable keyTranslationTableSourceAdditional[]= // Addit
 	{0x0D,{AVKEY_RETURN,        false,false,false}},
 	{0x0D,{AVKEY_RETURN,        true ,false,false}},
 };
+
+static const KeyTranslationTable keyTranslationTableSourceGraph[]= // Additional table for reverse mapping.
+{
+	{'\t',{AVKEY_TAB,           false,false,true}},
+	{' ', {AVKEY_MID_SPACE,     false,false,true}},		// 32
+	{0xF9,{AVKEY_1,             false,false,true}},
+	{0xFA,{AVKEY_2,             false,false,true}},
+	{0xFB,{AVKEY_3,             false,false,true}},
+	{0xFC,{AVKEY_4,             false,false,true}},
+	{0xF2,{AVKEY_5,             false,false,true}},
+	{0xF3,{AVKEY_6,             false,false,true}},
+	{0xF4,{AVKEY_7,             false,false,true}},
+	{0xF5,{AVKEY_8,             false,false,true}},
+	{0xF6,{AVKEY_9,             false,false,true}},
+	{0xF7,{AVKEY_0,             false,false,true}},
+	{0x8C,{AVKEY_MINUS,         false,false,true}},
+	{0x8B,{AVKEY_HAT,           false,false,true}},
+	{0xF1,{AVKEY_YEN,           false,false,true}},
+
+	{0xFD,{AVKEY_Q,             false,false,true}},
+	{0xF8,{AVKEY_W,             false,false,true}},
+	{0xE4,{AVKEY_E,             false,false,true}},
+	{0xE5,{AVKEY_R,             false,false,true}},
+	{0x9C,{AVKEY_T,             false,false,true}},
+	{0x9D,{AVKEY_Y,             false,false,true}},
+	{0xF0,{AVKEY_U,             false,false,true}},
+	{0xE8,{AVKEY_I,             false,false,true}},
+	{0xE9,{AVKEY_O,             false,false,true}},
+	{0x8D,{AVKEY_P,             false,false,true}},			//80
+	{0x8A,{AVKEY_AT,            false,false,true}},		//64
+	{0xED,{AVKEY_LEFT_SQUARE_BRACKET,false,false,true}},
+
+	{0x95,{AVKEY_A,             false,false,true}},
+	{0x96,{AVKEY_S,             false,false,true}},
+	{0xE6,{AVKEY_D,             false,false,true}},
+	{0xE7,{AVKEY_F,             false,false,true}},
+	{0x9E,{AVKEY_G,             false,false,true}},
+	{0x9F,{AVKEY_H,             false,false,true}},
+	{0xEA,{AVKEY_J,             false,false,true}},
+	{0xEB,{AVKEY_K,             false,false,true}},
+	{0x8E,{AVKEY_L,             false,false,true}},
+	{0x89,{AVKEY_SEMICOLON,     false,false,true}},
+	{0x94,{AVKEY_COLON,         false,false,true}},
+	{0xEC,{AVKEY_RIGHT_SQUARE_BRACKET,false,false,true}},
+
+	{0x80,{AVKEY_Z,             false,false,true}},
+	{0x81,{AVKEY_X,             false,false,true}},
+	{0x82,{AVKEY_C,             false,false,true}},
+	{0x83,{AVKEY_V,             false,false,true}},
+	{0x84,{AVKEY_B,             false,false,true}},
+	{0x85,{AVKEY_N,             false,false,true}},
+	{0x86,{AVKEY_M,             false,false,true}},
+	{0x87,{AVKEY_COMMA,         false,false,true}},
+	{0x88,{AVKEY_DOT,           false,false,true}},
+	{0x97,{AVKEY_SLASH,         false,false,true}},
+	{0xE0,{AVKEY_DOUBLE_QUOTE,  false,false,true}},
+
+	{0x98,{AVKEY_NUM_STAR,      false,false,true}},
+	{0x99,{AVKEY_NUM_PLUS,      false,false,true}},
+	{0xEE,{AVKEY_NUM_MINUS,     false,false,true}},
+	{0x91,{AVKEY_NUM_SLASH,     false,false,true}},
+	{0x9A,{AVKEY_NUM_1,         false,false,true}},
+	{0x90,{AVKEY_NUM_2,         false,false,true}},
+	{0x9B,{AVKEY_NUM_3,         false,false,true}},
+	{0x93,{AVKEY_NUM_4,         false,false,true}},
+	{0x8F,{AVKEY_NUM_5,         false,false,true}},
+	{0x92,{AVKEY_NUM_6,         false,false,true}},
+	{0xE1,{AVKEY_NUM_7,         false,false,true}},
+	{0xE2,{AVKEY_NUM_8,         false,false,true}},
+	{0xE3,{AVKEY_NUM_9,         false,false,true}},
+	{0xEF,{AVKEY_NUM_EQUAL,     false,false,true}},
+};
+
 static bool ForwardTableMade=false;
 static FM77AVKeyCombination keyForwardTranslationTable[256];
 
@@ -533,6 +606,10 @@ uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb)
 				RegisterKeyReverseMapping(x);
 			}
 			for(auto x : keyTranslationTableSourceAdditional)
+			{
+				RegisterKeyReverseMapping(x);
+			}
+			for(auto x: keyTranslationTableSourceGraph)
 			{
 				RegisterKeyReverseMapping(x);
 			}
