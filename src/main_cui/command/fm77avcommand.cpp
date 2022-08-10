@@ -89,6 +89,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["CALLSTACK"]=ENABLE_CALLSTACK;
 	featureMap["CST"]=ENABLE_CALLSTACK;
 	featureMap["COM0TX"]=ENABLE_PRINT_COM0;
+	featureMap["PSGLOG"]=ENABLE_PSG_LOG;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -109,6 +110,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["CALLSTACK"]=DUMP_CALLSTACK;
 	dumpableMap["CST"]=DUMP_CALLSTACK;
 	dumpableMap["IRQ"]=DUMP_IRQ;
+	dumpableMap["PSGLOG"]=DUMP_PSG_LOG;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -264,6 +266,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor sub-system command when sub-CPU is unhalted." << std::endl;
 	std::cout << "BIOSMON" << std::endl;
 	std::cout << "  Monitor BIOS Call." << std::endl;
+	std::cout << "PSGLOG" << std::endl;
+	std::cout << "  PSG register-write log." << std::endl;
 
 	std::cout << "LOADEVT filename.txt" << std::endl;
 	std::cout << "  Load Event Log." << std::endl;
@@ -319,6 +323,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  AY-3-8910 and YM2203C Status." << std::endl;
 	std::cout << "MEM" << std::endl;
 	std::cout << "  Memory-Management Status." << std::endl;
+	std::cout << "PSGLOG" << std::endl;
+	std::cout << "  PSG register-write log." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -1009,6 +1015,11 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.serialport.cli0.printRecvText=true;
 			std::cout << "Enabled COM0 Print." << std::endl;
 			break;
+		case ENABLE_PSG_LOG:
+			fm77av.sound.state.ay38910.registerLog.clear();
+			fm77av.sound.state.ay38910.takeRegisterLog=true;
+			std::cout << "Enabled PSG AY3-8910 register log." << std::endl;
+			break;
 		}
 	}
 	else
@@ -1075,6 +1086,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		case ENABLE_PRINT_COM0:
 			fm77av.serialport.cli0.printRecvText=false;
 			std::cout << "Disabled COM0 Print." << std::endl;
+			break;
+		case ENABLE_PSG_LOG:
+			fm77av.sound.state.ay38910.takeRegisterLog=false;
+			std::cout << "Disabled PSG AY3-8910 register log." << std::endl;
 			break;
 		}
 	}
@@ -1222,6 +1237,12 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				break;
 			case DUMP_IRQ:
 				for(auto str : fm77av.GetIRQStatusText())
+				{
+					std::cout << str << std::endl;
+				}
+				break;
+			case DUMP_PSG_LOG:
+				for(auto str : fm77av.sound.state.ay38910.FormatRegisterLog())
 				{
 					std::cout << str << std::endl;
 				}

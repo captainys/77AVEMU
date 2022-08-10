@@ -114,6 +114,7 @@ public:
 		ENABLE_DEBUGGER,
 		ENABLE_CALLSTACK,
 		ENABLE_PRINT_COM0,
+		ENABLE_PSG_LOG,
 	};
 
 	enum
@@ -138,6 +139,7 @@ public:
 		DUMP_MEMORY,
 		DUMP_CALLSTACK,
 		DUMP_IRQ,
+		DUMP_PSG_LOG,
 	};
 
 	class Command

@@ -52,6 +52,13 @@ public:
 		ENV_KEEP
 	};
 
+	class RegisterLog
+	{
+	public:
+		uint64_t t;
+		uint8_t reg,value;
+	};
+
 	class Channel
 	{
 	public:
@@ -80,10 +87,13 @@ public:
 	static const uint8_t envPtn[16][4];
 	static const unsigned int DAConvOut[16];
 
+	bool takeRegisterLog=false;
+	std::vector <RegisterLog> registerLog;
+
 	AY38910();
 	void Reset(void);
 	uint8_t Read(uint8_t reg) const;
-	void Write(uint8_t reg,uint8_t value);
+	void Write(uint64_t vmTime,uint8_t reg,uint8_t value);
 
 	inline bool IsPlaying(void) const
 	{
@@ -104,6 +114,8 @@ public:
 	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples);
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	std::vector <std::string> FormatRegisterLog(void) const;
 };
 
 /* } */

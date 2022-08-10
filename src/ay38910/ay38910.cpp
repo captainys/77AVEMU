@@ -46,13 +46,22 @@ uint8_t AY38910::Read(uint8_t reg) const
 {
 	return state.regs[reg];
 }
-void AY38910::Write(uint8_t reg,uint8_t value)
+void AY38910::Write(uint64_t vmTime,uint8_t reg,uint8_t value)
 {
 	state.regs[reg]=value;
 	if(REG_ENV_PATTERN==reg)
 	{
 		state.envPatternSeg=0;
 		StartEnvelopeSegment();
+	}
+
+	if(true==takeRegisterLog)
+	{
+		RegisterLog l;
+		l.t=vmTime;
+		l.reg=reg;
+		l.value=value;
+		registerLog.push_back(l);
 	}
 }
 
@@ -141,13 +150,13 @@ const uint8_t AY38910::envPtn[16][4]
 
 	{ENV_DOWN,ENV_UP,  ENV_REPT,ENV_KEEP},
 
-	{ENV_DOWN,ENV_UP,  ENV_REPT,ENV_KEEP},
-
 	{ENV_DOWN,ENV_ONE, ENV_KEEP,ENV_KEEP},
 
 	{ENV_UP,  ENV_REPT,ENV_KEEP,ENV_KEEP},
 
 	{ENV_UP,  ENV_ONE, ENV_KEEP,ENV_KEEP},
+
+	{ENV_UP  ,ENV_DOWN,ENV_REPT,ENV_KEEP},
 
 	{ENV_UP,  ENV_ZERO,ENV_KEEP,ENV_KEEP},
 };
@@ -405,5 +414,19 @@ std::vector <std::string> AY38910::GetStatusText(void) const
 		text.back()+=cpputil::Ustox(GetF_NUM(ch));
 	}
 
+	return text;
+}
+
+std::vector <std::string> AY38910::FormatRegisterLog(void) const
+{
+	std::vector <std::string> text;
+	if(0<registerLog.size())
+	{
+		auto t0=registerLog[0].t;
+		for(auto l : registerLog)
+		{
+			std::cout << (l.t-t0) << " $" << cpputil::Ubtox(l.reg) << " $" << cpputil::Ubtox(l.value) << std::endl;
+		}
+	}
 	return text;
 }

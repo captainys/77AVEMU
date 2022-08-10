@@ -115,7 +115,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			}
 			if(2==state.ay38910LastControl && 0==control) // Write Data
 			{
-				state.ay38910.Write(state.ay38910AddrLatch,state.ay38910LastData);
+				state.ay38910.Write(fm77avPtr->state.fm77avTime,state.ay38910AddrLatch,state.ay38910LastData);
 			}
 			state.ay38910LastControl=control;
 		}
@@ -167,7 +167,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 		case 2: // Data Write
 			if(state.ym2203cAddrLatch<=0x0F)
 			{
-				state.ay38910.Write(state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				state.ay38910.Write(fm77avPtr->state.fm77avTime,state.ym2203cAddrLatch,state.ym2203cDataWrite);
 				if(REG_GAMEPORTENABLE==state.ym2203cAddrLatch)
 				{
 					// Question: Should I care?
