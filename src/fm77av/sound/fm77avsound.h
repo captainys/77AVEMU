@@ -22,6 +22,7 @@ public:
 #else
 		MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
 #endif
+		MILLISEC_PER_WAVE_GENERATION=5,
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
@@ -75,6 +76,8 @@ public:
 	bool recordAudio=false;
 	std::vector <unsigned char> audioRecording;
 
+	uint64_t nextWaveFilledInMillisec=0;
+	uint64_t nextWaveGenTime=0;
 	std::vector <unsigned char> nextWave;
 
 	inline bool IsFMPlaying(void) const

@@ -297,56 +297,41 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 {
 	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState) && nullptr!=outside_world)
 	{
-		if(true==nextWave.empty())
+		auto fm77avPtr=(FM77AV *)vmPtr;
+		if(nextWaveGenTime<=fm77avPtr->state.fm77avTime)
 		{
-			if(true==IsFMPlaying())
+			const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.
+			const uint32_t numSamplesPerWave=MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
+			if(true==nextWave.empty())
 			{
-				nextWave=state.ym2203c.MakeWaveAllChannels(MILLISEC_PER_WAVE);
+				nextWaveFilledInMillisec=0;
+				nextWave.resize(numSamplesPerWave*4);
+				memset(nextWave.data(),0,nextWave.size());
 			}
-			if(true==state.ay38910.IsPlaying())
-			{
-				const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.
-				unsigned int numSamples=0;
-				if(true==nextWave.empty()) // YM2612 not playing.
-				{
-					numSamples=MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
-					nextWave.resize(numSamples*4);
-					memset(nextWave.data(),0,numSamples*4);
-				}
-				else
-				{
-					numSamples=(unsigned int)(nextWave.size()/4);
-				}
 
-				state.ay38910.AddWaveAllChannelsForNumSamples(nextWave.data(),numSamples);
-			}
-			if(BEEP_OFF!=state.beepState)
+			if(nextWaveFilledInMillisec<MILLISEC_PER_WAVE)
 			{
-				// 1200Hz Square Wave.  Sign flips at 2400 times per sec.
-				const uint32_t periodX100=AY38910::WAVE_SAMPLING_RATE*100/2400;
-				if(true==nextWave.empty()) // YM2612 not playing.
+				uint32_t fillBegin=nextWaveFilledInMillisec*numSamplesPerWave/MILLISEC_PER_WAVE;
+				uint32_t fillEnd=(nextWaveFilledInMillisec+MILLISEC_PER_WAVE_GENERATION)*numSamplesPerWave/MILLISEC_PER_WAVE;
+				fillEnd=std::min(fillEnd,numSamplesPerWave);
+
+				auto fillNumSamples=fillEnd-fillBegin;
+				auto fillPtr=nextWave.data()+fillBegin*4;
+
+				if(true==IsFMPlaying())
 				{
-					unsigned int numSamples=MILLISEC_PER_WAVE*AY38910::WAVE_SAMPLING_RATE/1000;
-					nextWave.resize(numSamples*4);
-					memset(nextWave.data(),0,numSamples*4);
-					for(unsigned int i=0; i<numSamples; ++i)
-					{
-						state.beepTimeBalance+=100;
-						if(periodX100<=state.beepTimeBalance)
-						{
-							state.beepTimeBalance-=periodX100;
-							state.beepWaveOut=255-state.beepWaveOut;
-						}
-						auto dataPtr=nextWave.data()+i*4;
-						auto waveOut=(0==state.beepWaveOut ? -BEEP_SOUND_AMPLITUDE : BEEP_SOUND_AMPLITUDE);
-						WordOp_Set(dataPtr,  waveOut);
-						WordOp_Set(dataPtr+2,waveOut);
-					}
+					state.ym2203c.MakeWaveForNSamples(fillPtr,fillNumSamples);
 				}
-				else
+				if(true==state.ay38910.IsPlaying())
 				{
-					unsigned int numSamples=(unsigned int)(nextWave.size()/4);
-					for(unsigned int i=0; i<numSamples; ++i)
+					unsigned int numSamples=0;
+					state.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples);
+				}
+				if(BEEP_OFF!=state.beepState)
+				{
+					// 1200Hz Square Wave.  Sign flips at 2400 times per sec.
+					const uint32_t periodX100=AY38910::WAVE_SAMPLING_RATE*100/2400;
+					for(unsigned int i=0; i<fillNumSamples; ++i)
 					{
 						state.beepTimeBalance+=100;
 						if(periodX100<=state.beepTimeBalance)
@@ -354,34 +339,54 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 							state.beepTimeBalance-=periodX100;
 							state.beepWaveOut=255-state.beepWaveOut;
 						}
-						auto dataPtr=nextWave.data()+i*4;
+						auto dataPtr=fillPtr+i*4;
 						auto waveOut=(0==state.beepWaveOut ? -BEEP_SOUND_AMPLITUDE : BEEP_SOUND_AMPLITUDE);
 						WordOp_Add(dataPtr,  waveOut);
 						WordOp_Add(dataPtr+2,waveOut);
 					}
 				}
-			}
-		}
+				nextWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
 
-		if(BEEP_ONE_SHOT==state.beepState)
-		{
-			auto fm77avPtr=(FM77AV *)vmPtr;
-			if(state.beepStopTime<=fm77avPtr->state.fm77avTime)
-			{
-				state.beepState=BEEP_OFF;
+				if(BEEP_ONE_SHOT==state.beepState)
+				{
+					auto fm77avPtr=(FM77AV *)vmPtr;
+					if(state.beepStopTime<=fm77avPtr->state.fm77avTime)
+					{
+						state.beepState=BEEP_OFF;
+					}
+				}
 			}
-		}
 
-		if(true!=outside_world->FMPSGChannelPlaying() && true!=nextWave.empty())
-		{
-			if(true==recordAudio)
+			nextWaveGenTime+=MILLISEC_PER_WAVE_GENERATION*1000000;
+			// Maybe it was not playing a while?
+			if(nextWaveGenTime<fm77avPtr->state.fm77avTime)
 			{
-				audioRecording.insert(audioRecording.end(),nextWave.begin(),nextWave.end());
+				nextWaveGenTime=fm77avPtr->state.fm77avTime+MILLISEC_PER_WAVE_GENERATION*1000000;
 			}
-			outside_world->FMPSGPlay(nextWave);
-			nextWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
-			// state.ym2612.CheckToneDoneAllChannels();
 		}
+	}
+	else if(true!=nextWave.empty())
+	{
+		// Sound stopped, but still something in the buffer.
+		// And, the sound may resume before the end of the buffer.
+		nextWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
+	}
+	else
+	{
+		// Not playing, no leftover buffer.
+		nextWaveGenTime=0;
+	}
+
+	if(true!=outside_world->FMPSGChannelPlaying() && MILLISEC_PER_WAVE<=nextWaveFilledInMillisec)
+	{
+		if(true==recordAudio)
+		{
+			audioRecording.insert(audioRecording.end(),nextWave.begin(),nextWave.end());
+		}
+		outside_world->FMPSGPlay(nextWave);
+		nextWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
+		// state.ym2612.CheckToneDoneAllChannels();
+		nextWaveFilledInMillisec=0;
 	}
 }
 
