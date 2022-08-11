@@ -18,11 +18,13 @@ public:
 	enum
 	{
 #if !defined(__linux__) && !defined(__linux)
-		MILLISEC_PER_WAVE=10, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
+		MILLISEC_PER_WAVE=20, // Looks like time resolution of Wave Playback of Direct Sound is 10ms.
+		// And it needs to be 10 times integer.
 #else
 		MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
 #endif
-		MILLISEC_PER_WAVE_GENERATION=5,
+		// 2ms resolution is needed for "What?" sound of Xanadu.
+		MILLISEC_PER_WAVE_GENERATION=2,
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}

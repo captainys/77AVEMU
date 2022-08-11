@@ -379,6 +379,7 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 
 	if(true!=outside_world->FMPSGChannelPlaying() && MILLISEC_PER_WAVE<=nextWaveFilledInMillisec)
 	{
+		// Hope wave playback is done before nextWaveGenTime.
 		if(true==recordAudio)
 		{
 			audioRecording.insert(audioRecording.end(),nextWave.begin(),nextWave.end());
