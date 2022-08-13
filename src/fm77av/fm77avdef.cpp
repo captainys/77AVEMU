@@ -17,6 +17,8 @@ std::string MachineTypeToStr(unsigned int machineType)
 {
 	switch(machineType)
 	{
+	case MACHINETYPE_AUTO:
+		return "AUTO";
 	case MACHINETYPE_FM7:
 		return "FM-7";
 	case MACHINETYPE_FM77:
@@ -31,6 +33,10 @@ std::string MachineTypeToStr(unsigned int machineType)
 unsigned int StrToMachineType(std::string str)
 {
 	Capitalize(str);
+	if("AUTO"==str)
+	{
+		return MACHINETYPE_AUTO;
+	}
 	if("FM7"==str || "FM-7"==str)
 	{
 		return MACHINETYPE_FM7;
@@ -611,4 +617,14 @@ unsigned int StrToKeyboardMode(std::string str)
 		return FM77AV_KEYBOARD_MODE_TRANSLATION3;
 	}
 	return FM77AV_KEYBOARD_MODE_DEFAULT;
+}
+
+
+std::string FM77AVAppToStr(unsigned int app)
+{
+	return "NONE";
+}
+unsigned int FM77AVStrToApp(std::string str)
+{
+	return FM77AV_APPSPECIFIC_NONE;
 }

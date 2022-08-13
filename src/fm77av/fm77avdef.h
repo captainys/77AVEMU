@@ -401,5 +401,16 @@ FM77AV_KEYBOARD_MODE_NUM_MODES
 #endif
 
 
+enum
+{
+	FM77AV_APPSPECIFIC_NONE,
+};
+
+#ifdef __cplusplus
+std::string FM77AVAppToStr(unsigned int app);
+unsigned int FM77AVStrToApp(std::string str);
+#endif
+
+
 /* } */
 #endif

@@ -12,6 +12,8 @@
 class FM77AVParam
 {
 public:
+	void CleanUp(void);
+
 	enum
 	{
 		WINDOW_NORMAL,
@@ -54,13 +56,17 @@ public:
 	unsigned int windowModeOnStartUp=WINDOW_NORMAL;
 	bool windowShift=false;
 
+	std::string startUpStateFName;
+
+	std::string pauseResumeKeyLabel="SCROLLLOCK";
+
 	unsigned int machineType=MACHINETYPE_AUTO;
 	std::string ROMPath;
 
 	bool pauseOnStart=false;
 	unsigned int keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
 
-	unsigned int gamePort[NUM_GAMEPORTS]={FM77AV_GAMEPORTEMU_PHYSICAL0,FM77AV_GAMEPORTEMU_MOUSE};
+	unsigned int gamePort[NUM_GAMEPORTS]={FM77AV_GAMEPORTEMU_PHYSICAL0,FM77AV_GAMEPORTEMU_PHYSICAL1};
 	long long int maxButtonHoldTime[2][2]={{0,0},{0,0}};
 
 	bool noWait=false;
@@ -69,6 +75,8 @@ public:
 	std::vector <HostShortCut> hostShortCutKeys;
 	std::vector <std::string> initialCmd;
 
+	std::vector <VirtualKey> virtualKeys;
+
 	std::unordered_map <std::string,std::string> fileNameAlias;
 
 	std::string quickScrnShotDir;
@@ -76,6 +84,7 @@ public:
 	std::string playbackEventLogFName;
 
 	std::string t77Path,t77SavePath;
+	bool t77WriteProtect=false;
 	std::string fdImgFName[NUM_FDDRIVES];
 	bool fdImgWriteProtect[NUM_FDDRIVES]={false,false,false,false};
 
@@ -83,9 +92,35 @@ public:
 
 	bool enableCOM[FM7_MAX_NUM_COMPORTS]={false,false,false,false};
 
+	unsigned int appSpecificSetting=FM77AV_APPSPECIFIC_NONE;
+
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
 };
+
+
+
+class FM77AVProfile : public FM77AVParam
+{
+public:
+	// MAX_NUM_VIRTUALKEYS is limitation for GUI environment only.
+	enum
+	{
+		MAX_NUM_VIRTUALKEYS=20,
+	};
+
+
+	// autoStart flag is for GUI environment only.
+	bool autoStart=false;
+
+	std::string errorMsg;
+
+	FM77AVProfile();
+	void CleanUp(void);
+	std::vector <std::string> Serialize(void) const;
+	bool Deserialize(const std::vector <std::string> &text);
+};
+
 
 
 /* } */
