@@ -5,6 +5,8 @@
 
 PEB01130@nifty.com
 
+---
+
 # Introduction
 It is yet another emulator for legendary Fujitsu FM-7 series computers.  The goal is to emulate FM77AV40.  I never owned FM77AV40EX and AV40SX, and practically more than 99.9% of FM-7 series software runs on FM77AV.  Minimum goal is to support FM77AV.
 
@@ -26,14 +28,14 @@ FM-7シリーズには既にいくつかの非常に高い再現性を持つエ�
 
 使い方はコンパイル後に Mutsu_CUI -H とコマンドをタイプしてください。
 
-
+---
 
 # ROM Files
 It is an emulator.  I have another side-goal to write my own F-BASIC compatible ROM, but it's a long shot.  Until then, you need ROM images extracted from an actual hardware.  The ROMs are compatible with the best-known-to-the-day FM-7 series emulator XM7.  Place ROM files in one directory, and give the directory name as the first-parameter to Mutsu_CUI.exe (or Mutsu_CUI in Linux and mac).
 
 このプログラムはエミュレータなので、実機から吸い出したROMイメージが必要です。F-BASIC互換ROMを書く、という壮大な目標もあるにはあるんですが、それはかなり長い道のりなので、それまでの間は実機から吸い出したROMイメージが必要です。ROMイメージは、現在知られている中で最も再現性が高いと思われるエミュレータXM7と互換性があります。ROMイメージを一か所のディレクトリに置いて、Mutsu_CUI.exeの第一パラメータにディレクトリの場所を指定してください。
 
-
+---
 
 # Building the program
 It uses cmake and Visual Studio in Windows, clang in Linux (need X11, OpenGL, and ALSA), or XCode in macOS.
@@ -51,9 +53,61 @@ In the working directory, do:
 
 Then, you get the executable in main_cui\Release\Mutsu_CUI.exe in Windows, main_cui/Mutsu_CUI in Linux, or main_cui/Mutsu_CUI.app/Contents/MacOS/Mutsu_CUI in macos.
 
+---
 
 # Command Line Example
 
 ./Mutsu_CUI path_to_FM7ROM -TAPE tape/PlazmaLine.t77
 
 ./Mutsu_CUI path_to_FM7ROM -FD0 disk/Thexder.d77
+
+
+---
+
+# Tested
+## 2022/08/13
+F-BASIC V3.3 L10  Started and tested a few commands.
+
+F-BASIC V3.4 L20 for AV40  Started and tested a few commands.
+
+Thexder  Played first 3 stages.
+
+Polar Star III  Played first 2 stages.
+
+Ys  Played through all th eway.
+
+Ys2  Played through all the way.
+
+MAGUS  Started and played a few times.
+
+Xanadu Scenario 1  Played through all the way.
+
+Laptick  Started ok.
+
+Pro Baseball Fan  Started ok.
+
+Laydock  Started ok.
+
+Death Force  Started ok.
+
+Valis  Opening anime and game started ok.
+
+Plazma Line (Tape)  Started ok.
+
+Delphis (Tape)  Started ok.
+
+Dragon Buster  Played first 2 stages.
+
+Space Harrier  Played first stage.
+
+Silpheed  Opening demo.
+
+Hydlide (Tape)  Started ok.
+
+Tritorn (Tape)  Started ok.
+
+Jelda (Tape)  Started ok.
+
+Jelda2 (Tape)  Started ok.
+
+Dig Dug (Tape)  Started ok.
