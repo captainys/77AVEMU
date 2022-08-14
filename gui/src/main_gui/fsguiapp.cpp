@@ -37,7 +37,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "fsguiapp.h"
 #include "cpputil.h"
 #include "d77.h"
-#include "diskimg.h"
 
 
 
@@ -911,7 +910,7 @@ YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
 YsWString FsGuiMainCanvas::GetMutsuProfileDir(void) const
 {
 	YsWString path;
-	path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Mutsu_TOWNS");
+	path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Mutsu_FM77AV");
 	YsFileIO::MkDir(path);
 	return path;
 }
@@ -992,25 +991,20 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 			if(true==genFloppyDisk)
 			{
 				lastSelectedFDFName=fName;
-				std::vector <unsigned char> img;
+				int diskId=-1;
+				D77File d77;
 
 				switch(genDiskSize)
 				{
 				case 320:
-					img=Get320KBFloppyDiskImage();
+					diskId=d77.CreateUnformatted(40,"2D Disk");
 					break;
 				case 640:
-					img=Get640KBFloppyDiskImage();
+					diskId=d77.CreateUnformatted(80,"2DD Disk");
 					break;
 				}
 
-				auto ext=fName.GetExtension();
-				if(0==ext.STRCMP(L".D77") || 0==ext.STRCMP(L".D88"))
-				{
-					D77File d77;
-					d77.SetRawBinary(img);
-					img=d77.MakeD77Image();
-				}
+				auto img=d77.MakeD77Image();
 
 				bool result=false;
 				YsFileIO::File ofp(fName,"wb");

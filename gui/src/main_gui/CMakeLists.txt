@@ -1,7 +1,7 @@
 set(TARGET_NAME "Mutsu_GUI")
 set(IS_LIBRARY_PROJECT 0)
 set(EXE_TYPE MACOSX_BUNDLE)
-set(LIB_DEPENDENCY fslazywindow ysgl fsguilib fsguifiledialog fsguilib_gl1 ysport subproc fm77av fm77avcommand fm77avdef fm77avparam fssimplewindow_connection cpputil d77 diskimg)
+set(LIB_DEPENDENCY fslazywindow ysgl fsguilib fsguifiledialog fsguilib_gl1 ysport fm77av fm77avcommand fm77avdef fm77avparam fssimplewindow_connection cpputil d77)
 set(INCLUDE_DEPENDENCY)
 set(OWN_HEADER_PATH .)
 set(SINGLE_TARGET 1)

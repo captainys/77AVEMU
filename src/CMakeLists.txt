@@ -15,7 +15,7 @@ add_subdirectory(${TSUGARU_SOURCE_DIR}/cheapmath ${CMAKE_BINARY_DIR}/cheapmath)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/device ${CMAKE_BINARY_DIR}/device)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/vmbase ${CMAKE_BINARY_DIR}/vmbase)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/lineparser ${CMAKE_BINARY_DIR}/lineparser)
-add_subdirectory(${TSUGARU_SOURCE_DIR}/ym2612 ${CMAKE_BINARY_DIR}/ym2612)
+# add_subdirectory(${TSUGARU_SOURCE_DIR}/ym2612 ${CMAKE_BINARY_DIR}/ym2612)  Should be included from ym2203c
 add_subdirectory(${TSUGARU_SOURCE_DIR}/i8251 ${CMAKE_BINARY_DIR}/i8251)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/diskdrive ${CMAKE_BINARY_DIR}/diskdrive)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/osdependent/gamepad ${CMAKE_BINARY_DIR}/gamepad)

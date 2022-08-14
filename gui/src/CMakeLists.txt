@@ -29,7 +29,6 @@ add_subdirectory(${TSUGARU_SOURCE_DIR}/lineparser ${CMAKE_BINARY_DIR}/lineparser
 # add_subdirectory(${TSUGARU_SOURCE_DIR}/ym2612 ${CMAKE_BINARY_DIR}/ym2612)  Should be included from ym2203c library.
 add_subdirectory(${TSUGARU_SOURCE_DIR}/i8251 ${CMAKE_BINARY_DIR}/i8251)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/diskdrive ${CMAKE_BINARY_DIR}/diskdrive)
-add_subdirectory(${TSUGARU_SOURCE_DIR}/diskimg ${CMAKE_BINARY_DIR}/diskimg)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/osdependent/gamepad ${CMAKE_BINARY_DIR}/gamepad)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/externals/d77 ${CMAKE_BINARY_DIR}/d77)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/externals/yspng ${CMAKE_BINARY_DIR}/yspng)
