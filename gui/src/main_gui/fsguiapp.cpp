@@ -1539,7 +1539,7 @@ void FsGuiMainCanvas::Tape_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		YsString utf8;
 		YsUnicodeToSystemEncoding(utf8,fName);
 		std::string cmd;
-		if(true==selectSaveTape)
+		if(true!=selectSaveTape)
 		{
 			cmd="TAPELOAD ";
 		}
@@ -1553,6 +1553,7 @@ void FsGuiMainCanvas::Tape_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
 		lastSelectedCDFName=fName;
+		ResumeVMIfSameProc();
 	}
 }
 

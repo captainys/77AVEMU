@@ -15,6 +15,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["QUIT"]=CMD_QUIT;
 	primaryCmdMap["Q"]=CMD_QUIT;
 	primaryCmdMap["FORCEQUIT"]=CMD_FORCE_QUIT;
+	primaryCmdMap["RESET"]=CMD_RESET;
 	primaryCmdMap["NOWAIT"]=CMD_NOWAIT;
 	primaryCmdMap["YESWAIT"]=CMD_YESWAIT;
 	primaryCmdMap["RUN"]=CMD_RUN;
@@ -643,6 +644,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_FORCE_QUIT:
 		exit(0);
+		break;
+	case CMD_RESET:
+		fm77av.Reset();
 		break;
 	case CMD_RUN:
 		Execute_Run(thr,fm77av,outside_world,cmd);

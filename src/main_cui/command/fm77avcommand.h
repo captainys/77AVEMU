@@ -28,6 +28,8 @@ public:
 		CMD_QUIT,
 		CMD_FORCE_QUIT,
 
+		CMD_RESET,
+
 		CMD_HELP,
 
 		CMD_NOWAIT,
