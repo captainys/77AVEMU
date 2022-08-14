@@ -2557,10 +2557,46 @@ void FM77AVCommandInterpreter::Execute_SetSpeed(FM77AVThread &thr,FM77AV &fm77av
 }
 void FM77AVCommandInterpreter::Execute_LoadTape(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
+	if(2<=cmd.argv.size())
+	{
+		auto fileName=fm77av.FileNameAlias(cmd.argv[1]);
+		if(true==fm77av.dataRecorder.LoadT77(fileName))
+		{
+			std::cout << "Loaded Tape image." << std::endl;
+		}
+		else
+		{
+			std::cout << "Failed to load Tape image." << std::endl;
+			Error_CannotOpenFile(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
 void FM77AVCommandInterpreter::Execute_TapeForSave(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
+	if(2<=cmd.argv.size())
+	{
+		auto fileName=fm77av.FileNameAlias(cmd.argv[1]);
+		if(true==fm77av.dataRecorder.LoadT77(fileName))
+		{
+			std::cout << "Loaded Tape Image for Save." << std::endl;
+		}
+		else
+		{
+			std::cout << "Failed to load Tape Image for Save." << std::endl;
+			Error_CannotOpenFile(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
 void FM77AVCommandInterpreter::Execute_TapeEject(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
+	fm77av.dataRecorder.Eject();
+	std::cout << "Ejected Tape." << std::endl;
 }

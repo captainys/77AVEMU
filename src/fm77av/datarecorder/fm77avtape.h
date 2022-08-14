@@ -39,6 +39,7 @@ public:
 		bool writeProtect=false;
 	};
 
+	void Eject(void);
 	// T77 format that I remembered from my utility:
 	//   - Data contains two-byte pairs.
 	//       Level Duration(ms)
@@ -91,6 +92,7 @@ public:
 	void Reset(void);  // Don't rewind
 	bool LoadT77(std::string fName);
 	bool LoadAutoSaveT77(std::string fName);
+	void Eject(void);
 	void MotorOn(uint64_t fm77avTime);
 	void MotorOff(uint64_t fm77avTime);
 	void Move(uint64_t fm77avTime);

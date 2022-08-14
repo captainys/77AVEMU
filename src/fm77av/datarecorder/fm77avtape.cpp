@@ -50,6 +50,14 @@ bool FM77AVTape::SaveAs(std::string fName) const
 	}
 	return false; // Will do.
 }
+void FM77AVTape::Eject(void)
+{
+	fName="";
+	data.clear();
+	writeProtect=false;
+	modified=false;
+	lastModifiedTime=0;
+}
 void FM77AVTape::Rewind(TapePointer &ptr) const
 {
 	ptr.dataPtr=0;
@@ -166,6 +174,12 @@ bool FM77AVDataRecorder::LoadAutoSaveT77(std::string fName)
 		return true;
 	}
 	return false;
+}
+void FM77AVDataRecorder::Eject(void)
+{
+	SaveModifiedTapeImages();
+	state.primary.Rewind();
+	state.primary.t77.Eject();
 }
 void FM77AVDataRecorder::MotorOn(uint64_t fm77avTime)
 {
