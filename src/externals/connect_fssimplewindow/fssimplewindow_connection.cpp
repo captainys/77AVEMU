@@ -212,7 +212,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	}
 	else
 	{
-		FsResizeWindow(wid,hei);
+		FsResizeWindow(wid,hei+STATUS_HEI);
 	}
 
 	switch(windowModeOnStartUp)
@@ -298,14 +298,14 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		{
 		case LOWER_RIGHT_NONE:
 			break;
-		// case LOWER_RIGHT_PAUSE:
-		// 	iconWid=PAUSE_wid;
-		// 	iconHei=PAUSE_hei;
-		// 	break;
-		// case LOWER_RIGHT_MENU:
-		// 	iconWid=MENU_wid;
-		// 	iconHei=MENU_hei;
-		// 	break;
+		case LOWER_RIGHT_PAUSE:
+			iconWid=PAUSE_wid;
+			iconHei=PAUSE_hei;
+			break;
+		case LOWER_RIGHT_MENU:
+			iconWid=MENU_wid;
+			iconHei=MENU_hei;
+			break;
 		}
 		if(wid-iconWid<mx && hei-iconHei<my)
 		{
@@ -1166,13 +1166,13 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 		break;
 	case LOWER_RIGHT_PAUSE:
 		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
-		// DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
+		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
 		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
 		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
 		break;
 	case LOWER_RIGHT_MENU:
 		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
-		// DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
+		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
 		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
 		// glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
 		break;
