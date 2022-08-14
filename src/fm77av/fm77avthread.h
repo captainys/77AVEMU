@@ -59,7 +59,12 @@ public:
 	FM77AVThread();
 	~FM77AVThread();
 
+	unsigned int GetRunMode(void) const;
+
 	void SetRunMode(unsigned int runMode);
+
+	void SetReturnOnPause(bool returnOnPause);
+
 	/*! If one of main- or sub-CPUs is muted, returns the one NOT muted.
 	*/
 	unsigned int OnlyOneCPUIsUnmuted(void) const;

@@ -12,9 +12,17 @@ FM77AVThread::FM77AVThread() : renderingThread(new FM77AVRenderingThread)
 FM77AVThread::~FM77AVThread()
 {
 }
+unsigned int FM77AVThread::GetRunMode(void) const
+{
+	return runMode;
+}
 void FM77AVThread::SetRunMode(unsigned int runMode)
 {
 	this->runMode=runMode;
+}
+void FM77AVThread::SetReturnOnPause(bool returnOnPause)
+{
+	this->returnOnPause=returnOnPause;
 }
 unsigned int FM77AVThread::OnlyOneCPUIsUnmuted(void) const
 {
