@@ -56,6 +56,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
+	primaryCmdMap["TAPELOAD"]=CMD_TAPE_LOAD;
+	primaryCmdMap["TAPEFORSAVE"]=CMD_TAPE_SAVETAPE,
+	primaryCmdMap["TAPEEJECT"]=CMD_TAPE_EJECT;
 	primaryCmdMap["TAPEWP"]=CMD_TAPE_WRITE_PROTECT;
 	primaryCmdMap["TAPEUP"]=CMD_TAPE_WRITE_UNPROTECT;
 	primaryCmdMap["TAPEREWIND"]=CMD_TAPE_REWIND;
@@ -605,6 +608,15 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		fm77av.fdc.SetWriteProtect(1,false);
 		break;
 
+	case CMD_TAPE_LOAD:
+		Execute_LoadTape(thr,fm77av,cmd);
+		break;
+	case CMD_TAPE_SAVETAPE:
+		Execute_TapeForSave(thr,fm77av,cmd);
+		break;
+	case CMD_TAPE_EJECT:
+		Execute_TapeEject(thr,fm77av,cmd);
+		break;
 	case CMD_TAPE_WRITE_PROTECT:
 		fm77av.dataRecorder.state.primary.t77.writeProtect=true;
 		std::cout << "Write Protect TAPE." << std::endl;
@@ -2542,4 +2554,13 @@ void FM77AVCommandInterpreter::Execute_SetSpeed(FM77AVThread &thr,FM77AV &fm77av
 	{
 		Error_TooFewArgs(cmd);
 	}
+}
+void FM77AVCommandInterpreter::Execute_LoadTape(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+}
+void FM77AVCommandInterpreter::Execute_TapeForSave(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+}
+void FM77AVCommandInterpreter::Execute_TapeEject(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
 }

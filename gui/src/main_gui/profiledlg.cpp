@@ -431,6 +431,13 @@ void ProfileDialog::Make(void)
 			break;
 		}
 	}
+	else if(scrnModeDrp==drp)
+	{
+		if(0!=scrnModeDrp->GetSelection())
+		{
+			scrnAutoScaleBtn->SetCheck(YSTRUE);
+		}
+	}
 }
 
 void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &prevPos,const double &prevValue)

@@ -47,6 +47,9 @@ public:
 		CMD_ENABLE,
 		CMD_DISABLE,
 
+		CMD_TAPE_LOAD,
+		CMD_TAPE_SAVETAPE,
+		CMD_TAPE_EJECT,
 		CMD_TAPE_WRITE_PROTECT,
 		CMD_TAPE_WRITE_UNPROTECT,
 		CMD_TAPE_REWIND,
@@ -219,6 +222,9 @@ public:
 	void Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd);
 	void Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_SetSpeed(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_LoadTape(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_TapeForSave(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_TapeEject(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
