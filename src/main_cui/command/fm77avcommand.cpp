@@ -77,12 +77,14 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["LOADEVT"]=CMD_LOAD_EVENTLOG;
 	primaryCmdMap["PLAYEVT"]=CMD_PLAY_EVENTLOG;
 	primaryCmdMap["STOPEVT"]=CMD_STOP_EVENTLOG;
+	primaryCmdMap["SS"]=CMD_SAVE_SCREENSHOT;
 	primaryCmdMap["QSS"]=CMD_QUICK_SCREENSHOT;
 	primaryCmdMap["QSSDIR"]=CMD_QUICK_SCREENSHOT_DIR;
 	primaryCmdMap["SAVECOM0"]=CMD_SAVE_COM0OUT;
 	primaryCmdMap["CLEARCOM0"]=CMD_CLEAR_COM0OUT;
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["SPEED"]=CMD_SETSPEED;
+	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -174,6 +176,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "TAPESAVEAS filename.t77" << std::endl;
 	std::cout << "  Save tape image as filename." << std::endl;
 
+	std::cout << "GAMEPORT 0/1 device" << std::endl;
+	std::cout << "  Connect device to game port." << std::endl;
+
 	std::cout << "RUN" << std::endl;
 	std::cout << "  Run." << std::endl;
 	std::cout << "RUN M:addr/S:addr" << std::endl;
@@ -255,6 +260,23 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "LET main/sub:register value" << std::endl;
 	std::cout << "  Load a register value." << std::endl;
 
+	std::cout << "LOADEVT filename.txt" << std::endl;
+	std::cout << "  Load Event Log." << std::endl;
+	std::cout << "PLAYEVT" << std::endl;
+	std::cout << "  Playback Event Log." << std::endl;
+	std::cout << "STOPEVT" << std::endl;
+	std::cout << "  Stop Playback Event Log." << std::endl;
+
+	std::cout << "SS filename.png" << std::endl;
+	std::cout << "  Save screenshot." << std::endl;
+	std::cout << "QSS" << std::endl;
+	std::cout << "  Quick Screen Shot.  File name is automatically given." << std::endl;
+	std::cout << "  File is saved in the quick-screenshot directory." << std::endl;
+	std::cout << "  Optionally, can specify page 0 or 1 as a parameter." << std::endl;
+	std::cout << "QSSDIR dir" << std::endl;
+	std::cout << "  Specify quick-screenshot directory." << std::endl;
+
+
 
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -272,21 +294,6 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor BIOS Call." << std::endl;
 	std::cout << "PSGLOG" << std::endl;
 	std::cout << "  PSG register-write log." << std::endl;
-
-	std::cout << "LOADEVT filename.txt" << std::endl;
-	std::cout << "  Load Event Log." << std::endl;
-	std::cout << "PLAYEVT" << std::endl;
-	std::cout << "  Playback Event Log." << std::endl;
-	std::cout << "STOPEVT" << std::endl;
-	std::cout << "  Stop Playback Event Log." << std::endl;
-
-	std::cout << "QSS" << std::endl;
-	std::cout << "  Quick Screen Shot.  File name is automatically given." << std::endl;
-	std::cout << "  File is saved in the quick-screenshot directory." << std::endl;
-	std::cout << "  Optionally, can specify page 0 or 1 as a parameter." << std::endl;
-	std::cout << "QSSDIR dir" << std::endl;
-	std::cout << "  Specify quick-screenshot directory." << std::endl;
-
 	std::cout << "CALLSTACK main/sub" << std::endl;
 	std::cout << "CST main/sub" << std::endl;
 	std::cout << "  Call stack.  In Mutsu, call stack is not automatically enabled" << std::endl;
@@ -872,6 +879,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		std::cout << "Stop Event-Log Playback." << std::endl;
 		fm77av.eventLog.StopPlayback();
 		break;
+	case CMD_SAVE_SCREENSHOT:
+		Execute_SaveScreenShot(fm77av,cmd);
+		break;
 	case CMD_QUICK_SCREENSHOT:
 		Execute_QuickScreenShot(fm77av,cmd);
 		break;
@@ -889,6 +899,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_SETSPEED:
 		Execute_SetSpeed(thr,fm77av,cmd);
+		break;
+	case CMD_GAMEPORT:
+		Execute_Gameport(fm77av,outside_world,cmd);
 		break;
 	}
 }
@@ -2271,11 +2284,39 @@ void FM77AVCommandInterpreter::Execute_FDLoad(int drv,FM77AV &fm77av,Command &cm
 			std::cout << "Failed to load FD image." << std::endl;
 		}
 	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
 void FM77AVCommandInterpreter::Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd)
 {
 	fm77av.fdc.Eject(drv);
 	std::cout << "Ejected Floppy Drive " << drv << std::endl;
+}
+void FM77AVCommandInterpreter::Execute_SaveScreenShot(FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		FM77AVRender render;
+		fm77av.RenderQuiet(render);
+
+		auto img=render.GetImage();
+
+		YsRawPngEncoder encoder;
+		if(YSOK==encoder.EncodeToFile(cmd.argv[1].c_str(),img.wid,img.hei,8,6,img.rgba))
+		{
+			std::cout << "Saved to " << cmd.argv[1] << std::endl;
+		}
+		else
+		{
+			std::cout << "Save error." << std::endl;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }
 void FM77AVCommandInterpreter::Execute_QuickScreenShot(FM77AV &fm77av,Command &cmd)
 {
@@ -2599,4 +2640,30 @@ void FM77AVCommandInterpreter::Execute_TapeEject(FM77AVThread &thr,FM77AV &fm77a
 {
 	fm77av.dataRecorder.Eject();
 	std::cout << "Ejected Tape." << std::endl;
+}
+void FM77AVCommandInterpreter::Execute_Gameport(FM77AV &fm77av,Outside_World *outside_world,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		unsigned int port=cpputil::Atoi(cmd.argv[1].c_str());
+		unsigned int devType=StrToGamePortEmu(cmd.argv[2]);
+		if(port<FM77AV_NUM_GAMEPORTS)
+		{
+			fm77av.gameport.state.ports[port].device=FM77AVGamePort::EmulationTypeToDeviceType(devType);
+			outside_world->gamePort[port]=devType;
+			outside_world->CacheGamePadIndicesThatNeedUpdates();
+		}
+		else
+		{
+			std::cout << "Port needs to be 0 or 1." << std::endl;
+		}
+	}
+	else
+	{
+		std::cout << "List of Device Options for Game Port:" << std::endl;
+		for(int i=0; i<FM77AV_GAMEPORTEMU_NUM_DEVICES; ++i)
+		{
+			std::cout << GamePortEmuToStr(i) << std::endl;
+		}
+	}
 }

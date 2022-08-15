@@ -101,6 +101,7 @@ public:
 		CMD_PLAY_EVENTLOG,
 		CMD_STOP_EVENTLOG,
 
+		CMD_SAVE_SCREENSHOT,
 		CMD_QUICK_SCREENSHOT,
 		CMD_QUICK_SCREENSHOT_DIR,
 
@@ -108,6 +109,8 @@ public:
 		CMD_CLEAR_COM0OUT,
 
 		CMD_LET,
+
+		CMD_GAMEPORT,
 	};
 
 	enum
@@ -212,6 +215,7 @@ public:
 	void Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_FDLoad(int drv,FM77AV &fm77av,Command &cmd);
 	void Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd);
+	void Execute_SaveScreenShot(FM77AV &fm77av,Command &cmd);
 	void Execute_QuickScreenShotDirectory(FM77AV &fm77av,Command &cmd);
 	void Execute_QuickScreenShot(FM77AV &fm77av,Command &cmd);
 	void Execute_EnableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
@@ -225,6 +229,7 @@ public:
 	void Execute_LoadTape(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_TapeForSave(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_TapeEject(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_Gameport(FM77AV &fm77av,Outside_World *outside_world,Command &cmd);
 };
 
 /* } */
