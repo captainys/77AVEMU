@@ -172,6 +172,8 @@ public:
 		bool monitorBIOSCall=false;
 		unsigned int lastDisassemblyCPU=CPU_MAIN;
 
+		bool noWaitWhileTapeMotorOn=true;
+
 		bool breakOnUnhaltSubCPU=false;
 		uint8_t breakOnSubCmd[FM7_MAX_SUB_CMD];
 

@@ -559,6 +559,10 @@ std::string FM77AV::FileNameAlias(std::string input) const
 
 bool FM77AV::NoWait(void) const
 {
+	if(true==var.noWaitWhileTapeMotorOn && true==dataRecorder.state.motor)
+	{
+		return true;
+	}
 	return var.noWait;
 }
 
