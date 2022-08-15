@@ -24,6 +24,9 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 		t=OPER_INHERENT; // No operand
 	}
 
+	instOperaType[INST_MULTI_BYTE_10]=OPER_MULTI_BYTE_10;
+	instOperaType[INST_MULTI_BYTE_11]=OPER_MULTI_BYTE_11;
+
 	instOperaType[INST_ADCA_IMM]=OPER_IMM;
 	instOperaType[INST_ADCA_DP]=OPER_DP;
 	instOperaType[INST_ADCA_IDX]=OPER_IDX;
@@ -3638,22 +3641,21 @@ MC6809::Instruction MC6809::FetchInstructionTemplate(ConstOrNonConstMemoryAccess
 
 	inst.opCode=MemoryFetch::FetchByte(mem,PC++);
 	inst.length=1;
-	if(0x10==inst.opCode)
-	{
-		inst.length=2;
-		inst.opCode=0x100|MemoryFetch::FetchByte(mem,PC++);
-	}
-	else if(0x11==inst.opCode)
-	{
-		inst.length=2;
-		inst.opCode=0x200|MemoryFetch::FetchByte(mem,PC++);
-	}
 
+REFETCH_MULTI_BYTE:
 	inst.clocks=instClock[inst.opCode];
 	inst.operType=instOperaType[inst.opCode];
 
 	switch(instOperaType[inst.opCode])
 	{
+	case OPER_MULTI_BYTE_10:
+		inst.length=2;
+		inst.opCode=0x100|MemoryFetch::FetchByte(mem,PC++);
+		goto REFETCH_MULTI_BYTE;
+	case OPER_MULTI_BYTE_11:
+		inst.length=2;
+		inst.opCode=0x200|MemoryFetch::FetchByte(mem,PC++);
+		goto REFETCH_MULTI_BYTE;
 	case OPER_IMM:
 	case OPER_DP:
 	case OPER_REG:

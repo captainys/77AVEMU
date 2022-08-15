@@ -41,7 +41,9 @@ public:
 		OPER_EXT,
 		OPER_INHERENT,
 		OPER_REG,
-		OPER_IMM16
+		OPER_IMM16,
+		OPER_MULTI_BYTE_10, // Not really an operand, but doing so will save two if-statements per instruction.
+		OPER_MULTI_BYTE_11, // Not really an operand, but doing so will save two if-statements per instruction.
 	};
 
 	enum
@@ -61,6 +63,9 @@ public:
 
 	enum
 	{
+		INST_MULTI_BYTE_10=0x10,
+		INST_MULTI_BYTE_11=0x11,
+
 		INST_ABX=       0x3A,
 
 		INST_ADCA_IMM=  0x89,
