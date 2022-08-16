@@ -116,10 +116,10 @@ public:
 	void SaveRecording(std::string fName) const;
 
 
-	void SerializeYM2612(std::vector <unsigned char> &data) const;
-	void DeserializeYM2612(const unsigned char *&data,unsigned int version);
-	void SerializeAY3910(std::vector <unsigned char> &data) const;
-	void DeserializeAY3910(const unsigned char *&data);
+	void SerializeYM2203CFMPart(std::vector <unsigned char> &data) const;
+	void DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version);
+	void SerializeAY38910(std::vector <unsigned char> &data) const;
+	void DeserializeAY38910(const unsigned char *&data,unsigned int version);
 
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;

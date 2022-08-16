@@ -390,3 +390,59 @@ std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime)
 
 	return text;
 }
+
+/* virtual */ uint32_t FM77AVDataRecorder::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void FM77AVDataRecorder::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	for(int i=0; i<2; ++i)
+	{
+		const TapePointerPair *tpp=(0==i ? &state.primary : &state.toSave);
+
+		PushString(data,tpp->t77.fName);
+		PushBool(data,tpp->t77.writeProtect);
+
+		PushUint32(data,tpp->ptr.dataPtr);
+		PushUint64(data,tpp->ptr.fm77avTime);
+		PushBool(data,tpp->ptr.eot);
+	}
+
+	PushBool(data,state.motor);
+	PushBool(data,state.recButton);
+	PushBool(data,state.writeData);
+
+	PushUint64(data,state.motorOnTime);
+	PushUint64(data,state.lastBitFlipTime);
+}
+/* virtual */ bool FM77AVDataRecorder::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	for(int i=0; i<2; ++i)
+	{
+		TapePointerPair *tpp=(0==i ? &state.primary : &state.toSave);
+
+		tpp->t77.fName=ReadString(data);
+		tpp->t77.writeProtect=ReadBool(data);
+
+		tpp->ptr.dataPtr=ReadUint32(data);
+		tpp->ptr.fm77avTime=ReadUint64(data);
+		tpp->ptr.eot=ReadBool(data);
+
+		if(true!=tpp->t77.Load(tpp->t77.fName))
+		{
+			tpp->t77.Eject();
+			tpp->ptr.eot=true;
+			tpp->ptr.fm77avTime=0;
+		}
+	}
+
+	state.motor=ReadBool(data);
+	state.recButton=ReadBool(data);
+	state.writeData=ReadBool(data);
+
+	state.motorOnTime=ReadUint64(data);
+	state.lastBitFlipTime=ReadUint64(data);
+
+	return true;
+}

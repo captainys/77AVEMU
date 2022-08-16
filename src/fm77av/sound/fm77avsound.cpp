@@ -410,14 +410,248 @@ void FM77AVSound::SaveRecording(std::string fName) const
 	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
 }
 
+// Difference from Tsugaru is it includes preScaler.
+void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) const
+{
+	auto &ym2203c=state.ym2203c;
+
+	PushUint32(data,ym2203c.state.preScaler);
+
+	PushBool(data,ym2203c.state.LFO);
+	PushUint32(data,ym2203c.state.FREQCTRL);
+	PushUint64(data,ym2203c.state.deviceTimeInNS);
+	PushUint64(data,ym2203c.state.lastTickTimeInNS);
+	for(auto &ch : ym2203c.state.channels)
+	{
+		PushUint32(data,ch.F_NUM);
+		PushUint32(data,ch.BLOCK);
+		PushUint32(data,ch.FB);
+		PushUint32(data,ch.CONNECT);
+		PushUint32(data,ch.L);
+		PushUint32(data,ch.R);
+		PushUint32(data,ch.AMS);
+		PushUint32(data,ch.PMS);
+		PushUint32(data,ch.usingSlot);
+
+		for(auto &sl : ch.slots)
+		{
+			PushUint32(data,sl.DT);
+			PushUint32(data,sl.MULTI);
+			PushUint32(data,sl.TL);
+			PushUint32(data,sl.KS);
+			PushUint32(data,sl.AR);
+			PushUint32(data,sl.AM);
+			PushUint32(data,sl.DR);
+			PushUint32(data,sl.SR);
+			PushUint32(data,sl.SL);
+			PushUint32(data,sl.RR);
+			PushUint32(data,sl.SSG_EG);
+
+			// Cache for wave-generation >>
+			PushUint64(data,sl.microsecS12);
+			PushUint64(data,sl.toneDurationMicrosecS12);
+			PushUint32(data,sl.phaseS12);
+			PushUint32(data,sl.phaseS12Step);
+			PushUint32(data,sl.env[0]);
+			PushUint32(data,sl.env[1]);
+			PushUint32(data,sl.env[2]);
+			PushUint32(data,sl.env[3]);
+			PushUint32(data,sl.env[4]);
+			PushUint32(data,sl.env[5]);
+			PushUint32(data,sl.envDurationCache);
+			PushBool(data,sl.InReleasePhase);
+			PushUint32(data,sl.ReleaseStartTime);
+			PushUint32(data,sl.ReleaseEndTime);
+			PushUint32(data,sl.ReleaseStartDbX100);
+			PushUint32(data,sl.lastDbX100Cache);
+			// Cache for wave-generation <<
+		}
+
+		PushUint32(data,ch.playState);
+		PushInt32(data,ch.lastSlot0Out[0]);
+		PushInt32(data,ch.lastSlot0Out[1]);
+	}
+	PushUint32(data,ym2203c.state.F_NUM_3CH[0]);
+	PushUint32(data,ym2203c.state.F_NUM_3CH[1]);
+	PushUint32(data,ym2203c.state.F_NUM_3CH[2]);
+	PushUint32(data,ym2203c.state.BLOCK_3CH[0]);
+	PushUint32(data,ym2203c.state.BLOCK_3CH[1]);
+	PushUint32(data,ym2203c.state.BLOCK_3CH[2]);
+	PushUint32(data,ym2203c.state.F_NUM_6CH[0]);
+	PushUint32(data,ym2203c.state.F_NUM_6CH[1]);
+	PushUint32(data,ym2203c.state.F_NUM_6CH[2]);
+	PushUint32(data,ym2203c.state.BLOCK_6CH[0]);
+	PushUint32(data,ym2203c.state.BLOCK_6CH[1]);
+	PushUint32(data,ym2203c.state.BLOCK_6CH[2]);
+	PushUcharArray(data,256,ym2203c.state.regSet[0]);
+	PushUcharArray(data,256,ym2203c.state.regSet[1]);
+	PushUint64(data,ym2203c.state.timerCounter[0]);
+	PushUint64(data,ym2203c.state.timerCounter[1]);
+	PushBool(data,ym2203c.state.timerUp[0]);
+	PushBool(data,ym2203c.state.timerUp[1]);
+	PushUint32(data,ym2203c.state.playingCh);
+	PushInt32(data,ym2203c.state.volume);
+}
+void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version)
+{
+	auto &ym2203c=state.ym2203c;
+
+	ym2203c.state.preScaler=ReadUint32(data);
+
+	ym2203c.state.LFO=ReadBool(data);
+	ym2203c.state.FREQCTRL=ReadUint32(data);
+	ym2203c.state.deviceTimeInNS=ReadUint64(data);
+	ym2203c.state.lastTickTimeInNS=ReadUint64(data);
+	for(auto &ch : ym2203c.state.channels)
+	{
+		ch.F_NUM=ReadUint32(data);
+		ch.BLOCK=ReadUint32(data);
+		ch.FB=ReadUint32(data);
+		ch.CONNECT=ReadUint32(data);
+		ch.L=ReadUint32(data);
+		ch.R=ReadUint32(data);
+		ch.AMS=ReadUint32(data);
+		ch.PMS=ReadUint32(data);
+		ch.usingSlot=ReadUint32(data);
+
+		for(auto &sl : ch.slots)
+		{
+			sl.DT=ReadUint32(data);
+			sl.MULTI=ReadUint32(data);
+			sl.TL=ReadUint32(data);
+			sl.KS=ReadUint32(data);
+			sl.AR=ReadUint32(data);
+			sl.AM=ReadUint32(data);
+			sl.DR=ReadUint32(data);
+			sl.SR=ReadUint32(data);
+			sl.SL=ReadUint32(data);
+			sl.RR=ReadUint32(data);
+			sl.SSG_EG=ReadUint32(data);
+
+			// Cache for wave-generation >>
+			sl.microsecS12=ReadUint64(data);
+			sl.toneDurationMicrosecS12=ReadUint64(data);
+			sl.phaseS12=ReadUint32(data);
+			sl.phaseS12Step=ReadUint32(data);
+			sl.env[0]=ReadUint32(data);
+			sl.env[1]=ReadUint32(data);
+			sl.env[2]=ReadUint32(data);
+			sl.env[3]=ReadUint32(data);
+			sl.env[4]=ReadUint32(data);
+			sl.env[5]=ReadUint32(data);
+			sl.envDurationCache=ReadUint32(data);
+			sl.InReleasePhase=ReadBool(data);
+			sl.ReleaseStartTime=ReadUint32(data);
+			sl.ReleaseEndTime=ReadUint32(data);
+			sl.ReleaseStartDbX100=ReadUint32(data);
+			sl.lastDbX100Cache=ReadUint32(data);
+			// Cache for wave-generation <<
+		}
+
+		ch.playState=ReadUint32(data);
+		ch.lastSlot0Out[0]=ReadInt32(data);
+		ch.lastSlot0Out[1]=ReadInt32(data);
+	}
+	ym2203c.state.F_NUM_3CH[0]=ReadUint32(data);
+	ym2203c.state.F_NUM_3CH[1]=ReadUint32(data);
+	ym2203c.state.F_NUM_3CH[2]=ReadUint32(data);
+	ym2203c.state.BLOCK_3CH[0]=ReadUint32(data);
+	ym2203c.state.BLOCK_3CH[1]=ReadUint32(data);
+	ym2203c.state.BLOCK_3CH[2]=ReadUint32(data);
+	ym2203c.state.F_NUM_6CH[0]=ReadUint32(data);
+	ym2203c.state.F_NUM_6CH[1]=ReadUint32(data);
+	ym2203c.state.F_NUM_6CH[2]=ReadUint32(data);
+	ym2203c.state.BLOCK_6CH[0]=ReadUint32(data);
+	ym2203c.state.BLOCK_6CH[1]=ReadUint32(data);
+	ym2203c.state.BLOCK_6CH[2]=ReadUint32(data);
+	ReadUcharArray(data,256,ym2203c.state.regSet[0]);
+	if(1<=version)
+	{
+		ReadUcharArray(data,256,ym2203c.state.regSet[1]);
+	}
+	ym2203c.state.timerCounter[0]=ReadUint64(data);
+	ym2203c.state.timerCounter[1]=ReadUint64(data);
+	ym2203c.state.timerUp[0]=ReadBool(data);
+	ym2203c.state.timerUp[1]=ReadBool(data);
+	ym2203c.state.playingCh=ReadUint32(data);
+	ym2203c.state.volume=ReadInt32(data);
+}
+void FM77AVSound::SerializeAY38910(std::vector <unsigned char> &data) const
+{
+	PushUcharArray(data,AY38910::NUM_REGS,state.ay38910.state.regs);
+	for(int i=0; i<AY38910::NUM_CHANNELS; ++i)
+	{
+		PushUint32(data,state.ay38910.state.ch[i].toneSign);
+		PushUint32(data,state.ay38910.state.ch[i].tonePeriodBalance);
+	}
+	PushUint32(data,state.ay38910.state.envPhase);
+	PushUint32(data,state.ay38910.state.envOut);
+	PushUint32(data,state.ay38910.state.envPeriodBalance);
+	PushUint32(data,state.ay38910.state.envPatternSeg);
+	PushUint32(data,state.ay38910.state.preScaler);
+	PushUint32(data,state.ay38910.state.LFSR);
+	PushUint32(data,state.ay38910.state.noisePeriodBalance);
+
+}
+void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int version)
+{
+	ReadUcharArray(data,AY38910::NUM_REGS,state.ay38910.state.regs);
+	for(int i=0; i<AY38910::NUM_CHANNELS; ++i)
+	{
+		state.ay38910.state.ch[i].toneSign=ReadUint32(data);
+		state.ay38910.state.ch[i].tonePeriodBalance=ReadUint32(data);
+	}
+	state.ay38910.state.envPhase=ReadUint32(data);
+	state.ay38910.state.envOut=ReadUint32(data);
+	state.ay38910.state.envPeriodBalance=ReadUint32(data);
+	state.ay38910.state.envPatternSeg=ReadUint32(data);
+	state.ay38910.state.preScaler=ReadUint32(data);
+	state.ay38910.state.LFSR=ReadUint32(data);
+	state.ay38910.state.noisePeriodBalance=ReadUint32(data);
+}
+
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
 {
 	return 0;
 }
 /* virtual */ void FM77AVSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	SerializeYM2203CFMPart(data);
+	PushUint16(data,state.ym2203cCommand);
+	PushUint16(data,state.ym2203cDataRead);
+	PushUint16(data,state.ym2203cDataWrite);
+	PushUint32(data,state.ym2203cAddrLatch);
+
+	SerializeAY38910(data);
+	PushUint16(data,state.ay38910regMode);
+	PushUint16(data,state.ay38910AddrLatch);
+	PushUint16(data,state.ay38910LastControl);
+	PushUint16(data,state.ay38910LastData);
+
+	PushUint16(data,state.beepState);
+	PushUint64(data,state.beepStopTime);
+	PushUint32(data,state.beepTimeBalance);
+	PushUint16(data,state.beepWaveOut);
 }
 /* virtual */ bool FM77AVSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	DeserializeYM2203CFMPart(data,version);
+	state.ym2203cCommand=ReadUint16(data);
+	state.ym2203cDataRead=ReadUint16(data);
+	state.ym2203cDataWrite=ReadUint16(data);
+	state.ym2203cAddrLatch=ReadUint32(data);
+
+	DeserializeAY38910(data,version);
+	state.ay38910regMode=ReadUint16(data);
+	state.ay38910AddrLatch=ReadUint16(data);
+	state.ay38910LastControl=ReadUint16(data);
+	state.ay38910LastData=ReadUint16(data);
+
+	state.beepState=ReadUint16(data);
+	state.beepStopTime=ReadUint64(data);
+	state.beepTimeBalance=ReadUint32(data);
+	state.beepWaveOut=ReadUint16(data);
+
+	nextWaveGenTime=0;
 	return true;
 }

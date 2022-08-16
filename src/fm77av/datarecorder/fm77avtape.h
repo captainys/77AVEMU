@@ -36,7 +36,6 @@ public:
 		unsigned int dataPtr=0;
 		uint64_t fm77avTime=0;   // In nano sec.
 		bool eot=false;
-		bool writeProtect=false;
 	};
 
 	void Eject(void);
@@ -109,6 +108,10 @@ public:
 	void SaveModifiedTapeImages(void);
 
 	std::vector <std::string> GetStatusText(uint64_t fm77avTime) const;
+
+	/* virtual */ uint32_t SerializeVersion(void) const;
+	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 
