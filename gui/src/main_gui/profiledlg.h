@@ -30,6 +30,7 @@ public:
 	FsGuiStatic *profileFNameTxt;
 
 	FsGuiButton *ROMDirBtn,*TapeImgBtn,*TapeSaveImgBtn,*FDImgBtn[FM77AVProfile::NUM_FDDRIVES];
+	FsGuiButton *AutoStartTapeBtn;
 	FsGuiButton *FDWriteProtBtn[FM77AVProfile::NUM_FDDRIVES];
 	FsGuiTextBox *ROMDirTxt,*TapeImgTxt,*TapeSaveImgTxt,*FDImgTxt[FM77AVProfile::NUM_FDDRIVES];
 	FsGuiDropList *gamePortDrp[2]; // None, Pad0, Pad1, Keybord Emulation, Mouse,

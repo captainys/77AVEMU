@@ -140,6 +140,8 @@ void ProfileDialog::Make(void)
 		TapeSaveImgTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
 		TapeSaveImgTxt->SetLengthLimit(PATH_LENGTH);
 
+		AutoStartTapeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start Tape Program",YSTRUE);
+
 		FDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
 		FDWriteProtBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
 		FDImgTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath-24,YSFALSE);
@@ -539,6 +541,10 @@ void ProfileDialog::OnSelectFile(FsGuiDialog *dlg,int returnCode)
 	if((int)YSOK==returnCode && nullptr!=fdlg)
 	{
 		nowBrowsingTxt->SetText(fdlg->selectedFileArray[0]);
+		if(TapeImgTxt==nowBrowsingTxt)
+		{
+			autoStartBtn->SetCheck(YSTRUE);
+		}
 	}
 }
 
@@ -608,6 +614,7 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 	profile.ROMPath=ROMDirTxt->GetString().data();
 	profile.t77Path=TapeImgTxt->GetString().data();
 	profile.t77SavePath=TapeSaveImgTxt->GetString().data();
+	profile.autoLoadTapeFile=(AutoStartTapeBtn->GetCheck()==YSTRUE);
 	profile.fdImgFName[0]=FDImgTxt[0]->GetString().data();
 	profile.fdImgWriteProtect[0]=(YSTRUE==FDWriteProtBtn[0]->GetCheck());
 	profile.fdImgFName[1]=FDImgTxt[1]->GetString().data();
@@ -700,6 +707,8 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 
 	str.SetUTF8String(profile.t77SavePath.data());
 	TapeSaveImgTxt->SetText(str);
+
+	AutoStartTapeBtn->SetCheck(true==profile.autoLoadTapeFile ? YSTRUE : YSFALSE);
 
 	str.SetUTF8String(profile.fdImgFName[0].data());
 	FDImgTxt[0]->SetText(str);
