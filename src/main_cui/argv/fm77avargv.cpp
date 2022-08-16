@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <iostream>
 #include "fm77avargv.h"
+#include "fm77avkey.h"
+#include "fm77avkeyboard.h"
 #include "cpputil.h"
 #include "d77.h"
 
@@ -48,6 +50,19 @@ void FM77AVArgv::Help(void)
 	std::cout << "-ALIAS aliasLabel filename" << std::endl;
 	std::cout << "  Define file-name alias.  Alias can later be used as a parameter to FDxLOAD, TAPELOAD commands." << std::endl;
 	std::cout << "  eg. You can use -ALIAS DISKA \"full-path-to-game-diskA\" to ease disk swap from command." << std::endl;
+	std::cout << "-KEYBOARD DIRECT/TRANS/TRANS2/TRANS3" << std::endl;
+	std::cout << "  Keyboard mode.  DIRECT is good for gaming.  TRANS/TRANS2/TRANS3 is good for typing." << std::endl;
+	std::cout << "-AUTOSTOP autoStopType" << std::endl;
+	std::cout << "  FM-7 seriew before FM77AV could not detect key-release.  Therefore, game programs" << std::endl;
+	std::cout << "  could start moving a character by a key stroke, but did not know when the key was" << std::endl;
+	std::cout << "  released and should stop.  Therefore, we had to press typically Num-5 top stop a" << std::endl;
+	std::cout << "  character.  In the emulator, this problem can be solved by virtually typing a" << std::endl;
+	std::cout << "  different key when num keys or arrow keys are released.  You can choose from" << std::endl;
+	std::cout << "  AFTER_NUM_RELEASE, AFTER_ARROW_RELEASE, AFTER_NUM_RELEASE_AND_RETYPE," << std::endl;
+	std::cout << "  AFTER_ARROW_RELEASE_AND_RETYPE, and AFTER_ANY_KEY_RELEASE." << std::endl;
+	std::cout << "-AUTOSTOPKEY keyCode" << std::endl;
+	std::cout << "  Specify which key should virtually be pressed after num keys or arrow keys are" << std::endl;
+	std::cout << "  released." << std::endl;
 	std::cout << "-GAMEPORT0 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
@@ -303,6 +318,38 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			else
 			{
 				std::cout << "Undefined keyboard emulation." << std::endl;
+				return false;
+			}
+			++i;
+		}
+		else if("-AUTOSTOP"==ARG && i+1<argc)
+		{
+			autoStopType=FM77AVKeyboard::StrToAutoStop(argv[i+1]);
+			if(FM77AVKeyboard::AUTOSTOP_NONE==autoStopType)
+			{
+				std::cout << "Auto-stop type can be one of:" << std::endl;
+				std::cout << "  AFTER_NUM_RELEASE" << std::endl;
+				std::cout << "  AFTER_NUM_RELEASE_AND_RETYPE" << std::endl;
+				std::cout << "  AFTER_ARROW_RELEASE_AND_RETYPE" << std::endl;
+				std::cout << "  AFTER_ARROW_RELEASE_AND_RETYPE" << std::endl;
+				std::cout << "  AFTER_ANY_KEY_RELEASE" << std::endl;
+				return false;
+			}
+			++i;
+		}
+		else if("-AUTOSTOPKEY"==ARG && i+1<argc)
+		{
+			autoStopKey=FM77AVKeyLabelToKeyCode(argv[i+1]);
+			if(AVKEY_NULL==autoStopKey)
+			{
+				std::cout << "Key code can be one of:" << std::endl;
+				for(int i=0; i<AVKEY_NUM_KEYCODE; ++i)
+				{
+					if(AVKEY_NULL!=i)
+					{
+						std::cout << FM77AVKeyCodeToKeyLabel(i) << std::endl;
+					}
+				}
 				return false;
 			}
 			++i;

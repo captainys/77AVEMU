@@ -158,6 +158,9 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		CPU(param.powerOffAtCPUType).debugger.SetBreakPoint(param.powerOffAtAddr,param.powerOffAtAddr);
 	}
 
+	keyboard.var.autoStopAfterThis=param.autoStopType;
+	keyboard.var.autoStopKey=param.autoStopKey;
+
 	var.quickScrnShotDir=param.quickScrnShotDir;
 	var.initialCmd=param.initialCmd;
 

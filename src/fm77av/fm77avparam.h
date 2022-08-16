@@ -97,6 +97,9 @@ public:
 
 	bool autoLoadTapeFile=false;
 
+	unsigned int autoStopType=0;
+	unsigned int autoStopKey=0;
+
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
 };
