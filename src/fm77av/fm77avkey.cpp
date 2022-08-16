@@ -618,7 +618,7 @@ uint16_t FM77AVTranslateKeyCombinationToChar(FM77AVKeyCombination keyComb)
 	}
 	if(AVKEY_PF1<=keyComb.keyCode && keyComb.keyCode<=AVKEY_PF10)
 	{
-		return 0x100|(keyComb.keyCode-AVKEY_PF1);
+		return 0x100|(1+keyComb.keyCode-AVKEY_PF1);
 	}
 	else if(true==keyComb.ctrl)
 	{
