@@ -565,10 +565,7 @@ void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned i
 	ym2203c.state.BLOCK_6CH[1]=ReadUint32(data);
 	ym2203c.state.BLOCK_6CH[2]=ReadUint32(data);
 	ReadUcharArray(data,256,ym2203c.state.regSet[0]);
-	if(1<=version)
-	{
-		ReadUcharArray(data,256,ym2203c.state.regSet[1]);
-	}
+	ReadUcharArray(data,256,ym2203c.state.regSet[1]);
 	ym2203c.state.timerCounter[0]=ReadUint64(data);
 	ym2203c.state.timerCounter[1]=ReadUint64(data);
 	ym2203c.state.timerUp[0]=ReadBool(data);
