@@ -981,3 +981,90 @@ std::vector <std::string> FM77AVCRTC::GetStatusText(void) const
 
 	return text;
 }
+
+/* virtual */ uint32_t FM77AVCRTC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void FM77AVCRTC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUcharArray(data,8,state.palette.digitalPalette);
+	PushUint16(data,state.palette.analogPaletteLatch);
+	PushUcharArray(data,4096*3,&state.palette.analogPalette[0][0]);
+
+	PushBool(data,state.hardDraw.enabled);
+	PushUint16(data,state.hardDraw.condition);
+	PushUint16(data,state.hardDraw.cmd);
+	PushUint16(data,state.hardDraw.color);
+	PushUint16(data,state.hardDraw.maskBits);
+	PushUint16(data,state.hardDraw.compareResult);
+	PushUcharArray(data,8,state.hardDraw.compareColor);
+	PushUint16(data,state.hardDraw.bankMask);
+	PushUcharArray(data,3,state.hardDraw.tile);
+	PushUcharArray(data,8,state.hardDraw.tilePtnCache);
+
+	PushUint64(data,state.hardDraw.lineBusyBy);
+	PushUint16(data,state.hardDraw.addrOffset);
+	PushUint16(data,state.hardDraw.lineStipple);
+	PushUint16(data,state.hardDraw.x0);
+	PushUint16(data,state.hardDraw.y0);
+	PushUint16(data,state.hardDraw.x1);
+	PushUint16(data,state.hardDraw.y1);
+
+	PushUint32(data,state.scrnMode);
+	PushUint32(data,state.avScrnMode);
+
+	PushBool(data,state.VRAMAccessFlag);
+
+	for(int i=0; i<FM77AV40_NUM_VRAM_BANKS; ++i)
+	{
+		PushUint16(data,state.VRAMOffset[i]);
+	}
+	PushUint16(data,state.VRAMOffsetMask);
+	PushUint16(data,state.VRAMAccessMask);
+	PushUint16(data,state.displayPage);
+	PushUint16(data,state.activePage);
+	PushBool(data,state.CRTEnabled);
+}
+/* virtual */ bool FM77AVCRTC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	ReadUcharArray(data,8,state.palette.digitalPalette);
+	state.palette.analogPaletteLatch=ReadUint16(data);
+	ReadUcharArray(data,4096*3,&state.palette.analogPalette[0][0]);
+
+	state.hardDraw.enabled=ReadBool(data);
+	state.hardDraw.condition=ReadUint16(data);
+	state.hardDraw.cmd=ReadUint16(data);
+	state.hardDraw.color=ReadUint16(data);
+	state.hardDraw.maskBits=ReadUint16(data);
+	state.hardDraw.compareResult=ReadUint16(data);
+	ReadUcharArray(data,8,state.hardDraw.compareColor);
+	state.hardDraw.bankMask=ReadUint16(data);
+	ReadUcharArray(data,3,state.hardDraw.tile);
+	ReadUcharArray(data,8,state.hardDraw.tilePtnCache);
+
+	state.hardDraw.lineBusyBy=ReadUint64(data);
+	state.hardDraw.addrOffset=ReadUint16(data);
+	state.hardDraw.lineStipple=ReadUint16(data);
+	state.hardDraw.x0=ReadUint16(data);
+	state.hardDraw.y0=ReadUint16(data);
+	state.hardDraw.x1=ReadUint16(data);
+	state.hardDraw.y1=ReadUint16(data);
+
+	state.scrnMode=ReadUint32(data);
+	state.avScrnMode=ReadUint32(data);
+
+	state.VRAMAccessFlag=ReadBool(data);
+
+	for(int i=0; i<FM77AV40_NUM_VRAM_BANKS; ++i)
+	{
+		state.VRAMOffset[i]=ReadUint16(data);
+	}
+	state.VRAMOffsetMask=ReadUint16(data);
+	state.VRAMAccessMask=ReadUint16(data);
+	state.displayPage=ReadUint16(data);
+	state.activePage=ReadUint16(data);
+	state.CRTEnabled=ReadBool(data);
+
+	return true;
+}
