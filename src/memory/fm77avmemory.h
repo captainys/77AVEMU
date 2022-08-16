@@ -230,6 +230,10 @@ public:
 	uint16_t NonDestructiveFetchWord(uint32_t addr) const;
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	/* virtual */ uint32_t SerializeVersion(void) const;
+	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 class MainCPUAccess : public MemoryAccess,public Device
@@ -245,12 +249,17 @@ public:
 
 	PhysicalMemory *physMemPtr;
 
-	bool exMMR=false; // Expanded MMR for AV40 and later.
-	bool MMREnabled=false;
-	bool TWREnabled=false;
-	uint8_t MMRSEG=0;
-	uint32_t MMR[NUM_MMR_SEGMENTS][16];
-	uint32_t TWRAddr=0;
+	class State
+	{
+	public:
+		bool exMMR=false; // Expanded MMR for AV40 and later.
+		bool MMREnabled=false;
+		bool TWREnabled=false;
+		uint8_t MMRSEG=0;
+		uint32_t MMR[NUM_MMR_SEGMENTS][16];
+		uint32_t TWRAddr=0;
+	};
+	State state;
 
 	virtual const char *DeviceName(void) const{return "MAINMEMACCESS";}
 
@@ -258,7 +267,7 @@ public:
 	{
 		if(cpuAddr<0xFC00) // FM77AV40 Hardware Manual pp.146
 		{
-			return MMR[MMRSEG][cpuAddr>>12]+(cpuAddr&0xFFF);
+			return state.MMR[state.MMRSEG][cpuAddr>>12]+(cpuAddr&0xFFF);
 		}
 		else
 		{
@@ -267,7 +276,7 @@ public:
 	}
 	inline uint32_t TWRAddressTranslation(uint16_t cpuAddr) const
 	{
-		return (TWRAddr+(cpuAddr&0x3FF))&0xFFFF;
+		return (state.TWRAddr+(cpuAddr&0x3FF))&0xFFFF;
 	}
 
 	void Reset(void);
@@ -298,6 +307,10 @@ public:
 	};
 
 	virtual const char *DeviceName(void) const{return "SUBMEMACCESS";}
+
+	class State
+	{
+	};
 
 	PhysicalMemory *physMemPtr;
 

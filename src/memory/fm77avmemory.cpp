@@ -949,6 +949,73 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	return text;
 }
 
+/* virtual */ uint32_t PhysicalMemory::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void PhysicalMemory::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushBool(data,state.DOSMode);
+
+	PushBool(data,state.FE00ROMMode);
+	PushUint16(data,state.VRAMAccessMask);
+	PushBool(data,state.shadowRAMEnabled);
+	PushUint16(data,state.VRAMBank);
+	PushBool(data,state.avBootROM);
+	PushBool(data,state.av40DicRAMEnabled);
+	PushBool(data,state.av40DicROMEnabled);
+	PushUint32(data,state.av40DicROMBank);
+
+	PushUcharArray(data,PHYSMEM_SIZE,state.data);
+	PushUcharArray(data,EXTVRAM_SIZE,state.extVRAM);
+	PushUcharArray(data,AV40_DICRAM_SIZE,state.av40DicRAM);
+	PushUcharArray(data,AV40_SUBRAMA_SIZE,state.av40SubRAMA);
+	PushUcharArray(data,AV40_SUBRAMB_SIZE,state.av40SubRAMB);
+
+	PushBool(data,state.av40SubRAMBWriteProtect);
+	PushUint32(data,state.av40SubRAMABank);
+	PushUint32(data,state.av40SubRAMBBank);
+	PushUint16(data,state.av40SubKanjiLevel);
+
+	PushUint16(data,state.subMonType);
+	PushUint16(data,state.subFontType);
+	PushBool(data,state.subROMSwitch);
+
+	PushUint32(data,state.kanjiAddr);
+}
+/* virtual */ bool PhysicalMemory::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.DOSMode=ReadBool(data);
+
+	state.FE00ROMMode=ReadBool(data);
+	state.VRAMAccessMask=ReadUint16(data);
+	state.shadowRAMEnabled=ReadBool(data);
+	state.VRAMBank=ReadUint16(data);
+	state.avBootROM=ReadBool(data);
+	state.av40DicRAMEnabled=ReadBool(data);
+	state.av40DicROMEnabled=ReadBool(data);
+	state.av40DicROMBank=ReadUint32(data);
+
+	ReadUcharArray(data,PHYSMEM_SIZE,state.data);
+	ReadUcharArray(data,EXTVRAM_SIZE,state.extVRAM);
+	ReadUcharArray(data,AV40_DICRAM_SIZE,state.av40DicRAM);
+	ReadUcharArray(data,AV40_SUBRAMA_SIZE,state.av40SubRAMA);
+	ReadUcharArray(data,AV40_SUBRAMB_SIZE,state.av40SubRAMB);
+
+	state.av40SubRAMBWriteProtect=ReadBool(data);
+	state.av40SubRAMABank=ReadUint32(data);
+	state.av40SubRAMBBank=ReadUint32(data);
+	state.av40SubKanjiLevel=ReadUint16(data);
+
+	state.subMonType=ReadUint16(data);
+	state.subFontType=ReadUint16(data);
+	state.subROMSwitch=ReadBool(data);
+
+	state.kanjiAddr=ReadUint32(data);
+
+	return true;
+}
+
 ////////////////////////////////////////////////////////////
 
 MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Device(vmPtr)
@@ -960,33 +1027,33 @@ MainCPUAccess::MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : D
 void MainCPUAccess::Reset(void)
 {
 	Device::Reset();
-	exMMR=false;
-	MMREnabled=false;
-	MMRSEG=0;
+	state.exMMR=false;
+	state.MMREnabled=false;
+	state.MMRSEG=0;
 
-	TWREnabled=false;
-	TWRAddr=0;
+	state.TWREnabled=false;
+	state.TWRAddr=0;
 
 	for(int i=0; i<8; ++i)
 	{
 		// Experimented on actual FM77AV
 		// By default, MMR addresses are all zero.
-		MMR[i][ 0]=0;
-		MMR[i][ 1]=0;
-		MMR[i][ 2]=0;
-		MMR[i][ 3]=0;
-		MMR[i][ 4]=0;
-		MMR[i][ 5]=0;
-		MMR[i][ 6]=0;
-		MMR[i][ 7]=0;
-		MMR[i][ 8]=0;
-		MMR[i][ 9]=0;
-		MMR[i][10]=0;
-		MMR[i][11]=0;
-		MMR[i][12]=0;
-		MMR[i][13]=0;
-		MMR[i][14]=0;
-		MMR[i][15]=0;
+		state.MMR[i][ 0]=0;
+		state.MMR[i][ 1]=0;
+		state.MMR[i][ 2]=0;
+		state.MMR[i][ 3]=0;
+		state.MMR[i][ 4]=0;
+		state.MMR[i][ 5]=0;
+		state.MMR[i][ 6]=0;
+		state.MMR[i][ 7]=0;
+		state.MMR[i][ 8]=0;
+		state.MMR[i][ 9]=0;
+		state.MMR[i][10]=0;
+		state.MMR[i][11]=0;
+		state.MMR[i][12]=0;
+		state.MMR[i][13]=0;
+		state.MMR[i][14]=0;
+		state.MMR[i][15]=0;
 	}
 }
 
@@ -1015,26 +1082,26 @@ void MainCPUAccess::Reset(void)
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
 		// Oh!FM May 1989 issue pp.45 implies that there are 8 MMR segments in total.
 		// However, if so F-BAISC 3.3 does not boot.  It messes up the MMR.
-		if(true!=exMMR)
+		if(true!=state.exMMR)
 		{
-			MMRSEG=data&MMR_SEGMENT_MASK;
+			state.MMRSEG=data&MMR_SEGMENT_MASK;
 		}
 		else
 		{
-			MMRSEG=data&MMR_SEGMENT_MASK_EXMMR;
+			state.MMRSEG=data&MMR_SEGMENT_MASK_EXMMR;
 		}
 		break;
 	case FM77AVIO_WINDOW_OFFSET://=           0xFD92,
 		// Experiment indicated TWR address 0 will map physical 0x07C00 to main CPU memory space 0x7C00.
 		// TWR address 1 0x07D00, 0xFF 0x07C00.  It wraps around and comes back to 0x00000.
-		TWRAddr=data;
-		TWRAddr<<=8;
-		TWRAddr+=0x7C00;
-		TWRAddr&=0xFFFF;
+		state.TWRAddr=data;
+		state.TWRAddr<<=8;
+		state.TWRAddr+=0x7C00;
+		state.TWRAddr&=0xFFFF;
 		break;
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
-		MMREnabled=(0!=(data&0x80));
-		TWREnabled=(0!=(data&0x40));
+		state.MMREnabled=(0!=(data&0x80));
+		state.TWREnabled=(0!=(data&0x40));
 		// Boot ROM/RAM mode is controlled by physMem.
 		// Bit 0 will be done in fm77avio.cpp
 		break;
@@ -1046,7 +1113,7 @@ void MainCPUAccess::Reset(void)
 
 void MainCPUAccess::WriteFD8x(uint16_t ioAddr,uint8_t data)
 {
-	if(true!=exMMR)
+	if(true!=state.exMMR)
 	{
 		data&=0x3F;
 	}
@@ -1054,13 +1121,13 @@ void MainCPUAccess::WriteFD8x(uint16_t ioAddr,uint8_t data)
 	{
 		data&=0x7F;
 	}
-	MMR[MMRSEG][ioAddr-FM77AVIO_MMR_0]=data;
-	MMR[MMRSEG][ioAddr-FM77AVIO_MMR_0]<<=12;
+	state.MMR[state.MMRSEG][ioAddr-FM77AVIO_MMR_0]=data;
+	state.MMR[state.MMRSEG][ioAddr-FM77AVIO_MMR_0]<<=12;
 }
 
 void MainCPUAccess::WriteFD94(uint8_t data)
 {
-	exMMR=(0!=(data&0x80));
+	state.exMMR=(0!=(data&0x80));
 }
 uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 {
@@ -1082,17 +1149,17 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	case FM77AVIO_MMR_D://=                   0xFD8D,
 	case FM77AVIO_MMR_E://=                   0xFD8E,
 	case FM77AVIO_MMR_F://=                   0xFD8F,
-		return (MMR[MMRSEG][ioport-FM77AVIO_MMR_0]>>12);
+		return (state.MMR[state.MMRSEG][ioport-FM77AVIO_MMR_0]>>12);
 	case FM77AVIO_MMR_SEG://=                 0xFD90,
 		break;  // Confirmed write-only.
 	case FM77AVIO_MEMORY_MODE://=             0xFD93,
 		{
 			uint8_t data=0x3f;
-			if(true==MMREnabled)
+			if(true==state.MMREnabled)
 			{
 				data|=0x80;
 			}
-			if(true==TWREnabled)
+			if(true==state.TWREnabled)
 			{
 				data|=0x40;
 			}
@@ -1108,11 +1175,11 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ void MainCPUAccess::CLR(uint16_t addr)
 {
-	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
+	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
 		physMemPtr->CLR(TWRAddressTranslation(addr));
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		physMemPtr->CLR(MMRAddressTranslation(addr));
 	}
@@ -1123,11 +1190,11 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
 {
-	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
+	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
 		return physMemPtr->FetchByte(TWRAddressTranslation(addr));
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		return physMemPtr->FetchByte(MMRAddressTranslation(addr));
 	}
@@ -1138,11 +1205,11 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ uint16_t MainCPUAccess::FetchWord(uint16_t addr)
 {
-	if(true==TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
+	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
 		return (FetchByte(addr)<<8)|FetchByte(addr+1);
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		return physMemPtr->FetchWord(
 			MMRAddressTranslation(addr),
@@ -1157,11 +1224,11 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ void MainCPUAccess::StoreByte(uint16_t addr,uint8_t data)
 {
-	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
+	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
 		physMemPtr->StoreByte(TWRAddressTranslation(addr),data);
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		physMemPtr->StoreByte(MMRAddressTranslation(addr),data);
 	}
@@ -1172,12 +1239,12 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ void MainCPUAccess::StoreWord(uint16_t addr,uint16_t data)
 {
-	if(true==TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
+	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
 		StoreByte(addr  ,(data>>8));
 		StoreByte(addr+1,data&0xFF);
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		physMemPtr->StoreWord(
 			MMRAddressTranslation(addr),
@@ -1194,11 +1261,11 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
 {
-	if(true==TWREnabled && (0x7C00==(addr&0xFC00)))
+	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
 		return physMemPtr->NonDestructiveFetchByte(TWRAddressTranslation(addr));
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		return physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr));
 	}
@@ -1209,11 +1276,11 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 }
 /* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
 {
-	if(true==TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
+	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
 		return (NonDestructiveFetchByte(addr)<<8)|NonDestructiveFetchByte(addr+1);
 	}
-	else if(true==MMREnabled)
+	else if(true==state.MMREnabled)
 	{
 		return mc6809util::FetchWord(
 			physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr)),
@@ -1274,7 +1341,7 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	std::vector <std::string> text;
 
 	text.push_back("MMR:");
-	if(true==MMREnabled)
+	if(true==state.MMREnabled)
 	{
 		text.back()+="Enabled ";
 	}
@@ -1284,11 +1351,11 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	}
 
 	text.back()+="MMRSEG:";
-	text.back()+=cpputil::Ubtox(MMRSEG);
+	text.back()+=cpputil::Ubtox(state.MMRSEG);
 	text.back()+=" ";
 
 	text.back()+="TWR:";
-	if(true==TWREnabled)
+	if(true==state.TWREnabled)
 	{
 		text.back()+="Enabled ";
 	}
@@ -1297,11 +1364,11 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 		text.back()+="Disabled ";
 	}
 	text.back()+="TWR Addr:0";
-	text.back()+=cpputil::Ustox(TWRAddr);
+	text.back()+=cpputil::Ustox(state.TWRAddr);
 
 	text.push_back("Current MMR");
 	text.push_back("");
-	for(auto R : MMR[MMRSEG])
+	for(auto R : state.MMR[state.MMRSEG])
 	{
 		text.back()+=cpputil::Ubtox(R>>12);
 		text.back()+=" ";
@@ -1310,7 +1377,7 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	for(int i=0; i<8; ++i)
 	{
 		text.push_back("");
-		for(auto R : MMR[i])
+		for(auto R : state.MMR[i])
 		{
 			text.back()+=cpputil::Ubtox(R>>12);
 			text.back()+=" ";
@@ -1319,3 +1386,4 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 
 	return text;
 }
+
