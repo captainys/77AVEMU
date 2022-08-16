@@ -948,6 +948,10 @@ public:
 			StoreByte(mem,addr+1,data&0xFF);
 		}
 	}
+
+	/* virtual */ uint32_t SerializeVersion(void) const;
+	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */

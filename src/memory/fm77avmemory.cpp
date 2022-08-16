@@ -1294,6 +1294,42 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	}
 }
 
+/* virtual */ uint32_t MainCPUAccess::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void MainCPUAccess::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushBool(data,state.exMMR);
+	PushBool(data,state.MMREnabled);
+	PushBool(data,state.TWREnabled);
+	PushUint16(data,state.MMRSEG);
+	for(int i=0; i<NUM_MMR_SEGMENTS; ++i)
+	{
+		for(int j=0; j<16; ++j)
+		{
+			PushUint32(data,state.MMR[i][j]);
+		}
+	}
+	PushUint32(data,state.TWRAddr);
+}
+/* virtual */ bool MainCPUAccess::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.exMMR=ReadBool(data);
+	state.MMREnabled=ReadBool(data);
+	state.TWREnabled=ReadBool(data);
+	state.MMRSEG=ReadUint16(data);
+	for(int i=0; i<NUM_MMR_SEGMENTS; ++i)
+	{
+		for(int j=0; j<16; ++j)
+		{
+			state.MMR[i][j]=ReadUint32(data);
+		}
+	}
+	state.TWRAddr=ReadUint32(data);
+	return true;
+}
+
 ////////////////////////////////////////////////////////////
 
 SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Device(vmPtr)
@@ -1387,3 +1423,14 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	return text;
 }
 
+/* virtual */ uint32_t SubCPUAccess::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void SubCPUAccess::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+}
+/* virtual */ bool SubCPUAccess::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	return true;
+}

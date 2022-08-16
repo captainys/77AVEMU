@@ -4330,3 +4330,41 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 
 	return text;
 }
+/* virtual */ uint32_t MC6809::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void MC6809::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint16(data,state.D);
+	PushUint16(data,state.DP);
+	PushUint16(data,state.CC);
+	PushUint16(data,state.X);
+	PushUint16(data,state.Y);
+	PushUint16(data,state.U);
+	PushUint16(data,state.S);
+	PushUint16(data,state.PC);
+
+	PushBool(data,state.halt);
+	PushBool(data,state.nmiEnabled);
+
+	PushUint32(data,state.freq);
+}
+/* virtual */ bool MC6809::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.D=ReadUint16(data);
+	state.DP=ReadUint16(data);
+	state.CC=ReadUint16(data);
+	state.X=ReadUint16(data);
+	state.Y=ReadUint16(data);
+	state.U=ReadUint16(data);
+	state.S=ReadUint16(data);
+	state.PC=ReadUint16(data);
+
+	state.halt=ReadBool(data);
+	state.nmiEnabled=ReadBool(data);
+
+	state.freq=ReadUint32(data);
+
+	return 0;
+}

@@ -296,6 +296,10 @@ public:
 	void WriteFD94(uint8_t data);
 
 	std::vector <std::string> GetStatusText(void) const;
+
+	/* virtual */ uint32_t SerializeVersion(void) const;
+	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 class SubCPUAccess : public MemoryAccess,public Device
@@ -322,6 +326,10 @@ public:
 	virtual void StoreWord(uint16_t addr,uint16_t data);
 	virtual uint8_t NonDestructiveFetchByte(uint16_t addr) const;
 	virtual uint16_t NonDestructiveFetchWord(uint16_t addr) const;
+
+	/* virtual */ uint32_t SerializeVersion(void) const;
+	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */
