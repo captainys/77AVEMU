@@ -152,6 +152,7 @@ public:
 		DUMP_IRQ,
 		DUMP_PSG_LOG,
 		DUMP_CAS0,
+		DUMP_CAS1,
 	};
 
 	class Command

@@ -120,6 +120,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["IRQ"]=DUMP_IRQ;
 	dumpableMap["PSGLOG"]=DUMP_PSG_LOG;
 	dumpableMap["CAS0"]=DUMP_CAS0;
+	dumpableMap["CAS1"]=DUMP_CAS1;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -346,6 +347,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  PSG register-write log." << std::endl;
 	std::cout << "CAS0" << std::endl;
 	std::cout << "  Cassette files." << std::endl;
+	std::cout << "CAS1" << std::endl;
+	std::cout << "  Cassette (Save) files." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -1321,35 +1324,39 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				}
 				break;
 			case DUMP_CAS0:
-				for(auto file : fm77av.dataRecorder.state.primary.t77.Files())
+			case DUMP_CAS1:
 				{
-					std::cout << file.fName;
-					for(int i=file.fName.size(); i<10; ++i)
+					auto *tapePtr=(found->second==DUMP_CAS0 ? &fm77av.dataRecorder.state.primary : &fm77av.dataRecorder.state.toSave);
+					for(auto file : tapePtr->t77.Files())
 					{
-						std::cout << ' ';
+						std::cout << file.fName;
+						for(int i=file.fName.size(); i<10; ++i)
+						{
+							std::cout << ' ';
+						}
+						switch(file.fType)
+						{
+						case FM7File::FTYPE_BASIC_BINARY:
+							std::cout << "(F-BASIC Binary)";
+							break;
+						case FM7File::FTYPE_BASIC_ASCII:
+							std::cout << "(F-BASIC ASCII) ";
+							break;
+						case FM7File::FTYPE_BINARY:
+							std::cout << "(Machine-Go)    ";
+							break;
+						case FM7File::FTYPE_DATA_BINARY:
+							std::cout << "(Binary Data)   ";
+							break;
+						case FM7File::FTYPE_DATA_ASCII:
+							std::cout << "(ASCII Data)    ";
+							break;
+						case FM7File::FTYPE_UNKNOWN:
+							std::cout << "(Unknown)       ";
+							break;
+						}
+						std::cout << " at " << file.ptr << std::endl;
 					}
-					switch(file.fType)
-					{
-					case FM7File::FTYPE_BASIC_BINARY:
-						std::cout << "(F-BASIC Binary)";
-						break;
-					case FM7File::FTYPE_BASIC_ASCII:
-						std::cout << "(F-BASIC ASCII) ";
-						break;
-					case FM7File::FTYPE_BINARY:
-						std::cout << "(Machine-Go)    ";
-						break;
-					case FM7File::FTYPE_DATA_BINARY:
-						std::cout << "(Binary Data)   ";
-						break;
-					case FM7File::FTYPE_DATA_ASCII:
-						std::cout << "(ASCII Data)    ";
-						break;
-					case FM7File::FTYPE_UNKNOWN:
-						std::cout << "(Unknown)       ";
-						break;
-					}
-					std::cout << " at " << file.ptr << std::endl;
 				}
 				break;
 			}

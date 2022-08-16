@@ -158,7 +158,20 @@ std::vector <FM77AVTape::TapeFile> FM77AVTape::Files(void) const
 		TapeFile tf;
 		tf.fName=t77Dec.GetDumpFileName(t77Dec.fileDump[i]);
 		auto fmDat=t77Dec.DumpToFMFormat(t77Dec.fileDump[i]);
-		tf.fType=FM7File::DecodeFMHeaderFileType(fmDat[10],fmDat[11]);
+		if(12<=fmDat.size())
+		{
+			tf.fType=FM7File::DecodeFMHeaderFileType(fmDat[10],fmDat[11]);
+		}
+		else
+		{
+			tf.fType=FM7File::FTYPE_UNKNOWN;
+		}
+		if(FM7File::FTYPE_BASIC_BINARY!=tf.fType &&
+		   FM7File::FTYPE_BASIC_ASCII!=tf.fType&&
+		   FM7File::FTYPE_BINARY!=tf.fType)
+		{
+			tf.fName="(None)";
+		}
 		tf.ptr=t77Dec.filePtr[i]-16;
 		files.push_back(tf);
 	}
