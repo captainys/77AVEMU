@@ -4,8 +4,6 @@
 #include "cpputil.h"
 
 
-uint8_t FM77AVKeyboard::AVKeyToScanCode[256];
-
 
 void FM77AVKeyboard::Reset(void)
 {
@@ -148,6 +146,38 @@ void FM77AVKeyboard::Reset(void)
 	AVKeyToScanCode[AVKEY_NUM_7]=0x3A;
 	AVKeyToScanCode[AVKEY_NUM_8]=0x3B;
 	AVKeyToScanCode[AVKEY_NUM_9]=0x3C;
+
+	for(auto &b : IsNumKey)
+	{
+		b=false;
+	}
+	IsNumKey[AVKEY_NUM_STAR]=true;
+	IsNumKey[AVKEY_NUM_SLASH]=true;
+	IsNumKey[AVKEY_NUM_PLUS]=true;
+	IsNumKey[AVKEY_NUM_MINUS]=true;
+	IsNumKey[AVKEY_NUM_EQUAL]=true;
+	IsNumKey[AVKEY_NUM_COMMA]=true;
+	IsNumKey[AVKEY_NUM_RETURN]=true;
+	IsNumKey[AVKEY_NUM_DOT]=true;
+	IsNumKey[AVKEY_NUM_0]=true;
+	IsNumKey[AVKEY_NUM_1]=true;
+	IsNumKey[AVKEY_NUM_2]=true;
+	IsNumKey[AVKEY_NUM_3]=true;
+	IsNumKey[AVKEY_NUM_4]=true;
+	IsNumKey[AVKEY_NUM_5]=true;
+	IsNumKey[AVKEY_NUM_6]=true;
+	IsNumKey[AVKEY_NUM_7]=true;
+	IsNumKey[AVKEY_NUM_8]=true;
+	IsNumKey[AVKEY_NUM_9]=true;
+
+	for(auto &b : IsArrowKey)
+	{
+		b=false;
+	}
+	IsArrowKey[AVKEY_LEFT]=true;
+	IsArrowKey[AVKEY_RIGHT]=true;
+	IsArrowKey[AVKEY_UP]=true;
+	IsArrowKey[AVKEY_DOWN]=true;
 }
 void FM77AVKeyboard::ProcessKeyCodeInQueue(void)
 {
@@ -230,20 +260,36 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 				break;
 			}
 
-			FM77AVKeyCombination keyComb;
-			keyComb.shift=(0!=(keyFlags&KEYFLAG_SHIFT));
-			keyComb.ctrl=(0!=(keyFlags&KEYFLAG_CTRL));
-			keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
-			keyComb.keyCode=keyCode;
-			auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
-			if(true!=fm77av->KeyIRQFlagSet())
+			PushKeyToQueueJISMode(keyFlags,keyCode);
+
+			switch(var.autoStopAfterThis)
 			{
-				fm77av->SetKeyIRQFlag();
-				state.lastKeyCode=code;
-			}
-			else
-			{
-				state.keyCodeQueue.push(code);
+			case AUTOSTOP_AFTER_NUM_RELEASE:
+				break;
+			case AUTOSTOP_AFTER_ARROW_RELEASE:
+				break;
+			case AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE:
+				if(true==IsNumKey[keyCode])
+				{
+					var.autoStopRetypeKey=keyCode;
+				}
+				else if(AVKEY_NULL!=var.autoStopRetypeKey)
+				{
+					PushKeyToQueueJISMode(0,var.autoStopRetypeKey);
+				}
+				break;
+			case AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE:
+				if(true==IsArrowKey[keyCode])
+				{
+					var.autoStopRetypeKey=keyCode;
+				}
+				else if(AVKEY_NULL!=var.autoStopRetypeKey)
+				{
+					PushKeyToQueueJISMode(0,var.autoStopRetypeKey);
+				}
+				break;
+			case AUTOSTOP_AFTER_ANY_KEY_RELEASE:
+				break;
 			}
 		}
 		break;
@@ -264,6 +310,25 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 		break;
 	}
 }
+void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode)
+{
+	FM77AV *fm77av=(FM77AV *)vmPtr;
+	FM77AVKeyCombination keyComb;
+	keyComb.shift=(0!=(keyFlags&KEYFLAG_SHIFT));
+	keyComb.ctrl=(0!=(keyFlags&KEYFLAG_CTRL));
+	keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
+	keyComb.keyCode=keyCode;
+	auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
+	if(true!=fm77av->KeyIRQFlagSet())
+	{
+		fm77av->SetKeyIRQFlag();
+		state.lastKeyCode=code;
+	}
+	else
+	{
+		state.keyCodeQueue.push(code);
+	}
+}
 void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 {
 	FM77AV *fm77av=(FM77AV *)vmPtr;
@@ -274,6 +339,41 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 	case ENCODING_JIS:
 	case ENCODING_FM16BETA:
 		{
+			if(keyCode==var.autoStopRetypeKey)
+			{
+				var.autoStopRetypeKey=AVKEY_NULL;
+			}
+			switch(var.autoStopAfterThis)
+			{
+			case AUTOSTOP_AFTER_NUM_RELEASE:
+				if(true==IsNumKey[keyCode])
+				{
+					PushKeyToQueueJISMode(0,var.autoStopKey);
+				}
+				break;
+			case AUTOSTOP_AFTER_ARROW_RELEASE:
+				if(true==IsArrowKey[keyCode])
+				{
+					PushKeyToQueueJISMode(0,var.autoStopKey);
+				}
+				break;
+			case AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE:
+				if(true==IsNumKey[keyCode])
+				{
+					PushKeyToQueueJISMode(0,var.autoStopKey);
+				}
+				break;
+			case AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE:
+				if(true==IsArrowKey[keyCode])
+				{
+					PushKeyToQueueJISMode(0,var.autoStopKey);
+				}
+				break;
+			case AUTOSTOP_AFTER_ANY_KEY_RELEASE:
+				PushKeyToQueueJISMode(0,var.autoStopKey);
+				break;
+			}
+
 			if(AVKEY_BREAK==keyCode)
 			{
 				fm77av->ClearBreakKeyFIRQFlag();
@@ -561,4 +661,56 @@ uint64_t FM77AVKeyboard::GetKeyRepeatInterval(void) const
 	state.keyRepeatInterval=ReadUint64(data);
 
 	return true;
+}
+
+/* static */ std::string FM77AVKeyboard::AutoStopToStr(unsigned int autoStopType)
+{
+	switch(autoStopType)
+	{
+	case AUTOSTOP_NONE:
+		return "NONE";
+	case AUTOSTOP_AFTER_NUM_RELEASE:
+		return "AFTER_NUM_RELEASE";
+	case AUTOSTOP_AFTER_ARROW_RELEASE:
+		return "AFTER_ARROW_RELEASE";
+	case AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE:
+		return "AFTER_NUM_RELEASE_AND_RETYPE";
+	case AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE:
+		return "AFTER_ARROW_RELEASE_AND_RETYPE";
+	case AUTOSTOP_AFTER_ANY_KEY_RELEASE:
+		return "AFTER_ANY_KEY_RELEASE";
+	}
+	return "NONE";
+}
+/* static */ unsigned int FM77AVKeyboard::StrToAutoStop(std::string str)
+{
+	auto STR=str;
+	cpputil::Capitalize(STR);
+
+	if(STR=="NONE")
+	{
+		return AUTOSTOP_NONE;
+	}
+	if(STR=="AFTER_NUM_RELEASE")
+	{
+		return AUTOSTOP_AFTER_NUM_RELEASE;
+	}
+	if(STR=="AFTER_ARROW_RELEASE")
+	{
+		return AUTOSTOP_AFTER_ARROW_RELEASE;
+	}
+	if(STR=="AFTER_NUM_RELEASE_AND_RETYPE")
+	{
+		return AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE;
+	}
+	if(STR=="AFTER_ARROW_RELEASE_AND_RETYPE")
+	{
+		return AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE;
+	}
+	if(STR=="AFTER_ANY_KEY_RELEASE")
+	{
+		return AUTOSTOP_AFTER_ANY_KEY_RELEASE;
+	}
+	return AUTOSTOP_NONE;
+
 }

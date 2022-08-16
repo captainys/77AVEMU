@@ -114,6 +114,8 @@ public:
 
 		CMD_SAVE_STATE,
 		CMD_LOAD_STATE,
+
+		CMD_AUTOSTOPKEY,
 	};
 
 	enum
@@ -126,6 +128,7 @@ public:
 		ENABLE_CALLSTACK,
 		ENABLE_PRINT_COM0,
 		ENABLE_PSG_LOG,
+		ENABLE_AUTOSTOP,
 	};
 
 	enum

@@ -87,6 +87,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
+	primaryCmdMap["AUTOSTOPKEY"]=CMD_AUTOSTOPKEY;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -98,6 +99,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["CST"]=ENABLE_CALLSTACK;
 	featureMap["COM0TX"]=ENABLE_PRINT_COM0;
 	featureMap["PSGLOG"]=ENABLE_PSG_LOG;
+	featureMap["AUTOSTOP"]=ENABLE_AUTOSTOP;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -285,6 +287,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "QSSDIR dir" << std::endl;
 	std::cout << "  Specify quick-screenshot directory." << std::endl;
 
+	std::cout << "AUTOSTOPKEY keyCode" << std::endl;
+	std::cout << "  Specify which key is pressed for stopping in a FM-8/FM-7 games." << std::endl;
 
 
 
@@ -950,6 +954,32 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			Error_TooFewArgs(cmd);
 		}
 		break;
+	case CMD_AUTOSTOPKEY:
+		if(2<=cmd.argv.size())
+		{
+			auto keyCode=FM77AVKeyLabelToKeyCode(cmd.argv[1]);
+			if(AVKEY_NULL!=keyCode)
+			{
+				std::cout << "Set auto-stop key to " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
+				fm77av.keyboard.var.autoStopKey=keyCode;
+			}
+			else
+			{
+				std::cout << "Key code can be one of:" << std::endl;
+				for(int i=0; i<AVKEY_NUM_KEYCODE; ++i)
+				{
+					if(AVKEY_NULL!=i)
+					{
+						std::cout << FM77AVKeyCodeToKeyLabel(i) << std::endl;
+					}
+				}
+			}
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
+		break;
 	}
 }
 
@@ -1096,6 +1126,31 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.sound.state.ay38910.takeRegisterLog=true;
 			std::cout << "Enabled PSG AY3-8910 register log." << std::endl;
 			break;
+		case ENABLE_AUTOSTOP:
+			if(3<=cmd.argv.size())
+			{
+				auto autoStopType=FM77AVKeyboard::StrToAutoStop(cmd.argv[1]);
+				if(FM77AVKeyboard::AUTOSTOP_NONE!=autoStopType)
+				{
+					fm77av.keyboard.var.autoStopAfterThis=autoStopType;
+					std::cout << "Enabled Auto Stop (" << FM77AVKeyboard::AutoStopToStr(autoStopType) << ")" << std::endl;
+				}
+				else
+				{
+					std::cout << "AutoStopType can be one of:" << std::endl;
+					std::cout << "  AFTER_NUM_RELEASE" << std::endl;
+					std::cout << "  AFTER_NUM_RELEASE_AND_RETYPE" << std::endl;
+					std::cout << "  AFTER_ARROW_RELEASE_AND_RETYPE" << std::endl;
+					std::cout << "  AFTER_ARROW_RELEASE_AND_RETYPE" << std::endl;
+					std::cout << "  AFTER_ANY_KEY_RELEASE" << std::endl;
+				}
+			}
+			else
+			{
+				fm77av.keyboard.var.autoStopAfterThis=FM77AVKeyboard::AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE;;
+				std::cout << "Enabled Auto Stop (" << FM77AVKeyboard::AutoStopToStr(fm77av.keyboard.var.autoStopAfterThis) << ")" << std::endl;
+			}
+			break;
 		}
 	}
 	else
@@ -1166,6 +1221,14 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		case ENABLE_PSG_LOG:
 			fm77av.sound.state.ay38910.takeRegisterLog=false;
 			std::cout << "Disabled PSG AY3-8910 register log." << std::endl;
+			break;
+		case ENABLE_AUTOSTOP:
+			fm77av.keyboard.var.autoStopAfterThis=FM77AVKeyboard::AUTOSTOP_NONE;
+			std::cout << "Disabled Auto Stop" << std::endl;
+			break;
+		default:
+			std::cout << "Disable What?" << std::endl;
+			Error_WrongParameter(cmd);
 			break;
 		}
 	}

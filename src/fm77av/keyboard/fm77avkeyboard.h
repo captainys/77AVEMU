@@ -11,7 +11,9 @@ class FM77AVKeyboard : public Device
 public:
 	virtual const char *DeviceName(void) const{return "KEYBOARD";}
 
-	static uint8_t AVKeyToScanCode[256];
+	uint8_t AVKeyToScanCode[AVKEY_NUM_KEYCODE];
+	bool IsNumKey[AVKEY_NUM_KEYCODE];
+	bool IsArrowKey[AVKEY_NUM_KEYCODE];
 
 	enum
 	{
@@ -76,9 +78,44 @@ public:
 	};
 	State state;
 
+	enum
+	{
+		AUTOSTOP_NONE,
+		AUTOSTOP_AFTER_NUM_RELEASE,
+		AUTOSTOP_AFTER_ARROW_RELEASE,
+		AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE,
+		AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE,
+		AUTOSTOP_AFTER_ANY_KEY_RELEASE,
+	};
+	// What is this?
+	// FM-7 series, until FM77AV could not sense key-release.  It could sense key-press,
+	// therefore the game program could know when to start moving a character, but never
+	// knew when to stop by key-release.  Therefore, we had to press a num-key to start
+	// moving a character, and press num-5 to stop it.
+	// That was a major complaints from the gamers who were used to other platforms.
+	// But, I didn't have to keep the keys held down.  I found it easier for my wrist though.
+	// There were external joystick that plugged in to the keyboard connector and
+	// automatically inserted num-5 after releasing the stick.  Many games supported 
+	// gamepad after Fujitsu released YM2203C expansion card, in which case the game could
+	// sense direction-button release.  But, mainly the game program that also supported
+	// FM-8 had no way of stopping a character on key-release.
+	// Some games like Plazma Linesolved this problem by moving a character one step when
+	// the key is pressed.  Then, we had to pound on the key to move quickly.
+	// The emulator can virtually solve the program by automatically inserting a key stroke
+	// after releasing certain keys.
+	// One of the most famous vertical-scrolling shooter among FM-7 users, Delphis, had a
+	// even bigger problem.  Your fighter jet stops when you drop a bomb by Z key, which made
+	// the game extremely difficult to play.  (I wrote a game-pad patch though).  The emulator
+	// can also solve this problem by re-typing the direction key after pressing other keys.
+	static std::string AutoStopToStr(unsigned int autoStopType);
+	static unsigned int StrToAutoStop(std::string str);
+
 	class Variable
 	{
 	public:
+		uint16_t autoStopKey=AVKEY_NUM_5;
+		uint16_t autoStopRetypeKey=AVKEY_NULL;
+		uint16_t autoStopAfterThis=AUTOSTOP_NONE;
 		std::queue <uint16_t> autoType;
 	};
 	Variable var;
@@ -101,6 +138,9 @@ public:
 	void Type(unsigned int ASCIICode); // Virtually type a letter.
 
 	void Press(unsigned int keyFlags,unsigned int keyCode);
+protected:
+	void PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode);
+public:
 	void Release(unsigned int keyFlags,unsigned int keyCode);
 
 	uint64_t GetKeyRepeatStartTime(void) const;
