@@ -4366,5 +4366,5 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 
 	state.freq=ReadUint32(data);
 
-	return 0;
+	return true;
 }

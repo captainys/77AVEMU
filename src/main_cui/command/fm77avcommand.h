@@ -111,6 +111,9 @@ public:
 		CMD_LET,
 
 		CMD_GAMEPORT,
+
+		CMD_SAVE_STATE,
+		CMD_LOAD_STATE,
 	};
 
 	enum

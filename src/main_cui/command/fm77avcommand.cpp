@@ -85,6 +85,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["LET"]=CMD_LET;
 	primaryCmdMap["SPEED"]=CMD_SETSPEED;
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
+	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
+	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -175,6 +177,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVETAPEAS filename.t77" << std::endl;
 	std::cout << "TAPESAVEAS filename.t77" << std::endl;
 	std::cout << "  Save tape image as filename." << std::endl;
+
+	std::cout << "SAVESTATE fileName" << std::endl;
+	std::cout << "  Save machine state (experimental)" << std::endl;
+	std::cout << "LOADSTATE fileName" << std::endl;
+	std::cout << "  Load machine state (experimental)" << std::endl;
 
 	std::cout << "GAMEPORT 0/1 device" << std::endl;
 	std::cout << "  Connect device to game port." << std::endl;
@@ -902,6 +909,40 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_GAMEPORT:
 		Execute_Gameport(fm77av,outside_world,cmd);
+		break;
+	case CMD_SAVE_STATE:
+		if(2<=cmd.argv.size())
+		{
+			if(true!=fm77av.SaveState(cmd.argv[1]))
+			{
+				Error_CannotSaveFile(cmd);
+			}
+			else
+			{
+				std::cout << "Saved " << cmd.argv[1] << std::endl;
+			}
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
+		break;
+	case CMD_LOAD_STATE:
+		if(2<=cmd.argv.size())
+		{
+			if(true!=fm77av.LoadState(cmd.argv[1],*outside_world))
+			{
+				Error_CannotOpenFile(cmd);
+			}
+			else
+			{
+				std::cout << "Loaded " << cmd.argv[1] << std::endl;
+			}
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
 		break;
 	}
 }

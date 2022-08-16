@@ -90,6 +90,8 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 			if(true!=successful)
 			{
+				std::string readDeviceId=(const char *)data.data();
+				std::cout << "Failed " << readDeviceId << std::endl;
 				return false;
 			}
 		}
