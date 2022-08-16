@@ -345,8 +345,81 @@ FM77AVSerialPort::FM77AVSerialPort(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 }
 /* virtual */ void FM77AVSerialPort::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	for(int i=0; i<FM7_MAX_NUM_COMPORTS; ++i)
+	{
+		PushBool(data,state.enabled[i]);
+
+		PushInt64(data,state.COM[i].state.lastTxTime);
+		PushInt64(data,state.COM[i].state.lastRxTime);
+
+		PushBool(data,state.COM[i].state.immediatelyAfterReset);
+
+		PushUint32(data,state.COM[i].state.nanoSecondsPerByte);
+
+		PushUint32(data,state.COM[i].state.baudRate);
+
+		PushUint16(data,state.COM[i].state.stopBits);
+		PushUint16(data,state.COM[i].state.preScale);
+
+		PushBool(data,state.COM[i].state.SCS);
+		PushBool(data,state.COM[i].state.ESD);
+
+		PushUint16(data,state.COM[i].state.dataLength);
+		PushBool(data,state.COM[i].state.evenParity);
+		PushBool(data,state.COM[i].state.parityEnabled);
+
+		PushBool(data,state.COM[i].state.RxEN);
+		PushBool(data,state.COM[i].state.TxEN);
+		PushBool(data,state.COM[i].state.RxRDY);
+		PushBool(data,state.COM[i].state.TxRDY);
+		PushBool(data,state.COM[i].state.SYNDET);
+		PushBool(data,state.COM[i].state.FE);
+		PushBool(data,state.COM[i].state.OE);
+		PushBool(data,state.COM[i].state.PE);
+		PushBool(data,state.COM[i].state.TxEMPTY);
+		PushBool(data,state.COM[i].state.RTS);
+		PushBool(data,state.COM[i].state.DTR);
+		PushBool(data,state.COM[i].state.BREAK);
+	}
 }
 /* virtual */ bool FM77AVSerialPort::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
+	for(int i=0; i<FM7_MAX_NUM_COMPORTS; ++i)
+	{
+		state.enabled[i]=ReadBool(data);
+
+		state.COM[i].state.lastTxTime=ReadInt64(data);
+		state.COM[i].state.lastRxTime=ReadInt64(data);
+
+		state.COM[i].state.immediatelyAfterReset=ReadBool(data);
+
+		state.COM[i].state.nanoSecondsPerByte=ReadUint32(data);
+
+		state.COM[i].state.baudRate=ReadUint32(data);
+
+		state.COM[i].state.stopBits=ReadUint16(data);
+		state.COM[i].state.preScale=ReadUint16(data);
+
+		state.COM[i].state.SCS=ReadBool(data);
+		state.COM[i].state.ESD=ReadBool(data);
+
+		state.COM[i].state.dataLength=ReadUint16(data);
+		state.COM[i].state.evenParity=ReadBool(data);
+		state.COM[i].state.parityEnabled=ReadBool(data);
+
+		state.COM[i].state.RxEN=ReadBool(data);
+		state.COM[i].state.TxEN=ReadBool(data);
+		state.COM[i].state.RxRDY=ReadBool(data);
+		state.COM[i].state.TxRDY=ReadBool(data);
+		state.COM[i].state.SYNDET=ReadBool(data);
+		state.COM[i].state.FE=ReadBool(data);
+		state.COM[i].state.OE=ReadBool(data);
+		state.COM[i].state.PE=ReadBool(data);
+		state.COM[i].state.TxEMPTY=ReadBool(data);
+		state.COM[i].state.RTS=ReadBool(data);
+		state.COM[i].state.DTR=ReadBool(data);
+		state.COM[i].state.BREAK=ReadBool(data);
+	}
+
 	return true;
 }

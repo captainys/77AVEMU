@@ -45,6 +45,10 @@ public:
 	void WriteFD99(uint8_t data);
 	void ReadFD99(void);
 	uint8_t NonDestructiveReadFD99(void) const;
+
+	virtual uint32_t SerializeVersion(void) const;
+	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	virtual bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 };
 
 /* } */

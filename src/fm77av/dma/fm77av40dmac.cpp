@@ -91,3 +91,21 @@ uint8_t FM77AV40DMAC::NonDestructiveReadFD99(void) const
 {
 	return state.regs[state.addrLatch];
 }
+
+
+
+/* virtual */ uint32_t FM77AV40DMAC::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void FM77AV40DMAC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint16(data,state.addrLatch);
+	PushUcharArray(data,NUM_REGS,state.regs);
+}
+/* virtual */ bool FM77AV40DMAC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.addrLatch=ReadUint16(data);
+	ReadUcharArray(data,NUM_REGS,state.regs);
+	return true;
+}
