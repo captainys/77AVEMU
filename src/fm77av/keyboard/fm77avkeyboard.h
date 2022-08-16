@@ -14,6 +14,7 @@ public:
 	uint8_t AVKeyToScanCode[AVKEY_NUM_KEYCODE];
 	bool IsNumKey[AVKEY_NUM_KEYCODE];
 	bool IsArrowKey[AVKEY_NUM_KEYCODE];
+	bool heldDown[AVKEY_NUM_KEYCODE];
 
 	enum
 	{
@@ -138,11 +139,13 @@ public:
 	void Type(unsigned int ASCIICode); // Virtually type a letter.
 
 	void Press(unsigned int keyFlags,unsigned int keyCode);
+	void Release(unsigned int keyFlags,unsigned int keyCode);
 protected:
 	void PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode);
-public:
-	void Release(unsigned int keyFlags,unsigned int keyCode);
+	bool NumKeyHeldDown(void) const;
+	bool ArrowKeyHeldDown(void) const;
 
+public:
 	uint64_t GetKeyRepeatStartTime(void) const;
 	uint64_t GetKeyRepeatInterval(void) const;
 

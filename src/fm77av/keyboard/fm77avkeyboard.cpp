@@ -178,6 +178,11 @@ void FM77AVKeyboard::Reset(void)
 	IsArrowKey[AVKEY_RIGHT]=true;
 	IsArrowKey[AVKEY_UP]=true;
 	IsArrowKey[AVKEY_DOWN]=true;
+
+	for(auto &b : heldDown)
+	{
+		b=false;
+	}
 }
 void FM77AVKeyboard::ProcessKeyCodeInQueue(void)
 {
@@ -249,6 +254,8 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 	FM77AV *fm77av=(FM77AV *)vmPtr;
 	uint8_t eightBit=keyCode;
 
+	heldDown[keyCode]=true;
+
 	switch(state.encodingMode)
 	{
 	case ENCODING_JIS:
@@ -310,29 +317,12 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 		break;
 	}
 }
-void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode)
-{
-	FM77AV *fm77av=(FM77AV *)vmPtr;
-	FM77AVKeyCombination keyComb;
-	keyComb.shift=(0!=(keyFlags&KEYFLAG_SHIFT));
-	keyComb.ctrl=(0!=(keyFlags&KEYFLAG_CTRL));
-	keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
-	keyComb.keyCode=keyCode;
-	auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
-	if(true!=fm77av->KeyIRQFlagSet())
-	{
-		fm77av->SetKeyIRQFlag();
-		state.lastKeyCode=code;
-	}
-	else
-	{
-		state.keyCodeQueue.push(code);
-	}
-}
 void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 {
 	FM77AV *fm77av=(FM77AV *)vmPtr;
 	uint8_t eightBit=keyCode;
+
+	heldDown[keyCode]=false;
 
 	switch(state.encodingMode)
 	{
@@ -346,25 +336,25 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 			switch(var.autoStopAfterThis)
 			{
 			case AUTOSTOP_AFTER_NUM_RELEASE:
-				if(true==IsNumKey[keyCode])
+				if(true==IsNumKey[keyCode] && true!=NumKeyHeldDown())
 				{
 					PushKeyToQueueJISMode(0,var.autoStopKey);
 				}
 				break;
 			case AUTOSTOP_AFTER_ARROW_RELEASE:
-				if(true==IsArrowKey[keyCode])
+				if(true==IsArrowKey[keyCode] && true!=ArrowKeyHeldDown())
 				{
 					PushKeyToQueueJISMode(0,var.autoStopKey);
 				}
 				break;
 			case AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE:
-				if(true==IsNumKey[keyCode])
+				if(true==IsNumKey[keyCode] && true!=NumKeyHeldDown())
 				{
 					PushKeyToQueueJISMode(0,var.autoStopKey);
 				}
 				break;
 			case AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE:
-				if(true==IsArrowKey[keyCode])
+				if(true==IsArrowKey[keyCode] && true!=ArrowKeyHeldDown())
 				{
 					PushKeyToQueueJISMode(0,var.autoStopKey);
 				}
@@ -396,6 +386,55 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 		}
 		break;
 	}
+}
+void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode)
+{
+	FM77AV *fm77av=(FM77AV *)vmPtr;
+	FM77AVKeyCombination keyComb;
+	keyComb.shift=(0!=(keyFlags&KEYFLAG_SHIFT));
+	keyComb.ctrl=(0!=(keyFlags&KEYFLAG_CTRL));
+	keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
+	keyComb.keyCode=keyCode;
+	auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
+	if(true!=fm77av->KeyIRQFlagSet())
+	{
+		fm77av->SetKeyIRQFlag();
+		state.lastKeyCode=code;
+	}
+	else
+	{
+		state.keyCodeQueue.push(code);
+	}
+}
+bool FM77AVKeyboard::NumKeyHeldDown(void) const
+{
+	return
+		heldDown[AVKEY_NUM_STAR] ||
+		heldDown[AVKEY_NUM_SLASH] ||
+		heldDown[AVKEY_NUM_PLUS] ||
+		heldDown[AVKEY_NUM_MINUS] ||
+		heldDown[AVKEY_NUM_EQUAL] ||
+		heldDown[AVKEY_NUM_COMMA] ||
+		heldDown[AVKEY_NUM_RETURN] ||
+		heldDown[AVKEY_NUM_DOT] ||
+		heldDown[AVKEY_NUM_0] ||
+		heldDown[AVKEY_NUM_1] ||
+		heldDown[AVKEY_NUM_2] ||
+		heldDown[AVKEY_NUM_3] ||
+		heldDown[AVKEY_NUM_4] ||
+		heldDown[AVKEY_NUM_5] ||
+		heldDown[AVKEY_NUM_6] ||
+		heldDown[AVKEY_NUM_7] ||
+		heldDown[AVKEY_NUM_8] ||
+		heldDown[AVKEY_NUM_9];
+}
+bool FM77AVKeyboard::ArrowKeyHeldDown(void) const
+{
+	return
+		heldDown[AVKEY_LEFT] ||
+		heldDown[AVKEY_RIGHT] ||
+		heldDown[AVKEY_UP] ||
+		heldDown[AVKEY_DOWN];
 }
 
 // Sub-System Monitor A Waits for $D432 bit 8 to be low (Ready to Receive) before reading $D431.
