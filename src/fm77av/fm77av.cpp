@@ -284,7 +284,6 @@ void FM77AV::Reset(void)
 	state.subSysBusy=true; // Busy on reset.
 	state.subSysHalt=false;
 	state.subNMIMask=false;
-	state.mainToSubIRQ=false;
 	state.nextDevicePollingTime=0;
 	state.nextRenderingTime=0;
 	state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;

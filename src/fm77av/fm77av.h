@@ -128,14 +128,6 @@ public:
 	class State
 	{
 	public:
-		SystemState main,sub;
-
-		bool subSysBusy,subSysHalt;
-		bool mainToSubIRQ;
-		bool subNMIMask=false;
-
-		bool CRTCHaltsSubCPU=false;  // True in FM-7/8 speed mode.
-
 		unsigned int machineType=MACHINETYPE_FM7;
 		unsigned int keyboardIRQHandler=CPU_SUB; // Controlled by $FD02 bit 0.  FM-Techknow pp.151.
 		uint64_t fm77avTime=0;
@@ -155,6 +147,13 @@ public:
 		/*! Nanoseconds VM is lagging behind the real time.
 		*/
 		long long int timeDeficit=0;
+
+		bool subSysBusy,subSysHalt;
+		bool subNMIMask=false;
+
+		bool CRTCHaltsSubCPU=false;  // True in FM-7/8 speed mode.
+
+		SystemState main,sub;
 	};
 	State state;
 
@@ -334,6 +333,12 @@ public:
 
 	std::string MachineTypeStr(void) const;
 	void PrintSubSystemCommand(void) const;
+
+	bool SaveState(std::string fName) const;
+	bool LoadState(std::string fName,class Outside_World &outsideWorld);
+	/* virtual */ uint32_t SerializeVersion(void) const;
+	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
+	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 
 	std::vector <std::string> GetIRQStatusText(void) const;
 };
