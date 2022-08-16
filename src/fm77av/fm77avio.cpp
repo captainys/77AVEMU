@@ -88,6 +88,15 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		else
 		{
+			if(true==var.autoLoadTapeFile)
+			{
+				auto cmd=physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+2];
+				if(0x04==cmd)
+				{
+					TypeCommandForStartingTapeProgram();
+					var.autoLoadTapeFile=false;
+				}
+			}
 			if(true==state.subSysHalt && true==var.monitorSubSysCmd)
 			{
 				PrintSubSystemCommand();

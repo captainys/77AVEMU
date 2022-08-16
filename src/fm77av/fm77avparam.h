@@ -95,6 +95,8 @@ public:
 
 	unsigned int appSpecificSetting=FM77AV_APPSPECIFIC_NONE;
 
+	bool autoLoadTapeFile=false;
+
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
 };

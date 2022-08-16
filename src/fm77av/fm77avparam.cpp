@@ -205,6 +205,9 @@ std::vector <std::string> FM77AVProfile::Serialize(void) const
 	text.push_back("PAUSEKEY ");
 	text.back()+=pauseResumeKeyLabel;
 
+	text.push_back("AUTOTAPE ");
+	text.back()+=(autoLoadTapeFile ? "1" : "0");
+
 	if(MACHINETYPE_UNKNOWN!=machineType)
 	{
 		text.push_back("FM77AVTYP ");
@@ -404,6 +407,13 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				machineType=StrToMachineType(argv[1].c_str());
+			}
+		}
+		else if(ARGV0=="AUTOTAPE")
+		{
+			if(2<=argv.size())
+			{
+				autoLoadTapeFile=(0!=cpputil::Atoi(argv[1].c_str()));
 			}
 		}
 		else

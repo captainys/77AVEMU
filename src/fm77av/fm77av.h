@@ -173,6 +173,8 @@ public:
 
 		bool noWaitWhileTapeMotorOn=true;
 
+		bool autoLoadTapeFile=false;
+
 		bool breakOnUnhaltSubCPU=false;
 		uint8_t breakOnSubCmd[FM7_MAX_SUB_CMD];
 
@@ -324,6 +326,8 @@ public:
 	void PowerOn(void);
 	void Reset(void);
 	unsigned int RunOneInstruction(void);
+
+	void TypeCommandForStartingTapeProgram(void);
 
 	void ForceRender(class FM77AVRender &render,class Outside_World *outside_world);
 

@@ -169,6 +169,8 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		}
 	}
 
+	var.autoLoadTapeFile=param.autoLoadTapeFile;
+
 	for(int i=0; i<FM7_MAX_NUM_COMPORTS; ++i)
 	{
 		serialport.state.enabled[i]=param.enableCOM[i];
@@ -416,6 +418,34 @@ unsigned int FM77AV::RunOneInstruction(void)
 	}
 
 	return nanosec;
+}
+
+void FM77AV::TypeCommandForStartingTapeProgram(void)
+{
+	auto files=dataRecorder.state.primary.t77.Files();
+	if(0<files.size())
+	{
+		std::string cmd;
+		switch(files[0].fType)
+		{
+		case FM7File::FTYPE_BASIC_BINARY:
+		case FM7File::FTYPE_BASIC_ASCII:
+			cmd="RUN\"\"";
+			break;
+		case FM7File::FTYPE_BINARY:
+			cmd="LOADM\"\",,R";
+			break;
+		default:
+			cmd="PRINT \"Not a F-BASIC file.\"";
+			break;
+		}
+		keyboard.var.autoType.push(0x0D);
+		for(auto c : cmd)
+		{
+			keyboard.var.autoType.push(c);
+		}
+		keyboard.Type(0x0D); // Trigger auto-type.
+	}
 }
 
 std::string FM77AV::MachineTypeStr(void) const

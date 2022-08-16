@@ -16,6 +16,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Image search path." << std::endl;
 	std::cout << "-T77|-TAPE t77file.t77" << std::endl;
 	std::cout << "  Set T77 cassette data recorder dump." << std::endl;
+	std::cout << "-AUTOSTARTTAPE" << std::endl;
+	std::cout << "  Auto start the first tape program." << std::endl;
 	std::cout << "-T77AUTOSAVE|-AUTOSAVETAPE t77file.t77" << std::endl;
 	std::cout << "  In old days, we were saving programs/data in audio cassette tapes.  I had to press REC" << std::endl;
 	std::cout << "  button before writing, and must release REC button before reading.  If I forgot pressing" << std::endl;
@@ -146,6 +148,10 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			t77Path=argv[i+1];
 			++i;
+		}
+		else if("-AUTOSTARTTAPE"==ARG)
+		{
+			autoLoadTapeFile=true;
 		}
 		else if(("-T77AUTOSAVE"==ARG || "-AUTOSAVETAPE"==ARG) && i+1<argc)
 		{
