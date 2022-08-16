@@ -470,3 +470,95 @@ uint64_t FM77AVKeyboard::GetKeyRepeatInterval(void) const
 {
 	return state.keyRepeatInterval;
 }
+
+
+/* virtual */ uint32_t FM77AVKeyboard::SerializeVersion(void) const
+{
+	return 0;
+}
+/* virtual */ void FM77AVKeyboard::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	PushUint16(data,state.encodingMode);
+	// Death Force Expects non-zero read from $FD01 on reset.
+	PushUint16(data,state.lastKeyCode);
+	{
+		auto queueCopy=state.keyCodeQueue;
+		PushUint32(data,queueCopy.size());
+		while(true!=queueCopy.empty())
+		{
+			PushUint16(data,queueCopy.front());
+			queueCopy.pop();
+		}
+	}
+
+	PushUint64(data,state.encoderAcknowledgeBy);
+	PushUint64(data,state.encoderDataReadyBy);
+	PushUint16(data,state.encoderCmd);
+	PushUint16(data,state.nEncoderParam);
+	for(int i=0; i<8; ++i)
+	{
+		PushUint16(data,state.encoderParam[i]); // RTC-set (80 01) takes the longest 8-byte parameter.
+	}
+	{
+		auto queueCopy=state.encoderQueue;
+		PushUint32(data,queueCopy.size());
+		while(true!=queueCopy.empty())
+		{
+			PushUint16(data,queueCopy.front());
+			queueCopy.pop();
+		}
+	}
+
+	PushBool(data,state.CAPS);
+	PushBool(data,state.KANA);
+	PushBool(data,state.INSLED);
+	PushUint16(data,state.videoCaptureMode);
+	PushUint16(data,state.videoCaptureBrightness);
+	PushBool(data,state.keyRepeat);
+	PushUint64(data,state.keyRepeatStartTime);
+	PushUint64(data,state.keyRepeatInterval);
+}
+/* virtual */ bool FM77AVKeyboard::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	state.encodingMode=ReadUint16(data);
+	// Death Force Expects non-zero read from $FD01 on reset.
+	state.lastKeyCode=ReadUint16(data);
+	{
+		decltype(state.keyCodeQueue) empty;
+		std::swap(state.keyCodeQueue,empty);
+		uint32_t n=ReadUint32(data);
+		for(int i=0; i<n; ++i)
+		{
+			state.keyCodeQueue.push(ReadUint16(data));
+		}
+	}
+
+	state.encoderAcknowledgeBy=ReadUint64(data);
+	state.encoderDataReadyBy=ReadUint64(data);
+	state.encoderCmd=ReadUint16(data);
+	state.nEncoderParam=ReadUint16(data);
+	for(int i=0; i<8; ++i)
+	{
+		state.encoderParam[i]=ReadUint16(data);
+	}
+	{
+		decltype(state.encoderQueue) empty;
+		std::swap(state.encoderQueue,empty);
+		uint32_t n=ReadUint32(data);
+		for(int i=0; i<n; ++i)
+		{
+			state.encoderQueue.push(ReadUint16(data));
+		}
+	}
+
+	state.CAPS=ReadBool(data);
+	state.KANA=ReadBool(data);
+	state.INSLED=ReadBool(data);
+	state.videoCaptureMode=ReadUint16(data);
+	state.videoCaptureBrightness=ReadUint16(data);
+	state.keyRepeat=ReadBool(data);
+	state.keyRepeatStartTime=ReadUint64(data);
+	state.keyRepeatInterval=ReadUint64(data);
+
+	return true;
+}
