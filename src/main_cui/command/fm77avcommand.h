@@ -151,6 +151,7 @@ public:
 		DUMP_CALLSTACK,
 		DUMP_IRQ,
 		DUMP_PSG_LOG,
+		DUMP_CAS0,
 	};
 
 	class Command

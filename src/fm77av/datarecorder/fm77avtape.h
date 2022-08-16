@@ -9,6 +9,8 @@
 #include <fstream>
 #include <vector>
 #include "device.h"
+#include "t77.h"
+#include "fm7lib.h"
 
 class FM77AVTape
 {
@@ -28,6 +30,18 @@ public:
 	enum
 	{
 		MICROSEC_PER_T77_ONE=8
+	};
+
+	class
+	{
+	};
+
+	class TapeFile
+	{
+	public:
+		std::string fName;
+		unsigned int fType;
+		uint64_t ptr;
 	};
 
 	class TapePointer
@@ -50,6 +64,8 @@ public:
 	void MotorOn(TapePointer &pointer,uint64_t fm77avTimeNanoSec) const; // First byte=16
 	void MoveTapePointer(TapePointer &pointer,uint64_t fm77avTimeNanoSec) const;
 	uint8_t GetLevel(TapePointer tracker) const;
+
+	std::vector <TapeFile> Files(void) const;
 };
 
 class FM77AVDataRecorder : public Device

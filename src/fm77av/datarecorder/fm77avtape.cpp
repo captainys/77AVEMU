@@ -139,6 +139,32 @@ uint8_t FM77AVTape::GetLevel(TapePointer ptr) const
 	}
 }
 
+std::vector <FM77AVTape::TapeFile> FM77AVTape::Files(void) const
+{
+	std::vector <uint8_t> rawT77;
+	for(int i=0; i<16; ++i)
+	{
+		rawT77.push_back(0);
+	}
+	rawT77.insert(rawT77.end(),data.begin(),data.end());
+
+	T77Decoder t77Dec;
+	t77Dec.DumpT77((std::vector <unsigned char> &&)rawT77);
+	t77Dec.Decode();
+
+	std::vector <TapeFile> files;
+	for(int i=0; i<t77Dec.filePtr.size() && i<t77Dec.fileDump.size(); ++i)
+	{
+		TapeFile tf;
+		tf.fName=t77Dec.GetDumpFileName(t77Dec.fileDump[i]);
+		auto fmDat=t77Dec.DumpToFMFormat(t77Dec.fileDump[i]);
+		tf.fType=FM7File::DecodeFMHeaderFileType(fmDat[10],fmDat[11]);
+		tf.ptr=t77Dec.filePtr[i]-16;
+		files.push_back(tf);
+	}
+	return files;
+}
+
 ////////////////////////////////////////////////////////////
 
 void FM77AVDataRecorder::TapePointerPair::Rewind(void)
