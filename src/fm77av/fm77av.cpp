@@ -91,14 +91,14 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 		}
 	}
 
-	std::swap(param.fileNameAlias,var.fileNameAlias);
+	std::swap(param.fileNameAlias,var.fileNameAlias);  // Do it before loading tape and disk images.
 
 
 	var.noWait=param.noWait;
 
 	if(""!=param.t77Path)
 	{
-		if(true==dataRecorder.LoadT77(param.t77Path))
+		if(true==dataRecorder.LoadT77(FileNameAlias(param.t77Path)))
 		{
 			std::cout << "Loaded Cassette: " << param.t77Path << std::endl;
 		}
@@ -110,7 +110,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	}
 	if(""!=param.t77SavePath)
 	{
-		dataRecorder.LoadAutoSaveT77(param.t77SavePath);
+		dataRecorder.LoadAutoSaveT77(FileNameAlias(param.t77SavePath));
 		dataRecorder.state.toSave.Dniwer();
 		dataRecorder.state.toSave.t77.fName=param.t77SavePath; // If not exist, force set file name.
 	}
@@ -120,7 +120,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	{
 		if(""!=param.fdImgFName[drv])
 		{
-			fdc.LoadD77orRAW(drv,param.fdImgFName[drv].c_str());
+			fdc.LoadD77orRAW(drv,FileNameAlias(param.fdImgFName[drv]).c_str());
 			if(true==param.fdImgWriteProtect[drv])
 			{
 				// D77 image may have write-protect switch.
