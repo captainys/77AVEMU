@@ -248,6 +248,11 @@ private:
 	void VM_Keyboard_Translation2(FsGuiPopUpMenuItem *);
 	void VM_Keyboard_Translation3(FsGuiPopUpMenuItem *);
 
+	void VM_Keyboard_AutoStop(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_AutoStop_Num5(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_AutoStop_ESC(FsGuiPopUpMenuItem *);
+	void VM_Keyboard_AutoStop_BackSpace(FsGuiPopUpMenuItem *);
+
 	void VM_SaveScreenshot(FsGuiPopUpMenuItem *);
 	void VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode);
 

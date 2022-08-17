@@ -1129,7 +1129,7 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 		case ENABLE_AUTOSTOP:
 			if(3<=cmd.argv.size())
 			{
-				auto autoStopType=FM77AVKeyboard::StrToAutoStop(cmd.argv[1]);
+				auto autoStopType=FM77AVKeyboard::StrToAutoStop(cmd.argv[2]);
 				if(FM77AVKeyboard::AUTOSTOP_NONE!=autoStopType)
 				{
 					fm77av.keyboard.var.autoStopAfterThis=autoStopType;

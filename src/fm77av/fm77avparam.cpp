@@ -62,6 +62,10 @@ void FM77AVProfile::CleanUp(void)
 	FM77AVParam::CleanUp();
 	autoStart=false;
 
+	// Expect GUI environment.
+	autoScaling=true;
+	windowModeOnStartUp=WINDOW_MAXIMIZE;
+
 	virtualKeys.resize(MAX_NUM_VIRTUALKEYS);
 	for(auto &vk : virtualKeys)
 	{

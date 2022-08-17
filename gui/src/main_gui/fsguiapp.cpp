@@ -253,6 +253,21 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 			keyboardSubMenu->AddTextItem(0,FSKEY_3,L"Translation3 (for Typing, ESC->BREAK)")->BindCallBack(&THISCLASS::VM_Keyboard_Translation3,this);
 		}
 
+		{
+			auto *autoStopSubMenu=subMenu->AddTextItem(0,FSKEY_S,L"Auto Stop")->AddSubMenu();
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_NONE).c_str())->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_NUM_RELEASE).c_str())->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_ARROW_RELEASE).c_str())->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE).c_str())->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE).c_str())->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_ANY_KEY_RELEASE).c_str())->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop,this);
+
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,L"Use Num-5")->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop_Num5,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,L"Use ESC")->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop_ESC,this);
+			autoStopSubMenu->AddTextItem(0,FSKEY_NULL,L"Use Backspace")->BindCallBack(&THISCLASS::VM_Keyboard_AutoStop_BackSpace,this);
+
+		}
+
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Save Screenshot")->BindCallBack(&THISCLASS::VM_SaveScreenshot,this);
 	}
 
@@ -1439,6 +1454,60 @@ void FsGuiMainCanvas::VM_Keyboard_Translation3(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("KEYBOARD TRANS3\n");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+void FsGuiMainCanvas::VM_Keyboard_AutoStop(FsGuiPopUpMenuItem *item)
+{
+	if(true==IsVMRunning())
+	{
+		YsWString wLabel=item->GetString();
+		YsString label;
+		label.EncodeUTF8<wchar_t>(wLabel);
+		YsString cmd="ENA AUTOSTOP ";
+		cmd.Append(label);
+		SendVMCommand(cmd.c_str());
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Keyboard_AutoStop_Num5(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("AUTOSTOPKEY NUM_5");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Keyboard_AutoStop_ESC(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("AUTOSTOPKEY ESC");
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::VM_Keyboard_AutoStop_BackSpace(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		SendVMCommand("AUTOSTOPKEY BACKSPACE");
 		ResumeVMIfSameProc();
 	}
 	else
