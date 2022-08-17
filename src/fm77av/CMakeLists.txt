@@ -38,7 +38,7 @@ target_include_directories(fm77avrenderthread PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 
 
 add_library(fm77avparam fm77avparam.cpp fm77avparam.h)
-target_link_libraries(fm77avparam fm77avdef fm77av cpputil)
+target_link_libraries(fm77avparam fm77avdef fm77avkey fm77av cpputil)
 target_include_directories(fm77avparam PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 

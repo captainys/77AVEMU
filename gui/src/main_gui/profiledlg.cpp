@@ -218,6 +218,40 @@ void ProfileDialog::Make(void)
 		auto tabId=AddTab(tab,"Keyboard1");
 		BeginAddTabItem(tab,tabId);
 
+		AddStaticText(0,FSKEY_NULL,"Auto Stop",YSTRUE);
+		autoStopTypeDrp=AddEmptyDropList(0,FSKEY_NULL,"",8,32,32,YSTRUE);
+		autoStopTypeDrp->AddString(FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_NONE).c_str(),YSTRUE);
+		autoStopTypeDrp->AddString(FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_NUM_RELEASE).c_str(),YSFALSE);
+		autoStopTypeDrp->AddString(FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_ARROW_RELEASE).c_str(),YSFALSE);
+		autoStopTypeDrp->AddString(FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_NUM_RELEASE_AND_RETYPE).c_str(),YSFALSE);
+		autoStopTypeDrp->AddString(FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_ARROW_RELEASE_AND_RETYPE).c_str(),YSFALSE);
+		autoStopTypeDrp->AddString(FM77AVKeyboard::AutoStopToStr(FM77AVKeyboard::AUTOSTOP_AFTER_ANY_KEY_RELEASE).c_str(),YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,"Virtually Press This Key to Auto Stop",YSTRUE);
+		autoStopKeyDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSTRUE);
+		for(int FM77AVKey=0; FM77AVKey<256; ++FM77AVKey)
+		{
+			auto str=FM77AVKeyCodeToKeyLabel(FM77AVKey);
+			auto reverse=FM77AVKeyLabelToKeyCode(str);
+			if(AVKEY_NULL!=reverse)
+			{
+				autoStopKeyDrp->AddString(str.c_str(),YSFALSE);
+			}
+		}
+		autoStopKeyDrp->SelectByString("NUM_5");
+
+		AddStaticText(0,FSKEY_NULL,"FM-7 seriew before FM77AV could not detect key-release.  Therefore, FM-7 users",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,"could start moving a character by pressing a key, but could not stop by releasing",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,"the key.  We typically pressed Num-5 to stop.  The emulator can solve this problem",YSTRUE);
+		AddStaticText(0,FSKEY_NULL,"by virtually pressing a different key when num-keys or arrow-keys are released.",YSTRUE);
+
+		EndAddTabItem();
+	}
+
+	{
+		auto tabId=AddTab(tab,"Keyboard2");
+		BeginAddTabItem(tab,tabId);
+
 		AddStaticText(0,FSKEY_NULL,"Keyboard Mode (TRANS1:ESC->ESC+BREAK, TRANS2:ESC->ESC, TRANS3:ESC->BREAK):",YSTRUE);
 		keyboardModeDrp=AddEmptyDropList(0,FSKEY_NULL,"",20,20,20,YSFALSE);
 		for(int i=0; i<FM77AV_KEYBOARD_MODE_NUM_MODES; ++i)
@@ -275,7 +309,7 @@ void ProfileDialog::Make(void)
 	}
 	
 	{
-		auto tabId=AddTab(tab,"Keyboard2");
+		auto tabId=AddTab(tab,"Keyboard3");
 		BeginAddTabItem(tab,tabId);
 		
 		AddStaticText(0,FSKEY_NULL,"Virtual Keys:",YSTRUE);
@@ -691,6 +725,9 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 
 	profile.quickStateSaveFName=quickStateSaveFNameTxt->GetString().data();
 
+	profile.autoStopType=FM77AVKeyboard::StrToAutoStop(autoStopTypeDrp->GetSelectedString().c_str());
+	profile.autoStopKey=FM77AVKeyLabelToKeyCode(autoStopKeyDrp->GetSelectedString().c_str());
+
 	profile.pauseResumeKeyLabel=pauseResumeKeyDrp->GetSelectedString().data();
 
 	return profile;
@@ -804,6 +841,9 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 
 	str.SetUTF8String(profile.quickStateSaveFName.data());
 	quickStateSaveFNameTxt->SetText(str);
+
+	autoStopTypeDrp->Select(profile.autoStopType);
+	autoStopKeyDrp->SelectByString(FM77AVKeyCodeToKeyLabel(profile.autoStopKey).c_str());
 
 	pauseResumeKeyDrp->SelectByString(profile.pauseResumeKeyLabel.c_str(),YSFALSE);
 }

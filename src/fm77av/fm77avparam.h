@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include "fm77avdef.h"
+#include "fm77avkey.h"
 
 class FM77AVParam
 {
@@ -98,7 +99,7 @@ public:
 	bool autoLoadTapeFile=false;
 
 	unsigned int autoStopType=0;
-	unsigned int autoStopKey=0;
+	unsigned int autoStopKey=AVKEY_NUM_5;
 
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;

@@ -699,6 +699,11 @@ uint64_t FM77AVKeyboard::GetKeyRepeatInterval(void) const
 	state.keyRepeatStartTime=ReadUint64(data);
 	state.keyRepeatInterval=ReadUint64(data);
 
+	for(auto &b : heldDown)
+	{
+		b=false;
+	}
+
 	return true;
 }
 

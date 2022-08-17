@@ -53,6 +53,8 @@ public:
 	FsGuiDropList *virtualKeyFM77AVKeyDrp[FM77AVProfile::MAX_NUM_VIRTUALKEYS];
 	FsGuiDropList *virtualKeyPhysIdDrp[FM77AVProfile::MAX_NUM_VIRTUALKEYS];
 	FsGuiDropList *virtualKeyButtonDrp[FM77AVProfile::MAX_NUM_VIRTUALKEYS];
+	FsGuiDropList *autoStopTypeDrp;
+	FsGuiDropList *autoStopKeyDrp;
 
 
 	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
