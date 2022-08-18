@@ -13,7 +13,7 @@ THISDIR=os.path.dirname(THISFILE)
 MUTSUDIR=os.path.join(THISDIR,"..")
 
 BUILDDIR=os.path.join(MUTSUDIR,"gui","build")
-SRCDIR=os.path.join(MUTSUDIR,"src")
+SRCDIR=os.path.join(MUTSUDIR,"gui","src")
 ROMDIR=os.path.join(MUTSUDIR,"..","77AVTEST","ROMS",MACHINETYPE)
 DISKDIR=os.path.join(MUTSUDIR,"..","77AVTEST","DISK")
 TAPEDIR=os.path.join(MUTSUDIR,"..","77AVTEST","TAPE")
@@ -55,6 +55,34 @@ def Run(argv):
 
 
 
+def GitPull():
+	cwd=os.getcwd();
+	os.chdir(SRCDIR)
+	if os.path.isdir("public"):
+		proc=subprocess.Popen(["git","pull"])
+		proc.communicate();
+		if 0!=proc.returncode:
+			print("Failed to update public libraries.")
+			throw
+	else:
+		proc=subprocess.Popen(["git","clone","https://github.com/captainys/public.git"])
+		proc.communicate()
+		if 0!=proc.returncode:
+			print("Failed to checkout public libraries.")
+			throw
+		if True!=os.path.isdir(BUILDDIR):
+			os.mkdir(BUILDDIR)
+		os.chdir(BUILDDIR)
+		proc=subprocess.Popen(["cmake","../src"])
+		proc.communicate()
+		if 0!=proc.returncode:
+			print("Failed to set up CMake projects.")
+			throw
+	os.chdir(cwd);
+
+
+
 if __name__=="__main__":
+	GitPull()
 	buildgui.Run()
 	Run(sys.argv[1:])
