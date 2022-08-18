@@ -186,6 +186,8 @@ public:
 		int64_t timeAdjustLog[TIME_ADJUSTMENT_LOG_LEN];
 		int64_t timeDeficitLog[TIME_ADJUSTMENT_LOG_LEN];
 
+		std::vector <std::string> imgSearchPaths;
+
 		std::string quickScrnShotDir;
 		std::vector <std::string> initialCmd;
 
@@ -208,7 +210,7 @@ public:
 
 	FM77AV();
 
-	bool SetUp(FM77AVParam &param,class Outside_World *outside_world);
+	bool SetUp(const FM77AVParam &param,class Outside_World *outside_world);
 
 	void IOWrite(uint16_t ioAddr,uint8_t value);
 	uint8_t IORead(uint16_t ioAddr);
@@ -218,6 +220,10 @@ public:
 	    If not, returns input.
 	*/
 	std::string FileNameAlias(std::string input) const;
+
+	/*! Returns a file name found after applying alias and if relative path searching inside
+	    the imgSearchPaths.  If nothing is found, returns either alias or the input. */
+	std::string FindFile(std::string fName) const;
 
 	bool NoWait(void) const;
 

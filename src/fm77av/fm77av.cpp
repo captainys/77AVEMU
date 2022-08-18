@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 #include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avrender.h"
@@ -70,12 +71,18 @@ FM77AV::FM77AV() :
 	else ADDR_NONE;
 }
 
-bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
+bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 {
+	var.fileNameAlias=param.fileNameAlias;  // Do it before loading tape and disk images.
+	var.imgSearchPaths=param.imgSearchPaths;  // Do it before loading tape and disk images.
+
+	std::string ROMPath,FB30ROM;
+	cpputil::SeparatePathFile(ROMPath,FB30ROM,FindFile(cpputil::MakeFullPathName(param.ROMPath,"FBASIC30.ROM")));
+
 	state.machineType=param.machineType;
 	if(MACHINETYPE_AUTO==state.machineType)
 	{
-		state.machineType=LoadROMFilesAndIdentifyMachineType(param.ROMPath);
+		state.machineType=LoadROMFilesAndIdentifyMachineType(ROMPath);
 		if(MACHINETYPE_UNKNOWN==state.machineType)
 		{
 			std::cout << "Insufficient ROM files." << std::endl;
@@ -84,21 +91,18 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	}
 	else
 	{
-		if(true!=LoadROMFiles(param.ROMPath))
+		if(true!=LoadROMFiles(ROMPath))
 		{
 			std::cout << "Failed to load ROM files." << std::endl;
 			return false;
 		}
 	}
 
-	std::swap(param.fileNameAlias,var.fileNameAlias);  // Do it before loading tape and disk images.
-
-
 	var.noWait=param.noWait;
 
 	if(""!=param.t77Path)
 	{
-		if(true==dataRecorder.LoadT77(FileNameAlias(param.t77Path)))
+		if(true==dataRecorder.LoadT77(FindFile(param.t77Path)))
 		{
 			std::cout << "Loaded Cassette: " << param.t77Path << std::endl;
 		}
@@ -110,7 +114,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	}
 	if(""!=param.t77SavePath)
 	{
-		dataRecorder.LoadAutoSaveT77(FileNameAlias(param.t77SavePath));
+		dataRecorder.LoadAutoSaveT77(FindFile(param.t77SavePath));
 		dataRecorder.state.toSave.Dniwer();
 		dataRecorder.state.toSave.t77.fName=param.t77SavePath; // If not exist, force set file name.
 	}
@@ -120,7 +124,7 @@ bool FM77AV::SetUp(FM77AVParam &param,Outside_World *outside_world)
 	{
 		if(""!=param.fdImgFName[drv])
 		{
-			fdc.LoadD77orRAW(drv,FileNameAlias(param.fdImgFName[drv]).c_str());
+			fdc.LoadD77orRAW(drv,FindFile(param.fdImgFName[drv]).c_str());
 			if(true==param.fdImgWriteProtect[drv])
 			{
 				// D77 image may have write-protect switch.
@@ -587,6 +591,43 @@ std::string FM77AV::FileNameAlias(std::string input) const
 		return found->second;
 	}
 	return input;
+}
+
+std::string FM77AV::FindFile(std::string fName) const
+{
+	fName=FileNameAlias(fName);
+#ifdef _WIN32
+	if(':'==fName[1])
+	{
+		// Must be starting with the drive letter.
+		return fName;
+	}
+#endif
+	if('/'==fName[0] || '\\'==fName[0])
+	{
+		// Must be a full-path name.
+		return fName;
+	}
+
+	// Then must be a relative path.
+	// If it finds from the CWD, return it.
+	std::ifstream ifp(fName,std::ios::binary);
+	if(true==ifp.is_open())
+	{
+		return fName;
+	}
+
+	for(auto dir : var.imgSearchPaths)
+	{
+		auto ful=cpputil::MakeFullPathName(dir,fName);
+		std::ifstream ifp(fName,std::ios::binary);
+		if(true==ifp.is_open())
+		{
+			return ful;
+		}
+	}
+
+	return fName;
 }
 
 bool FM77AV::NoWait(void) const
