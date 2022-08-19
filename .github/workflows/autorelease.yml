@@ -1,0 +1,207 @@
+name: Auto Release with Tag
+
+on:
+  push:
+    tags:
+      - 'v*' # Run if tagged as v*.
+
+jobs:
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci_windows
+    - name: build
+      run: |
+          cmake ../src
+          cmake --build . --config Release
+      working-directory: ./ci_windows
+    - name: mkdir_gui
+      run: mkdir build
+      working-directory: ./gui
+    - name: checkout_gui
+      run: git clone https://github.com/captainys/public.git
+      working-directory: ./gui/src
+    - name: build_gui
+      run: |
+          cmake ../src
+          cmake --build . --config Release --target Mutsu_GUI
+      working-directory: ./gui/build
+    - name: make_zip
+      run: |
+          cmake -E copy ./main_cui/Release/Mutsu_CUI.exe .
+          cmake -E copy ../gui/build/main_gui/Release/Mutsu_GUI.exe .
+          cmake -E copy ../readme.md .
+          cmake -E copy ../command.md .
+          # cmake -E copy ../util/MutsuUtil.D77 .
+          cmake -E tar cvf windows_binary_latest.zip --format=zip Mutsu_CUI.exe Mutsu_GUI.exe readme.md command.md
+      working-directory: ./ci_windows
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Windows-Binary
+          path: ci_windows/windows_binary_latest.zip
+
+
+
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci_ubuntu
+    - name: install-OpenGL
+      run: |
+          sudo apt-get update
+          sudo apt-get install libglu1-mesa-dev mesa-common-dev
+    - name: install-ALSA
+      run: sudo apt-get install libasound2 libasound2-dev
+    - name: cmake
+      run: cmake ../src -DCMAKE_BUILD_TYPE=Release
+      working-directory: ./ci_ubuntu
+    - name: build
+      run: cmake --build . --config Release --target Mutsu_CUI
+      working-directory: ./ci_ubuntu
+
+    - name: mkdir_gui
+      run: mkdir build
+      working-directory: ./gui
+    - name: checkout_gui
+      run: git clone https://github.com/captainys/public.git
+      working-directory: ./gui/src
+    - name: build_gui
+      run: |
+          cmake ../src -DCMAKE_BUILD_TYPE=Release
+          cmake --build main_gui --config Release --target Mutsu_GUI
+      working-directory: ./gui/build
+
+    - name: make_zip
+      run: |
+          cmake -E copy ./main_cui/Mutsu_CUI .
+          cmake -E copy ../gui/build/main_gui/Mutsu_GUI .
+          cmake -E copy ../readme.md .
+          cmake -E copy ../command.md .
+          # cmake -E copy ../util/MutsuUtil.D77 .
+          cmake -E tar cvf ubuntu_binary_latest.zip --format=zip Mutsu_CUI Mutsu_GUI readme.md command.md
+      working-directory: ./ci_ubuntu
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Ubuntu-Binary
+          path: ci_ubuntu/ubuntu_binary_latest.zip
+
+
+
+  build-macos:
+
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir ci_macos
+    - name: cmake
+      run: cmake ../src -DCMAKE_BUILD_TYPE=Release
+      working-directory: ./ci_macos
+    - name: build
+      run: cmake --build .
+      working-directory: ./ci_macos
+
+    - name: mkdir_gui
+      run: mkdir build
+      working-directory: ./gui
+    - name: checkout_gui
+      run: git clone https://github.com/captainys/public.git
+      working-directory: ./gui/src
+    - name: build_gui
+      run: |
+          cmake ../src -DCMAKE_BUILD_TYPE=Release
+          cmake --build main_gui --config Release --target Mutsu_GUI
+      working-directory: ./gui/build
+
+    - name: make_zip
+      run: |
+          cmake -E copy_directory ../gui/build/main_gui/Mutsu_GUI.app ./Mutsu_GUI.app
+          # cmake -E copy main_cui/Mutsu_CUI.app/Contents/MacOS/Mutsu_CUI Mutsu_GUI.app/Contents/MacOS/.
+          cmake -E copy ../readme.md .
+          cmake -E copy ../command.md .
+          # cmake -E copy ../util/MutsuUtil.D77 .
+          cmake -E tar cvf macos_binary_latest.zip --format=zip Mutsu_GUI.appreadme.md command.md
+      working-directory: ./ci_macos
+    - name: upload_to_artifact
+      uses: actions/upload-artifact@v1
+      with:
+          name: Macos-Binary
+          path: ci_macos/macos_binary_latest.zip
+
+
+  after-build:
+    needs: [build-windows, build-linux, build-macos]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: Windows-Binary
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: Ubuntu-Binary
+
+    - uses: actions/download-artifact@v2
+      with:
+        name: Macos-Binary
+
+    - name: Verify files
+      run: ls -l
+
+    # https://github.com/actions/upload-release-asset
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Auto Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+    - name: Upload Windows Binary
+      id: upload-windows-binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./windows_binary_latest.zip
+        asset_name: windows_binary_latest.zip
+        asset_content_type: application/zip
+
+    - name: Upload Ubuntu Binary
+      id: upload-ubuntu-binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./ubuntu_binary_latest.zip
+        asset_name: ubuntu_binary_latest.zip
+        asset_content_type: application/zip
+
+    - name: Upload macOS Binary
+      id: upload-macOS-binary
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./macos_binary_latest.zip
+        asset_name: macos_binary_latest.zip
+        asset_content_type: application/zip
+
