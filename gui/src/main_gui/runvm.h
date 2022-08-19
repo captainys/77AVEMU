@@ -9,6 +9,8 @@
 #endif
 
 #include <queue>
+#include <vector>
+#include <string>
 
 #include "fm77av.h"
 #include "fm77avthread.h"
@@ -46,6 +48,7 @@ public:
 	void Alloc(void);
 	void Free(void);
 
+	std::vector <std::string> GetMissingROMFiles(void) const;
 	void Run(void);
 	bool IsRunning(void) const;
 	void SendCommand(std::string cmd);

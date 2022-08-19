@@ -220,10 +220,12 @@ public:
 	    If not, returns input.
 	*/
 	std::string FileNameAlias(std::string input) const;
+	static std::string FileNameAlias(std::string input,const std::unordered_map<std::string,std::string> &aliases);
 
 	/*! Returns a file name found after applying alias and if relative path searching inside
 	    the imgSearchPaths.  If nothing is found, returns either alias or the input. */
 	std::string FindFile(std::string fName) const;
+	static std::string FindFile(std::string fName,const std::unordered_map<std::string,std::string> &aliases,const std::vector <std::string> &imgSearchPaths);
 
 	bool NoWait(void) const;
 
@@ -303,6 +305,7 @@ public:
 	void DisableShadowRAM(void);
 
 
+	static std::vector <std::string> CheckMissingROMFiles(const FM77AVParam &param);
 	unsigned int LoadROMFilesAndIdentifyMachineType(std::string ROMPath);
 	bool LoadROMFiles(std::string ROMPath);
 

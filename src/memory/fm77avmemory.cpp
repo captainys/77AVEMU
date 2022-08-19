@@ -6,6 +6,135 @@
 #include "fm77av.h"
 #include "cpputil.h"
 #include "fm77avmemory.h"
+#include "fm77avdef.h"
+
+std::vector <HasROMImages::ROMToLoad> HasROMImages::GetROMToLoad(unsigned int machineType)
+{
+	// FM-7
+	//   BOOT_BAS.ROM
+	//   BOOT_DOS.ROM
+	//   FBASIC30.ROM
+	//   SUBSYS_C.ROM or SUBSYS.ROM
+	if(machineType<MACHINETYPE_FM77AV)
+	{
+		std::vector <ROMToLoad> lst=
+		{
+			{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
+			{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
+			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
+			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
+			{false,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
+		};
+		return lst;
+	}
+	// FM77AV
+	//   BOOT_BAS.ROM
+	//   BOOT_DOS.ROM
+	//   FBASIC30.ROM
+	//   INITIATE.ROM
+	//   KANJI.ROM
+	//   SUBSYSCG.ROM
+	//   SUBSYS_A.ROM
+	//   SUBSYS_B.ROM
+	//   SUBSYS_C.ROM
+	else if(MACHINETYPE_FM77AV==machineType)
+	{
+		std::vector <ROMToLoad> lst=
+		{
+			{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
+			{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
+			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
+			{true, ROM_INITIATOR, INITIATOR_ROM_SIZE,                         "INITIATE.ROM",""},
+			{true ,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
+			{true, ROM_ASCII_FONT,4*ASCII_FONT_ROM_SIZE,                      "SUBSYSCG.ROM",""},
+			{true, ROM_SUBSYS_A,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_A.ROM",""},
+			{true, ROM_SUBSYS_B,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_B.ROM",""},
+			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
+		};
+		return lst;
+	}
+	// FM77AV40
+	//   BOOT_BAS.ROM
+	//   BOOT_DOS.ROM
+	//   FBASIC30.ROM
+	//   INITIATE.ROM
+	//   KANJI1.ROM or KANJI.ROM
+	//   KANJI2.ROM
+	//   SUBSYSCG.ROM
+	//   SUBSYS_A.ROM
+	//   SUBSYS_B.ROM
+	//   SUBSYS_C.ROM
+	//   DICROM.ROM
+	else if(MACHINETYPE_FM77AV40==machineType)
+	{
+		std::vector <ROMToLoad> lst=
+		{
+			{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
+			{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
+			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
+			{true, ROM_INITIATOR, INITIATOR_ROM_SIZE,                         "INITIATE.ROM",""},
+			{true ,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
+			{false,ROM_KANJI2,    KANJI_ROM_SIZE,                             "KANJI2.ROM",""},
+			{true, ROM_ASCII_FONT,4*ASCII_FONT_ROM_SIZE,                      "SUBSYSCG.ROM",""},
+			{true, ROM_SUBSYS_A,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_A.ROM",""},
+			{true, ROM_SUBSYS_B,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_B.ROM",""},
+			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
+			{false,ROM_DIC,       DIC_ROM_SIZE,                               "DICROM.ROM",""},
+		};
+		return lst;
+	}
+
+	// If unknown, return the longest list.
+	std::vector <ROMToLoad> lst=
+	{
+		{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
+		{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
+		{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
+		{true, ROM_INITIATOR, INITIATOR_ROM_SIZE,                         "INITIATE.ROM",""},
+		{true ,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
+		{false,ROM_KANJI2,    KANJI_ROM_SIZE,                             "KANJI2.ROM",""},
+		{true, ROM_ASCII_FONT,4*ASCII_FONT_ROM_SIZE,                      "SUBSYSCG.ROM",""},
+		{true, ROM_SUBSYS_A,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_A.ROM",""},
+		{true, ROM_SUBSYS_B,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_B.ROM",""},
+		{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
+		{false,ROM_DIC,       DIC_ROM_SIZE,                               "DICROM.ROM",""},
+	};
+	return lst;
+}
+
+bool HasROMImages::LoadROMFiles(std::string ROMPath,unsigned int machineType)
+{
+	auto toLoad=GetROMToLoad(machineType);
+
+	for(auto rom : toLoad)
+	{
+		auto fullPath0=cpputil::MakeFullPathName(ROMPath,rom.fName);
+		std::ifstream ifp(fullPath0,std::ios::binary);
+		if(true!=ifp.is_open())
+		{
+			auto fullPath1=cpputil::MakeFullPathName(ROMPath,rom.fNameAlt);
+			ifp.open(fullPath1,std::ios::binary);
+		}
+		if(true!=ifp.is_open())
+		{
+			if(true==rom.mandatory)
+			{
+				std::cout << "Failed to load " << fullPath0 << std::endl;
+				std::cout << "Which is mandatory for emulating " << MachineTypeToStr(machineType) << std::endl;
+				return false;
+			}
+			else
+			{
+				continue;
+			}
+		}
+		ifp.read((char *)rom.ptr,rom.length);
+	}
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////
 
 PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 {
@@ -137,117 +266,8 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 
 bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 {
-	struct ToLoad
-	{
-		bool mandatory;
-		uint8_t *ptr;
-		uint64_t length;
-		std::string fName,fNameAlt;
-	};
-
-	std::vector <ToLoad> toLoad;
-	FM77AV *fm77av=(FM77AV *)vmPtr;
-
-	// FM-7
-	//   BOOT_BAS.ROM
-	//   BOOT_DOS.ROM
-	//   FBASIC30.ROM
-	//   SUBSYS_C.ROM or SUBSYS.ROM
-	if(fm77av->state.machineType<MACHINETYPE_FM77AV)
-	{
-		std::vector <struct ToLoad> lst=
-		{
-			{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
-			{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
-			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
-			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
-			{false,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
-		};
-		std::swap(toLoad,lst);
-	}
-	// FM77AV
-	//   BOOT_BAS.ROM
-	//   BOOT_DOS.ROM
-	//   FBASIC30.ROM
-	//   INITIATE.ROM
-	//   KANJI.ROM
-	//   SUBSYSCG.ROM
-	//   SUBSYS_A.ROM
-	//   SUBSYS_B.ROM
-	//   SUBSYS_C.ROM
-	else if(MACHINETYPE_FM77AV==fm77av->state.machineType)
-	{
-		std::vector <struct ToLoad> lst=
-		{
-			{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
-			{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
-			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
-			{true, ROM_INITIATOR, INITIATOR_ROM_SIZE,                         "INITIATE.ROM",""},
-			{true ,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
-			{true, ROM_ASCII_FONT,4*ASCII_FONT_ROM_SIZE,                      "SUBSYSCG.ROM",""},
-			{true, ROM_SUBSYS_A,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_A.ROM",""},
-			{true, ROM_SUBSYS_B,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_B.ROM",""},
-			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
-		};
-		std::swap(toLoad,lst);
-	}
-	// FM77AV40
-	//   BOOT_BAS.ROM
-	//   BOOT_DOS.ROM
-	//   FBASIC30.ROM
-	//   INITIATE.ROM
-	//   KANJI1.ROM or KANJI.ROM
-	//   KANJI2.ROM
-	//   SUBSYSCG.ROM
-	//   SUBSYS_A.ROM
-	//   SUBSYS_B.ROM
-	//   SUBSYS_C.ROM
-	//   DICROM.ROM
-	else if(MACHINETYPE_FM77AV40==fm77av->state.machineType)
-	{
-		std::vector <struct ToLoad> lst=
-		{
-			{true, ROM_BOOT_BASIC,BOOT_ROM_SIZE,                              "BOOT_BAS.ROM",""},
-			{true, ROM_BOOT_DOS,  BOOT_ROM_SIZE,                              "BOOT_DOS.ROM",""},
-			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
-			{true, ROM_INITIATOR, INITIATOR_ROM_SIZE,                         "INITIATE.ROM",""},
-			{true ,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
-			{false,ROM_KANJI2,    KANJI_ROM_SIZE,                             "KANJI2.ROM",""},
-			{true, ROM_ASCII_FONT,4*ASCII_FONT_ROM_SIZE,                      "SUBSYSCG.ROM",""},
-			{true, ROM_SUBSYS_A,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_A.ROM",""},
-			{true, ROM_SUBSYS_B,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_B.ROM",""},
-			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
-			{false,ROM_DIC,       DIC_ROM_SIZE,                               "DICROM.ROM",""},
-		};
-		std::swap(toLoad,lst);
-	}
-
-	for(auto rom : toLoad)
-	{
-		auto fullPath0=cpputil::MakeFullPathName(ROMPath,rom.fName);
-		std::ifstream ifp(fullPath0,std::ios::binary);
-		if(true!=ifp.is_open())
-		{
-			auto fullPath1=cpputil::MakeFullPathName(ROMPath,rom.fNameAlt);
-			ifp.open(fullPath1,std::ios::binary);
-		}
-		if(true!=ifp.is_open())
-		{
-			if(true==rom.mandatory)
-			{
-				std::cout << "Failed to load " << fullPath0 << std::endl;
-				std::cout << "Which is mandatory for emulating " << fm77av->MachineTypeStr() << std::endl;
-				return false;
-			}
-			else
-			{
-				continue;
-			}
-		}
-		ifp.read((char *)rom.ptr,rom.length);
-	}
-
-	return true;
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	return HasROMImages::LoadROMFiles(ROMPath,fm77avPtr->state.machineType);
 }
 
 void PhysicalMemory::WriteFD04(uint8_t data)

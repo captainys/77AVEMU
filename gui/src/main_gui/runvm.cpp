@@ -63,6 +63,11 @@ void FM77AVVM::Free(void)
 	outsideWorldPtr=nullptr;
 }
 
+std::vector <std::string> FM77AVVM::GetMissingROMFiles(void) const
+{
+	return fm77avPtr->CheckMissingROMFiles(profile);
+}
+
 void FM77AVVM::Run(void)
 {
 	if(nullptr==fm77avPtr ||

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avrender.h"
@@ -222,6 +223,40 @@ unsigned int FM77AV::LoadROMFilesAndIdentifyMachineType(std::string ROMPath)
 		return MACHINETYPE_FM7;
 	}
 	return MACHINETYPE_UNKNOWN;
+}
+
+/*static*/ std::vector <std::string> FM77AV::CheckMissingROMFiles(const FM77AVParam &param)
+{
+	auto machineType=param.machineType;
+	if(MACHINETYPE_AUTO==machineType)
+	{
+		machineType=MACHINETYPE_FM7; // Minimum FM-7 ROMs are required.
+	}
+
+	std::vector <std::string> missing;
+
+	std::unique_ptr <HasROMImages> physMem(new HasROMImages);
+	for(auto toLoad : physMem->GetROMToLoad(machineType))
+	{
+		auto fName=cpputil::MakeFullPathName(param.ROMPath,toLoad.fName);
+		auto fNameAlt=cpputil::MakeFullPathName(param.ROMPath,toLoad.fNameAlt);
+		fName=FindFile(fName,param.fileNameAlias,param.imgSearchPaths);
+		fNameAlt=FindFile(fNameAlt,param.fileNameAlias,param.imgSearchPaths);
+		std::ifstream ifp(fName,std::ios::binary);
+		std::ifstream ifpAlt(fNameAlt,std::ios::binary);
+		if(true!=ifp.is_open() && true!=ifpAlt.is_open())
+		{
+			missing.push_back(toLoad.fName);
+			if(""!=toLoad.fNameAlt)
+			{
+				missing.back().push_back('(');
+				missing.back()+=toLoad.fNameAlt;
+				missing.back().push_back(')');
+			}
+		}
+	}
+
+	return missing;
 }
 
 MC6809 &FM77AV::CPU(unsigned int mainOrSub)
@@ -583,10 +618,15 @@ void FM77AV::DetectMainCPUBIOSCall(void)
 
 std::string FM77AV::FileNameAlias(std::string input) const
 {
+	return FileNameAlias(input,var.fileNameAlias);
+}
+
+/* static */ std::string FM77AV::FileNameAlias(std::string input,const std::unordered_map<std::string,std::string> &aliases)
+{
 	auto INPUT=input;
 	cpputil::Capitalize(INPUT);
-	auto found=var.fileNameAlias.find(INPUT);
-	if(found!=var.fileNameAlias.end())
+	auto found=aliases.find(INPUT);
+	if(found!=aliases.end())
 	{
 		return found->second;
 	}
@@ -595,9 +635,14 @@ std::string FM77AV::FileNameAlias(std::string input) const
 
 std::string FM77AV::FindFile(std::string fName) const
 {
-	fName=FileNameAlias(fName);
+	return FindFile(fName,var.fileNameAlias,var.imgSearchPaths);
+}
+
+/*static*/ std::string FM77AV::FindFile(std::string fName,const std::unordered_map<std::string,std::string> &aliases,const std::vector <std::string> &imgSearchPaths)
+{
+	fName=FileNameAlias(fName,aliases);
 #ifdef _WIN32
-	if(':'==fName[1])
+	if(2<=fName.size() && ':'==fName[1])
 	{
 		// Must be starting with the drive letter.
 		return fName;
@@ -617,10 +662,10 @@ std::string FM77AV::FindFile(std::string fName) const
 		return fName;
 	}
 
-	for(auto dir : var.imgSearchPaths)
+	for(auto dir : imgSearchPaths)
 	{
 		auto ful=cpputil::MakeFullPathName(dir,fName);
-		std::ifstream ifp(fName,std::ios::binary);
+		std::ifstream ifp(ful,std::ios::binary);
 		if(true==ifp.is_open())
 		{
 			return ful;

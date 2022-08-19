@@ -5,10 +5,9 @@
 #include <stdint.h>
 #include "memory.h"
 
-class PhysicalMemory : public Device
+class HasROMImages
 {
 public:
-	// IO *io;
 	enum
 	{
 		PHYSMEM_SIZE=512*1024,     // Max RAM for FM77AV40 MMR
@@ -28,6 +27,35 @@ public:
 		AV40_SUBRAMB_SIZE=0x800*7, // 2KB times 8 banks.  1 bank covered by default RAM.
 	};
 
+	uint8_t ROM_BOOT_DOS[BOOT_ROM_SIZE];
+	uint8_t ROM_BOOT_BASIC[BOOT_ROM_SIZE];
+	uint8_t ROM_FBASIC[FBASIC_ROM_SIZE];
+	uint8_t ROM_INITIATOR[INITIATOR_ROM_SIZE];
+
+	uint8_t ROM_KANJI[KANJI_ROM_SIZE];
+	uint8_t ROM_KANJI2[KANJI_ROM_SIZE];
+	uint8_t ROM_DIC[DIC_ROM_SIZE];
+
+	uint8_t ROM_ASCII_FONT[4*ASCII_FONT_ROM_SIZE];
+	uint8_t ROM_SUBSYS_A[SUBSYS_MONITOR_ROM_SIZE];
+	uint8_t ROM_SUBSYS_B[SUBSYS_MONITOR_ROM_SIZE];
+	uint8_t ROM_SUBSYS_C[SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE];
+
+	struct ROMToLoad
+	{
+		bool mandatory;
+		uint8_t *ptr;
+		uint64_t length;
+		std::string fName,fNameAlt;
+	};
+	std::vector <ROMToLoad> GetROMToLoad(unsigned int machineType);
+	bool LoadROMFiles(std::string ROMPath,unsigned int machineType);
+};
+
+class PhysicalMemory : public Device, public HasROMImages
+{
+public:
+	// IO *io;
 	enum
 	{
 		RAM0_BEGIN=0x00000,
@@ -115,20 +143,6 @@ public:
 		SUBMON_RAM,
 	};
 
-	uint8_t ROM_BOOT_DOS[BOOT_ROM_SIZE];
-	uint8_t ROM_BOOT_BASIC[BOOT_ROM_SIZE];
-	uint8_t ROM_FBASIC[FBASIC_ROM_SIZE];
-	uint8_t ROM_INITIATOR[INITIATOR_ROM_SIZE];
-
-	uint8_t ROM_KANJI[KANJI_ROM_SIZE];
-	uint8_t ROM_KANJI2[KANJI_ROM_SIZE];
-	uint8_t ROM_DIC[DIC_ROM_SIZE];
-
-	uint8_t ROM_ASCII_FONT[4*ASCII_FONT_ROM_SIZE];
-	uint8_t ROM_SUBSYS_A[SUBSYS_MONITOR_ROM_SIZE];
-	uint8_t ROM_SUBSYS_B[SUBSYS_MONITOR_ROM_SIZE];
-	uint8_t ROM_SUBSYS_C[SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE];
-
 	uint8_t memType[PHYSMEM_SIZE];
 
 	class State
@@ -189,9 +203,9 @@ public:
 	virtual const char *DeviceName(void) const{return "PHYSMEM";}
 	PhysicalMemory(VMBase *vmBase);
 
-	void Reset(void);
-
 	bool LoadROMFiles(std::string ROMPath);
+
+	void Reset(void);
 
 	void WriteFD20(uint8_t data);
 	void WriteFD21(uint8_t data);

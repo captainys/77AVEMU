@@ -535,26 +535,9 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 		return false;
 	}
 
-	auto missing=CheckMissingROMFiles();
-	if(0<missing.size())
-	{
-		YsWString msg;
-		msg=L"Missing ROM files:";
-		for(auto fName : missing)
-		{
-			msg+=L" ";
-			msg+=fName;
-		}
-		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
-		msgDlg->Make(L"Error",msg,L"OK",nullptr);
-		AttachModalDialog(msgDlg);
-		return false;
-	}
-
-
-	auto profile=profileDlg->GetProfile();
 
 	{
+		auto profile=profileDlg->GetProfile();
 		pauseResumeKey=FsStringToKeyCode(profile.pauseResumeKeyLabel.c_str());
 		if(FSKEY_NULL==pauseResumeKey)
 		{
@@ -563,6 +546,31 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 
 	VM.profile=profileDlg->GetProfile();
+	auto profileFName=profileDlg->profileFNameTxt->GetText();
+	YsString path,file;
+	profileFName.SeparatePathFile(path,file);
+	VM.profile.imgSearchPaths.push_back(path.c_str());
+
+	printf("Image Search Path: %s\n",path.c_str());
+
+	auto missing=VM.GetMissingROMFiles();
+	if(0<missing.size())
+	{
+		YsWString msg;
+		msg=L"Missing ROM files:";
+		for(auto fName : missing)
+		{
+			YsWString utf8;
+			utf8.SetUTF8String(fName.c_str());
+			msg+=L" ";
+			msg+=utf8;
+		}
+		auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+		msgDlg->Make(L"Error",msg,L"OK",nullptr);
+		AttachModalDialog(msgDlg);
+		return false;
+	}
+
 	RemoveDialog(profileDlg);
 
 	VM.Run();
