@@ -179,6 +179,24 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"Aliases");
+		BeginAddTabItem(tab,tabId);
+
+		auto aliasNameStat=AddStaticText(0,FSKEY_NULL,"Alias Name",YSTRUE);
+		auto aliasFileStat=AddStaticText(0,FSKEY_NULL,"File Name",YSFALSE);
+
+		for(int i=0; i<MAX_NUM_ALIASES; ++i)
+		{
+			aliasNameTxt[i]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",8,YSTRUE);
+			aliasFileTxt[i]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+			aliasBrowseBtn[i]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,L"Browse",YSFALSE);
+		}
+		aliasFileStat->x0=aliasFileTxt[0]->x0;
+
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"GamePort");
 		BeginAddTabItem(tab,tabId);
 
@@ -496,6 +514,14 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		fdlg->defaultFileName.SetUTF8String(def);
 		fdlg->BindCloseModalCallBack(&THISCLASS::OnSelectROMFile,this);
 		AttachModalDialog(fdlg);
+	}
+	for(int i=0; i<MAX_NUM_ALIASES; ++i)
+	{
+		if(aliasBrowseBtn[i]==btn)
+		{
+			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".D88",L".T77"};
+			Browse(L"Alias",aliasFileTxt[i],extList);
+		}
 	}
 	if(TapeImgBtn==btn)
 	{

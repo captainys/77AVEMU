@@ -20,6 +20,7 @@ public:
 		PATH_SHOW=64,
 		MAX_NUM_HOST_SHORTCUT=8,
 		MAX_NUM_SHARED_DIR=4,
+		MAX_NUM_ALIASES=8,
 	};
 
 
@@ -47,6 +48,10 @@ public:
 	FsGuiDropList *machineTypeDrp;
 	FsGuiButton *startUpStateFNameBtn;
 	FsGuiTextBox *startUpStateFNameTxt;
+
+
+	FsGuiTextBox *aliasNameTxt[MAX_NUM_ALIASES],*aliasFileTxt[MAX_NUM_ALIASES];
+	FsGuiButton *aliasBrowseBtn[MAX_NUM_ALIASES];
 
 
 	FsGuiDropList *keyboardModeDrp;
