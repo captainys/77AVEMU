@@ -19,7 +19,11 @@ add_compile_definitions(YS_TWOS_COMPLEMENT)
 add_subdirectory(public/src)
 
 
-set(TSUGARU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../TOWNSEMU/src)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../TOWNSEMU)
+	set(TSUGARU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../TOWNSEMU/src)
+else()
+	set(TSUGARU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../TOWNSEMU/src)
+endif()
 
 add_subdirectory(${TSUGARU_SOURCE_DIR}/cpputil ${CMAKE_BINARY_DIR}/cpputil)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/cheapmath ${CMAKE_BINARY_DIR}/cheapmath)

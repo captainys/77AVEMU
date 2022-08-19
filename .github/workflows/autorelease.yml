@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: checkout_Tsugaru
+      run: git clone https://github.com/captainys/TOWNSEMU.git
     - name: mkdir
       run: mkdir ci_windows
     - name: build
@@ -53,6 +55,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: checkout_Tsugaru
+      run: git clone https://github.com/captainys/TOWNSEMU.git
     - name: mkdir
       run: mkdir ci_ubuntu
     - name: install-OpenGL
@@ -103,6 +107,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: checkout_Tsugaru
+      run: git clone https://github.com/captainys/TOWNSEMU.git
     - name: mkdir
       run: mkdir ci_macos
     - name: cmake
