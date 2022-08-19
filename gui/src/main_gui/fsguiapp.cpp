@@ -273,14 +273,26 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,L"TAPE")->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectImageFile,this);
-		subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectSaveImageFile,this);
+		auto *tapeImage=subMenu->AddTextItem(0,FSKEY_I,L"Image");
+		auto *tapeSaveImage=subMenu->AddTextItem(0,FSKEY_J,L"Image for Save");
+		{
+			auto subMenu=tapeImage->AddSubMenu();
+			subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectImageFile,this);
+		}
+		{
+			auto subMenu=tapeSaveImage->AddSubMenu();
+			subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectSaveImageFile,this);
+		}
 		subMenu->AddTextItem(0,FSKEY_E,L"Eject")->BindCallBack(&THISCLASS::Tape_Eject,this);
 	}
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_0,L"FD0")->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
+		{
+			fd0Image=subMenu->AddTextItem(0,FSKEY_I,L"Image");
+			auto fd0ImageMenu=fd0Image->AddSubMenu();
+			fd0ImageMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
+		}
 		FD0_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
 		FD0_writeProtectMenu->BindCallBack(&THISCLASS::FD0_WriteProtect,this);
 		FD0_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
@@ -290,7 +302,11 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_1,L"FD1")->GetSubMenu();
-		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
+		{
+			fd1Image=subMenu->AddTextItem(0,FSKEY_I,L"Image");
+			auto fd1ImageMenu=fd1Image->AddSubMenu();
+			fd1ImageMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
+		}
 		FD1_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
 		FD1_writeProtectMenu->BindCallBack(&THISCLASS::FD1_WriteProtect,this);
 		FD1_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");

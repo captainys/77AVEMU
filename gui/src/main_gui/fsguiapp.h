@@ -42,6 +42,7 @@ public:
 	    from the constructor.
 	*/
 	FsGuiPopUpMenu *mainMenu;
+	FsGuiPopUpMenuItem *tapeImage,*tapeSaveImage,*fd0Image,*fd1Image;
 
 	/*! Low-level interface, FsLazyWindow framework, checks for this value to see
 	    if the application run-loop should be terminated.
