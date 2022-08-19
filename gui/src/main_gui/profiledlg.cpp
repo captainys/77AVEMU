@@ -756,6 +756,20 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 
 	profile.pauseResumeKeyLabel=pauseResumeKeyDrp->GetSelectedString().data();
 
+	{
+		std::unordered_map <std::string,std::string> empty;
+		profile.fileNameAlias.swap(empty);
+		for(int i=0; i<MAX_NUM_ALIASES; ++i)
+		{
+			std::string alias=aliasNameTxt[i]->GetString().c_str();
+			std::string file=aliasFileTxt[i]->GetString().c_str();
+			if(""!=alias)
+			{
+				profile.fileNameAlias[alias]=file;
+			}
+		}
+	}
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const FM77AVProfile &profile)
@@ -872,4 +886,17 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 	autoStopKeyDrp->SelectByString(FM77AVKeyCodeToKeyLabel(profile.autoStopKey).c_str());
 
 	pauseResumeKeyDrp->SelectByString(profile.pauseResumeKeyLabel.c_str(),YSFALSE);
+
+	{
+		int i=0;
+		for(auto iter=profile.fileNameAlias.begin(); profile.fileNameAlias.end()!=iter && i<MAX_NUM_ALIASES; ++iter)
+		{
+			if(""!=iter->first)
+			{
+				aliasNameTxt[i]->SetText(iter->first.c_str());
+				aliasFileTxt[i]->SetText(iter->second.c_str());
+				++i;
+			}
+		}
+	}
 }

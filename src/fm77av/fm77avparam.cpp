@@ -39,6 +39,11 @@ void FM77AVParam::CleanUp(void)
 	pauseOnStart=false;
 	keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
 
+	{
+		std::unordered_map <std::string,std::string> empty;
+		fileNameAlias.swap(empty);
+	}
+
 	virtualKeys.clear();
 
 	bool unitTest=false; // If true, CUI will not be attached.  Implies termination condition.
@@ -216,6 +221,18 @@ std::vector <std::string> FM77AVProfile::Serialize(void) const
 	{
 		text.push_back("FM77AVTYP ");
 		text.back()+=MachineTypeToStr(machineType);
+	}
+
+	for(auto iter=fileNameAlias.begin(); fileNameAlias.end()!=iter; ++iter)
+	{
+		if(""!=iter->first)
+		{
+			text.push_back("IMGALIAS ");
+			text.back()+=iter->first;
+			text.back()+=" \"";
+			text.back()+=iter->second;
+			text.back()+="\"";
+		}
 	}
 
 	return text;
@@ -419,6 +436,10 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 			{
 				autoLoadTapeFile=(0!=cpputil::Atoi(argv[1].c_str()));
 			}
+		}
+		else if(ARGV0=="IMGALIAS")
+		{
+			fileNameAlias[argv[1]]=argv[2];
 		}
 		else
 		{
