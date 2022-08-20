@@ -273,26 +273,17 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_C,L"TAPE")->GetSubMenu();
-		auto *tapeImage=subMenu->AddTextItem(0,FSKEY_I,L"Image");
-		auto *tapeSaveImage=subMenu->AddTextItem(0,FSKEY_J,L"Image for Save");
-		{
-			auto subMenu=tapeImage->AddSubMenu();
-			subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectImageFile,this);
-		}
-		{
-			auto subMenu=tapeSaveImage->AddSubMenu();
-			subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectSaveImageFile,this);
-		}
+		tapeImage=subMenu->AddTextItem(0,FSKEY_I,L"Image");
+		tapeSaveImage=subMenu->AddTextItem(0,FSKEY_J,L"Image for Save");
+		tapeImage->AddSubMenu();
+		tapeSaveImage->AddSubMenu();
 		subMenu->AddTextItem(0,FSKEY_E,L"Eject")->BindCallBack(&THISCLASS::Tape_Eject,this);
 	}
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_0,L"FD0")->GetSubMenu();
-		{
-			fd0Image=subMenu->AddTextItem(0,FSKEY_I,L"Image");
-			auto fd0ImageMenu=fd0Image->AddSubMenu();
-			fd0ImageMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
-		}
+		fd0Image=subMenu->AddTextItem(0,FSKEY_I,L"Image");
+		fd0Image->AddSubMenu();
 		FD0_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
 		FD0_writeProtectMenu->BindCallBack(&THISCLASS::FD0_WriteProtect,this);
 		FD0_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
@@ -302,11 +293,8 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_1,L"FD1")->GetSubMenu();
-		{
-			fd1Image=subMenu->AddTextItem(0,FSKEY_I,L"Image");
-			auto fd1ImageMenu=fd1Image->AddSubMenu();
-			fd1ImageMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
-		}
+		fd1Image=subMenu->AddTextItem(0,FSKEY_I,L"Image");
+		fd1Image->AddSubMenu();
 		FD1_writeProtectMenu=subMenu->AddTextItem(0,FSKEY_P,L"Write Protect");
 		FD1_writeProtectMenu->BindCallBack(&THISCLASS::FD1_WriteProtect,this);
 		FD1_writeUnprotectMenu=subMenu->AddTextItem(0,FSKEY_U,L"Write Unprotect");
@@ -362,6 +350,8 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 	}
 
 	SetMainMenu(mainMenu);
+
+	ResetImageMenu();
 }
 
 void FsGuiMainCanvas::DeleteMainMenu(void)
@@ -588,6 +578,7 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 
 	RemoveDialog(profileDlg);
+	SetUpImageMenu(VM.profile);
 
 	VM.Run();
 	if(true!=VM.IsRunning())
@@ -597,6 +588,56 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	SetNeedRedraw(YSTRUE);
 
 	return true;
+}
+
+void FsGuiMainCanvas::SetUpImageMenu(const FM77AVParam &param)
+{
+	tapeImage->GetSubMenu()->CleanUp();
+	tapeSaveImage->GetSubMenu()->CleanUp();
+	fd0Image->GetSubMenu()->CleanUp();
+	fd1Image->GetSubMenu()->CleanUp();
+	for(auto iter=param.fileNameAlias.begin(); param.fileNameAlias.end()!=iter ; ++iter)
+	{
+		auto EXT=cpputil::GetExtension(iter->second);
+		cpputil::Capitalize(EXT);
+		if(".T77"==EXT)
+		{
+			tapeImage->GetSubMenu()->AddTextItem(0,FSKEY_NULL,iter->first.c_str())->BindCallBack(&THISCLASS::Tape_SelectAlias,this);
+			tapeSaveImage->GetSubMenu()->AddTextItem(0,FSKEY_NULL,iter->first.c_str())->BindCallBack(&THISCLASS::Tape_SelectSaveAlias,this);
+		}
+		else
+		{
+			fd0Image->GetSubMenu()->AddTextItem(0,FSKEY_NULL,iter->first.c_str())->BindCallBack(&THISCLASS::FD0_SelectAlias,this);
+			fd1Image->GetSubMenu()->AddTextItem(0,FSKEY_NULL,iter->first.c_str())->BindCallBack(&THISCLASS::FD1_SelectAlias,this);
+		}
+	}
+	tapeImage->GetSubMenu()->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectImageFile,this);
+	tapeSaveImage->GetSubMenu()->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectSaveImageFile,this);
+	fd0Image->GetSubMenu()->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
+	fd1Image->GetSubMenu()->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
+}
+void FsGuiMainCanvas::ResetImageMenu(void)
+{
+	{
+		auto subMenu=tapeImage->GetSubMenu();
+		subMenu->CleanUp();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectImageFile,this);
+	}
+	{
+		auto subMenu=tapeSaveImage->GetSubMenu();
+		subMenu->CleanUp();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select Tape Image")->BindCallBack(&THISCLASS::Tape_SelectSaveImageFile,this);
+	}
+	{
+		auto subMenu=fd0Image->GetSubMenu();
+		subMenu->CleanUp();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD0_SelectImageFile,this);
+	}
+	{
+		auto subMenu=fd1Image->GetSubMenu();
+		subMenu->CleanUp();
+		subMenu->AddTextItem(0,FSKEY_S,L"Select FD Image")->BindCallBack(&THISCLASS::FD1_SelectImageFile,this);
+	}
 }
 
 bool FsGuiMainCanvas::IsVMRunning(void) const
@@ -1578,6 +1619,81 @@ void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int return
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
 		ResumeVMIfSameProc();
+	}
+}
+
+////////////////////////////////////////////////////////////
+
+void FsGuiMainCanvas::Tape_SelectAlias(FsGuiPopUpMenuItem *item)
+{
+	if(true==IsVMRunning())
+	{
+		auto alias=item->GetString();
+		YsString str;
+		str.EncodeUTF8(alias);
+		std::string cmd;
+		cmd="TAPELOAD ";
+		cmd+=str.c_str();
+		VM.SendCommand(cmd);
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::Tape_SelectSaveAlias(FsGuiPopUpMenuItem *item)
+{
+	if(true==IsVMRunning())
+	{
+		auto alias=item->GetString();
+		YsString str;
+		str.EncodeUTF8(alias);
+		std::string cmd;
+		cmd="TAPEFORSAVE ";
+		cmd+=str.c_str();
+		VM.SendCommand(cmd);
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD0_SelectAlias(FsGuiPopUpMenuItem *item)
+{
+	if(true==IsVMRunning())
+	{
+		auto alias=item->GetString();
+		YsString str;
+		str.EncodeUTF8(alias);
+		std::string cmd;
+		cmd="FD0LOAD ";
+		cmd+=str.c_str();
+		VM.SendCommand(cmd);
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+void FsGuiMainCanvas::FD1_SelectAlias(FsGuiPopUpMenuItem *item)
+{
+	if(true==IsVMRunning())
+	{
+		auto alias=item->GetString();
+		YsString str;
+		str.EncodeUTF8(alias);
+		std::string cmd;
+		cmd="FD1LOAD ";
+		cmd+=str.c_str();
+		VM.SendCommand(cmd);
+		ResumeVMIfSameProc();
+	}
+	else
+	{
+		VM_Not_Running_Error();
 	}
 }
 

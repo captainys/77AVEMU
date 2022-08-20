@@ -132,6 +132,8 @@ public:
 	/*! Start Mutsu_CUI with the profile set in the profileDlg.
 	*/
 	void Run(void);
+	void SetUpImageMenu(const FM77AVParam &param);
+	void ResetImageMenu(void);
 
 
 	/*!
@@ -256,6 +258,12 @@ private:
 
 	void VM_SaveScreenshot(FsGuiPopUpMenuItem *);
 	void VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode);
+
+
+	void Tape_SelectAlias(FsGuiPopUpMenuItem *item);
+	void Tape_SelectSaveAlias(FsGuiPopUpMenuItem *item);
+	void FD0_SelectAlias(FsGuiPopUpMenuItem *item);
+	void FD1_SelectAlias(FsGuiPopUpMenuItem *item);
 
 
 	bool selectSaveTape=false;
