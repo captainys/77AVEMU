@@ -100,6 +100,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["COM0TX"]=ENABLE_PRINT_COM0;
 	featureMap["PSGLOG"]=ENABLE_PSG_LOG;
 	featureMap["AUTOSTOP"]=ENABLE_AUTOSTOP;
+	featureMap["RKANA"]=ENABLE_RKANA;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -313,6 +314,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  when you enable debugger.  You can specify main or sub." << std::endl;
 	std::cout << "COM0TX" << std::endl;
 	std::cout << "  Print tx from COM0" << std::endl;
+	std::cout << "RKANA" << std::endl;
+	std::cout << "  Romaji type mode." << std::endl;
 
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -1151,6 +1154,15 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 				std::cout << "Enabled Auto Stop (" << FM77AVKeyboard::AutoStopToStr(fm77av.keyboard.var.autoStopAfterThis) << ")" << std::endl;
 			}
 			break;
+		case ENABLE_RKANA:
+			fm77av.keyboard.var.rKanaMode=true;
+			fm77av.keyboard.var.romaji.clear();
+			std::cout << "Enabled Romaji Type Mode" << std::endl;
+			break;
+		default:
+			std::cout << "Enable What?" << std::endl;
+			Error_WrongParameter(cmd);
+			break;
 		}
 	}
 	else
@@ -1225,6 +1237,11 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		case ENABLE_AUTOSTOP:
 			fm77av.keyboard.var.autoStopAfterThis=FM77AVKeyboard::AUTOSTOP_NONE;
 			std::cout << "Disabled Auto Stop" << std::endl;
+			break;
+		case ENABLE_RKANA:
+			fm77av.keyboard.var.rKanaMode=false;
+			fm77av.keyboard.var.romaji.clear();
+			std::cout << "Disabled Romaji Type Mode" << std::endl;
 			break;
 		default:
 			std::cout << "Disable What?" << std::endl;

@@ -4,7 +4,9 @@
 
 #include "device.h"
 #include "fm77avkey.h"
+#include "fm77avrkana.h"
 #include <queue>
+#include <unordered_map>
 
 class FM77AVKeyboard : public Device
 {
@@ -15,6 +17,7 @@ public:
 	bool IsNumKey[AVKEY_NUM_KEYCODE];
 	bool IsArrowKey[AVKEY_NUM_KEYCODE];
 	bool heldDown[AVKEY_NUM_KEYCODE];
+	uint8_t AVKeyToRKanaKey[AVKEY_NUM_KEYCODE]; // Non-Zero only for relevant to r-kana.
 
 	enum
 	{
@@ -118,8 +121,12 @@ public:
 		uint16_t autoStopRetypeKey=AVKEY_NULL;
 		uint16_t autoStopAfterThis=AUTOSTOP_NONE;
 		std::queue <uint16_t> autoType;
+
+		bool rKanaMode=false;
+		std::string romaji;
 	};
 	Variable var;
+	std::unordered_map <std::string,struct RKanaTable> RomajiMap;
 
 	FM77AVKeyboard(VMBase *vmBase) : Device(vmBase){}
 
@@ -142,6 +149,7 @@ public:
 	void Release(unsigned int keyFlags,unsigned int keyCode);
 protected:
 	void PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode);
+	void PushASCIICodeToQueueJISMode(unsigned char ascii);
 	bool NumKeyHeldDown(void) const;
 	bool ArrowKeyHeldDown(void) const;
 

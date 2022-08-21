@@ -34,6 +34,10 @@ void FM77AVKeyboard::Reset(void)
 	decltype(state.encoderQueue) emptyEncoderQueue;
 	std::swap(state.encoderQueue,emptyEncoderQueue);
 
+	for(int i=0; nullptr!=rKanaTable[i].keyComb; ++i)
+	{
+		RomajiMap[std::string(rKanaTable[i].keyComb)]=rKanaTable[i];
+	}
 
 	for(auto &c : AVKeyToScanCode)
 	{
@@ -146,6 +150,39 @@ void FM77AVKeyboard::Reset(void)
 	AVKeyToScanCode[AVKEY_NUM_7]=0x3A;
 	AVKeyToScanCode[AVKEY_NUM_8]=0x3B;
 	AVKeyToScanCode[AVKEY_NUM_9]=0x3C;
+
+	for(auto &b : AVKeyToRKanaKey)
+	{
+		b=0;
+	}
+	AVKeyToRKanaKey[AVKEY_A]='a';
+	AVKeyToRKanaKey[AVKEY_B]='b';
+	AVKeyToRKanaKey[AVKEY_C]='c';
+	AVKeyToRKanaKey[AVKEY_D]='d';
+	AVKeyToRKanaKey[AVKEY_E]='e';
+	AVKeyToRKanaKey[AVKEY_F]='f';
+	AVKeyToRKanaKey[AVKEY_G]='g';
+	AVKeyToRKanaKey[AVKEY_H]='h';
+	AVKeyToRKanaKey[AVKEY_I]='i';
+	AVKeyToRKanaKey[AVKEY_J]='j';
+	AVKeyToRKanaKey[AVKEY_K]='k';
+	AVKeyToRKanaKey[AVKEY_L]='l';
+	AVKeyToRKanaKey[AVKEY_M]='m';
+	AVKeyToRKanaKey[AVKEY_N]='n';
+	AVKeyToRKanaKey[AVKEY_O]='o';
+	AVKeyToRKanaKey[AVKEY_P]='p';
+	AVKeyToRKanaKey[AVKEY_Q]='q';
+	AVKeyToRKanaKey[AVKEY_R]='r';
+	AVKeyToRKanaKey[AVKEY_S]='s';
+	AVKeyToRKanaKey[AVKEY_T]='t';
+	AVKeyToRKanaKey[AVKEY_U]='u';
+	AVKeyToRKanaKey[AVKEY_V]='v';
+	AVKeyToRKanaKey[AVKEY_W]='w';
+	AVKeyToRKanaKey[AVKEY_X]='x';
+	AVKeyToRKanaKey[AVKEY_Y]='y';
+	AVKeyToRKanaKey[AVKEY_Z]='z';
+	AVKeyToRKanaKey[AVKEY_MINUS]='-';
+	AVKeyToRKanaKey[AVKEY_NUM_MINUS]='-';
 
 	for(auto &b : IsNumKey)
 	{
@@ -389,21 +426,65 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 }
 void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode)
 {
-	FM77AV *fm77av=(FM77AV *)vmPtr;
+	if(true==var.rKanaMode)
+	{
+		char ascii=AVKeyToRKanaKey[keyCode];
+		if(0!=ascii)
+		{
+			var.romaji.push_back(ascii);
+			auto found=RomajiMap.find(var.romaji);
+			if(RomajiMap.end()!=found)
+			{
+				for(int i=0; i<4 && 0!=found->second.output[i]; ++i)
+				{
+					if(0==i)
+					{
+						Type(found->second.output[i]);
+					}
+					else
+					{
+						var.autoType.push(found->second.output[i]);
+					}
+				}
+				if(true==found->second.leaveFirstChar)
+				{
+					var.romaji.erase(var.romaji.begin());
+				}
+				else
+				{
+					var.romaji.clear();
+				}
+			}
+			else
+			{
+				if(3<=var.romaji.size())
+				{
+					var.romaji.clear();
+				}
+			}
+			return;
+		}
+		var.romaji.clear();
+	}
 	FM77AVKeyCombination keyComb;
 	keyComb.shift=(0!=(keyFlags&KEYFLAG_SHIFT));
 	keyComb.ctrl=(0!=(keyFlags&KEYFLAG_CTRL));
 	keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
 	keyComb.keyCode=keyCode;
 	auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
+	PushASCIICodeToQueueJISMode(code);
+}
+void FM77AVKeyboard::PushASCIICodeToQueueJISMode(unsigned char ascii)
+{
+	FM77AV *fm77av=(FM77AV *)vmPtr;
 	if(true!=fm77av->KeyIRQFlagSet())
 	{
 		fm77av->SetKeyIRQFlag();
-		state.lastKeyCode=code;
+		state.lastKeyCode=ascii;
 	}
 	else
 	{
-		state.keyCodeQueue.push(code);
+		state.keyCodeQueue.push(ascii);
 	}
 }
 bool FM77AVKeyboard::NumKeyHeldDown(void) const

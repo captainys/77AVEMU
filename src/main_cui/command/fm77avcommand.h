@@ -129,6 +129,7 @@ public:
 		ENABLE_PRINT_COM0,
 		ENABLE_PSG_LOG,
 		ENABLE_AUTOSTOP,
+		ENABLE_RKANA,
 	};
 
 	enum
