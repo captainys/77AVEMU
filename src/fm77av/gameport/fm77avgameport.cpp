@@ -187,10 +187,10 @@ unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 		auto pause=button[3];
 
 		data|=0x3F;
-		if(true==run)
-		{
-			data&=0b11110011;
-		}
+		//if(true==run)  Let's not worry about FMTOWNS game pad for Mutsu.
+		//{
+		//	data&=0b11110011;
+		//}
 		if(true==right)
 		{
 			data&=0b11110111;
@@ -200,10 +200,10 @@ unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 			data&=0b11111011;
 		}
 
-		if(true==pause)
-		{
-			data&=0b11111100;
-		}
+		//if(true==pause)  Let's not worry about FMTOWNS game pad for Mutsu.
+		//{
+		//	data&=0b11111100;
+		//}
 		if(true==down)
 		{
 			data&=0b11111101;

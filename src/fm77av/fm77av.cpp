@@ -193,6 +193,20 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 	outside_world->autoScaling=param.autoScaling;
 	outside_world->windowModeOnStartUp=param.windowModeOnStartUp;
 
+	outside_world->virtualKeys.clear();
+	for(auto vk : param.virtualKeys)
+	{
+		auto fm77avKey=FM77AVKeyLabelToKeyCode(vk.fm77avKey);
+		if(0!=fm77avKey)
+		{
+			Outside_World::VirtualKey ovk;
+			ovk.fm77avKey=fm77avKey;
+			ovk.physicalId=vk.physicalId;
+			ovk.button=vk.button;
+			outside_world->virtualKeys.push_back(ovk);
+		}
+	}
+
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
 	outside_world->keyboardMode=param.keyboardMode;
 

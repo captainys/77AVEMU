@@ -84,6 +84,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  in to all of the programs and write patches.  Instead, this option let you limit" << std::endl;
 	std::cout << "  maximum time that the button is sent as DOWN to the virtual machine even when" << std::endl;
 	std::cout << "  you keep it down for 100 seconds." << std::endl;
+	std::cout << "-VIRTKEY townsKey gamePadPhysicalId button" << std::endl;
+	std::cout << "  Assign a virtual key to a gamepad button." << std::endl;
 	std::cout << "-COM0, -COM1, -COM2, -COM3" << std::endl;
 	std::cout << "  Enable COM port." << std::endl;
 	std::cout << "-QUICKSSDIR dir" << std::endl;
@@ -424,6 +426,15 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			cpputil::Capitalize(LABEL);
 			fileNameAlias[LABEL]=argv[i+2];
 			i+=2;
+		}
+		else if(("-VIRTKEY"==ARG || "-VIRTUALKEY"==ARG) && i+3<argc)
+		{
+			VirtualKey vk;
+			vk.fm77avKey=argv[i+1];
+			vk.physicalId=cpputil::Atoi(argv[i+2]);
+			vk.button=cpputil::Atoi(argv[i+3]);
+			virtualKeys.push_back(vk);
+			i+=3;
 		}
 		else
 		{
