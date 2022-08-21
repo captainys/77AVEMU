@@ -505,16 +505,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 				if(0==FSKEYState[c])
 				{
-					fm77av.keyboard.Press(keyFlags,FSKEYtoFM77AVKEY[c]);
-
-					// There is a possibility that FsGetKeyState turns 1 before FsInkey catches a keycode.
-					// If so, the first inkey may make a typamatic (repeat) code, which may be disregarded
-					// by some programs.
-					// Therefore, turn it 1 upon inkey, and turn it off if FsGetKeyState detects key release.
-					// Don't turn it on by FsGetKeyState.
-					FSKEYState[c]=1;
 					lastPressedFsKey=c;
-					nextKeyRepeatTime=fm77av.state.fm77avTime+fm77av.keyboard.GetKeyRepeatStartTime();
 				}
 			}
 		}
@@ -551,14 +542,18 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 			unsigned char byteData=0;
 			auto sta=FsGetKeyState(key);
-			if(0!=FSKEYtoFM77AVKEY[key] && 0!=FSKEYState[key] && 0==sta)
+			if(0!=FSKEYtoFM77AVKEY[key] && FSKEYState[key]!=sta)
 			{
-				fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[key]);
-			}
-			// See comment above regarding the timing of FsGetKeyState and FsInkey.
-			if(0==sta)
-			{
-				FSKEYState[key]=0;
+				if(0!=sta)
+				{
+					nextKeyRepeatTime=fm77av.state.fm77avTime+fm77av.keyboard.GetKeyRepeatStartTime();
+					fm77av.keyboard.Press(keyFlags,FSKEYtoFM77AVKEY[key]);
+				}
+				else
+				{
+					fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[key]);
+				}
+				FSKEYState[key]=sta;
 			}
 		}
 
