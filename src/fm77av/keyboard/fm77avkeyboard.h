@@ -14,6 +14,7 @@ public:
 	virtual const char *DeviceName(void) const{return "KEYBOARD";}
 
 	uint8_t AVKeyToScanCode[AVKEY_NUM_KEYCODE];
+	uint8_t AVKeyRemap[AVKEY_NUM_KEYCODE];
 	bool IsNumKey[AVKEY_NUM_KEYCODE];
 	bool IsArrowKey[AVKEY_NUM_KEYCODE];
 	bool heldDown[AVKEY_NUM_KEYCODE];
@@ -128,7 +129,7 @@ public:
 	Variable var;
 	std::unordered_map <std::string,struct RKanaTable> RomajiMap;
 
-	FM77AVKeyboard(VMBase *vmBase) : Device(vmBase){}
+	FM77AVKeyboard(VMBase *vmBase);
 
 	void WriteD431(uint8_t data);
 	void WriteD432(uint8_t data);

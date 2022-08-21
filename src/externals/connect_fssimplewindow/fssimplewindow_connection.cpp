@@ -511,6 +511,12 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		}
 		for(int key=FSKEY_NULL; key<FSKEY_NUM_KEYCODE; ++key)
 		{
+			if(FSKEY_SHIFT==key || FSKEY_CTRL==key || FSKEY_ALT==key)
+			{
+				// Should check FSKEY_LEFT_* and FSKEY_RIGHT_* instead.
+				continue;
+			}
+
 			if(true==gamePadEmulationByKey &&
 			   (FSKEY_Z==key ||
 			    FSKEY_X==key ||
@@ -547,11 +553,11 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 				if(0!=sta)
 				{
 					nextKeyRepeatTime=fm77av.state.fm77avTime+fm77av.keyboard.GetKeyRepeatStartTime();
-					fm77av.keyboard.Press(keyFlags,FSKEYtoFM77AVKEY[key]);
+					fm77av.keyboard.Press(KeyFlagsFilter(keyFlags,key),FSKEYtoFM77AVKEY[key]);
 				}
 				else
 				{
-					fm77av.keyboard.Release(keyFlags,FSKEYtoFM77AVKEY[key]);
+					fm77av.keyboard.Release(KeyFlagsFilter(keyFlags,key),FSKEYtoFM77AVKEY[key]);
 				}
 				FSKEYState[key]=sta;
 			}
@@ -562,7 +568,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		   nextKeyRepeatTime<fm77av.state.fm77avTime &&
 		   true==fm77av.keyboard.state.keyRepeat)
 		{
-			fm77av.keyboard.Press(keyFlags,FSKEYtoFM77AVKEY[lastPressedFsKey]);
+			fm77av.keyboard.Press(KeyFlagsFilter(keyFlags,lastPressedFsKey),FSKEYtoFM77AVKEY[lastPressedFsKey]);
 			nextKeyRepeatTime=fm77av.state.fm77avTime+fm77av.keyboard.GetKeyRepeatInterval();
 		}
 
@@ -979,6 +985,18 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		}
 	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
 }
+unsigned int FsSimpleWindowConnection::KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey)
+{
+	if(FSKEY_LEFT_SHIFT==fsKey || FSKEY_RIGHT_SHIFT==fsKey)
+	{
+		return keyFlags&~FM77AVKeyboard::KEYFLAG_SHIFT;
+	}
+	if(FSKEY_LEFT_CTRL==fsKey || FSKEY_RIGHT_CTRL==fsKey)
+	{
+		return keyFlags&~FM77AVKeyboard::KEYFLAG_CTRL;
+	}
+	return keyFlags;
+}
 void FsSimpleWindowConnection::PollGamePads(void)
 {
 	if(true!=Outside_World::gameDevsNeedUpdateCached)
@@ -1296,22 +1314,24 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	FSKEYtoFM77AVKEY[FSKEY_WHEELDOWN]=   AVKEY_DOWN;
 	FSKEYtoFM77AVKEY[FSKEY_CONTEXT]=     AVKEY_GRAPH;
 
-	// Japanese keyboard
+	// The following keys do not exist on the US keyboard.
 	FSKEYtoFM77AVKEY[FSKEY_CONVERT]=     AVKEY_LEFT_SPACE;
 	FSKEYtoFM77AVKEY[FSKEY_NONCONVERT]=  AVKEY_RIGHT_SPACE;
 	FSKEYtoFM77AVKEY[FSKEY_KANA]=        AVKEY_KANA;
-	// FSKEYtoFM77AVKEY[FSKEY_COLON]=       AVKEY_COLON; // Need to switch with single quote
-	// FSKEYtoFM77AVKEY[FSKEY_AT]=          AVKEY_AT;  // FSKEY_AT collides with FSKEY_TILDA. This disables ESC.
+	FSKEYtoFM77AVKEY[FSKEY_COLON]=       AVKEY_COLON; // Need to switch with single quote
+	FSKEYtoFM77AVKEY[FSKEY_AT]=          AVKEY_AT;  // FSKEY_AT collides with FSKEY_TILDA. This disables ESC.
 	FSKEYtoFM77AVKEY[FSKEY_RO]=          AVKEY_DOUBLE_QUOTE;
 
-	// The following key codes won't be returned by FsInkey()
-	// These may return non zero for FsGetKeyState
 	FSKEYtoFM77AVKEY[FSKEY_LEFT_CTRL]=   AVKEY_CTRL;
 	FSKEYtoFM77AVKEY[FSKEY_RIGHT_CTRL]=  AVKEY_CTRL;
 	FSKEYtoFM77AVKEY[FSKEY_LEFT_SHIFT]=  AVKEY_LEFT_SHIFT;
 	FSKEYtoFM77AVKEY[FSKEY_RIGHT_SHIFT]= AVKEY_RIGHT_SHIFT;
-	FSKEYtoFM77AVKEY[FSKEY_LEFT_ALT]=    AVKEY_NULL;
-	FSKEYtoFM77AVKEY[FSKEY_RIGHT_ALT]=   AVKEY_NULL;
+
+	// The following key codes won't be returned by FsInkey()
+	// These may return non zero for FsGetKeyState
+	FSKEYtoFM77AVKEY[FSKEY_RIGHT_CTRL]=  AVKEY_DOUBLE_QUOTE;
+	FSKEYtoFM77AVKEY[FSKEY_LEFT_ALT]=    AVKEY_LEFT_SPACE;
+	FSKEYtoFM77AVKEY[FSKEY_RIGHT_ALT]=   AVKEY_RIGHT_SPACE;
 
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
 	{

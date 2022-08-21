@@ -276,6 +276,8 @@ typedef struct KeyTranslationTableStruct
 static const KeyTranslationTable keyTranslationTableSource[]=
 {
 	{'\t',{AVKEY_TAB,           false,false,false}},
+	{' ', {AVKEY_LEFT_SPACE,     false,false,false}},		// 32
+	{' ', {AVKEY_RIGHT_SPACE,     false,false,false}},		// 32
 	{' ', {AVKEY_MID_SPACE,     false,false,false}},		// 32
 	{'!', {AVKEY_1,             true,false,false}},
 	{'\"',{AVKEY_DOUBLE_QUOTE,  false,false,false}},
@@ -467,6 +469,8 @@ static const KeyTranslationTable keyTranslationTableSourceAdditional[]= // Addit
 static const KeyTranslationTable keyTranslationTableSourceGraph[]= // Additional table for reverse mapping.
 {
 	{'\t',{AVKEY_TAB,           false,false,true}},
+	{' ', {AVKEY_LEFT_SPACE,     false,false,true}},		// 32
+	{' ', {AVKEY_RIGHT_SPACE,     false,false,true}},		// 32
 	{' ', {AVKEY_MID_SPACE,     false,false,true}},		// 32
 	{0xF9,{AVKEY_1,             false,false,true}},
 	{0xFA,{AVKEY_2,             false,false,true}},

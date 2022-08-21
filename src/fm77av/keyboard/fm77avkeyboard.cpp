@@ -5,35 +5,8 @@
 
 
 
-void FM77AVKeyboard::Reset(void)
+FM77AVKeyboard::FM77AVKeyboard(VMBase *vmBase) : Device(vmBase)
 {
-	Device::Reset();
-
-	state.encodingMode=ENCODING_JIS;
-	state.encoderCmd=0xFF;
-	state.nEncoderParam=0;
-	for(auto &p : state.encoderParam)
-	{
-		p=0;
-	}
-
-	state.CAPS=false;
-	state.KANA=false;
-	state.videoCaptureMode=0;
-	state.videoCaptureBrightness=0;
-	state.keyRepeat=true;
-	state.keyRepeatStartTime=700000000;
-	state.keyRepeatInterval=  70000000;
-
-	// Death Force Expects non-zero read from $FD01 on reset.
-	state.lastKeyCode=0xFF;
-
-	decltype(state.keyCodeQueue) emptyKeyCodeQueue;
-	std::swap(state.keyCodeQueue,emptyKeyCodeQueue);
-
-	decltype(state.encoderQueue) emptyEncoderQueue;
-	std::swap(state.encoderQueue,emptyEncoderQueue);
-
 	for(int i=0; nullptr!=rKanaTable[i].keyComb; ++i)
 	{
 		RomajiMap[std::string(rKanaTable[i].keyComb)]=rKanaTable[i];
@@ -216,6 +189,41 @@ void FM77AVKeyboard::Reset(void)
 	IsArrowKey[AVKEY_UP]=true;
 	IsArrowKey[AVKEY_DOWN]=true;
 
+	for(int i=0; i<AVKEY_NUM_KEYCODE; ++i)
+	{
+		AVKeyRemap[i]=i;
+	}
+}
+
+void FM77AVKeyboard::Reset(void)
+{
+	Device::Reset();
+
+	state.encodingMode=ENCODING_JIS;
+	state.encoderCmd=0xFF;
+	state.nEncoderParam=0;
+	for(auto &p : state.encoderParam)
+	{
+		p=0;
+	}
+
+	state.CAPS=false;
+	state.KANA=false;
+	state.videoCaptureMode=0;
+	state.videoCaptureBrightness=0;
+	state.keyRepeat=true;
+	state.keyRepeatStartTime=700000000;
+	state.keyRepeatInterval=  70000000;
+
+	// Death Force Expects non-zero read from $FD01 on reset.
+	state.lastKeyCode=0xFF;
+
+	decltype(state.keyCodeQueue) emptyKeyCodeQueue;
+	std::swap(state.keyCodeQueue,emptyKeyCodeQueue);
+
+	decltype(state.encoderQueue) emptyEncoderQueue;
+	std::swap(state.encoderQueue,emptyEncoderQueue);
+
 	for(auto &b : heldDown)
 	{
 		b=false;
@@ -291,7 +299,10 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 	FM77AV *fm77av=(FM77AV *)vmPtr;
 	uint8_t eightBit=keyCode;
 
+	keyCode=AVKeyRemap[keyCode];
 	heldDown[keyCode]=true;
+
+	std::cout << "Press " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
 
 	switch(state.encodingMode)
 	{
@@ -359,7 +370,10 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 	FM77AV *fm77av=(FM77AV *)vmPtr;
 	uint8_t eightBit=keyCode;
 
+	keyCode=AVKeyRemap[keyCode];
 	heldDown[keyCode]=false;
+
+	std::cout << "Release " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
 
 	switch(state.encodingMode)
 	{

@@ -100,6 +100,7 @@ public:
 	virtual void Stop(void);
 	virtual void DevicePolling(class FM77AV &fm77av);
 	void PollGamePads(void);
+	unsigned int KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey);
 	virtual void UpdateStatusBitmap(class FM77AV &fm77av);
 	virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av);
 	void RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av);
