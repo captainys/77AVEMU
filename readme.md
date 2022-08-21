@@ -66,6 +66,23 @@ Then, you get the executable in main_cui\Release\Mutsu_CUI.exe in Windows, main_
 
 ---
 
+# About Keyboard Layout
+
+FM-7/77AV was from Japan.  Therefore its keyboard layout was Japanese.  If you are using Japanese keyboard, it should work as is, but if you are using US keyboard, you can use the following keys for typing keys that existed on FM77AV keyboard but does not exist (or different) in the US keyboard.
+
+| US Keyboard | In Mutsu VM |
+|-------------|-------------|
+|~            |ESC          |
+|'            |:            |
+|Right Ctrl   |Double Quote |
+|Left Alt     |Left Space   |
+|Right Alt    |Right Space  |
+
+For typing a longer text like F-BASIC program, you can also use keyboard translation mode, which translates what you type into FM-7 key code.  You can choose a translation mode from Virtual Machine -> Keyboard.
+
+
+---
+
 # GUI
 Mutsu_GUI let you use GUI environment.  When you start Mutsu_GUI, you will see a pull-down menu and a dialog for configuring start-up condition.
 
