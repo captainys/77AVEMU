@@ -20,6 +20,20 @@ Mutsu Profile allows relative-path from the location of the profile.  If you hav
 
 Then, you can open Laydock.Mutsu, and start LAYDOCK by clicking on "START" button.
 
+Also, this game really required two players, but many Laydock players (I believe) played by oneself with a game pad and a keyboard.  In fact, player 2 only had a role of shooting gun or a missile and was pretty boring.
+
+How I did was holding gamepad to control the fighter 1, dock with fighter 2 as soon as the game starts, and then pressed the left space with side of my left hand while still controlling fighter 1 with the game pad.
+
+What a pain!
+
+But, with virtual keys, you don't have to use both a game pad and a keyboard.  You can assign LEFT_SPACE to your game pad in Keyboard 2 or Keyboard 3 tab.  Make sure to assign your USB or Bluetooth game pad to Gameport 0 of the VM.  Then,
+
+(1) Start Laydock and load up players.
+(2) Start the game with:
+      Player 1  JOYSTICK 1
+      Player 2  KEYBOARD
+(3) Dock fighter 1 to fighter 2, and then you can do all the controls with your game pad.
+
 
 
 

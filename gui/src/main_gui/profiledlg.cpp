@@ -305,22 +305,22 @@ void ProfileDialog::Make(void)
 
 			AddStaticText(0,FSKEY_NULL,"Button:",YSFALSE);
 			virtualKeyButtonDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("0",YSTRUE);
-			virtualKeyButtonDrp[row]->AddString("1",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("2",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("3",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("4",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("5",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("6",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("7",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("8",YSTRUE);
-			virtualKeyButtonDrp[row]->AddString("9",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("10",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("11",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("12",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("13",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("14",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("15",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("A",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("B",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("C",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("D",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("E",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("F",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("G",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("H",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("I",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("J",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("K",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("L",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("M",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("N",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("O",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("P",YSFALSE);
 		}
 
 		EndAddTabItem();
@@ -358,22 +358,22 @@ void ProfileDialog::Make(void)
 
 			AddStaticText(0,FSKEY_NULL,"Button:",YSFALSE);
 			virtualKeyButtonDrp[row]=AddEmptyDropList(0,FSKEY_NULL,"",8,4,4,YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("0",YSTRUE);
-			virtualKeyButtonDrp[row]->AddString("1",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("2",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("3",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("4",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("5",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("6",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("7",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("8",YSTRUE);
-			virtualKeyButtonDrp[row]->AddString("9",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("10",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("11",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("12",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("13",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("14",YSFALSE);
-			virtualKeyButtonDrp[row]->AddString("15",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("A",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("B",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("C",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("D",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("E",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("F",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("G",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("H",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("I",YSTRUE);
+			virtualKeyButtonDrp[row]->AddString("J",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("K",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("L",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("M",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("N",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("O",YSFALSE);
+			virtualKeyButtonDrp[row]->AddString("P",YSFALSE);
 		}
 
 		EndAddTabItem();
