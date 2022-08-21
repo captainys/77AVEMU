@@ -302,7 +302,7 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 	keyCode=AVKeyRemap[keyCode];
 	heldDown[keyCode]=true;
 
-	std::cout << "Press " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
+	// std::cout << "Press " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
 
 	switch(state.encodingMode)
 	{
@@ -373,7 +373,7 @@ void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 	keyCode=AVKeyRemap[keyCode];
 	heldDown[keyCode]=false;
 
-	std::cout << "Release " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
+	// std::cout << "Release " << FM77AVKeyCodeToKeyLabel(keyCode) << std::endl;
 
 	switch(state.encodingMode)
 	{
