@@ -519,3 +519,21 @@ add_test(
 		6034
 		-NOWAIT
 )
+
+add_test(
+	NAME LOSTPOWER_OPENING
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/LostPower_1.d77"
+		-FD1
+		"${DISKIMAGE_DIR}/LostPower_2.d77"
+		-EVTLOG
+		"${EVENTLOG_DIR}/LOSTPOWERTEST.evt"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		C2EE
+		-NOWAIT
+)
