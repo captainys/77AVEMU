@@ -503,3 +503,19 @@ add_test(
 		462E
 		-NOWAIT
 )
+
+add_test(
+	NAME DEEPFOREST_OPENING
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/DeepForest_1.d77"
+		-FD1
+		"${DISKIMAGE_DIR}/DeepForest_2.d77"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		6034
+		-NOWAIT
+)
