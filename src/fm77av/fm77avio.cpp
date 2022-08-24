@@ -299,6 +299,14 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		}
 		break;
 
+#ifdef ENABLE_EXAS_COMPILER
+	case 0xfdfd:
+		if (exasCompiler.isReady()) exasCompiler.IncrementAddress();
+		break;
+	case 0xfdfe:
+		if (exasCompiler.isReady()) exasCompiler.Reset();
+		break;
+#endif
 
 	// Sub-CPU I/O
 	case FM77AVIO_ACK_CANCEL_IRQ: //=          0xD402,
@@ -695,6 +703,20 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 {
 	uint8_t byteData=0xFF;
+#ifdef ENABLE_EXAS_COMPILER
+	if (exasCompiler.isReady()) {
+		if (ioAddr == 0xfdfc)
+		{
+			byteData = exasCompiler.ReadROM_12X();
+			return byteData;
+		} 
+		else if (ioAddr >= 0xfd40 && ioAddr <= 0xfd7f)
+		{
+			byteData = exasCompiler.ReadROM_0(ioAddr - 0xfd40);
+			return byteData;
+		}
+	}
+#endif
 	switch(ioAddr)
 	{
 	// Main-CPU I/O

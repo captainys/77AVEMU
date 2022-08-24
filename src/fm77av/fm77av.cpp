@@ -7,7 +7,7 @@
 #include "fm77avrender.h"
 #include "outside_world.h"
 
-
+#include "../exas_compiler/exas_compiler.h"
 
 FM77AV::FM77AV() :
 	Device(this),
@@ -79,6 +79,10 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 
 	std::string ROMPath,FB30ROM;
 	cpputil::SeparatePathFile(ROMPath,FB30ROM,FindFile(cpputil::MakeFullPathName(param.ROMPath,"FBASIC30.ROM")));
+
+#ifdef ENABLE_EXAS_COMPILER
+	exasCompiler.LoadROMFiles(ROMPath);
+#endif
 
 	state.machineType=param.machineType;
 	if(MACHINETYPE_AUTO==state.machineType)
