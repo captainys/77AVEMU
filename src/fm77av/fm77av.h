@@ -19,6 +19,8 @@
 #include "fm77avserialport.h"
 #include "fm77av40dmac.h"
 
+#include "../exas_compiler/exas_compiler.h"
+
 class FM77AV : public VMBase, public Device
 {
 public:
@@ -52,6 +54,9 @@ public:
 	FM77AVGamePort gameport;
 	FM77AVSerialPort serialport;
 	FM77AV40DMAC dmac;
+#ifdef ENABLE_EXAS_COMPILER
+	ExasCompiler exasCompiler;
+#endif
 	// Devices <<
 
 	enum
