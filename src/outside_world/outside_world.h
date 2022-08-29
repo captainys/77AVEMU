@@ -110,6 +110,7 @@ public:
 	bool pauseKey=false;
 
 	unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
+	bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
 
 	Outside_World();
 	virtual ~Outside_World();

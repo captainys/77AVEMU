@@ -1197,6 +1197,36 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 
 	glDisable(GL_TEXTURE_2D);
 
+	if(true==visualizeAudioOut)
+	{
+		glColor3ub(255,255,0);
+		const int barWid=16;
+		const int x0=winWid-MENU_wid-barWid*12;
+		glBegin(GL_LINES);
+		for(int i=0; i<=3; ++i)
+		{
+			auto x=x0+barWid*i;
+			glVertex2i(x,winHei);
+			glVertex2i(x,winHei-1-MENU_hei);
+		}
+		glEnd();
+		glBegin(GL_QUADS);
+		for(int i=0; i<3; ++i)
+		{
+			auto &ch=fm77av.sound.state.ym2203c.state.channels[i];
+			auto outLevel=ch.lastAmplitudeMax;
+			outLevel*=MENU_hei;
+			outLevel/=YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
+
+			auto x=x0+barWid*i;
+			glVertex2i(x       ,winHei);
+			glVertex2i(x+barWid,winHei);
+			glVertex2i(x+barWid,winHei-outLevel);
+			glVertex2i(x       ,winHei-outLevel);
+		}
+		glEnd();
+	}
+
 	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
 	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/

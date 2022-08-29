@@ -101,6 +101,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["PSGLOG"]=ENABLE_PSG_LOG;
 	featureMap["AUTOSTOP"]=ENABLE_AUTOSTOP;
 	featureMap["RKANA"]=ENABLE_RKANA;
+	featureMap["AUDIOLEVEL"]=ENABLE_AUDIOLEVELMETER;
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -316,6 +317,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Print tx from COM0" << std::endl;
 	std::cout << "RKANA" << std::endl;
 	std::cout << "  Romaji type mode." << std::endl;
+	std::cout << "AUDIOLEVEL" << std::endl;
+	std::cout << "  Audio Level Meter." << std::endl;
+
 
 
 	std::cout << "<< Event that can break >>" << std::endl;
@@ -1159,6 +1163,10 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.keyboard.var.romaji.clear();
 			std::cout << "Enabled Romaji Type Mode" << std::endl;
 			break;
+		case ENABLE_AUDIOLEVELMETER	:
+			outside_world->visualizeAudioOut=true;
+			std::cout << "Enabled Audio Level Meter" << std::endl;
+			break;
 		default:
 			std::cout << "Enable What?" << std::endl;
 			Error_WrongParameter(cmd);
@@ -1242,6 +1250,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 			fm77av.keyboard.var.rKanaMode=false;
 			fm77av.keyboard.var.romaji.clear();
 			std::cout << "Disabled Romaji Type Mode" << std::endl;
+			break;
+		case ENABLE_AUDIOLEVELMETER	:
+			outside_world->visualizeAudioOut=false;
+			std::cout << "Disabled Audio Level Meter" << std::endl;
 			break;
 		default:
 			std::cout << "Disable What?" << std::endl;
