@@ -222,11 +222,12 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 		break;
 	case FM77AVIO_YM2203C_DATA://=            0xFD16,
 		state.ym2203cDataWrite=data;
-		if(0!=state.ym2203cCommand)
-		{
-			std::cout << "Warning!  YM2203C Data Register Written while not High-Impedance state!" << std::endl;
-			break;
-		}
+		// Apparently it is normal.
+		//if(0!=state.ym2203cCommand)
+		//{
+		//	std::cout << "Warning!  YM2203C Data Register Written while not High-Impedance state!" << std::endl;
+		//	break;
+		//}
 		break;
 
 	case FM77AVIO_BEEP://=                    0xD403,
@@ -495,6 +496,17 @@ void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) cons
 void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version)
 {
 	auto &ym2203c=state.ym2203c;
+
+	for(auto &ch : ym2203c.state.channels)
+	{
+		for(auto &sl : ch.slots)
+		{
+			for(auto &e : sl.env)
+			{
+				e=0;
+			}
+		}
+	}
 
 	ym2203c.state.preScaler=ReadUint32(data);
 

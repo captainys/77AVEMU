@@ -71,7 +71,7 @@ void Outside_World::ProcessMouse(class FM77AV &fm77av,int lb,int mb,int rb,int m
 	// fm77av.SetMouseButtonState((0!=lb),(0!=rb));
 	if(true==mouseIntegrationActive)
 	{
-		int diffX,diffY;
+		int diffX=0,diffY=0;
 		// fm77av.ControlMouse(diffX,diffY,mx,my,fm77av.state.biosVersion);  Can I do it like Towns?  I'll see.
 		if(0==diffX && 0==diffY)
 		{
