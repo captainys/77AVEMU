@@ -710,13 +710,19 @@ void FM77AVCRTC::DrawLine(void)
 		VRAMInLayerAddr[1]=(state.hardDraw.addrOffset+state.VRAMOffset[1]*2)&planeMask;
 	}
 
+	unsigned int lineStippleBit=0x8000;
+
 	unsigned int balance=0,count=0;;
 	int x=state.hardDraw.x0;
 	int y=state.hardDraw.y0;
 
 	VRAMInLayerAddr[0]+=y*bytesPerLine+(x>>3);
 	VRAMInLayerAddr[1]+=y*bytesPerLine+(x>>3);
-	PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+	if(state.hardDraw.lineStipple&lineStippleBit)
+	{
+		PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+	}
+	lineStippleBit>>=1;
 	if(0==dx && 0==dy)
 	{
 		// Done.  Nothing to do.
@@ -728,7 +734,15 @@ void FM77AVCRTC::DrawLine(void)
 			y+=vy;
 			VRAMInLayerAddr[0]+=VRAMVy;
 			VRAMInLayerAddr[1]+=VRAMVy;
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			if(state.hardDraw.lineStipple&lineStippleBit)
+			{
+				PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			}
+			lineStippleBit>>=1;
+			if(0==lineStippleBit)
+			{
+				lineStippleBit=0x8000;
+			}
 		}
 	}
 	else if(0==dy) // Horizontal
@@ -742,7 +756,15 @@ void FM77AVCRTC::DrawLine(void)
 				VRAMInLayerAddr[0]+=vx;
 				VRAMInLayerAddr[1]+=vx;
 			}
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			if(state.hardDraw.lineStipple&lineStippleBit)
+			{
+				PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			}
+			lineStippleBit>>=1;
+			if(0==lineStippleBit)
+			{
+				lineStippleBit=0x8000;
+			}
 		}
 	}
 	else if(dy<dx) // Long in X
@@ -764,7 +786,15 @@ void FM77AVCRTC::DrawLine(void)
 				VRAMInLayerAddr[1]+=VRAMVy;
 				balance-=dx;
 			}
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			if(state.hardDraw.lineStipple&lineStippleBit)
+			{
+				PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			}
+			lineStippleBit>>=1;
+			if(0==lineStippleBit)
+			{
+				lineStippleBit=0x8000;
+			}
 		}
 	}
 	else // if(dx<dy) // Long in Y
@@ -786,7 +816,15 @@ void FM77AVCRTC::DrawLine(void)
 				}
 				balance-=dy;
 			}
-			PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			if(state.hardDraw.lineStipple&lineStippleBit)
+			{
+				PutDot(VRAMPlane,VRAMLayerBaseAddr+(VRAMInLayerAddr[(x>>3)&1]&planeMask),x&7,count++);
+			}
+			lineStippleBit>>=1;
+			if(0==lineStippleBit)
+			{
+				lineStippleBit=0x8000;
+			}
 		}
 	}
 }
