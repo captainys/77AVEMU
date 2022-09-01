@@ -1745,7 +1745,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		{
 			state.CC&=inst.operand[0];
 			state.CC|=EF;
-			PushS16(mem,state.PC+1);
+			PushS16(mem,state.PC+2);
 			PushS16(mem,state.U);
 			PushS16(mem,state.Y);
 			PushS16(mem,state.X);
