@@ -329,7 +329,7 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 
 
 
-	std::cout << "<< Event that can break >>" << std::endl;
+	std::cout << "<< Event that can break or monitor>>" << std::endl;
 	std::cout << "SUBUNHALT | UNHALTSUB" << std::endl;
 	std::cout << "  Sub-CPU Unhalted." << std::endl;
 	std::cout << "SUBCMD ##" << std::endl;
