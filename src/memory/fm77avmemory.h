@@ -188,8 +188,10 @@ public:
 	{
 	public:
 		bool brkOnWrite=false;
+		bool justMonitorDontBreakOnWrite=false;
 		uint8_t brkOnWriteMinMax[2]={0,255};
 		bool brkOnRead=false;
+		bool justMonitorDontBreakOnRead=false;
 		uint8_t brkOnReadMinMax[2]={0,255};
 	};
 	class Variable

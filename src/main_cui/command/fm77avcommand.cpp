@@ -53,6 +53,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["BL"]=CMD_LIST_BREAKPOINTS;
 	primaryCmdMap["BRKON"]=CMD_BREAK_ON;
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
+	primaryCmdMap["MON"]=CMD_MONITOR;
+	primaryCmdMap["CMON"]=CMD_DONT_MONITOR;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
@@ -258,7 +260,7 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "MON event" << std::endl;
 	std::cout << "  Monitor event." << std::endl;
 	std::cout << "CMON event" << std::endl;
-	std::cout << "  Monitor event." << std::endl;
+	std::cout << "  Don't monitor event. (It works the same way as CBRKON)" << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 
@@ -447,6 +449,11 @@ void FM77AVCommandInterpreter::Error_Addressing(const Command &cmd)
 {
 	std::cout << "Error in addressing." << std::endl;
 	Error_Common(cmd);
+}
+
+/* static */ std::string FM77AVCommandInterpreter::JustMonitorOrBreakString(bool justMonitor)
+{
+	return (justMonitor ? " Monitor" : "Break");
 }
 
 FM77AV::Address FM77AVCommandInterpreter::DecodeAddress(const FM77AV &fm77av,std::string arg,uint8_t defaultCPU,uint8_t defaultAddrType)
@@ -847,9 +854,15 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		Execute_ListBreakPoints(thr,fm77av,cmd);
 		break;
 	case CMD_BREAK_ON:
-		Execute_BreakOn(thr,fm77av,cmd);
+		Execute_BreakOnOrMonitor(thr,fm77av,cmd,false);
 		break;
 	case CMD_DONT_BREAK_ON:
+		Execute_DontBreakOn(thr,fm77av,cmd);
+		break;
+	case CMD_MONITOR:
+		Execute_BreakOnOrMonitor(thr,fm77av,cmd,true);
+		break;
+	case CMD_DONT_MONITOR:
 		Execute_DontBreakOn(thr,fm77av,cmd);
 		break;
 	case CMD_TYPE_KEYBOARD:
@@ -1658,10 +1671,12 @@ void FM77AVCommandInterpreter::Execute_MemoryDump(FM77AVThread &thr,FM77AV &fm77
 		}
 	}
 }
-void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak)
 {
 	if(2<=cmd.argv.size())
 	{
+		std::string verb=JustMonitorOrBreakString(justMonitorDontBreak);
+
 		auto EVT=cmd.argv[1];
 		cpputil::Capitalize(EVT);
 		auto found=breakEventMap.find(EVT);
@@ -1670,8 +1685,9 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Comm
 			switch(found->second)
 			{
 			case BREAK_ON_SUBCPU_UNHALT:
-				av.var.breakOnUnhaltSubCPU=true;
-				std::cout << "Break on Sub-CPU Unhalt." << std::endl;
+				av.var.monitorSubSysCmd=justMonitorDontBreak;
+				av.var.breakOnUnhaltSubCPU=(true!=justMonitorDontBreak);
+				std::cout << verb << " on Sub-CPU Unhalt." << std::endl;
 				break;
 			case BREAK_ON_SUBCMD:
 				if(3<=cmd.argv.size())
@@ -1679,8 +1695,15 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Comm
 					auto num=cpputil::Xtoi(cmd.argv[2].data());
 					if(num<FM7_MAX_SUB_CMD)
 					{
-						av.var.breakOnSubCmd[num]=MC6809::Debugger::BRKPNT_FLAG_BREAK;
-						std::cout << "Break On Sub-CPU Command " << cpputil::Ubtox(num) << " " << SubCmdToStr(num) << std::endl;
+						if(true!=justMonitorDontBreak)
+						{
+							av.var.breakOnSubCmd[num]=MC6809::Debugger::BRKPNT_FLAG_BREAK;
+						}
+						else
+						{
+							av.var.breakOnSubCmd[num]=MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY;
+						}
+						std::cout << verb << " on Sub-CPU Command " << cpputil::Ubtox(num) << " " << SubCmdToStr(num) << std::endl;
 					}
 					else
 					{
@@ -1693,16 +1716,16 @@ void FM77AVCommandInterpreter::Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Comm
 				}
 				break;
 			case BREAK_ON_MEM_READ:
-				Execute_BreakOnMemoryRead(thr,av,cmd);
+				Execute_BreakOnMemoryRead(thr,av,cmd,justMonitorDontBreak);
 				break;
 			case BREAK_ON_MEM_WRITE:
-				Execute_BreakOnMemoryWrite(thr,av,cmd);
+				Execute_BreakOnMemoryWrite(thr,av,cmd,justMonitorDontBreak);
 				break;
 			case BREAK_ON_HARDWARE_VRAM_WRITE:
-				Execute_BreakOnHardwareVRAMWrite(thr,av,cmd);
+				Execute_BreakOnHardwareVRAMWrite(thr,av,cmd,justMonitorDontBreak);
 				break;
 			case BREAK_ON_HARDWARE_LINE_DRAWING:
-				av.crtc.BreakOnHardwareLineDrawing();
+				av.crtc.BreakOnHardwareLineDrawing(justMonitorDontBreak);
 				break;
 			}
 		}
@@ -1777,13 +1800,15 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 		Error_TooFewArgs(cmd);
 	}
 }
-void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak)
 {
 	bool useValue=false,useMinMax=false;
 	unsigned char value=0,minValue=0,maxValue=255;
 	int nAddr=0;
 	int mainOrSub=CPU_UNKNOWN;
 	uint32_t addr[2];
+
+	uint8_t debuggerFlag=(justMonitorDontBreak ? MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY : MC6809::Debugger::BRKPNT_FLAG_BREAK);
 
 	for(int i=2; i<cmd.argv.size(); ++i)
 	{
@@ -1885,59 +1910,71 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77A
 		return;
 	}
 
+	if(1==nAddr)
+	{
+		addr[1]=addr[0];
+		nAddr=2;
+	}
+
 	if(2==nAddr)
 	{
+		std::string verb=JustMonitorOrBreakString(justMonitorDontBreak);
+
 		if(addr[1]<addr[0])
 		{
 			std::swap(addr[0],addr[1]);
 		}
-		auto &cpu=av.CPU(mainOrSub);
-		auto &mem=av.MemAccess(mainOrSub);
-		for(auto a=addr[0]; a<=addr[1]; ++a)
+		if(FM77AV::ADDR_PHYS==mainOrSub)
 		{
-			if(true!=useValue)
+			for(auto a=addr[0]; a<=addr[1]; ++a)
 			{
-				cpu.debugger.SetBreakOnMemRead(a,minValue,maxValue);
+				if(a<PhysicalMemory::PHYSMEM_SIZE)
+				{
+					av.physMem.var.memAttr[a].brkOnRead=true;
+					av.physMem.var.memAttr[a].justMonitorDontBreakOnRead=justMonitorDontBreak;
+					if(true!=useValue)
+					{
+						av.physMem.var.memAttr[a].brkOnReadMinMax[0]=minValue;
+						av.physMem.var.memAttr[a].brkOnReadMinMax[1]=maxValue;
+					}
+					else
+					{
+						av.physMem.var.memAttr[a].brkOnReadMinMax[0]=value;
+						av.physMem.var.memAttr[a].brkOnReadMinMax[1]=value;
+					}
+				}
 			}
-			else
+			std::cout << verb << " on Memory Read" << std::endl;
+			std::cout << "  from " << "PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
+			std::cout << "  to   " << "PHYS:" << cpputil::Uitox(addr[1]) << std::endl;
+		}
+		else if(FM77AV::ADDR_MAIN==mainOrSub || FM77AV::ADDR_SUB==mainOrSub)
+		{
+			auto &cpu=av.CPU(mainOrSub);
+			auto &mem=av.MemAccess(mainOrSub);
+			for(auto a=addr[0]; a<=addr[1]; ++a)
 			{
-				cpu.debugger.SetBreakOnMemRead(a,value,value);
+				if(true!=useValue)
+				{
+					cpu.debugger.SetBreakOnMemRead(a,minValue,maxValue,debuggerFlag);
+				}
+				else
+				{
+					cpu.debugger.SetBreakOnMemRead(a,value,value,debuggerFlag);
+				}
 			}
-		}
-		std::cout << "Break on Memory Read" << std::endl;
-		std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
-		std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
-		if(true==useValue)
-		{
-			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
-		}
-		if(true==useMinMax)
-		{
-			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
-			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
-		}
-	}
-	else if(1==nAddr)
-	{
-		auto &cpu=av.CPU(mainOrSub);
-		auto &mem=av.MemAccess(mainOrSub);
-		if(true!=useValue)
-		{
-			cpu.debugger.SetBreakOnMemRead(addr[0],minValue,maxValue);
-		}
-		else
-		{
-			cpu.debugger.SetBreakOnMemRead(addr[0],value,value);
-		}
-		std::cout << "Break on Memory Read " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
-		if(true==useValue)
-		{
-			std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
-		}
-		if(true==useMinMax)
-		{
-			std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
-			std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+			std::cout << verb << " on Memory Read" << std::endl;
+			std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
+			std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
+			if(true==useValue)
+			{
+				std::cout << "  Value=    " << cpputil::Ubtox(value) << std::endl;
+			}
+			if(true==useMinMax)
+			{
+				std::cout << "  Min=    " << cpputil::Ubtox(minValue) << std::endl;
+				std::cout << "  Max=    " << cpputil::Ubtox(maxValue) << std::endl;
+			}
 		}
 	}
 	else if(2<nAddr)
@@ -1949,13 +1986,15 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77A
 		Error_TooFewArgs(cmd);
 	}
 }
-void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak)
 {
 	bool useValue=false,useMinMax=false;
 	unsigned char value=0,minValue=0,maxValue=255;
 	int nAddr=0;
 	int mainOrSub=CPU_UNKNOWN;
 	uint32_t addr[2];
+
+	uint8_t debuggerFlag=(justMonitorDontBreak ? MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY : MC6809::Debugger::BRKPNT_FLAG_BREAK);
 
 	for(int i=2; i<cmd.argv.size(); ++i)
 	{
@@ -2065,6 +2104,8 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 
 	if(2==nAddr)
 	{
+		std::string verb=JustMonitorOrBreakString(justMonitorDontBreak);
+
 		if(addr[1]<addr[0])
 		{
 			std::swap(addr[0],addr[1]);
@@ -2076,6 +2117,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 				if(a<PhysicalMemory::PHYSMEM_SIZE)
 				{
 					av.physMem.var.memAttr[a].brkOnWrite=true;
+					av.physMem.var.memAttr[a].justMonitorDontBreakOnWrite=justMonitorDontBreak;
 					if(true!=useValue)
 					{
 						av.physMem.var.memAttr[a].brkOnWriteMinMax[0]=minValue;
@@ -2088,7 +2130,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 					}
 				}
 			}
-			std::cout << "Break on Memory Write" << std::endl;
+			std::cout << verb << " on Memory Write" << std::endl;
 			std::cout << "  from " << "PHYS:" << cpputil::Uitox(addr[0]) << std::endl;
 			std::cout << "  to   " << "PHYS:" << cpputil::Uitox(addr[1]) << std::endl;
 		}
@@ -2100,14 +2142,14 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 			{
 				if(true!=useValue)
 				{
-					cpu.debugger.SetBreakOnMemWrite(a,minValue,maxValue);
+					cpu.debugger.SetBreakOnMemWrite(a,minValue,maxValue,debuggerFlag);
 				}
 				else
 				{
-					cpu.debugger.SetBreakOnMemWrite(a,value,value);
+					cpu.debugger.SetBreakOnMemWrite(a,value,value,debuggerFlag);
 				}
 			}
-			std::cout << "Break on Memory Write" << std::endl;
+			std::cout << verb << " on Memory Write" << std::endl;
 			std::cout << "  from " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[0]) << std::endl;
 			std::cout << "  to   " << CPUToStr(mainOrSub) << ":" << cpputil::Uitox(addr[1]) << std::endl;
 		}
@@ -2400,26 +2442,28 @@ void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AVThread &thr,FM77AV 
 	}
 }
 
-void FM77AVCommandInterpreter::Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd)
+void FM77AVCommandInterpreter::Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak)
 {
+	std::string verb=JustMonitorOrBreakString(justMonitorDontBreak);
+
 	if(cmd.argv.size()<=2)
 	{
-		av.crtc.AddBreakOnHardwareVRAMWriteType(0);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(1);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(2);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(3);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(4);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(5);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(6);
-		av.crtc.AddBreakOnHardwareVRAMWriteType(7);
-		std::cout << "Break on all hardware VRAM write (logic op)" << std::endl;
+		av.crtc.AddBreakOnHardwareVRAMWriteType(0,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(1,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(2,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(3,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(4,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(5,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(6,justMonitorDontBreak);
+		av.crtc.AddBreakOnHardwareVRAMWriteType(7,justMonitorDontBreak);
+		std::cout << verb << " on all hardware VRAM write (logic op)" << std::endl;
 	}
 	else if(3<=cmd.argv.size())
 	{
 		for(int i=2; i<cmd.argv.size(); ++i)
 		{
 			auto t=cpputil::Xtoi(cmd.argv[i].c_str());
-			av.crtc.AddBreakOnHardwareVRAMWriteType(t);
+			av.crtc.AddBreakOnHardwareVRAMWriteType(t,justMonitorDontBreak);
 			std::cout << "Break on all hardware VRAM write (logic op) Type=" << cpputil::Ubtox(t) << std::endl;
 		}
 	}

@@ -93,6 +93,8 @@ public:
 
 		CMD_BREAK_ON,
 		CMD_DONT_BREAK_ON,
+		CMD_MONITOR,
+		CMD_DONT_MONITOR,
 
 		CMD_TYPE_KEYBOARD,
 		CMD_KEYBOARD,
@@ -186,6 +188,8 @@ public:
 	void Error_CannotOpenFile(const Command &cmd);
 	void Error_Addressing(const Command &cmd);
 
+	static std::string JustMonitorOrBreakString(bool justMonitor);
+
 	Command Interpret(const std::string &cmdline) const;
 
 	/*! If thread is given, and the CPU main or sub is not given, try the unmuted CPU if one is muted and one is unmuted.
@@ -210,10 +214,10 @@ public:
 	void Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_MemoryDump(FM77AVThread &thr,FM77AV &av,Command &cmd);
-	void Execute_BreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak);
 	void Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,Command &cmd);
-	void Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd);
-	void Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak);
+	void Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak);
 	void Execute_AddBreakPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_AddBreakPointWithPassCount(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_AddMonitorPoint(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
@@ -221,7 +225,7 @@ public:
 	void Execute_ListBreakPoints(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_DontBreakOnMemoryRead(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_DontBreakOnMemoryWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
-	void Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
+	void Execute_BreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd,bool justMonitorDontBreak);
 	void Execute_DontBreakOnHardwareVRAMWrite(FM77AVThread &thr,FM77AV &av,Command &cmd);
 	void Execute_FDLoad(int drv,FM77AV &fm77av,Command &cmd);
 	void Execute_FDEject(int drv,FM77AV &fm77av,Command &cmd);

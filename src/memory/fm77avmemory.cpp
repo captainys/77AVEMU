@@ -662,7 +662,10 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		if(var.memAttr[addr].brkOnReadMinMax[0]<=data && data<=var.memAttr[addr].brkOnReadMinMax[1])
 		{
 			std::cout << "Memory Read " << cpputil::Uitox(addr) << " Value=" << cpputil::Ubtox(data) << std::endl;
-			fm77avPtr->mainCPU.debugger.stop=true;
+			if(true!=var.memAttr[addr].justMonitorDontBreakOnRead)
+			{
+				fm77avPtr->mainCPU.debugger.stop=true;
+			}
 		}
 	}
 
@@ -699,7 +702,10 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		if(var.memAttr[addr].brkOnWriteMinMax[0]<=d && d<=var.memAttr[addr].brkOnWriteMinMax[1])
 		{
 			std::cout << "Memory Write " << cpputil::Uitox(addr) << " Value=" << cpputil::Ubtox(d) << std::endl;
-			fm77avPtr->mainCPU.debugger.stop=true;
+			if(true!=var.memAttr[addr].justMonitorDontBreakOnWrite)
+			{
+				fm77avPtr->mainCPU.debugger.stop=true;
+			}
 		}
 	}
 

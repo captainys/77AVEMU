@@ -121,7 +121,9 @@ public:
 	};
 
 	uint8_t breakOnHardwareVRAMWriteOpBits=0;
+	bool justMonitorDontBreakOnHardwareVRAMWrite=false;
 	bool breakOnHardwareLineDrawing=false;
+	bool justMonitorDontBreakOnHardwareLineDrawing=false;
 
 	FM77AVCRTC(VMBase *vmBase);
 	void Reset(void);
@@ -147,10 +149,10 @@ public:
 	*/
 	unsigned int GetPlaneVRAMMask(void) const;
 
-	void AddBreakOnHardwareVRAMWriteType(uint8_t opType);
+	void AddBreakOnHardwareVRAMWriteType(uint8_t opType,bool justMonitorDontBreak);
 	void ClearBreakOnHardwareVRAMWriteType(uint8_t opType);
 
-	void BreakOnHardwareLineDrawing(void);
+	void BreakOnHardwareLineDrawing(bool justMonitorDontBreak);
 	void ClearBreakOnHardwareLineDrawing(void);
 
 	void WriteFD30(uint8_t data);

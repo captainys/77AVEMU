@@ -93,18 +93,20 @@ unsigned int FM77AVCRTC::GetPlaneVRAMMask(void) const
 	}
 	return 0x3FFF; // Unknown screen mode.
 }
-void FM77AVCRTC::AddBreakOnHardwareVRAMWriteType(uint8_t opType)
+void FM77AVCRTC::AddBreakOnHardwareVRAMWriteType(uint8_t opType,bool justMonitorDontBreak)
 {
 	breakOnHardwareVRAMWriteOpBits|=(1<<opType);
+	justMonitorDontBreakOnHardwareVRAMWrite=justMonitorDontBreak;
 }
 void FM77AVCRTC::ClearBreakOnHardwareVRAMWriteType(uint8_t opType)
 {
 	breakOnHardwareVRAMWriteOpBits&=~(1<<opType);
 }
 
-void FM77AVCRTC::BreakOnHardwareLineDrawing(void)
+void FM77AVCRTC::BreakOnHardwareLineDrawing(bool justMonitorDontBreak)
 {
 	breakOnHardwareLineDrawing=true;
+	justMonitorDontBreakOnHardwareLineDrawing=justMonitorDontBreak;
 }
 void FM77AVCRTC::ClearBreakOnHardwareLineDrawing(void)
 {
