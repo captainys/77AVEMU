@@ -567,6 +567,7 @@ public:
 	{
 	public:
 		bool halt=false;
+		bool CWAI=false;
 		bool nmiEnabled=false;     
 		// After power-on/reset, turns true when S is set.
 		// Motorola MC6809 MC6809E Programming Manual

@@ -1101,6 +1101,7 @@ void MC6809::Reset(void)
 {
 	Device::Reset();
 	state.halt=false;
+	state.CWAI=false;
 	state.nmiEnabled=false;     
 }
 void MC6809::NMI(class MemoryAccess &mem)
@@ -1111,15 +1112,20 @@ void MC6809::NMI(class MemoryAccess &mem)
 		{
 			debugger.PushCallStack(Debugger::CALLTYPE_NMI,state.S,state.PC,0,mem.NonDestructiveFetchWord(NMI_VECTOR_ADDR));
 		}
-		state.CC|=EF;
-		PushS16(mem,state.PC);
-		PushS16(mem,state.U);
-		PushS16(mem,state.Y);
-		PushS16(mem,state.X);
-		PushS8(mem,state.DP);
-		PushS8(mem,state.B());
-		PushS8(mem,state.A());
-		PushS8(mem,state.CC);
+		if(true!=state.CWAI)
+		{
+			state.CC|=EF;
+			PushS16(mem,state.PC);
+			PushS16(mem,state.U);
+			PushS16(mem,state.Y);
+			PushS16(mem,state.X);
+			PushS8(mem,state.DP);
+			PushS8(mem,state.B());
+			PushS8(mem,state.A());
+			PushS8(mem,state.CC);
+		}
+		state.CWAI=false;
+		state.halt=false;
 		state.CC|=(IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(NMI_VECTOR_ADDR);
 		debugger.OnNMI(*this,mem);
@@ -1133,15 +1139,20 @@ void MC6809::IRQ(class MemoryAccess &mem)
 		{
 			debugger.PushCallStack(Debugger::CALLTYPE_IRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(IRQ_VECTOR_ADDR));
 		}
-		state.CC|=EF;
-		PushS16(mem,state.PC);
-		PushS16(mem,state.U);
-		PushS16(mem,state.Y);
-		PushS16(mem,state.X);
-		PushS8(mem,state.DP);
-		PushS8(mem,state.B());
-		PushS8(mem,state.A());
-		PushS8(mem,state.CC);
+		if(true!=state.CWAI)
+		{
+			state.CC|=EF;
+			PushS16(mem,state.PC);
+			PushS16(mem,state.U);
+			PushS16(mem,state.Y);
+			PushS16(mem,state.X);
+			PushS8(mem,state.DP);
+			PushS8(mem,state.B());
+			PushS8(mem,state.A());
+			PushS8(mem,state.CC);
+		}
+		state.CWAI=false;
+		state.halt=false;
 		state.CC|=(IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(IRQ_VECTOR_ADDR);
 		debugger.OnIRQ(*this,mem);
@@ -1155,9 +1166,14 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 		{
 			debugger.PushCallStack(Debugger::CALLTYPE_FIRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(FIRQ_VECTOR_ADDR));
 		}
-		state.CC&=~EF;
-		PushS16(mem,state.PC);
-		PushS8(mem,state.CC);
+		if(true!=state.CWAI)
+		{
+			state.CC&=~EF;
+			PushS16(mem,state.PC);
+			PushS8(mem,state.CC);
+		}
+		state.CWAI=false;
+		state.halt=false;
 		state.CC|=(IRQMASK|FIRQMASK);
 		state.PC=mem.FetchWord(FIRQ_VECTOR_ADDR);
 		debugger.OnFIRQ(*this,mem);
@@ -1726,8 +1742,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_CWAI_IMM: //  0x3C,
-		Abort("Instruction not supported yet.");
-		inst.length=0;
+		{
+			state.CC&=inst.operand[0];
+			state.CC|=EF;
+			PushS16(mem,state.PC+1);
+			PushS16(mem,state.U);
+			PushS16(mem,state.Y);
+			PushS16(mem,state.X);
+			PushS8(mem,state.DP);
+			PushS8(mem,state.B());
+			PushS8(mem,state.A());
+			PushS8(mem,state.CC);
+			state.halt=true;
+			state.CWAI=true;
+			inst.length=0;
+		}
 		break;
 
 	case INST_DAA: //       0x19,
@@ -4332,10 +4361,12 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 }
 /* virtual */ uint32_t MC6809::SerializeVersion(void) const
 {
-	return 0;
+	// Version 1 adds CWAI flag.
+	return 1;
 }
 /* virtual */ void MC6809::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
+	// Version 0
 	PushUint16(data,state.D);
 	PushUint16(data,state.DP);
 	PushUint16(data,state.CC);
@@ -4349,6 +4380,9 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 	PushBool(data,state.nmiEnabled);
 
 	PushUint32(data,state.freq);
+
+	// Version 1
+	PushBool(data,state.CWAI);
 }
 /* virtual */ bool MC6809::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -4365,6 +4399,15 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 	state.nmiEnabled=ReadBool(data);
 
 	state.freq=ReadUint32(data);
+
+	if(1<=version)
+	{
+		state.CWAI=ReadBool(data);
+	}
+	else
+	{
+		state.CWAI=false;
+	}
 
 	return true;
 }
