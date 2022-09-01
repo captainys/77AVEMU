@@ -210,7 +210,7 @@ void FM77AVFDC::MakeReady(void)
 				{
 					fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_DMA;
 				}
-				std::cout << "DMA Transfer" << std::endl;
+				std::cout << "DMA Transfer (Read Sector)" << std::endl;
 				MakeReady();
 			}
 			else
@@ -280,17 +280,27 @@ void FM77AVFDC::MakeReady(void)
 				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
 			}
 		}
-		else if(true!=state.DRQ)
+		else
 		{
-			state.DRQ=true;
-			// Should I raise IRQ?
-			state.lastDRQTime+=NANOSEC_PER_BYTE;
-			fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
-		}
-		else // Data didn't come in time.  In fact, I may need to write partial and mark it as CRC error.
-		{
-			state.lostData=true;
-			MakeReady();
+			if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType &&
+			   true==fm77avPtr->dmac.TxRQ() &&
+			   true==fm77avPtr->dmac.MEMtoFDC())
+			{
+				std::cout << "DMA Sector Write not supported yet." << std::endl;  state.lostData=true;
+				MakeReady();
+			}
+			else if(true!=state.DRQ)
+			{
+				state.DRQ=true;
+				// Should I raise IRQ?
+				state.lastDRQTime+=NANOSEC_PER_BYTE;
+				fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
+			}
+			else // Data didn't come in time.  In fact, I may need to write partial and mark it as CRC error.
+			{
+				state.lostData=true;
+				MakeReady();
+			}
 		}
 		break;
 
@@ -336,17 +346,39 @@ void FM77AVFDC::MakeReady(void)
 				MakeReady(); // Must return drive not ready.  Taken care by MakeUpStatus.
 			}
 		}
-		else if(true!=state.DRQ)
-		{
-			state.DRQ=true;
-			state.lastDRQTime+=NANOSEC_PER_BYTE;
-			// Should I raise IRQ?
-			fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
-		}
 		else
 		{
-			state.lostData=true;
-			MakeReady();
+			if(MACHINETYPE_FM77AV40<=fm77avPtr->state.machineType &&
+			   true==fm77avPtr->dmac.TxRQ() &&
+			   true==fm77avPtr->dmac.FDCtoMEM())
+			{
+				auto addr0=fm77avPtr->dmac.Address();
+				for(unsigned int i=0; i<fm77avPtr->dmac.NumBytes() && i<state.data.size(); ++i)
+				{
+					fm77avPtr->mainMemAcc.StoreByte(addr0+i,state.data[i]);
+				}
+				fm77avPtr->dmac.SetDMAEnd(true);
+				fm77avPtr->dmac.SetIRQ(true);
+				fm77avPtr->dmac.SetBusy(false);
+				if(true==fm77avPtr->dmac.IRQEnabled())
+				{
+					fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_DMA;
+				}
+				std::cout << "DMA Transfer (Read Address)" << std::endl;
+				MakeReady();
+			}
+			else if(true!=state.DRQ)
+			{
+				state.DRQ=true;
+				state.lastDRQTime+=NANOSEC_PER_BYTE;
+				// Should I raise IRQ?
+				fm77avPtr->ScheduleDeviceCallBack(*this,state.lastDRQTime+NANOSEC_PER_BYTE);
+			}
+			else
+			{
+				state.lostData=true;
+				MakeReady();
+			}
 		}
 		break;
 	case 0xE0: // Read Track

@@ -35,6 +35,7 @@ public:
 	uint16_t NumBytes(void) const;
 	bool AddressGoUp(void) const;
 	bool FDCtoMEM(void) const;
+	bool MEMtoFDC(void) const;
 	void SetDMAEnd(bool ended);
 	void SetBusy(bool busy);
 

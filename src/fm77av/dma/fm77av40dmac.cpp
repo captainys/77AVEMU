@@ -41,6 +41,10 @@ bool FM77AV40DMAC::FDCtoMEM(void) const
 {
 	return 0==(state.regs[0x10]&1);
 }
+bool FM77AV40DMAC::MEMtoFDC(void) const
+{
+	return 0!=(state.regs[0x10]&1);
+}
 void FM77AV40DMAC::SetDMAEnd(bool ended)
 {
 	state.regs[0x10]&=0x7F;
