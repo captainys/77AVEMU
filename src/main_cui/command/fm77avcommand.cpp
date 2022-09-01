@@ -232,7 +232,6 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "MEMDUMP or MD seg:address wid hei step 1/0" << std::endl;
 	std::cout << "  Memory Dump.  If you enter wid,hei,step it will dump non-16x16 columns." << std::endl;
 	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
-	std::cout << "BRKON event" << std::endl;
 	std::cout << "BP EIP|BRK EIP" << std::endl;
 	std::cout << "BP CS:EIP|BRK CS:EIP" << std::endl;
 	std::cout << "  Add a break point." << std::endl;
@@ -252,8 +251,14 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "BL main|sub" << std::endl;
 	std::cout << "  List break points." << std::endl;
 	std::cout << "  Break on event." << std::endl;
+	std::cout << "BRKON event" << std::endl;
+	std::cout << "  Break on event." << std::endl;
 	std::cout << "CBRKON event" << std::endl;
 	std::cout << "  Don't break on event." << std::endl;
+	std::cout << "MON event" << std::endl;
+	std::cout << "  Monitor event." << std::endl;
+	std::cout << "CMON event" << std::endl;
+	std::cout << "  Monitor event." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 
@@ -2341,14 +2346,13 @@ void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AVThread &thr,FM77AV
 	}
 	else
 	{
-		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[2]);
+		auto ptr=MakeCPUandAddress(thr,fm77av,cmd.argv[1]);
 		if(CPU_UNKNOWN==ptr.cpu)
 		{
 			Error_UnknownCPU(cmd);
 			return;
 		}
 
-		int passCountUntilBreak=cpputil::Atoi(cmd.argv[2].c_str());
 		auto &cpu=fm77av.CPU(ptr.cpu);
 		cpu.debugger.ClearBreakPoint(ptr.addr,ptr.addr);
 		std::cout << "Cleared break point." << std::endl;
