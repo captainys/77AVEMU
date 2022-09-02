@@ -610,19 +610,26 @@ public:
 		class PCLogType
 		{
 		public:
-			uint16_t PC,S;
+			/*! If logAllRegisters!=true, only S and CC will be logged.
+			*/
+			RegisterSet regs;
+			/*! Disassembly will be logged only if logDisassembly==true.
+			*/
+			std::string disasm;
 			uint32_t count=0;
 			bool operator==(const PCLogType &from)
 			{
-				return from.PC==PC;
+				return from.regs.PC==regs.PC;
 			}
 			bool operator!=(const PCLogType &from)
 			{
-				return from.PC!=PC;
+				return from.regs.PC!=regs.PC;
 			}
 		};
 		size_t PCLogPtr;
 		std::vector <PCLogType> PCLog;
+		bool logAllRegisters=false;
+		bool logDisassembly=false;
 
 		bool enabled=true;
 		bool stop=false;

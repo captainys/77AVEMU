@@ -1181,7 +1181,10 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 }
 uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 {
-	debugger.BeforeRunOneInstruction(*this,mem);
+	if(true==debugger.enabled)
+	{
+		debugger.BeforeRunOneInstruction(*this,mem);
+	}
 
 	auto inst=FetchInstruction(mem,state.PC);
 
@@ -3225,7 +3228,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	}
 
 	state.PC+=inst.length;
-	debugger.AfterRunOneInstruction(*this,mem);
+	if(true==debugger.enabled)
+	{
+		debugger.AfterRunOneInstruction(*this,mem);
+	}
 	return inst.clocks;
 }
 uint8_t MC6809::AND(uint8_t a,uint8_t b)

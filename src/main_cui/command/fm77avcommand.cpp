@@ -1511,12 +1511,12 @@ void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av
 	// auto &symTable=av.debugger.GetSymTable();
 	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 	{
-		std::cout << cpputil::Ustox(iter->PC);
-		std::cout << " ";
-		std::cout << "S=" << cpputil::Ustox(iter->S);
+		std::cout << cpputil::Ustox(iter->regs.PC);
+		std::cout << " S=" << cpputil::Ustox(iter->regs.S);
+		std::cout << " CC=" << cpputil::Ubtox(iter->regs.CC);
 		if(1<iter->count)
 		{
-			std::cout << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+			std::cout << " (" << cpputil::Itoa((unsigned int)iter->count) << ")";
 		}
 		// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
 		// if(nullptr!=symbolPtr)
@@ -1541,12 +1541,12 @@ void FM77AVCommandInterpreter::Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,
 				// auto &symTable=av.debugger.GetSymTable();
 				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 				{
-					ofp << cpputil::Ustox(iter->PC);
-					ofp << " ";
-					ofp << "S=" << cpputil::Ustox(iter->S);
+					ofp << cpputil::Ustox(iter->regs.PC);
+					ofp << " S=" << cpputil::Ustox(iter->regs.S);
+					ofp << " CC=" << cpputil::Ubtox(iter->regs.CC);
 					if(1<iter->count)
 					{
-						ofp << "(" << cpputil::Itoa((unsigned int)iter->count) << ")";
+						ofp << " (" << cpputil::Itoa((unsigned int)iter->count) << ")";
 					}
 					// auto symbolPtr=symTable.Find(iter->SEG,iter->OFFSET);
 					// if(nullptr!=symbolPtr)

@@ -19,8 +19,13 @@ void MC6809::Debugger::CleanUp(void)
 	PCLog.resize(PC_LOG_SIZE);
 	for(auto &log : PCLog)
 	{
-		log.PC=0;
-		log.S=0;
+		log.regs.PC=0;
+		log.regs.X=0;
+		log.regs.Y=0;
+		log.regs.U=0;
+		log.regs.CC=0;
+		log.regs.D=0;
+		log.regs.DP=0;
 		log.count=0;
 	}
 	PCLogPtr=0;
@@ -167,8 +172,23 @@ void MC6809::Debugger::StoreWord(uint16_t addr,uint16_t data)
 
 void MC6809::Debugger::BeforeRunOneInstructionMainBody(MC6809 &cpu,const MemoryAccess &mem)
 {
-	PCLog[PCLogPtr].PC=cpu.state.PC;
-	PCLog[PCLogPtr].S=cpu.state.S;
+	if(true==logAllRegisters)
+	{
+		PCLog[PCLogPtr].regs=static_cast<RegisterSet>(cpu.state);
+	}
+	else
+	{
+		PCLog[PCLogPtr].regs.PC=cpu.state.PC;
+		PCLog[PCLogPtr].regs.S=cpu.state.S;
+		PCLog[PCLogPtr].regs.CC=cpu.state.CC;
+	}
+
+	if(true==logDisassembly)
+	{
+		auto inst=cpu.NonDestructiveFetchInstruction(mem,cpu.state.PC);
+		PCLog[PCLogPtr].disasm=cpu.Disassemble(inst,cpu.state.PC);
+	}
+
 	PCLog[PCLogPtr].count=1;
 	auto &prevPCLog=PCLog[(PCLogPtr+PC_LOG_MASK)&PC_LOG_MASK];
 	if(prevPCLog==PCLog[PCLogPtr])
