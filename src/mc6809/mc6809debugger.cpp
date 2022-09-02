@@ -269,6 +269,12 @@ void MC6809::Debugger::PopCallStack(uint16_t S,uint16_t returnPC)
 				match=true;
 				break;
 			}
+			// OS-9 uses one byte after SWI2 as function code.
+			if(iter->type==CALLTYPE_SWI2 && iter->fromPC+iter->instLength+1==returnPC)
+			{
+				match=true;
+				break;
+			}
 			++nPop;
 		}
 
