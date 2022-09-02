@@ -104,6 +104,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["AUTOSTOP"]=ENABLE_AUTOSTOP;
 	featureMap["RKANA"]=ENABLE_RKANA;
 	featureMap["AUDIOLEVEL"]=ENABLE_AUDIOLEVELMETER;
+	featureMap["LOGDISASM"]=ENABLE_LOG_DISASM;
+	featureMap["LOGALLREGS"]=ENABLE_LOG_ALLREGISTERS;
+
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
 	breakEventMap["UNHALTSUB"]=BREAK_ON_SUBCPU_UNHALT;
@@ -326,7 +329,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Romaji type mode." << std::endl;
 	std::cout << "AUDIOLEVEL" << std::endl;
 	std::cout << "  Audio Level Meter." << std::endl;
-
+	std::cout << "LOGDISASM" << std::endl;
+	std::cout << "  Log disassembly in history." << std::endl;
+	std::cout << "LOGALLREGS" << std::endl;
+	std::cout << "  Log all registers in history." << std::endl;
 
 
 	std::cout << "<< Event that can break or monitor>>" << std::endl;
@@ -1185,6 +1191,16 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			outside_world->visualizeAudioOut=true;
 			std::cout << "Enabled Audio Level Meter" << std::endl;
 			break;
+		case ENABLE_LOG_DISASM:
+			fm77av.mainCPU.debugger.logDisassembly=true;
+			fm77av.subCPU.debugger.logDisassembly=true;
+			std::cout << "Enabled logging disassembly in history." << std::endl;
+			break;
+		case ENABLE_LOG_ALLREGISTERS:
+			fm77av.mainCPU.debugger.logAllRegisters=true;
+			fm77av.subCPU.debugger.logAllRegisters=true;
+			std::cout << "Enabled logging all registers in history." << std::endl;
+			break;
 		default:
 			std::cout << "Enable What?" << std::endl;
 			Error_WrongParameter(cmd);
@@ -1272,6 +1288,16 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		case ENABLE_AUDIOLEVELMETER	:
 			outside_world->visualizeAudioOut=false;
 			std::cout << "Disabled Audio Level Meter" << std::endl;
+			break;
+		case ENABLE_LOG_DISASM:
+			fm77av.mainCPU.debugger.logDisassembly=false;
+			fm77av.subCPU.debugger.logDisassembly=false;
+			std::cout << "Disabled logging disassembly in history." << std::endl;
+			break;
+		case ENABLE_LOG_ALLREGISTERS:
+			fm77av.mainCPU.debugger.logAllRegisters=false;
+			fm77av.subCPU.debugger.logAllRegisters=false;
+			std::cout << "Disabled logging all registers in history." << std::endl;
 			break;
 		default:
 			std::cout << "Disable What?" << std::endl;
@@ -1512,8 +1538,35 @@ void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av
 	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 	{
 		std::cout << cpputil::Ustox(iter->regs.PC);
-		std::cout << " S=" << cpputil::Ustox(iter->regs.S);
-		std::cout << " CC=" << cpputil::Ubtox(iter->regs.CC);
+		if(true==av.CPU(mainOrSub).debugger.logAllRegisters)
+		{
+			std::cout << " CC=" << cpputil::Ubtox(iter->regs.CC);
+			std::cout << " A=" << cpputil::Ubtox(iter->regs.A());
+			std::cout << " B=" << cpputil::Ubtox(iter->regs.B());
+			std::cout << " DP=" << cpputil::Ubtox(iter->regs.DP);
+			std::cout << " X=" << cpputil::Ustox(iter->regs.X);
+			std::cout << " Y=" << cpputil::Ustox(iter->regs.Y);
+			std::cout << " U=" << cpputil::Ustox(iter->regs.U);
+			std::cout << " S=" << cpputil::Ustox(iter->regs.S);
+		}
+		else
+		{
+			std::cout << " CC=" << cpputil::Ubtox(iter->regs.CC);
+			std::cout << " S=" << cpputil::Ustox(iter->regs.S);
+		}
+
+		if(true==av.CPU(mainOrSub).debugger.logDisassembly)
+		{
+			std::cout << "  " << iter->disasm;
+			if(1<iter->count) // Space for showning count
+			{
+				for(int i=iter->disasm.size(); i<20; ++i)
+				{
+					std::cout << " ";
+				}
+			}
+		}
+
 		if(1<iter->count)
 		{
 			std::cout << " (" << cpputil::Itoa((unsigned int)iter->count) << ")";
@@ -1542,8 +1595,35 @@ void FM77AVCommandInterpreter::Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,
 				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 				{
 					ofp << cpputil::Ustox(iter->regs.PC);
-					ofp << " S=" << cpputil::Ustox(iter->regs.S);
-					ofp << " CC=" << cpputil::Ubtox(iter->regs.CC);
+					if(true==av.CPU(mainOrSub).debugger.logAllRegisters)
+					{
+						ofp << " CC=" << cpputil::Ubtox(iter->regs.CC);
+						ofp << " A=" << cpputil::Ubtox(iter->regs.A());
+						ofp << " B=" << cpputil::Ubtox(iter->regs.B());
+						ofp << " DP=" << cpputil::Ubtox(iter->regs.DP);
+						ofp << " X=" << cpputil::Ustox(iter->regs.X);
+						ofp << " Y=" << cpputil::Ustox(iter->regs.Y);
+						ofp << " U=" << cpputil::Ustox(iter->regs.U);
+						ofp << " S=" << cpputil::Ustox(iter->regs.S);
+					}
+					else
+					{
+						ofp << " CC=" << cpputil::Ubtox(iter->regs.CC);
+						ofp << " S=" << cpputil::Ustox(iter->regs.S);
+					}
+
+					if(true==av.CPU(mainOrSub).debugger.logDisassembly)
+					{
+						ofp << "  " << iter->disasm;
+						if(1<iter->count) // Space for showning count
+						{
+							for(int i=iter->disasm.size(); i<20; ++i)
+							{
+								ofp << " ";
+							}
+						}
+					}
+
 					if(1<iter->count)
 					{
 						ofp << " (" << cpputil::Itoa((unsigned int)iter->count) << ")";
