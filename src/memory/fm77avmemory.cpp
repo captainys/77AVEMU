@@ -1147,6 +1147,11 @@ void MainCPUAccess::WriteFD8x(uint16_t ioAddr,uint8_t data)
 	{
 		data&=0x7F;
 	}
+	// According to the FM77AC40EX/20EX Hardware Manual, unlike the other MMR registers, A19 and A18 are not effective on $FD8F.
+	if(FM77AVIO_MMR_F==ioAddr)
+	{
+		data&=0x3F;
+	}
 	state.MMR[state.MMRSEG][ioAddr-FM77AVIO_MMR_0]=data;
 	state.MMR[state.MMRSEG][ioAddr-FM77AVIO_MMR_0]<<=12;
 }

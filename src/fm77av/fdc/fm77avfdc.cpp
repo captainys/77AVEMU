@@ -199,10 +199,14 @@ void FM77AVFDC::MakeReady(void)
 			   true==fm77avPtr->dmac.FDCtoMEM())
 			{
 				auto addr0=fm77avPtr->dmac.Address();
+				// The MMR segment 0 is always used regardless of the value set in the MMR-seg register when DMA accesses the memory.
+				uint8_t mmrseg_bkup = fm77avPtr->mainMemAcc.state.MMRSEG;
+				fm77avPtr->mainMemAcc.state.MMRSEG = 0;
 				for(unsigned int i=0; i<fm77avPtr->dmac.NumBytes() && i<state.data.size(); ++i)
 				{
 					fm77avPtr->mainMemAcc.StoreByte(addr0+i,state.data[i]);
 				}
+				fm77avPtr->mainMemAcc.state.MMRSEG = mmrseg_bkup;
 				fm77avPtr->dmac.SetDMAEnd(true);
 				fm77avPtr->dmac.SetIRQ(true);
 				fm77avPtr->dmac.SetBusy(false);
@@ -353,10 +357,14 @@ void FM77AVFDC::MakeReady(void)
 			   true==fm77avPtr->dmac.FDCtoMEM())
 			{
 				auto addr0=fm77avPtr->dmac.Address();
+				// The MMR segment 0 is always used regardless of the value set in the MMR-seg register when DMA accesses the memory.
+				uint8_t mmrseg_bkup = fm77avPtr->mainMemAcc.state.MMRSEG;
+				fm77avPtr->mainMemAcc.state.MMRSEG = 0;
 				for(unsigned int i=0; i<fm77avPtr->dmac.NumBytes() && i<state.data.size(); ++i)
 				{
 					fm77avPtr->mainMemAcc.StoreByte(addr0+i,state.data[i]);
 				}
+				fm77avPtr->mainMemAcc.state.MMRSEG = mmrseg_bkup;
 				fm77avPtr->dmac.SetDMAEnd(true);
 				fm77avPtr->dmac.SetIRQ(true);
 				fm77avPtr->dmac.SetBusy(false);
