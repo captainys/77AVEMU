@@ -1153,7 +1153,8 @@ void MC6809::IRQ(class MemoryAccess &mem)
 		}
 		state.CWAI=false;
 		state.halt=false;
-		state.CC|=(IRQMASK|FIRQMASK);
+		// Motorola 6809 and Hitatchi 6309 Programming Reference pp. 144.  IRQ request only masks IRQ.
+		state.CC|=IRQMASK;
 		state.PC=mem.FetchWord(IRQ_VECTOR_ADDR);
 		debugger.OnIRQ(*this,mem);
 	}
