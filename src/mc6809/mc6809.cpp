@@ -3399,8 +3399,8 @@ uint16_t MC6809::DecodeDirectPageAddress(const Instruction &inst)
 }
 void MC6809::PushS16(MemoryAccess &mem,uint16_t value)
 {
-	state.S-=2;
-	StoreWord(mem,state.S,value);
+	StoreByte(mem,--state.S,value&0xff);
+	StoreByte(mem,--state.S,value>>8);
 }
 void MC6809::PushS8(MemoryAccess &mem,uint8_t value)
 {
@@ -3408,9 +3408,9 @@ void MC6809::PushS8(MemoryAccess &mem,uint8_t value)
 }
 uint16_t MC6809::PullS16(MemoryAccess &mem)
 {
-	auto S=state.S;
-	state.S+=2;
-	return FetchWord(mem,S);
+	uint8_t hiByte = FetchByte(mem, state.S++);
+	uint8_t loByte = FetchByte(mem, state.S++);
+	return mc6809util::FetchWord(hiByte,loByte);
 }
 uint8_t MC6809::PullS8(MemoryAccess &mem)
 {
@@ -3419,8 +3419,8 @@ uint8_t MC6809::PullS8(MemoryAccess &mem)
 
 void MC6809::PushU16(MemoryAccess &mem,uint16_t value)
 {
-	state.U-=2;
-	StoreWord(mem,state.U,value);
+	StoreByte(mem,--state.U,value&0xff);
+	StoreByte(mem,--state.U,value>>8);
 }
 void MC6809::PushU8(MemoryAccess &mem,uint8_t value)
 {
@@ -3428,9 +3428,9 @@ void MC6809::PushU8(MemoryAccess &mem,uint8_t value)
 }
 uint16_t MC6809::PullU16(MemoryAccess &mem)
 {
-	auto U=state.U;
-	state.U+=2;
-	return FetchWord(mem,U);
+	uint8_t hiByte = FetchByte(mem, state.U++);
+	uint8_t loByte = FetchByte(mem, state.U++);
+	return mc6809util::FetchWord(hiByte,loByte);
 }
 uint8_t MC6809::PullU8(MemoryAccess &mem)
 {
