@@ -691,7 +691,9 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 }
 uint16_t PhysicalMemory::FetchWord(uint32_t addr0,uint32_t addr1)
 {
-	return mc6809util::FetchWord(FetchByte(addr0),FetchByte(addr1));
+	uint8_t hiByte = FetchByte(addr0);
+	uint8_t loByte = FetchByte(addr1); 
+	return mc6809util::FetchWord(hiByte, loByte);
 }
 void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 {
@@ -1238,12 +1240,16 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 {
 	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
-		return (FetchByte(addr)<<8)|FetchByte(addr+1);
+		// Making sure to the high byte is accessed first.
+		uint16_t res;
+		res  = FetchByte(addr  )<<8;
+		res |= FetchByte(addr+1);
+		return res;
 	}
 	else if(true==state.MMREnabled)
 	{
 		return physMemPtr->FetchWord(
-			MMRAddressTranslation(addr),
+			MMRAddressTranslation(addr), 
 			MMRAddressTranslation(addr+1));
 	}
 	else
@@ -1309,19 +1315,22 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 {
 	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
-		return (NonDestructiveFetchByte(addr)<<8)|NonDestructiveFetchByte(addr+1);
+		uint16_t res;
+		res  = NonDestructiveFetchByte(addr)<<8;
+		res |= NonDestructiveFetchByte(addr+1);
+		return res;
 	}
 	else if(true==state.MMREnabled)
 	{
-		return mc6809util::FetchWord(
-			physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr)),
-			physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr+1)));
+		uint8_t hiByte = physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr));
+		uint8_t loByte = physMemPtr->NonDestructiveFetchByte(MMRAddressTranslation(addr+1));
+		return mc6809util::FetchWord(hiByte, loByte);
 	}
 	else
 	{
-		return mc6809util::FetchWord(
-			physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr),
-			physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr+1));
+		uint8_t hiByte = physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr);
+		uint8_t loByte = physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr+1);
+		return mc6809util::FetchWord(hiByte, loByte);
 	}
 }
 
@@ -1398,9 +1407,9 @@ SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Dev
 }
 /* virtual */ uint16_t SubCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
 {
-	return mc6809util::FetchWord(
-		physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr),
-		physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+((addr+1)&0xFFFF)));
+	uint8_t hiByte = physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr);
+	uint8_t loByte = physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+((addr+1)&0xFFFF));
+	return mc6809util::FetchWord(hiByte, loByte);
 }
 
 std::vector <std::string> MainCPUAccess::GetStatusText(void) const
