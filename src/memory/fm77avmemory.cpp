@@ -255,6 +255,10 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	}
 	memType[0x3FFFE]=MEMTYPE_MAIN_RESET_VECTOR;
 	memType[0x3FFFF]=MEMTYPE_MAIN_RESET_VECTOR;
+	for(unsigned int addr=PHYSMEM_SIZE; addr<PHYSMEM_ADDR_SIZE; ++addr)
+	{
+		memType[addr]=MEMTYPE_NOT_EXIST;
+	}
 
 	// Experimented on actual FM77AV.
 	// Default memory contents for $00000 to $0FFFF are $FF.
