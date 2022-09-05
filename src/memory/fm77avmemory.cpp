@@ -74,12 +74,12 @@ std::vector <HasROMImages::ROMToLoad> HasROMImages::GetROMToLoad(unsigned int ma
 			{true, ROM_FBASIC,    FBASIC_ROM_SIZE,                            "FBASIC30.ROM",""},
 			{true, ROM_INITIATOR, INITIATOR_ROM_SIZE,                         "INITIATE.ROM",""},
 			{true ,ROM_KANJI,     KANJI_ROM_SIZE,                             "KANJI1.ROM","KANJI.ROM"},
-			{false,ROM_KANJI2,    KANJI_ROM_SIZE,                             "KANJI2.ROM",""},
+			{true ,ROM_KANJI2,    KANJI_ROM_SIZE,                             "KANJI2.ROM",""},
 			{true, ROM_ASCII_FONT,4*ASCII_FONT_ROM_SIZE,                      "SUBSYSCG.ROM",""},
 			{true, ROM_SUBSYS_A,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_A.ROM",""},
 			{true, ROM_SUBSYS_B,  SUBSYS_MONITOR_ROM_SIZE,                    "SUBSYS_B.ROM",""},
 			{true, ROM_SUBSYS_C,  SUBSYS_MONITOR_ROM_SIZE+ASCII_FONT_ROM_SIZE,"SUBSYS_C.ROM","SUBSYS.ROM"},
-			{false,ROM_DIC,       DIC_ROM_SIZE,                               "DICROM.ROM",""},
+			{true, ROM_DIC,       DIC_ROM_SIZE,                               "DICROM.ROM",""},
 		};
 		return lst;
 	}

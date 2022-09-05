@@ -95,7 +95,7 @@ unsigned int FM77AVFDC::CylinderTranslation(unsigned int C) const
 			{
 				drv.lastSeekDir=-1;
 			}
-			if(true==has2DD() && driveMode==FDD_DRIVE_TYPE_2D) {
+			if(true==has2DD() && state7.driveMode==FDD_DRIVE_TYPE_2D) {
 				numSteps*=2;
 			}
 			drv.trackPos+=numSteps;
@@ -117,7 +117,7 @@ unsigned int FM77AVFDC::CylinderTranslation(unsigned int C) const
 	case 0x30: // Step?
 		{
 			MakeReady();
-			size_t numSteps=(true==has2DD() && driveMode==FDD_DRIVE_TYPE_2D)?2:1;
+			size_t numSteps=(true==has2DD() && state7.driveMode==FDD_DRIVE_TYPE_2D)?2:1;
 			for(size_t i=0; i<numSteps; i++)
 			{
 				drv.trackPos+=drv.lastSeekDir;
@@ -148,7 +148,7 @@ unsigned int FM77AVFDC::CylinderTranslation(unsigned int C) const
 	case 0x50: // Step In
 		{
 			MakeReady();
-			size_t numSteps=(true==has2DD() && driveMode==FDD_DRIVE_TYPE_2D)?2:1;
+			size_t numSteps=(true==has2DD() && state7.driveMode==FDD_DRIVE_TYPE_2D)?2:1;
 			for(size_t i=0; i<numSteps; i++)
 			{
 				++drv.trackPos;
@@ -172,7 +172,7 @@ unsigned int FM77AVFDC::CylinderTranslation(unsigned int C) const
 	case 0x70: // Step Out
 		{
 			MakeReady();
-			size_t numSteps=(true==has2DD() && driveMode==FDD_DRIVE_TYPE_2D)?2:1;
+			size_t numSteps=(true==has2DD() && state7.driveMode==FDD_DRIVE_TYPE_2D)?2:1;
 			for(size_t i=0; i<numSteps; i++)
 			{
 				--drv.trackPos;
@@ -722,18 +722,18 @@ unsigned int FM77AVFDC::CylinderTranslation(unsigned int C) const
 		state.side=(data&1);
 		break;
 	case FM77AVIO_FDC_MOTOR_DRIVE://=         0xFD1D,
-		currentDS=data&0x03;
-		state.driveSelectBit=1<<mapDrive(currentDS);
+		state7.currentDS=data&0x03;
+		state.driveSelectBit=1<<mapDrive(state7.currentDS);
 		state.drive[DriveSelect()].motor=(0!=(data&0x80));
 		break;
 	case FM77AVIO_FDC_DRIVE_MODE://=          0xFD1E,
-		driveMode=(data&0x40)?1:0;
-		enableDriveMap=(data&0x10)?true:false;
-		if(true==enableDriveMap) {
+		state7.driveMode=(data&0x40)?1:0;
+		state7.enableDriveMap=(data&0x10)?true:false;
+		if(true==state7.enableDriveMap) {
 			uint8_t logical  = (data>>2)&3;
 			uint8_t physical = (data   )&3;
-			driveMapping[logical]=physical;
-			lastLogicalDriveWritten=logical;  // keep last logical drive number for registr reading
+			state7.driveMapping[logical]=physical;
+			state7.lastLogicalDriveWritten=logical;  // keep last logical drive number for registr reading
 		}
 		break;
 	}
@@ -837,12 +837,12 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 		return (state.side&1)|0xFE;
 	case FM77AVIO_FDC_MOTOR_DRIVE://=         0xFD1D,
 		data=(true==state.drive[DriveSelect()].motor ? 0x80 : 0);
-		data|=currentDS;
+		data|=state7.currentDS;
 		return data;
 	case FM77AVIO_FDC_DRIVE_MODE://=          0xFD1E,
 		data =0b10100000;
-		data|=(driveMode<<6);
-		data|=(lastLogicalDriveWritten<<2) | driveMapping[lastLogicalDriveWritten];
+		data|=(state7.driveMode<<6);
+		data|=(state7.lastLogicalDriveWritten<<2) | state7.driveMapping[state7.lastLogicalDriveWritten];
 		return data;
 	case FM77AVIO_FDC_DRQ_IRQ://=             0xFD1F,
 		data=0x3F;
@@ -858,10 +858,19 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 	}
 	return data;
 }
-/* virtual */ void FM77AVFDC::Reset(void)
+void FM77AVFDC::Reset(void)
 {
 	DiskDrive::Reset();
 	state.HISPD=false;
+
+	state7.driveMode=FDD_DRIVE_TYPE_2DD;
+	state7.enableDriveMap=false;
+	state7.driveMapping[0]=0;
+	state7.driveMapping[1]=1;
+	state7.driveMapping[2]=2;
+	state7.driveMapping[3]=3;
+	state7.currentDS=0;
+	state7.lastLogicalDriveWritten=0;
 }
 
 void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
@@ -1019,5 +1028,5 @@ unsigned int FM77AVFDC::compensateTrackNumber(unsigned int trackPos)
 	return trackPos;
 }
 inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
-	return driveMapping[logicalDrive];
+	return state7.driveMapping[logicalDrive];
 }
