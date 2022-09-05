@@ -90,6 +90,26 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 	primaryCmdMap["AUTOSTOPKEY"]=CMD_AUTOSTOPKEY;
+	primaryCmdMap["ADDLAB"]=CMD_ADD_LABEL;
+	primaryCmdMap["ADDLABEL"]=CMD_ADD_LABEL;
+	primaryCmdMap["ADDDLB"]=CMD_ADD_DATALABEL;
+	primaryCmdMap["ADDDATALABEL"]=CMD_ADD_DATALABEL;
+	primaryCmdMap["ADDREM"]=CMD_ADD_COMMENT;
+	primaryCmdMap["ADDCMT"]=CMD_ADD_COMMENT;
+	primaryCmdMap["DEFRAW"]=CMD_DEF_RAW_BYTES;
+	primaryCmdMap["DELSYM"]=CMD_DEL_SYMBOL;
+	primaryCmdMap["IMPORTLSTSYM"]=CMD_IMPORT_LST_SYMTABLE;
+	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
+	primaryCmdMap["IMMISSYM"]=CMD_IMM_IS_LABEL;
+	primaryCmdMap["IMMISLAB"]=CMD_IMM_IS_LABEL;
+	primaryCmdMap["OFFSETISLAB"]=CMD_OFFSET_IS_LABEL;
+	primaryCmdMap["OFSISLAB"]=CMD_OFFSET_IS_LABEL;
+	primaryCmdMap["OFFISLAB"]=CMD_OFFSET_IS_LABEL;
+	primaryCmdMap["SYM"]=CMD_PRINT_SYMBOL;
+	primaryCmdMap["SYMLAB"]=CMD_PRINT_SYMBOL_LABEL_PROC;
+	primaryCmdMap["SYMPROC"]=CMD_PRINT_SYMBOL_PROC;
+	primaryCmdMap["SYMFIND"]=CMD_PRINT_SYMBOL_FIND;
+
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -302,6 +322,47 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "AUTOSTOPKEY keyCode" << std::endl;
 	std::cout << "  Specify which key is pressed for stopping in a FM-8/FM-7 games." << std::endl;
 
+	std::cout << "ADDSYM addr label" << std::endl;
+	std::cout << "  Add a symbol.  An address can have one symbol,label,data label, or data, and one comment." << std::endl;
+	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
+	std::cout << "  the address's label, or data label will be overwritten as a symbol." << std::endl;
+	std::cout << "ADDLAB|ADDLABEL addr label" << std::endl;
+	std::cout << "  Add a label.  An address can have one symbol,label, or data label, or data and one comment." << std::endl;
+	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
+	std::cout << "  the address's label, or data label will be overwritten as a label." << std::endl;
+	std::cout << "ADDDLB|ADDDATALABEL addr label" << std::endl;
+	std::cout << "  Add a data label.  An address can have one symbol,label, or data label, or data and one comment." << std::endl;
+	std::cout << "  If a symbol is added to an address that already has a symbol, label, or data label," << std::endl;
+	std::cout << "  the address's label, or data label will be overwritten as a data label." << std::endl;
+	std::cout << "ADDREM|ADDCMT addr label" << std::endl;
+	std::cout << "  Add a comment.  An address can have one symbol,label, or data label, and one comment." << std::endl;
+	std::cout << "DEFRAW addr label numBytes" << std::endl;
+	std::cout << "  Define raw data bytes.  Disassembler will take this address as raw data." << std::endl;
+	std::cout << "IMMISIO addr" << std::endl;
+	std::cout << "  Take Imm operand of the address as IO-port address in disassembly." << std::endl;
+	std::cout << "IMMISSYM addr" << std::endl;
+	std::cout << "IMMISLAB addr" << std::endl;
+	std::cout << "  Take Imm operand as label in disassembly." << std::endl;
+	std::cout << "OFFSETISLAB addr" << std::endl;
+	std::cout << "OFFISLAB addr" << std::endl;
+	std::cout << "OFSISLAB addr" << std::endl;
+	std::cout << "  Take address offset as label in disassembly." << std::endl;
+
+	std::cout << "DELSYM addr label" << std::endl;
+	std::cout << "  Delete a symbol.  A symbol and comment associated with the address will be deleted." << std::endl;
+
+	std::cout << "SYM" << std::endl;
+	std::cout << "  Print symbol table." << std::endl;
+	std::cout << "SYMLAB" << std::endl;
+	std::cout << "  Print jump label and procedures in the symbol table." << std::endl;
+	std::cout << "SYMPROC" << std::endl;
+	std::cout << "  Print procedures in the symbol table." << std::endl;
+	std::cout << "SYMFIND wildcard" << std::endl;
+	std::cout << "  Keyword search in the symbol table." << std::endl;
+	std::cout << "  Keyword can use wildcard." << std::endl;
+	std::cout << "IMPORTLSTSYM main/sub filename.lst" << std::endl;
+	std::cout << "  Import .LST symbol table." << std::endl;
+
 
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -454,6 +515,16 @@ void FM77AVCommandInterpreter::Error_CannotOpenFile(const Command &cmd)
 void FM77AVCommandInterpreter::Error_Addressing(const Command &cmd)
 {
 	std::cout << "Error in addressing." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_SymbolNotFound(const Command &cmd)
+{
+	std::cout << "Symbol Not Found." << std::endl;
+	Error_Common(cmd);
+}
+void FM77AVCommandInterpreter::Error_CouldNotDeleteSymbol(const Command &cmd)
+{
+	std::cout << "Could Not Delete Symbol." << std::endl;
 	Error_Common(cmd);
 }
 
@@ -1011,6 +1082,29 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			Error_TooFewArgs(cmd);
 		}
 		break;
+	case CMD_ADD_SYMBOL:
+	case CMD_ADD_LABEL:
+	case CMD_ADD_DATALABEL:
+	case CMD_ADD_COMMENT:
+	case CMD_DEF_RAW_BYTES:
+	case CMD_IMM_IS_IOPORT:
+	case CMD_IMM_IS_LABEL:
+	case CMD_OFFSET_IS_LABEL:
+		Execute_AddSymbol(thr,fm77av,cmd);
+		break;
+	case CMD_DEL_SYMBOL:
+		Execute_DelSymbol(thr,fm77av,cmd);
+		break;
+	case CMD_IMPORT_LST_SYMTABLE:
+		Execute_ImportLSTSymbolTable(thr,fm77av,cmd);
+		break;
+
+	case CMD_PRINT_SYMBOL:
+	case CMD_PRINT_SYMBOL_LABEL_PROC:
+	case CMD_PRINT_SYMBOL_PROC:
+	case CMD_PRINT_SYMBOL_FIND:
+		Execute_SymbolInquiry(thr,fm77av,cmd);
+		break;
 	}
 }
 
@@ -1324,7 +1418,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 			for(int i=0; i<DISASM_NUM_LINES; ++i)
 			{
 				auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-				std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+				for(auto str : cpu.WholeDisassembly(mem,PC))
+				{
+					std::cout << str << std::endl;
+				}
 				PC+=inst.length;
 			}
 			cpu.debugger.nextDisassemblyAddr=PC;
@@ -1342,7 +1439,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 		for(int i=0; i<DISASM_NUM_LINES; ++i)
 		{
 			auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-			std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+			for(auto str : cpu.WholeDisassembly(mem,PC))
+			{
+				std::cout << str << std::endl;
+			}
 			PC+=inst.length;
 		}
 		cpu.debugger.nextDisassemblyAddr=PC;
@@ -1365,7 +1465,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
 		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+		for(auto str : cpu.WholeDisassembly(mem,PC))
+		{
+			std::cout << str << std::endl;
+		}
 		PC+=inst.length;
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
@@ -1387,7 +1490,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
 		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+		for(auto str : cpu.WholeDisassembly(mem,PC))
+		{
+			std::cout << str << std::endl;
+		}
 		PC+=inst.length;
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
@@ -2971,6 +3077,203 @@ void FM77AVCommandInterpreter::Execute_Gameport(FM77AV &fm77av,Outside_World *ou
 		for(int i=0; i<FM77AV_GAMEPORTEMU_NUM_DEVICES; ++i)
 		{
 			std::cout << GamePortEmuToStr(i) << std::endl;
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(3<=cmd.argv.size() || 
+	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
+	{
+		auto ptr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		if(FM77AV::ADDR_MAIN!=ptr.type && FM77AV::ADDR_SUB!=ptr.type)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+
+		auto &symTable=fm77av.CPU(ptr.type).debugger.symTable;
+
+		switch(cmd.primaryCmd)
+		{
+		case CMD_ADD_SYMBOL:
+		case CMD_ADD_LABEL:
+		case CMD_ADD_DATALABEL:
+			{
+				auto *newSym=symTable.Update(ptr.addr,cmd.argv[2]);
+				switch(cmd.primaryCmd)
+				{
+				case CMD_ADD_SYMBOL:
+					newSym->symType=MC6809Symbol::SYM_PROCEDURE;
+					break;
+				case CMD_ADD_LABEL:
+					newSym->symType=MC6809Symbol::SYM_JUMP_DESTINATION;
+					break;
+				case CMD_ADD_DATALABEL:
+					newSym->symType=MC6809Symbol::SYM_DATA_LABEL;
+					break;
+				}
+				std::cout << "Added symbol " << cmd.argv[2] << std::endl;
+			}
+			break;
+		case CMD_DEF_RAW_BYTES:
+			if(4<=cmd.argv.size())
+			{
+				auto numBytes=cpputil::Xtoi(cmd.argv[3].c_str());
+				if(0<numBytes)
+				{
+					auto *newSym=symTable.Update(ptr.addr,cmd.argv[2]);
+					newSym->symType=MC6809Symbol::SYM_RAW_DATA;
+					newSym->rawDataBytes=numBytes;
+					std::cout << "Added raw byte data " << cmd.argv[2] << std::endl;
+				}
+				else
+				{
+					std::cout << "Ignored 0-byte data " << cmd.argv[2] << std::endl;
+				}
+			}
+			else
+			{
+				Error_TooFewArgs(cmd);
+				return;
+			}
+			break;
+		case CMD_ADD_COMMENT:
+			{
+				symTable.SetComment(ptr.addr,cmd.argv[2]);
+				std::cout << "Added comment " << cmd.argv[2] << std::endl;
+			}
+			break;
+		case CMD_IMM_IS_IOPORT:
+			{
+				symTable.SetImmIsIOPort(ptr.addr);
+				std::cout << "Added imm-is-IO " << cmd.argv[2] << std::endl;
+			}
+			break;
+		case CMD_IMM_IS_LABEL:
+			{
+				symTable.SetImmIsSymbol(ptr.addr);
+				std::cout << "Added imm-is-label " << cmd.argv[2] << std::endl;
+			}
+			break;
+		case CMD_OFFSET_IS_LABEL:
+			{
+				symTable.SetOffsetIsSymbol(ptr.addr);
+				std::cout << "Added offset-is-label " << cmd.argv[2] << std::endl;
+			}
+			break;
+		}
+
+		if(true!=fm77av.AutoSaveSymbolTable())
+		{
+			std::cout << "Symbol Table Not Auto-Saved." << std::endl;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+
+void FM77AVCommandInterpreter::Execute_ImportLSTSymbolTable(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(3<=cmd.argv.size())
+	{
+		std::cout << "Not implemented yet." << std::endl;
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_DelSymbol(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto ptr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		if(FM77AV::ADDR_MAIN!=ptr.type && FM77AV::ADDR_SUB!=ptr.type)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+
+		auto &symTable=fm77av.CPU(ptr.type).debugger.symTable;
+
+		if(true==symTable.Delete(ptr.addr))
+		{
+			std::cout << "Symbol&|Comment deleted." << std::endl;
+		}
+		else if(nullptr==symTable.Find(ptr.addr))
+		{
+			Error_SymbolNotFound(cmd);
+		}
+		else
+		{
+			Error_CouldNotDeleteSymbol(cmd);
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_SymbolInquiry(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	std::string ptn="*";
+	bool showLabel=true,showProc=true,showComment=true;
+	switch(cmd.primaryCmd)
+	{
+	case CMD_PRINT_SYMBOL:
+		break;
+	case CMD_PRINT_SYMBOL_LABEL_PROC:
+		showComment=false;
+		break;
+	case CMD_PRINT_SYMBOL_PROC:
+		showComment=false;
+		showLabel=false;
+		break;
+	case CMD_PRINT_SYMBOL_FIND:
+		if(3<=cmd.argv.size())
+		{
+			ptn="*"+cmd.argv[2]+"*";
+		}
+		else
+		{
+			ptn="*"+cmd.argv[1]+"*";
+		}
+		break;
+	}
+	for(int i=0; i<2; ++i)
+	{
+		auto &debugger=(0==i ? fm77av.mainCPU.debugger : fm77av.subCPU.debugger);
+		for(auto &entry : debugger.symTable.GetTable())
+		{
+			auto &addr=entry.first;
+			auto &sym=entry.second;
+
+			if((showProc==true && sym.symType==MC6809Symbol::SYM_PROCEDURE) ||
+			   (showLabel==true && sym.symType==MC6809Symbol::SYM_JUMP_DESTINATION) ||
+			   (showComment==true && ""!=sym.inLineComment))
+			{
+				std::string addrStr,textStr;
+				bool returnType=true,label=true,param=true;
+				addrStr=cpputil::Ustox(addr);
+				addrStr+=" ";
+
+				textStr=sym.Format(returnType,label,param);
+				if(0<sym.inLineComment.size())
+				{
+					textStr+=" ; ";
+					textStr+=sym.inLineComment;
+				}
+
+				auto PTN=ptn;
+				auto TEXTSTR=textStr;
+				cpputil::Capitalize(PTN);
+				cpputil::Capitalize(TEXTSTR);
+				if("*"!=ptn && true!=cpputil::WildCardCompare(PTN,TEXTSTR))
+				{
+					continue;
+				}
+
+				std::cout << addrStr << " " << textStr << std::endl;
+			}
 		}
 	}
 }
