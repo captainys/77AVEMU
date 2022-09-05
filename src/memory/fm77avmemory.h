@@ -11,6 +11,8 @@ public:
 	enum
 	{
 		PHYSMEM_SIZE=512*1024,     // Max RAM for FM77AV40 MMR
+		PHYSMEM_ADDR_SIZE=1024*1024, // Turned out FM77AV40 can address up to 1MB address.  But, I go with 512KB max as Fujitsu said in spec.
+		                           // To prevent access beyond PHYSMEM_SIZE, memType[PHYSMEM_SIZE] and later are set to MEMTYPE_NOT_EXIST.
 		BOOT_ROM_SIZE=512,         // 0xFE00 to 0xFFFF
 		FBASIC_ROM_SIZE=0x7C00,    // 0x8000 to 0xFBFF
 		INITIATOR_ROM_SIZE=0x2000, // 0x6000 to 0x7FFF
@@ -143,7 +145,7 @@ public:
 		SUBMON_RAM,
 	};
 
-	uint8_t memType[PHYSMEM_SIZE];
+	uint8_t memType[PHYSMEM_ADDR_SIZE];
 
 	class State
 	{
