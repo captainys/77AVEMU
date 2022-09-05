@@ -61,6 +61,7 @@ public:
 	void WriteTrack(const std::vector <uint8_t> &data);
 	inline bool has2DD(void) const;
 	unsigned int compensateTrackNumber(unsigned int trackPos);
+	inline unsigned int mapDrive(unsigned int logicalDrive) const;
 };
 
 /* } */
