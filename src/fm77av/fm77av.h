@@ -362,6 +362,7 @@ public:
 
 	std::vector <std::string> GetIRQStatusText(void) const;
 
+	bool LoadSymbolTable(std::string fName);
 	bool AutoSaveSymbolTable(void) const;
 };
 

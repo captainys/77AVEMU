@@ -846,7 +846,7 @@ public:
 	Instruction FetchInstructionTemplate(ConstOrNonConstMemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
 
-	std::string WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
+	std::vector <std::string> WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
 
 	std::string FormatByteCode(Instruction inst) const;
 

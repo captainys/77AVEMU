@@ -1418,7 +1418,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 			for(int i=0; i<DISASM_NUM_LINES; ++i)
 			{
 				auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-				std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+				for(auto str : cpu.WholeDisassembly(mem,PC))
+				{
+					std::cout << str << std::endl;
+				}
 				PC+=inst.length;
 			}
 			cpu.debugger.nextDisassemblyAddr=PC;
@@ -1436,7 +1439,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 		for(int i=0; i<DISASM_NUM_LINES; ++i)
 		{
 			auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-			std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+			for(auto str : cpu.WholeDisassembly(mem,PC))
+			{
+				std::cout << str << std::endl;
+			}
 			PC+=inst.length;
 		}
 		cpu.debugger.nextDisassemblyAddr=PC;
@@ -1459,7 +1465,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
 		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+		for(auto str : cpu.WholeDisassembly(mem,PC))
+		{
+			std::cout << str << std::endl;
+		}
 		PC+=inst.length;
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
@@ -1481,7 +1490,10 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 	for(int i=0; i<DISASM_NUM_LINES; ++i)
 	{
 		auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
-		std::cout << cpu.WholeDisassembly(mem,PC) << std::endl;
+		for(auto str : cpu.WholeDisassembly(mem,PC))
+		{
+			std::cout << str << std::endl;
+		}
 		PC+=inst.length;
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
@@ -3067,7 +3079,7 @@ void FM77AVCommandInterpreter::Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77a
 	if(3<=cmd.argv.size() || 
 	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
 	{
-		auto ptr=DecodeAddress(fm77av,cmd.argv[2],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		auto ptr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
 		if(FM77AV::ADDR_MAIN!=ptr.type && FM77AV::ADDR_SUB!=ptr.type)
 		{
 			Error_UnknownCPU(cmd);
@@ -3148,8 +3160,7 @@ void FM77AVCommandInterpreter::Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77a
 
 		if(true!=fm77av.AutoSaveSymbolTable())
 		{
-			std::cout << "Auto-Saving of Symbol Table Failed." << std::endl;
-			std::cout << "File name is not specified or invalid." << std::endl;
+			std::cout << "Symbol Table Not Auto-Saved." << std::endl;
 		}
 	}
 	else
@@ -3173,7 +3184,7 @@ void FM77AVCommandInterpreter::Execute_DelSymbol(FM77AVThread &thr,FM77AV &fm77a
 {
 	if(2<=cmd.argv.size())
 	{
-		auto ptr=DecodeAddress(fm77av,cmd.argv[2],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		auto ptr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
 		if(FM77AV::ADDR_MAIN!=ptr.type && FM77AV::ADDR_SUB!=ptr.type)
 		{
 			Error_UnknownCPU(cmd);

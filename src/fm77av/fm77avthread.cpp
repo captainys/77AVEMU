@@ -369,5 +369,8 @@ void FM77AVThread::PrintCPUState(FM77AV &fm77av,MC6809 &cpu,MemoryAccess &mem,un
 	{
 		std::cout << str << std::endl;
 	}
-	std::cout << cpu.WholeDisassembly(mem,cpu.state.PC) << std::endl;
+	for(auto str : cpu.WholeDisassembly(mem,cpu.state.PC))
+	{
+		std::cout << str << std::endl;
+	}
 }

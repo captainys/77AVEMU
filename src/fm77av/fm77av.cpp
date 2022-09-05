@@ -819,8 +819,22 @@ std::vector <std::string> FM77AV::GetIRQStatusText(void) const
 	return text;
 }
 
-bool FM77AV::AutoSaveSymbolTable(void) const
+bool FM77AV::LoadSymbolTable(std::string fName)
 {
 	std::cout << "Not implemented yet." << std::endl;
 	return false;
+}
+bool FM77AV::AutoSaveSymbolTable(void) const
+{
+	if(""!=symTableFName)
+	{
+		std::cout << "Not implemented yet." << std::endl;
+		return false;
+	}
+	else
+	{
+		std::cout << "Symbol File Name Not Set." << std::endl;
+		std::cout << "Cannot Auto-Save." << std::endl;
+		return false;
+	}
 }
