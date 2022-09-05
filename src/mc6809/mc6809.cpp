@@ -3939,14 +3939,34 @@ std::vector <std::string> MC6809::WholeDisassembly(class MemoryAccess &mem,uint1
 		}
 	}
 
-	std::string disasm=cpputil::Ustox(PC);
-	disasm.push_back(' ');
+	lines.push_back(DecoratedDisassembly(mem,PC,true,true));
+
+	return lines;
+}
+
+std::string MC6809::DecoratedDisassembly(const MemoryAccess &mem,uint16_t PC,bool showPC,bool showByteCode) const
+{
+	std::string disasm;
+	if(true==showPC)
+	{
+		disasm=cpputil::Ustox(PC);
+		disasm.push_back(' ');
+	}
 
 	auto inst=NonDestructiveFetchInstruction(mem,PC);
-	disasm+=FormatByteCode(inst);
-	while(disasm.size()<16)
+	if(true==debugger.OS9Mode && INST_SWI2==inst.opCode)
 	{
-		disasm.push_back(' ');
+		inst.operand[0]=mem.NonDestructiveFetchByte(PC+2);
+		inst.length=3;
+	}
+
+	if(true==showByteCode)
+	{
+		disasm+=FormatByteCode(inst);
+		while(disasm.size()<16)
+		{
+			disasm.push_back(' ');
+		}
 	}
 
 	disasm+=Disassemble(inst,PC);
@@ -4026,20 +4046,30 @@ std::vector <std::string> MC6809::WholeDisassembly(class MemoryAccess &mem,uint1
 			}
 		}
 	}
-
-	if(nullptr!=found && ""!=found->inLineComment)
+	if(true==debugger.OS9Mode && INST_SWI2==inst.opCode)
 	{
-		while(disasm.size()<31)
+		auto found=debugger.symTable.OS9Functions.find(inst.operand[0]);
+		if(debugger.symTable.OS9Functions.end()!=found)
 		{
 			disasm.push_back(' ');
+			disasm+=found->second;
 		}
-		disasm+=" ; ";
-		disasm+=found->inLineComment;
 	}
 
-	lines.push_back(disasm);
+	{
+		auto found=debugger.symTable.Find(PC);
+		if(nullptr!=found && ""!=found->inLineComment)
+		{
+			while(disasm.size()<31)
+			{
+				disasm.push_back(' ');
+			}
+			disasm+=" ; ";
+			disasm+=found->inLineComment;
+		}
+	}
 
-	return lines;
+	return disasm;
 }
 
 std::string MC6809::FormatByteCode(Instruction inst) const
@@ -4147,6 +4177,16 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 			}
 			break;
 		}
+	}
+	if(INST_SWI2==inst.opCode && 3==inst.length) // If fetched as OS9 system call.
+	{
+		while(disasm.size()<8)
+		{
+			disasm.push_back(' ');
+		}
+		auto funcCode=inst.operand[0];
+		disasm.push_back('$');
+		disasm+=cpputil::Ubtox(funcCode);
 	}
 	return disasm;
 }

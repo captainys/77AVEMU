@@ -46,6 +46,11 @@ private:
 	std::map <unsigned int,std::string> DPLabel;
 	std::map <unsigned int,std::string> IOLabel;
 public:
+	std::map <unsigned int,std::string> OS9Functions,OS9FunctionExplanation;
+
+	MC6809SymbolTable();
+	void MakeOS9FunctionTable(void);
+
 	bool Load(const std::vector <std::string> &txt);
 	std::vector <std::string> Save(void) const;
 
