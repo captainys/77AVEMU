@@ -56,10 +56,6 @@ public:
 	*/
 	void MakeReady(void);
 
-	/*! If 2DD-format (640K) disk is read in 2D-mode (320K), cylinder must be virtually doubled.
-	*/
-	unsigned int CylinderTranslation(unsigned int C) const;
-
 	virtual void RunScheduledTask(unsigned long long int fm77avTime);
 	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
 	virtual unsigned int IOReadByte(unsigned int ioport);
