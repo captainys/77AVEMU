@@ -373,6 +373,9 @@ void FM77AVFDC::MakeReady(void)
 					fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_DMA;
 				}
 				std::cout << "DMA Transfer (Read Address)" << std::endl;
+
+				// OS-9 for AV40 checks DRQ is still set after DMA transfer, and if it is, it fails.
+				state.DRQ=false;
 				MakeReady();
 			}
 			else if(true!=state.DRQ)
