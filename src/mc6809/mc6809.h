@@ -632,6 +632,11 @@ public:
 		bool logAllRegisters=false;
 		bool logDisassembly=false;
 
+		/*! If set, disassembly will show next one byte of SWI2.
+		    Also skips one byte to align instructions.
+		*/
+		bool OS9Mode=false;
+
 		bool enabled=true;
 		bool stop=false;
 		bool hitMonitorPoint=false;
@@ -753,6 +758,12 @@ public:
 		void PopCallStack(uint16_t S,uint16_t returnPC);
 		std::vector <std::string> GetCallStackText(void) const;
 		void ClearCallStack(void);
+
+		/*! This function returns how many bytes to skip to reach the next instruction for disassembly.
+		    If OS9Mode==true, it returns 3 for SWI2 to skip function-code byte.
+		    If symbol table tells raw-bytes (data bytes) are at PC, it returns the number of raw bytes.
+		*/
+		unsigned int GetInstructionLength(const MC6809 &cpu,const MemoryAccess &mem,uint16_t PC) const;
 	};
 	Debugger debugger;
 
@@ -847,6 +858,7 @@ public:
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
 
 	std::vector <std::string> WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
+	std::string DecoratedDisassembly(const MemoryAccess &mem,uint16_t PC,bool showPC,bool showByteCode) const;
 
 	std::string FormatByteCode(Instruction inst) const;
 

@@ -66,6 +66,140 @@ std::string MC6809Symbol::Format(bool returnType,bool label,bool param) const
 
 ////////////////////////////////////////////////////////////
 
+MC6809SymbolTable::MC6809SymbolTable()
+{
+	MakeOS9FunctionTable();
+}
+
+void MC6809SymbolTable::MakeOS9FunctionTable(void)
+{
+	for(int i=0; i<256; ++i)
+	{
+		OS9Functions[i]="?";
+		OS9FunctionExplanation[i]="?";
+	}
+
+	// Based on OS-9 Operating System System Programmer's Manual
+	OS9Functions[0x00]="F$Link";                OS9FunctionExplanation[0x00]="Link to memory module.";
+	OS9Functions[0x01]="F$Load";                OS9FunctionExplanation[0x01]="Load module(s) from a file.";
+	OS9Functions[0x02]="F$UnLink";              OS9FunctionExplanation[0x02]="Unlink a module.";
+	OS9Functions[0x03]="F$Fork";                OS9FunctionExplanation[0x03]="Create a new process.";
+	OS9Functions[0x04]="F$Wait";                OS9FunctionExplanation[0x04]="Wait for child process to die.";
+	OS9Functions[0x05]="F$Chain";               OS9FunctionExplanation[0x05]="Load and execute a new primary module.";
+	OS9Functions[0x06]="F$Exit";                OS9FunctionExplanation[0x06]="Terminate the calling process.";
+	OS9Functions[0x07]="F$Mem";                 OS9FunctionExplanation[0x07]="Resize data memory area.";
+	OS9Functions[0x08]="F$Send";                OS9FunctionExplanation[0x08]="Send a signal to another process.";
+	OS9Functions[0x09]="F$ICPT";                OS9FunctionExplanation[0x09]="Set up a signal intercept trap.";
+	OS9Functions[0x0A]="F$Sleep";               OS9FunctionExplanation[0x0A]="Put calling process to sleep.";
+	OS9Functions[0x0B]="?";                     OS9FunctionExplanation[0x0B]="?";
+	OS9Functions[0x0C]="F$ID";                  OS9FunctionExplanation[0x0C]="Get process ID / user ID.";
+	OS9Functions[0x0D]="F$SPrior";              OS9FunctionExplanation[0x0D]="Set process priority.";
+	OS9Functions[0x0E]="F$SSWI";                OS9FunctionExplanation[0x0E]="Set SWI vector.";
+	OS9Functions[0x0F]="F$PErr";                OS9FunctionExplanation[0x0F]="Print error message.";
+
+	OS9Functions[0x10]="F$PrsNam";              OS9FunctionExplanation[0x10]="Parse a path name.";
+	OS9Functions[0x11]="F$CmpNam";              OS9FunctionExplanation[0x11]="Compare two names.";
+	OS9Functions[0x12]="F$SchBit";              OS9FunctionExplanation[0x12]="Search bit map for a free area.";
+	OS9Functions[0x13]="F$AllBit";              OS9FunctionExplanation[0x13]="Set bits in an allocation bit map.";
+	OS9Functions[0x14]="F$DelBit";              OS9FunctionExplanation[0x14]="Deallocate in a bit map.";
+	OS9Functions[0x15]="F$Time";                OS9FunctionExplanation[0x15]="Get system date and time.";
+	OS9Functions[0x16]="F$STime";               OS9FunctionExplanation[0x16]="Set system date and time.";
+	OS9Functions[0x17]="F$CRC";                 OS9FunctionExplanation[0x17]="Compute CRC";
+	OS9Functions[0x18]="F$GPrDsc";              OS9FunctionExplanation[0x18]="Get Process Descriptor copy.";
+	OS9Functions[0x19]="F$GBlkMp";              OS9FunctionExplanation[0x19]="Get system Block Map copy.";
+	OS9Functions[0x1A]="F$GModDr";              OS9FunctionExplanation[0x1A]="Get Module Directory copy.";
+	OS9Functions[0x1B]="F$CpyMem";              OS9FunctionExplanation[0x1B]="Copy external Memory.";
+	OS9Functions[0x1C]="F$User";                OS9FunctionExplanation[0x1C]="Set User ID number.";
+	OS9Functions[0x1D]="F$UnLoad";              OS9FunctionExplanation[0x1D]="Unlink module by name.";
+	OS9Functions[0x1E]="?";                     OS9FunctionExplanation[0x1E]="?";
+	OS9Functions[0x1F]="?";                     OS9FunctionExplanation[0x1F]="?";
+
+	OS9Functions[0x20]="?";                     OS9FunctionExplanation[0x20]="?";
+	OS9Functions[0x21]="?";                     OS9FunctionExplanation[0x21]="?";
+	OS9Functions[0x22]="?";                     OS9FunctionExplanation[0x22]="?";
+	OS9Functions[0x23]="?";                     OS9FunctionExplanation[0x23]="?";
+	OS9Functions[0x24]="?";                     OS9FunctionExplanation[0x24]="?";
+	OS9Functions[0x25]="?";                     OS9FunctionExplanation[0x25]="?";
+	OS9Functions[0x26]="?";                     OS9FunctionExplanation[0x26]="?";
+	OS9Functions[0x27]="?";                     OS9FunctionExplanation[0x27]="?";
+	OS9Functions[0x28]="F$RqMem";               OS9FunctionExplanation[0x28]="System memory request.";
+	OS9Functions[0x29]="F$RtMem";               OS9FunctionExplanation[0x29]="System memory return.";
+	OS9Functions[0x2A]="F$IRQ";                 OS9FunctionExplanation[0x2A]="Add or remove device from IRQ table.";
+	OS9Functions[0x2B]="F$IOQU";                OS9FunctionExplanation[0x2B]="Enter I/O queue.";
+	OS9Functions[0x2C]="F$AProc";               OS9FunctionExplanation[0x2C]="Insert process in active process queue.";
+	OS9Functions[0x2D]="F$NProc";               OS9FunctionExplanation[0x2D]="Start next process.";
+	OS9Functions[0x2E]="F$VModule";             OS9FunctionExplanation[0x2E]="Validate module.";
+	OS9Functions[0x2F]="F$Find64";              OS9FunctionExplanation[0x2F]="Find a 64 byte memory block.";
+
+	OS9Functions[0x30]="F$All64";               OS9FunctionExplanation[0x30]="Allocate a 64 byte memory block.";
+	OS9Functions[0x31]="F$Ret64";               OS9FunctionExplanation[0x31]="Deallocate a 64 byte memory block.";
+	OS9Functions[0x32]="F$SSVC";                OS9FunctionExplanation[0x32]="Install function request.";
+	OS9Functions[0x33]="F$IODel";               OS9FunctionExplanation[0x33]="Delete I/O device from system.";
+	OS9Functions[0x34]="F$SLink";               OS9FunctionExplanation[0x34]="System Link.";
+	OS9Functions[0x35]="F$Boot";                OS9FunctionExplanation[0x35]="Bootstrap system.";
+	OS9Functions[0x36]="F$BtMem";               OS9FunctionExplanation[0x36]="Bootstrap Memory request.";
+	OS9Functions[0x37]="F$GProcP";              OS9FunctionExplanation[0x37]="Get Process Pointer";
+	OS9Functions[0x38]="F$Move";                OS9FunctionExplanation[0x38]="Move data (low bound first).";
+	OS9Functions[0x39]="F$AllRAM";              OS9FunctionExplanation[0x39]="Allocate RAM blocks.";
+	OS9Functions[0x3A]="F$AllImg";              OS9FunctionExplanation[0x3A]="Allocate Image RAM blocks.";
+	OS9Functions[0x3B]="F$DelImg";              OS9FunctionExplanation[0x3B]="Deallocate Image RAM blocks.";
+	OS9Functions[0x3C]="F$SetImg";              OS9FunctionExplanation[0x3C]="Set process DAT Image.";
+	OS9Functions[0x3D]="F$FreeLB";              OS9FunctionExplanation[0x3D]="get Free Low block.";
+	OS9Functions[0x3E]="F$FreeHB";              OS9FunctionExplanation[0x3E]="get Free High block.";
+	OS9Functions[0x3F]="F$AllTsk";              OS9FunctionExplanation[0x3F]="Allocate process Task number.";
+
+	OS9Functions[0x40]="F$DelTsk";              OS9FunctionExplanation[0x40]="Deallocate process Task number.";
+	OS9Functions[0x41]="F$SetTsk";              OS9FunctionExplanation[0x41]="Set process Task DAT registers.";
+	OS9Functions[0x42]="F$ResTsk";              OS9FunctionExplanation[0x42]="Reserve Task number";
+	OS9Functions[0x43]="F$RelTsk";              OS9FunctionExplanation[0x43]="Release Task number.";
+	OS9Functions[0x44]="F$DATLog";              OS9FunctionExplanation[0x44]="Convert DAT block/offset to Logical Addr";
+	OS9Functions[0x45]="F$DATTmp";              OS9FunctionExplanation[0x45]="Make Temporary DAT image.";
+	OS9Functions[0x46]="F$LDAXY";               OS9FunctionExplanation[0x46]="Load A [X,[Y]]";
+	OS9Functions[0x47]="F$LDAXYP";              OS9FunctionExplanation[0x47]="Load A [X+,[Y]]";
+	OS9Functions[0x48]="F$LDDDXY";              OS9FunctionExplanation[0x48]="Load D [D+X,[Y]]";
+	OS9Functions[0x49]="F$LDABX";               OS9FunctionExplanation[0x49]="Load A from 0,X in task B.";
+	OS9Functions[0x4A]="F$STABX";               OS9FunctionExplanation[0x4A]="Store A at 0,X in task B.";
+	OS9Functions[0x4B]="F$AllPrc";              OS9FunctionExplanation[0x4B]="Allocate Process descriptor.";
+	OS9Functions[0x4C]="F$DelPrc";              OS9FunctionExplanation[0x4C]="Deallocate Process descriptor.";
+	OS9Functions[0x4D]="F$ELink";               OS9FunctionExplanation[0x4D]="Link using module directory Entry.";
+	OS9Functions[0x4E]="F$FModul";              OS9FunctionExplanation[0x4E]="Find Module directory entry.";
+	OS9Functions[0x4F]="F$MapBlk";              OS9FunctionExplanation[0x4F]="Map specific Block.";
+
+	OS9Functions[0x50]="F$ClrBlk";              OS9FunctionExplanation[0x50]="Clear specific Block.";
+	OS9Functions[0x51]="F$DelRam";              OS9FunctionExplanation[0x51]="Deallocate RAM blocks.";
+	OS9Functions[0x52]="?";                     OS9FunctionExplanation[0x52]="?";
+	OS9Functions[0x53]="?";                     OS9FunctionExplanation[0x53]="?";
+	OS9Functions[0x54]="?";                     OS9FunctionExplanation[0x54]="?";
+	OS9Functions[0x55]="?";                     OS9FunctionExplanation[0x55]="?";
+	OS9Functions[0x56]="?";                     OS9FunctionExplanation[0x56]="?";
+	OS9Functions[0x57]="?";                     OS9FunctionExplanation[0x57]="?";
+	OS9Functions[0x58]="?";                     OS9FunctionExplanation[0x58]="?";
+	OS9Functions[0x59]="?";                     OS9FunctionExplanation[0x59]="?";
+	OS9Functions[0x5A]="?";                     OS9FunctionExplanation[0x5A]="?";
+	OS9Functions[0x5B]="?";                     OS9FunctionExplanation[0x5B]="?";
+	OS9Functions[0x5C]="?";                     OS9FunctionExplanation[0x5C]="?";
+	OS9Functions[0x5D]="?";                     OS9FunctionExplanation[0x5D]="?";
+	OS9Functions[0x5E]="?";                     OS9FunctionExplanation[0x5E]="?";
+	OS9Functions[0x5F]="?";                     OS9FunctionExplanation[0x5F]="?";
+
+	OS9Functions[0x80]="I$Attach";              OS9FunctionExplanation[0x80]="Attach a new device to the system.";
+	OS9Functions[0x81]="I$Detach";              OS9FunctionExplanation[0x81]="Remove a device from the system.";
+	OS9Functions[0x82]="I$Dup";                 OS9FunctionExplanation[0x82]="Duplicate a path.";
+	OS9Functions[0x83]="I$Create";              OS9FunctionExplanation[0x83]="Create a path to a new file.";
+	OS9Functions[0x84]="I$Open";                OS9FunctionExplanation[0x84]="Open a path to a file or device.";
+	OS9Functions[0x85]="I$MakDir";              OS9FunctionExplanation[0x85]="Make a new directory.";
+	OS9Functions[0x86]="I$ChgDir";              OS9FunctionExplanation[0x86]="Change working directory.";
+	OS9Functions[0x87]="I$Delete";              OS9FunctionExplanation[0x87]="Delete a file.";
+	OS9Functions[0x88]="I$Seek";                OS9FunctionExplanation[0x88]="Reposition the logical file pointer.";
+	OS9Functions[0x89]="I$Read";                OS9FunctionExplanation[0x89]="Read data from a file or device.";
+	OS9Functions[0x8A]="I$Write";               OS9FunctionExplanation[0x8A]="Write Data to File or Device.";
+	OS9Functions[0x8B]="I$ReadLn";              OS9FunctionExplanation[0x8B]="Read a text line with editing.";
+	OS9Functions[0x8C]="I$WriteLn";             OS9FunctionExplanation[0x8C]="Write Line of Text with Editing.";
+	OS9Functions[0x8D]="I$GetStt";              OS9FunctionExplanation[0x8D]="Get file/device status.";
+	OS9Functions[0x8E]="I$SetStt";              OS9FunctionExplanation[0x8E]="Set file/device status.";
+	OS9Functions[0x8F]="I$Close";               OS9FunctionExplanation[0x8F]="Close a path to a file/device.";
+	OS9Functions[0x90]="I$DeletX";              OS9FunctionExplanation[0x90]="Delete a file.";
+}
 
 bool MC6809SymbolTable::Load(const std::vector <std::string> &txt)
 {

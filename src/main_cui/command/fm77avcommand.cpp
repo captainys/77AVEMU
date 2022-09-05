@@ -109,6 +109,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SYMLAB"]=CMD_PRINT_SYMBOL_LABEL_PROC;
 	primaryCmdMap["SYMPROC"]=CMD_PRINT_SYMBOL_PROC;
 	primaryCmdMap["SYMFIND"]=CMD_PRINT_SYMBOL_FIND;
+	primaryCmdMap["OS9MODE"]=CMD_OS9MODE;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -284,6 +285,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor event." << std::endl;
 	std::cout << "CMON event" << std::endl;
 	std::cout << "  Don't monitor event. (It works the same way as CBRKON)" << std::endl;
+	std::cout << "OS9MODE" << std::endl;
+	std::cout << "  Enable debugger OS9 mode." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
 
@@ -942,6 +945,11 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_DONT_MONITOR:
 		Execute_DontBreakOn(thr,fm77av,cmd);
 		break;
+	case CMD_OS9MODE:
+		fm77av.mainCPU.debugger.OS9Mode=true;
+		fm77av.subCPU.debugger.OS9Mode=true; // Do I need it?
+		std::cout << "Debugger OS9 Mode." << std::endl;
+		break;
 	case CMD_TYPE_KEYBOARD:
 		Execute_TypeKeyboard(fm77av,cmd);
 		break;
@@ -1422,7 +1430,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 				{
 					std::cout << str << std::endl;
 				}
-				PC+=inst.length;
+				PC+=cpu.debugger.GetInstructionLength(cpu,mem,PC);
 			}
 			cpu.debugger.nextDisassemblyAddr=PC;
 		}
@@ -1443,7 +1451,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm7
 			{
 				std::cout << str << std::endl;
 			}
-			PC+=inst.length;
+			PC+=cpu.debugger.GetInstructionLength(cpu,mem,PC);
 		}
 		cpu.debugger.nextDisassemblyAddr=PC;
 	}
@@ -1469,7 +1477,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Main(FM77AVThread &thr,FM77AV
 		{
 			std::cout << str << std::endl;
 		}
-		PC+=inst.length;
+		PC+=cpu.debugger.GetInstructionLength(cpu,mem,PC);
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
 }
@@ -1494,7 +1502,7 @@ void FM77AVCommandInterpreter::Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV 
 		{
 			std::cout << str << std::endl;
 		}
-		PC+=inst.length;
+		PC+=cpu.debugger.GetInstructionLength(cpu,mem,PC);
 	}
 	cpu.debugger.nextDisassemblyAddr=PC;
 }

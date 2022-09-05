@@ -29,6 +29,23 @@ public:
 	bool debugBreakOnCommandWrite=false;
 	bool monitorFDC=false;
 
+	enum
+	{
+		FDD_DRIVE_TYPE_2DD=0,
+		FDD_DRIVE_TYPE_2D=1
+	};
+
+	class FM7SpecificState
+	{
+	public:
+		uint8_t driveMode=FDD_DRIVE_TYPE_2DD;
+		bool enableDriveMap=false;
+		uint8_t driveMapping[4] {0,1,2,3};
+		uint8_t currentDS=0;
+		uint8_t lastLogicalDriveWritten=0;
+	};
+	FM7SpecificState state7;
+
 	virtual const char *DeviceName(void) const{return "FDC";}
 
 	FM77AVFDC(class FM77AV *fm77avPtr);
@@ -47,8 +64,16 @@ public:
 
 	bool IndexHole(unsigned long long fm77avTime) const;
 
-	virtual void Reset(void);
+	void Reset(void) override;
 	void WriteTrack(const std::vector <uint8_t> &data);
+	inline bool has2DD(void) const;
+	unsigned int compensateTrackNumber(unsigned int trackPos);
+	inline unsigned int mapDrive(unsigned int logicalDrive) const;
+
+
+	uint32_t SerializeVersion(void) const override;
+	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
+	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;
 };
 
 /* } */

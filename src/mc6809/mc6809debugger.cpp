@@ -185,8 +185,7 @@ void MC6809::Debugger::BeforeRunOneInstructionMainBody(MC6809 &cpu,const MemoryA
 
 	if(true==logDisassembly)
 	{
-		auto inst=cpu.NonDestructiveFetchInstruction(mem,cpu.state.PC);
-		PCLog[PCLogPtr].disasm=cpu.Disassemble(inst,cpu.state.PC);
+		PCLog[PCLogPtr].disasm=cpu.DecoratedDisassembly(mem,cpu.state.PC,false,false);
 	}
 
 	PCLog[PCLogPtr].count=1;
@@ -357,4 +356,18 @@ std::vector <std::string> MC6809::Debugger::GetCallStackText(void) const
 void MC6809::Debugger::ClearCallStack(void)
 {
 	callStack.clear();
+}
+unsigned int MC6809::Debugger::GetInstructionLength(const MC6809 &cpu,const MemoryAccess &mem,uint16_t PC) const
+{
+	auto found=symTable.Find(PC);
+	if(nullptr!=found && MC6809Symbol::SYM_RAW_DATA==found->symType)
+	{
+		return found->rawDataBytes;
+	}
+	auto inst=cpu.NonDestructiveFetchInstruction(mem,PC);
+	if(true==OS9Mode && INST_SWI2==inst.opCode)
+	{
+		return 3;
+	}
+	return inst.length;
 }
