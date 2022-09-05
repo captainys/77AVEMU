@@ -818,3 +818,9 @@ std::vector <std::string> FM77AV::GetIRQStatusText(void) const
 	}
 	return text;
 }
+
+bool FM77AV::AutoSaveSymbolTable(void) const
+{
+	std::cout << "Not implemented yet." << std::endl;
+	return false;
+}

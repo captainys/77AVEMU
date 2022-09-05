@@ -650,6 +650,7 @@ public:
 		MemAccessOption memRead[65536];
 		MemAccessOption memWrite[65536];
 
+		MC6809SymbolTable symTable;
 
 		enum
 		{

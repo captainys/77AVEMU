@@ -46,6 +46,8 @@ public:
 	SubCPUAccess subMemAcc;
 	SubCPU subCPU;
 
+	std::string symTableFName;
+
 	FM77AVCRTC crtc;
 	FM77AVFDC fdc;
 	FM77AVKeyboard keyboard;
@@ -359,6 +361,8 @@ public:
 	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
 
 	std::vector <std::string> GetIRQStatusText(void) const;
+
+	bool AutoSaveSymbolTable(void) const;
 };
 
 /* } */

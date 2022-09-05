@@ -96,6 +96,22 @@ public:
 		CMD_MONITOR,
 		CMD_DONT_MONITOR,
 
+		CMD_ADD_SYMBOL,
+		CMD_ADD_LABEL,
+		CMD_ADD_DATALABEL,
+		CMD_ADD_COMMENT,
+		CMD_DEF_RAW_BYTES,
+		CMD_IMM_IS_IOPORT,
+		CMD_IMM_IS_LABEL,
+		CMD_OFFSET_IS_LABEL,
+		CMD_DEL_SYMBOL,
+		CMD_IMPORT_LST_SYMTABLE,
+
+		CMD_PRINT_SYMBOL,
+		CMD_PRINT_SYMBOL_LABEL_PROC,
+		CMD_PRINT_SYMBOL_PROC,
+		CMD_PRINT_SYMBOL_FIND,
+
 		CMD_TYPE_KEYBOARD,
 		CMD_KEYBOARD,
 
@@ -189,6 +205,8 @@ public:
 	void Error_CannotSaveFile(const Command &cmd);
 	void Error_CannotOpenFile(const Command &cmd);
 	void Error_Addressing(const Command &cmd);
+	void Error_SymbolNotFound(const Command &cmd);
+	void Error_CouldNotDeleteSymbol(const Command &cmd);
 
 	static std::string JustMonitorOrBreakString(bool justMonitor);
 
@@ -246,6 +264,10 @@ public:
 	void Execute_TapeForSave(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_TapeEject(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_Gameport(FM77AV &fm77av,Outside_World *outside_world,Command &cmd);
+	void Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_DelSymbol(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_ImportLSTSymbolTable(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_SymbolInquiry(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
