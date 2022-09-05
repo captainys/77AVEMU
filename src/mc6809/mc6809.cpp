@@ -3921,8 +3921,25 @@ void MC6809::DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const
 	reg[1]=regToReg[postByte&0x0F];
 }
 
-std::string MC6809::WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const
+std::vector <std::string> MC6809::WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const
 {
+	std::vector <std::string> lines;
+
+	auto found=debugger.symTable.Find(PC);
+	if(nullptr!=found)
+	{
+		switch(found->symType)
+		{
+		case MC6809Symbol::SYM_PROCEDURE:
+			lines.push_back("(PROC)"+found->label);
+			break;
+		case MC6809Symbol::SYM_JUMP_DESTINATION:
+		case MC6809Symbol::SYM_DATA_LABEL:
+			lines.push_back(found->label+":");
+			break;
+		}
+	}
+
 	std::string disasm=cpputil::Ustox(PC);
 	disasm.push_back(' ');
 
@@ -3934,7 +3951,20 @@ std::string MC6809::WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const
 	}
 
 	disasm+=Disassemble(inst,PC);
-	return disasm;
+
+	if(nullptr!=found && ""!=found->inLineComment)
+	{
+		while(disasm.size()<31)
+		{
+			disasm.push_back(' ');
+		}
+		disasm+=" ; ";
+		disasm+=found->inLineComment;
+	}
+
+	lines.push_back(disasm);
+
+	return lines;
 }
 
 std::string MC6809::FormatByteCode(Instruction inst) const

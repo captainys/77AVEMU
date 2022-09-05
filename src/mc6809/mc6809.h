@@ -10,6 +10,7 @@
 #include "vmbase.h"
 #include "memory.h"
 #include "mc6809util.h"
+#include "mc6809symtable.h"
 
 class MC6809 : public Device
 {
@@ -649,6 +650,7 @@ public:
 		MemAccessOption memRead[65536];
 		MemAccessOption memWrite[65536];
 
+		MC6809SymbolTable symTable;
 
 		enum
 		{
@@ -844,7 +846,7 @@ public:
 	Instruction FetchInstructionTemplate(ConstOrNonConstMemoryAccess &mem,uint16_t PC) const;
 	void DecodeExgTfrReg(uint8_t reg[2],uint8_t postByte) const;
 
-	std::string WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
+	std::vector <std::string> WholeDisassembly(class MemoryAccess &mem,uint16_t PC) const;
 
 	std::string FormatByteCode(Instruction inst) const;
 

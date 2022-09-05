@@ -65,6 +65,8 @@ public:
 	std::string ROMPath;
 	std::string quickStateSaveFName;
 
+	std::string symTableFName;
+
 	bool pauseOnStart=false;
 	unsigned int keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;
 

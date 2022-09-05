@@ -214,6 +214,11 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 	outside_world->CacheGamePadIndicesThatNeedUpdates();
 	outside_world->keyboardMode=param.keyboardMode;
 
+	if(""!=param.symTableFName)
+	{
+		LoadSymbolTable(param.symTableFName);
+	}
+
 	Reset();
 	return true;
 }
@@ -817,4 +822,83 @@ std::vector <std::string> FM77AV::GetIRQStatusText(void) const
 		}
 	}
 	return text;
+}
+
+bool FM77AV::LoadSymbolTable(std::string fName)
+{
+	std::ifstream ifp(fName);
+	symTableFName=fName; // Maybe new.  Store it regardless of existing or not existing.
+	if(true==ifp.is_open())
+	{
+		std::vector <std::string> mainSym,subSym;
+		bool nowMain=true;
+		while(true!=ifp.eof())
+		{
+			std::string str;
+			std::getline(ifp,str);
+			if("/main"==str)
+			{
+				nowMain=true;
+			}
+			else if("/sub"==str)
+			{
+				nowMain=false;
+			}
+			else
+			{
+				if(true==nowMain)
+				{
+					mainSym.push_back(str);
+				}
+				else
+				{
+					subSym.push_back(str);
+				}
+			}
+		}
+		mainCPU.debugger.symTable.Load(mainSym);
+		subCPU.debugger.symTable.Load(subSym);
+
+		return true;
+	}
+	return false;
+}
+bool FM77AV::AutoSaveSymbolTable(void) const
+{
+	if(""!=symTableFName)
+	{
+		std::ofstream ofp(symTableFName);
+		if(true==ofp.is_open())
+		{
+			auto mainSym=mainCPU.debugger.symTable.Save();
+			auto subSym=subCPU.debugger.symTable.Save();
+
+			if(0<mainSym.size())
+			{
+				ofp << "/main" << std::endl;
+				for(auto txt : mainSym)
+				{
+					ofp << txt << std::endl;
+				}
+			}
+			if(0<subSym.size())
+			{
+				ofp << "/sub" << std::endl;
+				for(auto txt : subSym)
+				{
+					ofp << txt << std::endl;
+				}
+			}
+
+			return true;
+		}
+		std::cout << "Cannot Open Symbol File." << std::endl;
+		return false;
+	}
+	else
+	{
+		std::cout << "Symbol File Name Not Set." << std::endl;
+		std::cout << "Cannot Auto-Save." << std::endl;
+		return false;
+	}
 }
