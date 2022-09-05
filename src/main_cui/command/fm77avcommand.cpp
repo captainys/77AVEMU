@@ -1951,29 +1951,28 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryRead(FM77AVThread &thr,FM77A
 				maxValue=cpputil::Xtoi(arg.c_str()+pos+1);
 			}
 		}
-		else if(std::string::npos!=cmd.argv[i].find(':'))
+		else if(0==nAddr)
 		{
-			auto ptr=MakeCPUandAddress(thr,av,cmd.argv[i]);
-			if(CPU_UNKNOWN==ptr.cpu)
+			auto ptr=DecodeAddress(av,cmd.argv[i],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+			if(CPU_UNKNOWN==ptr.type)
 			{
 				Error_UnknownCPU(cmd);
 				return;
 			}
 
-			if(nAddr<2)
-			{
-				mainOrSub=ptr.cpu;
-				addr[nAddr]=ptr.addr;
-				++nAddr;
-			}
+			mainOrSub=ptr.type;
+			addr[nAddr]=ptr.addr;
+			++nAddr;
+		}
+		else if(nAddr<2)
+		{
+			addr[nAddr]=cpputil::Xtoi(arg.c_str());
+			++nAddr;
 		}
 		else
 		{
-			if(nAddr<2)
-			{
-				addr[nAddr]=cpputil::Xtoi(arg.c_str());
-				++nAddr;
-			}
+			Error_WrongParameter(cmd);
+			return;
 		}
 	}
 
@@ -2137,7 +2136,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 				maxValue=cpputil::Xtoi(arg.c_str()+pos+1);
 			}
 		}
-		else if(std::string::npos!=cmd.argv[i].find(':'))
+		else if(0==nAddr)
 		{
 			auto ptr=DecodeAddress(av,cmd.argv[i],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
 			if(CPU_UNKNOWN==ptr.type)
@@ -2146,20 +2145,19 @@ void FM77AVCommandInterpreter::Execute_BreakOnMemoryWrite(FM77AVThread &thr,FM77
 				return;
 			}
 
-			if(nAddr<2)
-			{
-				mainOrSub=ptr.type;
-				addr[nAddr]=ptr.addr;
-				++nAddr;
-			}
+			mainOrSub=ptr.type;
+			addr[nAddr]=ptr.addr;
+			++nAddr;
+		}
+		else if(nAddr<2)
+		{
+			addr[nAddr]=cpputil::Xtoi(arg.c_str());
+			++nAddr;
 		}
 		else
 		{
-			if(nAddr<2)
-			{
-				addr[nAddr]=cpputil::Xtoi(arg.c_str());
-				++nAddr;
-			}
+			Error_WrongParameter(cmd);
+			return;
 		}
 	}
 
