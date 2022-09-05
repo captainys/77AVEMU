@@ -2977,6 +2977,12 @@ void FM77AVCommandInterpreter::Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Comm
 
 		fm77av.CPU(cpu).SetRegisterValue(reg,cpputil::Xtoi(valueStr.c_str()));
 		std::cout << "Register " << regStr << "=" << valueStr << std::endl;
+		if(MC6809::REG_PC==reg)
+		{
+			// Release halt and CWAI special flags when a new value is set to PC.
+			fm77av.CPU(cpu).state.CWAI = false;
+			fm77av.CPU(cpu).state.halt = false;
+		}
 	}
 	else
 	{

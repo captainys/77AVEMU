@@ -937,7 +937,10 @@ public:
 		}
 		else
 		{
-			return (FetchByte(mem,addr)<<8)|FetchByte(mem,addr+1);
+			uint16_t res;
+			res  = FetchByte(mem,addr)<<8;
+			res |= FetchByte(mem,addr+1);
+			return res;
 		}
 	}
 	inline void StoreByte(MemoryAccess &mem,uint16_t addr,uint8_t data)
