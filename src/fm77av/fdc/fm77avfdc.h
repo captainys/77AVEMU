@@ -69,6 +69,11 @@ public:
 	inline bool has2DD(void) const;
 	unsigned int compensateTrackNumber(unsigned int trackPos);
 	inline unsigned int mapDrive(unsigned int logicalDrive) const;
+
+
+	uint32_t SerializeVersion(void) const override;
+	void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const override;
+	bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version) override;
 };
 
 /* } */

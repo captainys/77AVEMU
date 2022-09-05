@@ -1021,3 +1021,63 @@ unsigned int FM77AVFDC::compensateTrackNumber(unsigned int trackPos)
 inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 	return state7.driveMapping[logicalDrive];
 }
+
+
+
+/* virtual */ uint32_t FM77AVFDC::SerializeVersion(void) const
+{
+	// Version 2 adds fields for I/O read/write (not DMA)
+	// Version 3 adds CRCErrorAfterRead
+	// Version 4 adds lastDRQTime.
+	// Version 5 Disk image was always stored as D77 format until version 4.  Version 5 and later stores as is.
+	// Version 6 adds sectorPositionInTrack,nanosecPerByte,nextIndexHoleTime,DDMErrorAfterRead;
+	// -- Diverged from common serialization with Tsugaru --
+	// Version 7 adds driveMode,enableDriveMap,driveMapping[],currentDS,lastLogicalDriveWritten.
+	return 7;
+}
+/* virtual */ void FM77AVFDC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
+{
+	SerializeVersion0to6(data,stateFName);
+
+	// Version 7
+	PushUint16(data,state7.driveMode);
+	PushBool(data,state7.enableDriveMap);
+	PushUcharArray(data,4,state7.driveMapping);
+	PushUint16(data,state7.currentDS);
+	PushUint16(data,state7.lastLogicalDriveWritten);
+}
+/* virtual */ bool FM77AVFDC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
+{
+	bool res=DeserializeVersion0to6(data,stateFName,version);
+	if(7<=version)
+	{
+		state7.driveMode=ReadUint16(data);
+		state7.enableDriveMap=ReadBool(data);
+		ReadUcharArray(data,4,state7.driveMapping);
+		state7.currentDS=ReadUint16(data);
+		state7.lastLogicalDriveWritten=ReadUint16(data);
+	}
+	else
+	{
+		// Before version 7, there was no track compensation, and most likely the program was 2D.
+		// If the state file for AV40 was before version 7, trackPos must be doubled.
+		// Also driveMode probably should be set to 2D.
+		// It cannot save all old state files, but hopefully not too many.
+		if(true==has2DD())
+		{
+			state7.driveMode=FDD_DRIVE_TYPE_2D; // Prob should be in 2D mode.
+			state7.enableDriveMap=false;
+			state7.driveMapping[0]=0;
+			state7.driveMapping[1]=1;
+			state7.driveMapping[2]=2;
+			state7.driveMapping[3]=3;
+			state7.currentDS=0;
+			state7.lastLogicalDriveWritten=0;
+			for(auto &drv : state.drive)
+			{
+				drv.trackPos*=2;
+			}
+		}
+	}
+	return res;
+}
