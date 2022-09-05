@@ -190,6 +190,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_FDC_DATA://                0xFD1B,
 	case FM77AVIO_FDC_SIDE://                0xFD1C,
 	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
+	case FM77AVIO_FDC_DRIVE_MODE://          0xFD1E,
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
 		fdc.IOWriteByte(ioAddr,value);
 		break;
@@ -653,6 +654,7 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_FDC_DATA://                0xFD1B,
 	case FM77AVIO_FDC_SIDE://                0xFD1C,
 	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
+	case FM77AVIO_FDC_DRIVE_MODE://          0xFD1E,
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
 		byteData=fdc.IOReadByte(ioAddr);
 		break;

@@ -29,6 +29,16 @@ public:
 	bool debugBreakOnCommandWrite=false;
 	bool monitorFDC=false;
 
+	enum
+	{
+		FDD_DRIVE_TYPE_2DD=0,
+		FDD_DRIVE_TYPE_2D=1
+	};
+	uint8_t driveMode=FDD_DRIVE_TYPE_2DD;
+	bool enableDriveMap=false;
+	uint8_t driveMapping[4] {0,1,2,3};
+	uint8_t lastLogicalDriveWritten = 0;
+
 	virtual const char *DeviceName(void) const{return "FDC";}
 
 	FM77AVFDC(class FM77AV *fm77avPtr);
@@ -49,6 +59,8 @@ public:
 
 	virtual void Reset(void);
 	void WriteTrack(const std::vector <uint8_t> &data);
+	inline bool has2DD(void) const;
+	unsigned int compensateTrackNumber(unsigned int trackPos);
 };
 
 /* } */
