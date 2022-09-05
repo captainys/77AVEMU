@@ -37,7 +37,8 @@ public:
 	uint8_t driveMode=FDD_DRIVE_TYPE_2DD;
 	bool enableDriveMap=false;
 	uint8_t driveMapping[4] {0,1,2,3};
-	uint8_t lastLogicalDriveWritten = 0;
+	uint8_t currentDS=0;
+	uint8_t lastLogicalDriveWritten=0;
 
 	virtual const char *DeviceName(void) const{return "FDC";}
 

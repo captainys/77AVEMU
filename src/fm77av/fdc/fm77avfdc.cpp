@@ -48,8 +48,8 @@ void FM77AVFDC::MakeReady(void)
 
 /* virtual */ void FM77AVFDC::RunScheduledTask(unsigned long long int fm77avTime)
 {
-	auto &drv=state.drive[mapDrive(DriveSelect())];
-	auto imgFilePtr=GetDriveImageFile(mapDrive(DriveSelect()));
+	auto &drv=state.drive[DriveSelect()];
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
 	auto diskIdx=drv.diskIndex;
 	DiskDrive::DiskImage *imgPtr=nullptr;
 	if(nullptr!=imgFilePtr)
@@ -543,8 +543,8 @@ void FM77AVFDC::MakeReady(void)
 
 /* virtual */ void FM77AVFDC::IOWriteByte(unsigned int ioport,unsigned int data)
 {
-	auto &drv=state.drive[mapDrive(DriveSelect())];
-	auto imgFilePtr=GetDriveImageFile(mapDrive(DriveSelect()));
+	auto &drv=state.drive[DriveSelect()];
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
 	auto diskIdx=drv.diskIndex;
 	DiskDrive::DiskImage *imgPtr=nullptr;
 	if(nullptr!=imgFilePtr)
@@ -556,7 +556,7 @@ void FM77AVFDC::MakeReady(void)
 	{
 	case FM77AVIO_FDC_STATUS_COMMAND://=      0xFD18,
 		SendCommand(data);
-		state.drive[mapDrive(DriveSelect())].diskChange=false; // Is this the right timing to erase diskChange flag?
+		state.drive[DriveSelect()].diskChange=false; // Is this the right timing to erase diskChange flag?
 
 		if(0xD0==(data&0xF0))
 		{
@@ -577,7 +577,7 @@ void FM77AVFDC::MakeReady(void)
 		{
 			std::cout << "At PC=" + cpputil::Ustox(fm77avPtr->mainCPU.state.PC);
 			std::cout << " FDC CMD "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data);
-			std::cout << " DRV " << mapDrive(DriveSelect());
+			std::cout << " DRV " << DriveSelect();
 			switch(data&0xF0)
 			{
 			case 0x00: // Restore
@@ -655,7 +655,7 @@ void FM77AVFDC::MakeReady(void)
 		}
 		break;
 	case FM77AVIO_FDC_TRACK://=               0xFD19,
-		state.drive[mapDrive(DriveSelect())].trackReg=data;
+		state.drive[DriveSelect()].trackReg=data;
 		break;
 	case FM77AVIO_FDC_SECTOR://=              0xFD1A,
 		SetSectorReg(data);
@@ -668,7 +668,7 @@ void FM77AVFDC::MakeReady(void)
 			{
 				state.data[state.dataReadPointer++]=data;
 			}
-			auto &drv=state.drive[mapDrive(DriveSelect())];
+			auto &drv=state.drive[DriveSelect()];
 
 			if(state.expectedWriteLength<=state.dataReadPointer)
 			{
@@ -703,14 +703,15 @@ void FM77AVFDC::MakeReady(void)
 			}
 			state.lastStatus=MakeUpStatus(state.lastCmd);
 		}
-		state.drive[mapDrive(DriveSelect())].dataReg=data;
+		state.drive[DriveSelect()].dataReg=data;
 		break;
 	case FM77AVIO_FDC_SIDE://=                0xFD1C,
 		state.side=(data&1);
 		break;
 	case FM77AVIO_FDC_MOTOR_DRIVE://=         0xFD1D,
-		state.driveSelectBit=(1<<(data&0x03));
-		state.drive[mapDrive(DriveSelect())].motor=(0!=(data&0x80));
+		currentDS=data&0x03;
+		state.driveSelectBit=1<<mapDrive(currentDS);
+		state.drive[DriveSelect()].motor=(0!=(data&0x80));
 		break;
 	case FM77AVIO_FDC_DRIVE_MODE://=          0xFD1E,
 		driveMode=(data&0x40)?1:0;
@@ -726,8 +727,8 @@ void FM77AVFDC::MakeReady(void)
 }
 /* virtual */ unsigned int FM77AVFDC::IOReadByte(unsigned int ioport)
 {
-	auto &drv=state.drive[mapDrive(DriveSelect())];
-	auto imgFilePtr=GetDriveImageFile(mapDrive(DriveSelect()));
+	auto &drv=state.drive[DriveSelect()];
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
 	auto diskIdx=drv.diskIndex;
 	DiskDrive::DiskImage *imgPtr=nullptr;
 	if(nullptr!=imgFilePtr)
@@ -741,7 +742,7 @@ void FM77AVFDC::MakeReady(void)
 		if(true==state.DRQ)
 		{
 			state.DRQ=false;
-			state.drive[mapDrive(DriveSelect())].dataReg=state.data[state.dataReadPointer++];
+			state.drive[DriveSelect()].dataReg=state.data[state.dataReadPointer++];
 			if(state.data.size()<=state.dataReadPointer)
 			{
 				state.CRCError=state.CRCErrorAfterRead;
@@ -788,7 +789,6 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 		{
 			data&=0x7F;
 		}
-
 		switch(state.lastCmd&0xF0)
 		{
 		case 0x00: // Restore
@@ -815,16 +815,16 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 
 		return data;
 	case FM77AVIO_FDC_TRACK://=               0xFD19,
-		return state.drive[mapDrive(DriveSelect())].trackReg;
+		return state.drive[DriveSelect()].trackReg;
 	case FM77AVIO_FDC_SECTOR://=              0xFD1A,
 		return GetSectorReg();
 	case FM77AVIO_FDC_DATA://=                0xFD1B,
-	return state.drive[mapDrive(DriveSelect())].dataReg;
+	return state.drive[DriveSelect()].dataReg;
 	case FM77AVIO_FDC_SIDE://=                0xFD1C,
 		return (state.side&1)|0xFE;
 	case FM77AVIO_FDC_MOTOR_DRIVE://=         0xFD1D,
-		data=(true==state.drive[mapDrive(DriveSelect())].motor ? 0x80 : 0);
-		data|=mapDrive(DriveSelect());
+		data=(true==state.drive[DriveSelect()].motor ? 0x80 : 0);
+		data|=currentDS;
 		return data;
 	case FM77AVIO_FDC_DRIVE_MODE://=          0xFD1E,
 		data =0b10100000;
@@ -853,8 +853,8 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 
 void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
 {
-	auto &drv=state.drive[mapDrive(DriveSelect())];
-	auto imgFilePtr=GetDriveImageFile(mapDrive(DriveSelect()));
+	auto &drv=state.drive[DriveSelect()];
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
 	auto diskIdx=drv.diskIndex;
 	DiskDrive::DiskImage *imgPtr=nullptr;
 	if(nullptr!=imgFilePtr)
@@ -991,8 +991,8 @@ inline bool FM77AVFDC::has2DD(void) const
 }
 unsigned int FM77AVFDC::compensateTrackNumber(unsigned int trackPos)
 {
-	auto &drv=state.drive[mapDrive(DriveSelect())];
-	auto imgFilePtr=GetDriveImageFile(mapDrive(DriveSelect()));
+	auto &drv=state.drive[DriveSelect()];
+	auto imgFilePtr=GetDriveImageFile(DriveSelect());
 	auto diskIdx=drv.diskIndex;
 	DiskDrive::DiskImage *imgPtr=nullptr;
 	if(nullptr!=imgFilePtr)
