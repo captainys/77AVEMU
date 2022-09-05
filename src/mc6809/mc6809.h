@@ -10,6 +10,7 @@
 #include "vmbase.h"
 #include "memory.h"
 #include "mc6809util.h"
+#include "mc6809symtable.h"
 
 class MC6809 : public Device
 {
