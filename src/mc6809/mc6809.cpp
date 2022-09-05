@@ -3940,31 +3940,137 @@ std::vector <std::string> MC6809::WholeDisassembly(class MemoryAccess &mem,uint1
 		}
 	}
 
-	std::string disasm=cpputil::Ustox(PC);
-	disasm.push_back(' ');
+	lines.push_back(DecoratedDisassembly(mem,PC,true,true));
+
+	return lines;
+}
+
+std::string MC6809::DecoratedDisassembly(const MemoryAccess &mem,uint16_t PC,bool showPC,bool showByteCode) const
+{
+	std::string disasm;
+	if(true==showPC)
+	{
+		disasm=cpputil::Ustox(PC);
+		disasm.push_back(' ');
+	}
 
 	auto inst=NonDestructiveFetchInstruction(mem,PC);
-	disasm+=FormatByteCode(inst);
-	while(disasm.size()<16)
+	if(true==debugger.OS9Mode && INST_SWI2==inst.opCode)
 	{
-		disasm.push_back(' ');
+		inst.operand[0]=mem.NonDestructiveFetchByte(PC+2);
+		inst.length=3;
+	}
+
+	if(true==showByteCode)
+	{
+		disasm+=FormatByteCode(inst);
+		while(disasm.size()<16)
+		{
+			disasm.push_back(' ');
+		}
 	}
 
 	disasm+=Disassemble(inst,PC);
 
-	if(nullptr!=found && ""!=found->inLineComment)
+	bool isJumpInst=false;
+	uint16_t jumpDest=0;
+	switch(inst.opCode)
 	{
-		while(disasm.size()<31)
+	case INST_BCC_IMM: //   0x24,
+	case INST_BCS_IMM: //   0x25,
+	case INST_BEQ_IMM: //   0x27,
+	case INST_BGE_IMM: //   0x2C,
+	case INST_BGT_IMM: //   0x2E,
+	case INST_BHI_IMM: //   0x22,
+	case INST_BLE_IMM: //   0x2F,
+	case INST_BLS_IMM: //   0x23,
+	case INST_BLT_IMM: //   0x2D,
+	case INST_BMI_IMM: //   0x2B,
+	case INST_BNE_IMM: //   0x26,
+	case INST_BPL_IMM: //   0x2A,
+	case INST_BRA_IMM: //   0x20,
+	case INST_BRN_IMM: //   0x21,
+	case INST_BSR_IMM: //   0x8D,
+	case INST_BVC_IMM: //   0x28,
+	case INST_BVS_IMM: //   0x29,
+		{
+			isJumpInst=true;
+			int16_t offset=inst.operand[0];
+			offset=(offset&0x7f)-(offset&0x80);
+			jumpDest=PC+inst.length+offset;
+		}
+		break;
+	case INST_LBCC_IMM16: //0x124, // 10 24
+	case INST_LBCS_IMM16: //0x125, // 10 25
+	case INST_LBEQ_IMM16: //0x127, // 10 27
+	case INST_LBGE_IMM16: //0x12C, // 10 2C
+	case INST_LBGT_IMM16: //0x12E, // 10 2E
+	case INST_LBHI_IMM16: //0x122, // 10 22
+	case INST_LBLE_IMM16: //0x12F, // 10 2F
+	case INST_LBLS_IMM16: //0x123, // 10 23
+	case INST_LBLT_IMM16: //0x12D, // 10 2D
+	case INST_LBMI_IMM16: //0x12B, // 10 2B
+	case INST_LBNE_IMM16: //0x126, // 10 26
+	case INST_LBPL_IMM16: //0x12A, // 10 2A
+	case INST_LBRA_IMM16: //0x16
+	case INST_LBRA_IMM16_ALT: //0x120, // 10 20
+	case INST_LBRN_IMM16: //0x121, // 10 21
+	case INST_LBSR_IMM16: //0x18D, // 10 2D
+	case INST_LBVC_IMM16: //0x128, // 10 28
+	case INST_LBVS_IMM16: //0x129, // 10 29
+		{
+			isJumpInst=true;
+			int32_t offset=mc6809util::FetchWord(inst.operand[0],inst.operand[1]);
+			offset=(offset&0x7FFF)-(offset&0x8000);
+			jumpDest=PC+inst.length+offset;
+		}
+		break;
+	case INST_JSR_EXT:
+	case INST_JMP_EXT:
+		isJumpInst=true;
+		jumpDest=inst.ExtendedAddress();
+		break;
+	}
+	if(true==isJumpInst)
+	{
+		auto found=debugger.symTable.Find(jumpDest);
+		if(nullptr!=found)
+		{
+			switch(found->symType)
+			{
+			case MC6809Symbol::SYM_PROCEDURE:
+			case MC6809Symbol::SYM_JUMP_DESTINATION:
+			case MC6809Symbol::SYM_DATA_LABEL:
+				disasm.push_back('(');
+				disasm+=found->label+")";
+				break;
+			}
+		}
+	}
+	if(true==debugger.OS9Mode && INST_SWI2==inst.opCode)
+	{
+		auto found=debugger.symTable.OS9Functions.find(inst.operand[0]);
+		if(debugger.symTable.OS9Functions.end()!=found)
 		{
 			disasm.push_back(' ');
+			disasm+=found->second;
 		}
-		disasm+=" ; ";
-		disasm+=found->inLineComment;
 	}
 
-	lines.push_back(disasm);
+	{
+		auto found=debugger.symTable.Find(PC);
+		if(nullptr!=found && ""!=found->inLineComment)
+		{
+			while(disasm.size()<31)
+			{
+				disasm.push_back(' ');
+			}
+			disasm+=" ; ";
+			disasm+=found->inLineComment;
+		}
+	}
 
-	return lines;
+	return disasm;
 }
 
 std::string MC6809::FormatByteCode(Instruction inst) const
@@ -4072,6 +4178,16 @@ std::string MC6809::Disassemble(Instruction inst,uint16_t PC) const
 			}
 			break;
 		}
+	}
+	if(INST_SWI2==inst.opCode && 3==inst.length) // If fetched as OS9 system call.
+	{
+		while(disasm.size()<8)
+		{
+			disasm.push_back(' ');
+		}
+		auto funcCode=inst.operand[0];
+		disasm.push_back('$');
+		disasm+=cpputil::Ubtox(funcCode);
 	}
 	return disasm;
 }
