@@ -46,6 +46,15 @@ void FM77AVFDC::MakeReady(void)
 
 ////////////////////////////////////////////////////////////
 
+unsigned int FM77AVFDC::CylinderTranslation(unsigned int C) const
+{
+	// If meida type is 2DD and FM77AV40 drive mode is 2D, double the cylinder.
+	// It doesn't exist in FM TOWNS's FDC.  Looks like not in MB8876 FDC in itself.
+	// It is most likely FM77AV40-specific logic between CPU and FDC.
+	// Will be implemented as soon as FM77AV40 drive mode.
+	return C;
+}
+
 /* virtual */ void FM77AVFDC::RunScheduledTask(unsigned long long int fm77avTime)
 {
 	auto &drv=state.drive[DriveSelect()];
@@ -215,6 +224,7 @@ void FM77AVFDC::MakeReady(void)
 					fm77avPtr->state.main.irqSource|=FM77AV::SystemState::MAIN_IRQ_SOURCE_DMA;
 				}
 				std::cout << "DMA Transfer (Read Sector)" << std::endl;
+				state.DRQ=false;
 				MakeReady();
 			}
 			else
