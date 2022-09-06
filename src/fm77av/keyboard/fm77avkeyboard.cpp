@@ -490,15 +490,18 @@ void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int ke
 }
 void FM77AVKeyboard::PushASCIICodeToQueueJISMode(unsigned char ascii)
 {
-	FM77AV *fm77av=(FM77AV *)vmPtr;
-	if(true!=fm77av->KeyIRQFlagSet())
+	if(0!=ascii)
 	{
-		fm77av->SetKeyIRQFlag();
-		state.lastKeyCode=ascii;
-	}
-	else
-	{
-		state.keyCodeQueue.push(ascii);
+		FM77AV *fm77av=(FM77AV *)vmPtr;
+		if(true!=fm77av->KeyIRQFlagSet())
+		{
+			fm77av->SetKeyIRQFlag();
+			state.lastKeyCode=ascii;
+		}
+		else
+		{
+			state.keyCodeQueue.push(ascii);
+		}
 	}
 }
 bool FM77AVKeyboard::NumKeyHeldDown(void) const
