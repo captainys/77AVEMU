@@ -577,7 +577,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		}
 	}
 
-// 	if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
+ 	if(fm77av.eventLog.state!=FM77AVEventLog::STATE_PLAYBACK)
  	{
  		bool mouseEmulationByAnalogAxis=false;
  		for(unsigned int portId=0; portId<FM77AV_NUM_GAMEPORTS; ++portId)

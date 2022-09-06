@@ -17,10 +17,12 @@ public:
 
 	enum
 	{
-		EVENTTYPE_NULL,
-		EVENTTYPE_KEYPRESS,
-		EVENTTYPE_KEYRELEASE,
-		EVENTTYPE_GOTO,
+		EVT_NULL,
+		EVT_KEYPRESS,
+		EVT_KEYRELEASE,
+		EVT_PAD0_A_DOWN,
+		EVT_PAD0_A_UP,
+		EVT_GOTO,
 		EVEYTTYPE_TYPE_COMMAND,
 	};
 	static std::string EventTypeToStr(unsigned int eventType);
@@ -29,12 +31,13 @@ public:
 	class Event
 	{
 	public:
-		unsigned int type=EVENTTYPE_NULL;
+		unsigned int type=EVT_NULL;
 		std::string label; // For GOTO
 		uint64_t time=0;
 
 		unsigned int code=0;
 		// AVKEY_? for KEYPRESS and KEYRELEASE
+		// |0|0||B|A|Right|Left|Down|Up| for PADPRESS and PADRELEASE
 
 		std::string str;
 		// Label for GOTO
@@ -50,7 +53,7 @@ public:
 
 	bool LoadEventLog(std::string fName);
 
-	static uint64_t GetTime(std::string timeStr);
+	static uint64_t GetTime(std::string timeStr,uint64_t prevTime);
 
 	void BeginPlayback(uint64_t fm77avTime);
 
