@@ -29,6 +29,7 @@ void MC6809Symbol::CleanUp(void)
 	temporary=false;
 	immIsIOAddr=false;
 	immIsSymbol=false;
+	immIsASCII=false;
 	offsetIsSymbol=false;
 	symType=SYM_ANY;
 	label="";
@@ -223,6 +224,7 @@ bool MC6809SymbolTable::Load(const std::vector <std::string> &txt)
 	// % Raw Data Byte Count
 	// M 0/1 immIsIOAddr flag
 	// B 0/1 immIsSymbol flag
+	// A 0/1 immIsASCII flag
 	// O 0/1 offsetIsSymbol flag
 	// X label Imported from .EXP symbol table.
 	// /end
@@ -305,6 +307,10 @@ bool MC6809SymbolTable::Load(const std::vector <std::string> &txt)
 				case 'X':
 					curSymbol.imported=(str.c_str()+2);
 					break;
+				case 'a':
+				case 'A':
+					curSymbol.immIsASCII=(0!=cpputil::Atoi(str.c_str()+2));
+					break;
 				}
 			}
 		}
@@ -359,6 +365,10 @@ std::vector <std::string> MC6809SymbolTable::Save(void) const
 
 			ss.str("");
 			ss << "B " << (sym.immIsSymbol ? "1" : "0");
+			txt.push_back(ss.str());
+
+			ss.str("");
+			ss << "A " << (sym.immIsASCII ? "1" : "0");
 			txt.push_back(ss.str());
 
 			ss.str("");
