@@ -19,6 +19,8 @@ public:
 	{
 		MEMORY_ADDRESS_SIZE=65536,
 
+		DEFAULT_FREQ=1800000,
+
 		PC_LOG_SIZE=0x10000,
 		PC_LOG_MASK=0x0FFFF
 	};
@@ -573,7 +575,7 @@ public:
 		// After power-on/reset, turns true when S is set.
 		// Motorola MC6809 MC6809E Programming Manual
 		// 1.11.10.1 Non-Maskable Interrupt
-		unsigned int freq=1800000;
+		unsigned int freq=DEFAULT_FREQ;
 		// Supposed to be 2.016MHz.
 		// Real FM77AV works like 1.8MHz.  WTF!?
 	};

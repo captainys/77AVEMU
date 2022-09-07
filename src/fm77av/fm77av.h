@@ -81,6 +81,10 @@ public:
 
 	enum
 	{
+		FM8_FREQ=1000000,
+		FM7_FREQ=MC6809::DEFAULT_FREQ,
+		FM77_FREQ=MC6809::DEFAULT_FREQ,
+
 		FAST_DEVICE_POLLING_INTERVAL=10000,  // Nano-seconds
 		DEVICE_POLLING_INTERVAL=   8000000,  // 8ms
 		CATCHUP_DEFICIT_CUTOFF=2000000, // If the deficit is above this threshold, just don't increase.

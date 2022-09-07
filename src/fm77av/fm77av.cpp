@@ -309,20 +309,20 @@ MemoryAccess &FM77AV::MemAccess(unsigned int mainOrSub)
 
 void FM77AV::SetFM8Speed(void)
 {
-	mainCPU.state.freq=1200000;
-	subCPU.state.freq=1200000;
+	mainCPU.state.freq=FM8_FREQ;
+	subCPU.state.freq=FM8_FREQ;
 	state.CRTCHaltsSubCPU=true;
 }
 void FM77AV::SetFM7Speed(void)
 {
-	mainCPU.state.freq=2000000;
-	subCPU.state.freq=2000000;
+	mainCPU.state.freq=FM7_FREQ;
+	subCPU.state.freq=FM7_FREQ;
 	state.CRTCHaltsSubCPU=true;
 }
 void FM77AV::SetFM77Speed(void)
 {
-	mainCPU.state.freq=2000000;
-	subCPU.state.freq=2000000;
+	mainCPU.state.freq=FM77_FREQ;
+	subCPU.state.freq=FM77_FREQ;
 	state.CRTCHaltsSubCPU=false;
 }
 
