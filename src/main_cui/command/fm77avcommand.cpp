@@ -114,6 +114,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SYMPROC"]=CMD_PRINT_SYMBOL_PROC;
 	primaryCmdMap["SYMFIND"]=CMD_PRINT_SYMBOL_FIND;
 	primaryCmdMap["OS9MODE"]=CMD_OS9MODE;
+	primaryCmdMap["CALC"]=CMD_CALCULATE;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -373,6 +374,12 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Keyword can use wildcard." << std::endl;
 	std::cout << "IMPORTLSTSYM main/sub filename.lst" << std::endl;
 	std::cout << "  Import .LST symbol table." << std::endl;
+	std::cout << "CALC formula" << std::endl;
+	std::cout << "  Caluclate a value." << std::endl;
+	std::cout << "  You can include CPU registers like A,B,X,Y,U,CC,DP in the formula." << std::endl;
+	std::cout << "  Other commands by default takes hexadecimal numbers, this command," << std::endl;
+	std::cout << "  by default takes it as a decimal number." << std::endl;
+	std::cout << "  Write like 0x7F or $7F to make it a hexadecimal." << std::endl;
 
 
 
@@ -1129,6 +1136,10 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_PRINT_SYMBOL_PROC:
 	case CMD_PRINT_SYMBOL_FIND:
 		Execute_SymbolInquiry(thr,fm77av,cmd);
+		break;
+
+	case CMD_CALCULATE:
+		Execute_Calculate(thr,fm77av,cmd);
 		break;
 	}
 }
@@ -3334,7 +3345,8 @@ void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77
 		}
 		else
 		{
-			FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&fm77av.mainCPU);
+			MC6809 &defCPU=(FM77AV::ADDR_PHYS==ptr.type ? fm77av.mainCPU : fm77av.CPU(ptr.type));
+			FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&defCPU);
 			auto addr=ptr.addr;
 			for(int i=2; i<cmd.argv.size(); ++i)
 			{
@@ -3373,6 +3385,25 @@ void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77
 				}
 			}
 			std::cout << "Stored value to memory." << std::endl;
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_Calculate(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
+{
+	if(cmd.argv.size()<2)
+	{
+		Error_TooFewArgs(cmd);
+		return;
+	}
+	for(int i=1; i<cmd.argv.size(); ++i)
+	{
+		unsigned int whichCPU=thr.OnlyOneCPUIsUnmuted();
+		MC6809 &defCPU=(FM77AV::ADDR_MAIN==whichCPU || FM77AV::ADDR_SUB==whichCPU ? fm77av.CPU(whichCPU) : fm77av.mainCPU);
+		FM77AVLineParser parser(&fm77av.mainCPU,&fm77av.subCPU,&defCPU);
+		if(true==parser.Analyze(cmd.argv[i]))
+		{
+			auto value=parser.Evaluate();
+			std::cout << cmd.argv[i] << "=" << value << "(" << cpputil::Uitox(value&0xFFFFFFFF) << ")" << std::endl;
 		}
 	}
 }

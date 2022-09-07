@@ -138,6 +138,8 @@ public:
 		CMD_LOAD_STATE,
 
 		CMD_AUTOSTOPKEY,
+
+		CMD_CALCULATE,
 	};
 
 	enum
@@ -273,6 +275,7 @@ public:
 	void Execute_ImportLSTSymbolTable(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_SymbolInquiry(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77av,Command &cmd,unsigned int numBytes);
+	void Execute_Calculate(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
