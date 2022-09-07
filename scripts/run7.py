@@ -17,7 +17,7 @@ SRCDIR=os.path.join(MUTSUDIR,"src")
 ROMDIR=os.path.join(MUTSUDIR,"..","77AVTEST","ROMS",MACHINETYPE)
 DISKDIR=os.path.join(MUTSUDIR,"..","77AVTEST","DISK")
 TAPEDIR=os.path.join(MUTSUDIR,"..","77AVTEST","TAPE")
-
+SYMTABLEDIR=os.path.join(MUTSUDIR,"..","77AVTEST","SYMTABLE")
 
 
 def ExeExtension():
@@ -46,12 +46,13 @@ def Run(argv):
 	subprocess.Popen([
 		MutsuExe(),
 		ROMDIR,
-		#"-SYM",
-		#os.path.join(MUTSUDIR,"symtables","RUN"+MACHINETYPE+".txt"),
+		"-SYM",
+		os.path.join(SYMTABLEDIR,"RUN"+MACHINETYPE+".txt"),
 		#"-DEBUG",
 		#"-PAUSE",
 		"-AUTOSCALE",
 		"-INITCMD","ena cst",
+		"-INITCMD","mute sub",
 	]+argv).wait()
 
 
