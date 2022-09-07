@@ -21,6 +21,26 @@
 		return "PAD0ADOWN";
 	case EVT_PAD0_A_UP:
 		return "PAD0AUP";
+	case EVT_PAD0_B_DOWN:
+		return "PAD0BDOWN";
+	case EVT_PAD0_B_UP:
+		return "PAD0BUP";
+	case EVT_PAD0_FWD_DOWN:
+		return "PAD0FWDDOWN";
+	case EVT_PAD0_FWD_UP:
+		return "PAD0FWDUP";
+	case EVT_PAD0_BACK_DOWN:
+		return "PAD0BCKDOWN";
+	case EVT_PAD0_BACK_UP:
+		return "PAD0BCKUP";
+	case EVT_PAD0_LEFT_DOWN:
+		return "PAD0LFTDOWN";
+	case EVT_PAD0_LEFT_UP:
+		return "PAD0LFTUP";
+	case EVT_PAD0_RIGHT_DOWN:
+		return "PAD0RITDOWN";
+	case EVT_PAD0_RIGHT_UP:
+		return "PAD0RITUP";
 	}
 	return "NULL";
 }
@@ -47,6 +67,46 @@
 	else if("PAD0AUP"==STR)
 	{
 		return EVT_PAD0_A_UP;
+	}
+	else if("PAD0BDOWN"==STR)
+	{
+		return EVT_PAD0_B_DOWN;
+	}
+	else if("PAD0BUP"==STR)
+	{
+		return EVT_PAD0_B_UP;
+	}
+	else if("PAD0FWDDOWN"==STR)
+	{
+		return EVT_PAD0_FWD_DOWN;
+	}
+	else if("PAD0FWDUP"==STR)
+	{
+		return EVT_PAD0_FWD_UP;
+	}
+	else if("PAD0BCKDOWN"==STR)
+	{
+		return EVT_PAD0_BACK_DOWN;
+	}
+	else if("PAD0BCKUP"==STR)
+	{
+		return EVT_PAD0_BACK_UP;
+	}
+	else if("PAD0LFTDOWN"==STR)
+	{
+		return EVT_PAD0_LEFT_DOWN;
+	}
+	else if("PAD0LFTUP"==STR)
+	{
+		return EVT_PAD0_LEFT_UP;
+	}
+	else if("PAD0RITDOWN"==STR)
+	{
+		return EVT_PAD0_RIGHT_DOWN;
+	}
+	else if("PAD0RITUP"==STR)
+	{
+		return EVT_PAD0_RIGHT_UP;
 	}
 	return EVT_NULL;
 }
@@ -113,13 +173,9 @@ bool FM77AVEventLog::LoadEventLog(std::string fName)
 					}
 					eventLog.back().code=FM77AVKeyLabelToKeyCode(ARGV[1]);
 				}
-				else if("PAD0ADOWN"==ARGV[0])
+				else if("PAD"==ARGV[0].substr(0,3))
 				{
-					eventLog.back().type=EVT_PAD0_A_DOWN;
-				}
-				else if("PAD0AUP"==ARGV[0])
-				{
-					eventLog.back().type=EVT_PAD0_A_UP;
+					eventLog.back().type=StrToEventType(ARGV[0]);
 				}
 				else if("TYPECOMMAND"==ARGV[0] && 0<eventLog.size())
 				{
@@ -191,6 +247,36 @@ void FM77AVEventLog::Playback(FM77AV &fm77av)
 			break;
 		case EVT_PAD0_A_UP:
 			fm77av.gameport.state.ports[0].button[0]=false;
+			break;
+		case EVT_PAD0_B_DOWN:
+			fm77av.gameport.state.ports[0].button[1]=true;
+			break;
+		case EVT_PAD0_B_UP:
+			fm77av.gameport.state.ports[0].button[1]=false;
+			break;
+		case EVT_PAD0_FWD_DOWN:
+			fm77av.gameport.state.ports[0].up=true;
+			break;
+		case EVT_PAD0_FWD_UP:
+			fm77av.gameport.state.ports[0].up=false;
+			break;
+		case EVT_PAD0_BACK_DOWN:
+			fm77av.gameport.state.ports[0].down=true;
+			break;
+		case EVT_PAD0_BACK_UP:
+			fm77av.gameport.state.ports[0].down=false;
+			break;
+		case EVT_PAD0_LEFT_DOWN:
+			fm77av.gameport.state.ports[0].left=true;
+			break;
+		case EVT_PAD0_LEFT_UP:
+			fm77av.gameport.state.ports[0].left=false;
+			break;
+		case EVT_PAD0_RIGHT_DOWN:
+			fm77av.gameport.state.ports[0].right=true;
+			break;
+		case EVT_PAD0_RIGHT_UP:
+			fm77av.gameport.state.ports[0].right=false;
 			break;
 		case EVT_GOTO:
 			for(int i=0; i<eventLog.size(); ++i)

@@ -103,7 +103,7 @@ void FM77AVTape::MoveTapePointer(TapePointer &ptr,uint64_t fm77avTime) const
 		while(ptr.dataPtr+1<data.size())
 		{
 			uint64_t nanoSecForSegment=data[ptr.dataPtr+1];
-			nanoSecForSegment*=MICROSEC_PER_T77_ONE*1000;
+			nanoSecForSegment*=NANOSEC_PER_T77_ONE;
 
 			uint64_t segmentEndTime=ptr.fm77avTime+nanoSecForSegment;
 
@@ -294,7 +294,7 @@ void FM77AVDataRecorder::WriteBit(TapePointerPair &tape,uint64_t fm77avTime)
 				out[0]=0x00;
 			}
 
-			uint32_t t77Count=sinceLastFlip/(FM77AVTape::MICROSEC_PER_T77_ONE*1000);
+			uint32_t t77Count=sinceLastFlip/(FM77AVTape::NANOSEC_PER_T77_ONE);
 			out[1]=std::min<uint32_t>(t77Count,0xFF);
 		}
 		if(tape.ptr.dataPtr+1<tape.t77.data.size())
@@ -402,7 +402,7 @@ std::vector <std::string> FM77AVDataRecorder::GetStatusText(uint64_t fm77avTime)
 	if(state.primary.ptr.dataPtr+1<state.primary.t77.data.size())
 	{
 		uint32_t segTime=state.primary.t77.data[state.primary.ptr.dataPtr+1];
-		sprintf(cstr,"SegmentTime:%u(%02x)",segTime*FM77AVTape::MICROSEC_PER_T77_ONE,segTime);
+		sprintf(cstr,"SegmentTime:%u(%02x)",segTime*FM77AVTape::NANOSEC_PER_T77_ONE/1000,segTime);
 		text.push_back(cstr);
 	}
 

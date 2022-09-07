@@ -90,6 +90,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
 	primaryCmdMap["AUTOSTOPKEY"]=CMD_AUTOSTOPKEY;
+	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["ADDLAB"]=CMD_ADD_LABEL;
 	primaryCmdMap["ADDLABEL"]=CMD_ADD_LABEL;
 	primaryCmdMap["ADDDLB"]=CMD_ADD_DATALABEL;
