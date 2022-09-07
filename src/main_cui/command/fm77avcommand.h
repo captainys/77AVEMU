@@ -128,6 +128,9 @@ public:
 		CMD_CLEAR_COM0OUT,
 
 		CMD_LET,
+		CMD_EDIT_MEMORY_BYTE,
+		CMD_EDIT_MEMORY_WORD,
+		CMD_EDIT_MEMORY_STRING,
 
 		CMD_GAMEPORT,
 
@@ -269,6 +272,7 @@ public:
 	void Execute_DelSymbol(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_ImportLSTSymbolTable(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_SymbolInquiry(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77av,Command &cmd,unsigned int numBytes);
 };
 
 /* } */

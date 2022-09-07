@@ -85,6 +85,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SAVECOM0"]=CMD_SAVE_COM0OUT;
 	primaryCmdMap["CLEARCOM0"]=CMD_CLEAR_COM0OUT;
 	primaryCmdMap["LET"]=CMD_LET;
+	primaryCmdMap["EMB"]=CMD_EDIT_MEMORY_BYTE;
+	primaryCmdMap["EMW"]=CMD_EDIT_MEMORY_WORD;
+	primaryCmdMap["EMS"]=CMD_EDIT_MEMORY_STRING;
 	primaryCmdMap["SPEED"]=CMD_SETSPEED;
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
@@ -306,6 +309,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 
 	std::cout << "LET main/sub:register value" << std::endl;
 	std::cout << "  Load a register value." << std::endl;
+	std::cout << "EMB seg:offset data" <<std::endl;
+	std::cout << "EMW seg:offset data" <<std::endl;
+	std::cout << "EMS seg:offset data" <<std::endl;
+	std::cout << "  Edit memory byte/word/string respectively." << std::endl;
 
 	std::cout << "LOADEVT filename.txt" << std::endl;
 	std::cout << "  Load Event Log." << std::endl;
@@ -1024,6 +1031,15 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_LET:
 		Execute_Let(thr,fm77av,cmd);
+		break;
+	case CMD_EDIT_MEMORY_BYTE:
+		Execute_EditMemory(thr,fm77av,cmd,1);
+		break;
+	case CMD_EDIT_MEMORY_WORD:
+		Execute_EditMemory(thr,fm77av,cmd,2);
+		break;
+	case CMD_EDIT_MEMORY_STRING:
+		Execute_EditMemory(thr,fm77av,cmd,~0);
 		break;
 	case CMD_SETSPEED:
 		Execute_SetSpeed(thr,fm77av,cmd);
@@ -3283,6 +3299,80 @@ void FM77AVCommandInterpreter::Execute_SymbolInquiry(FM77AVThread &thr,FM77AV &f
 
 				std::cout << addrStr << " " << textStr << std::endl;
 			}
+		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77av,Command &cmd,unsigned int numBytes)
+{
+	if(3<=cmd.argv.size())
+	{
+		auto ptr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
+		if(FM77AV::ADDR_MAIN!=ptr.type && FM77AV::ADDR_SUB!=ptr.type && FM77AV::ADDR_PHYS!=ptr.type)
+		{
+			Error_UnknownCPU(cmd);
+			return;
+		}
+
+		if(~0==numBytes) // String
+		{
+			if(FM77AV::ADDR_PHYS==ptr.type)
+			{
+				for(int i=0; i<cmd.argv[2].size(); ++i)
+				{
+					fm77av.physMem.StoreByte(ptr.addr+i,cmd.argv[2][i]);
+				}
+			}
+			else
+			{
+				auto &mem=fm77av.MemAccess(ptr.type);
+				for(int i=0; i<cmd.argv[2].size(); ++i)
+				{
+					mem.StoreByte(ptr.addr+i,cmd.argv[2][i]);
+				}
+			}
+			std::cout << "Stored string to memory." << std::endl;
+		}
+		else
+		{
+			FM77AVLineParserHexadecimal parser(&fm77av.mainCPU,&fm77av.subCPU,&fm77av.mainCPU);
+			auto addr=ptr.addr;
+			for(int i=2; i<cmd.argv.size(); ++i)
+			{
+				if(true==parser.Analyze(cmd.argv[i]))
+				{
+					if(FM77AV::ADDR_PHYS==ptr.type)
+					{
+						switch(numBytes)
+						{
+						case 1:
+							fm77av.physMem.StoreByte(addr,parser.Evaluate());
+							break;
+						case 2:
+							fm77av.physMem.StoreWord(addr,addr+1,parser.Evaluate());
+							break;
+						}
+					}
+					else
+					{
+						auto &mem=fm77av.MemAccess(ptr.type);
+						switch(numBytes)
+						{
+						case 1:
+							mem.StoreByte(addr,parser.Evaluate());
+							break;
+						case 2:
+							mem.StoreWord(addr,parser.Evaluate());
+							break;
+						}
+					}
+					addr+=numBytes;
+				}
+				else
+				{
+					break;
+				}
+			}
+			std::cout << "Stored value to memory." << std::endl;
 		}
 	}
 }
