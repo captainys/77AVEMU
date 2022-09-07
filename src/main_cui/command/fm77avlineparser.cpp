@@ -34,6 +34,10 @@ FM77AVLineParserBase::FM77AVLineParserBase(const class MC6809 *main,const class 
 		cpu=subCPU;
 		cap=cap.substr(2);
 	}
+	else if('\''==str[0] && 0!=str[1] && '\''==str[2])
+	{
+		return int(str[1]);
+	}
 
 	auto reg=MC6809::StrToReg(cap);
 	if(MC6809::REG_NULL!=reg)

@@ -115,6 +115,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SYMFIND"]=CMD_PRINT_SYMBOL_FIND;
 	primaryCmdMap["OS9MODE"]=CMD_OS9MODE;
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
+	primaryCmdMap["ASC"]=CMD_STRING_TO_ASCII;
+	primaryCmdMap["CHR"]=CMD_ASCII_TO_STRING;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -380,6 +382,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Other commands by default takes hexadecimal numbers, this command," << std::endl;
 	std::cout << "  by default takes it as a decimal number." << std::endl;
 	std::cout << "  Write like 0x7F or $7F to make it a hexadecimal." << std::endl;
+	std::cout << "ASC string" << std::endl;
+	std::cout << "  Show ASCII code of the characters in the string." << std::endl;
+	std::cout << "CHR ASCIICode ASCIICode ASCIICode ..." << std::endl;
+	std::cout << "  Show characters of ASCII code." << std::endl;
 
 
 
@@ -1140,6 +1146,31 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 
 	case CMD_CALCULATE:
 		Execute_Calculate(thr,fm77av,cmd);
+		break;
+	case CMD_STRING_TO_ASCII:
+		for(int i=1; i<cmd.argv.size(); ++i)
+		{
+			for(auto c : cmd.argv[i])
+			{
+				std::cout << '$' << cpputil::Ubtox(c) << '(' << int(c) << ')' << ' ';
+			}
+			std::cout << std::endl;
+		}
+		break;
+	case CMD_ASCII_TO_STRING:
+		for(int i=1; i<cmd.argv.size(); ++i)
+		{
+			char c=cpputil::Xtoi(cmd.argv[i].c_str());
+			if(' '<=c && c<=0x7f)
+			{
+				std::cout << c;
+			}
+			else
+			{
+				std::cout << '?';
+			}
+		}
+		std::cout << std::endl;
 		break;
 	}
 }
