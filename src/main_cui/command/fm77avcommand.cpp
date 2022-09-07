@@ -3157,7 +3157,7 @@ void FM77AVCommandInterpreter::Execute_Gameport(FM77AV &fm77av,Outside_World *ou
 void FM77AVCommandInterpreter::Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
 	if(3<=cmd.argv.size() || 
-	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
+	  (2<=cmd.argv.size() && (CMD_IMM_IS_IOPORT==cmd.primaryCmd || CMD_IMM_IS_ASCII==cmd.primaryCmd || CMD_OFFSET_IS_LABEL==cmd.primaryCmd || CMD_IMM_IS_LABEL==cmd.primaryCmd)))
 	{
 		auto ptr=DecodeAddress(fm77av,cmd.argv[1],thr.OnlyOneCPUIsUnmuted(),thr.OnlyOneCPUIsUnmuted());
 		if(FM77AV::ADDR_MAIN!=ptr.type && FM77AV::ADDR_SUB!=ptr.type)
@@ -3221,25 +3221,25 @@ void FM77AVCommandInterpreter::Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77a
 		case CMD_IMM_IS_IOPORT:
 			{
 				symTable.SetImmIsIOPort(ptr.addr);
-				std::cout << "Added imm-is-IO " << cmd.argv[2] << std::endl;
+				std::cout << "Added imm-is-IO " << std::endl;
 			}
 			break;
 		case CMD_IMM_IS_LABEL:
 			{
 				symTable.SetImmIsSymbol(ptr.addr);
-				std::cout << "Added imm-is-label " << cmd.argv[2] << std::endl;
+				std::cout << "Added imm-is-label " << std::endl;
 			}
 			break;
 		case CMD_IMM_IS_ASCII:
 			{
-				symTable.SetImmIsSymbol(ptr.addr);
-				std::cout << "Added imm-is-ASCII " << cmd.argv[2] << std::endl;
+				symTable.SetImmIsASCII(ptr.addr);
+				std::cout << "Added imm-is-ASCII " << std::endl;
 			}
 			break;
 		case CMD_OFFSET_IS_LABEL:
 			{
 				symTable.SetOffsetIsSymbol(ptr.addr);
-				std::cout << "Added offset-is-label " << cmd.argv[2] << std::endl;
+				std::cout << "Added offset-is-label " << std::endl;
 			}
 			break;
 		}

@@ -4059,14 +4059,50 @@ std::string MC6809::DecoratedDisassembly(const MemoryAccess &mem,uint16_t PC,boo
 
 	{
 		auto found=debugger.symTable.Find(PC);
-		if(nullptr!=found && ""!=found->inLineComment)
+		if(nullptr!=found)
 		{
-			while(disasm.size()<31)
+			if(true==found->immIsASCII)
 			{
-				disasm.push_back(' ');
+				switch(inst.operType)
+				{
+				case OPER_IMM:
+					if(' '<=inst.operand[0] && inst.operand[0]<0x80)
+					{
+						disasm.push_back('(');
+						disasm.push_back('\'');
+						disasm.push_back(inst.operand[0]);
+						disasm.push_back('\'');
+						disasm.push_back(')');
+					}
+					break;
+				case OPER_IMM16:
+					disasm.push_back('(');
+					disasm.push_back('\"');
+					for(int i=0; i<2; ++i)
+					{
+						if(' '<=inst.operand[i] && inst.operand[i]<0x80)
+						{
+							disasm.push_back(inst.operand[i]);
+						}
+						else
+						{
+							disasm.push_back(' ');
+						}
+					}
+					disasm.push_back('\"');
+					disasm.push_back(')');
+					break;
+				}
 			}
-			disasm+=" ; ";
-			disasm+=found->inLineComment;
+			if(""!=found->inLineComment)
+			{
+				while(disasm.size()<31)
+				{
+					disasm.push_back(' ');
+				}
+				disasm+=" ; ";
+				disasm+=found->inLineComment;
+			}
 		}
 	}
 
