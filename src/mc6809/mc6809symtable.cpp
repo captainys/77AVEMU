@@ -450,6 +450,12 @@ MC6809Symbol *MC6809SymbolTable::SetImmIsIOPort(unsigned int ptr)
 	symbol.immIsIOAddr=true;
 	return &symbol;
 }
+MC6809Symbol *MC6809SymbolTable::SetImmIsASCII(unsigned int ptr)
+{
+	auto &symbol=symTable[ptr];
+	symbol.immIsASCII=true;
+	return &symbol;
+}
 MC6809Symbol *MC6809SymbolTable::SetImportedLabel(unsigned int ptr,const std::string &label)
 {
 	bool makeItProcedure=false; // It can be a data, it can be a procedure, but temporarily make it a procedure, if not in the database yet.

@@ -61,6 +61,7 @@ public:
 	MC6809Symbol *SetImmIsIOPort(unsigned int ptr);
 	MC6809Symbol *SetImportedLabel(unsigned int ptr,const std::string &label);
 	MC6809Symbol *SetImmIsSymbol(unsigned int ptr);
+	MC6809Symbol *SetImmIsASCII(unsigned int ptr);
 	MC6809Symbol *SetOffsetIsSymbol(unsigned int ptr);
 
 	void SetDPLabel(unsigned int DP,std::string label);

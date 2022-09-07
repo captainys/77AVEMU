@@ -106,6 +106,10 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["IMMISIO"]=CMD_IMM_IS_IOPORT;
 	primaryCmdMap["IMMISSYM"]=CMD_IMM_IS_LABEL;
 	primaryCmdMap["IMMISLAB"]=CMD_IMM_IS_LABEL;
+	primaryCmdMap["IMMISASC"]=CMD_IMM_IS_ASCII;
+	primaryCmdMap["IMMISASCII"]=CMD_IMM_IS_ASCII;
+	primaryCmdMap["IMMISCHR"]=CMD_IMM_IS_ASCII;
+	primaryCmdMap["IMMISCHAR"]=CMD_IMM_IS_ASCII;
 	primaryCmdMap["OFFSETISLAB"]=CMD_OFFSET_IS_LABEL;
 	primaryCmdMap["OFSISLAB"]=CMD_OFFSET_IS_LABEL;
 	primaryCmdMap["OFFISLAB"]=CMD_OFFSET_IS_LABEL;
@@ -357,6 +361,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "IMMISSYM addr" << std::endl;
 	std::cout << "IMMISLAB addr" << std::endl;
 	std::cout << "  Take Imm operand as label in disassembly." << std::endl;
+	std::cout << "IMMISASC/IMMISASCII/IMMISCHR/IMMISCHAR addr" << std::endl;
+	std::cout << "  Take Imm operand as ASCII code in disassembly." << std::endl;
 	std::cout << "OFFSETISLAB addr" << std::endl;
 	std::cout << "OFFISLAB addr" << std::endl;
 	std::cout << "OFSISLAB addr" << std::endl;
@@ -1127,6 +1133,7 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_DEF_RAW_BYTES:
 	case CMD_IMM_IS_IOPORT:
 	case CMD_IMM_IS_LABEL:
+	case CMD_IMM_IS_ASCII:
 	case CMD_OFFSET_IS_LABEL:
 		Execute_AddSymbol(thr,fm77av,cmd);
 		break;
@@ -3221,6 +3228,12 @@ void FM77AVCommandInterpreter::Execute_AddSymbol(FM77AVThread &thr,FM77AV &fm77a
 			{
 				symTable.SetImmIsSymbol(ptr.addr);
 				std::cout << "Added imm-is-label " << cmd.argv[2] << std::endl;
+			}
+			break;
+		case CMD_IMM_IS_ASCII:
+			{
+				symTable.SetImmIsSymbol(ptr.addr);
+				std::cout << "Added imm-is-ASCII " << cmd.argv[2] << std::endl;
 			}
 			break;
 		case CMD_OFFSET_IS_LABEL:
