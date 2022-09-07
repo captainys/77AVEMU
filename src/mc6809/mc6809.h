@@ -573,7 +573,7 @@ public:
 		// After power-on/reset, turns true when S is set.
 		// Motorola MC6809 MC6809E Programming Manual
 		// 1.11.10.1 Non-Maskable Interrupt
-		unsigned int freq=2000000;
+		unsigned int freq=1800000;
 		// Supposed to be 2.016MHz.
 		// Real FM77AV works like 1.8MHz.  WTF!?
 	};

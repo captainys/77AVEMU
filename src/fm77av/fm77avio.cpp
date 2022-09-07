@@ -731,7 +731,10 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		{
 			byteData|=0x80;
 		}
-		if(mainCPU.state.freq<2000000)
+		if(mainCPU.state.freq<1500000)
+		// Actual native clock may be 2.0MHz or 1.8MHz.
+		// Catalog spec tells 2MHz.  Actual measurement implies 1.8MHz.
+		// Use threshold somewhere in the middle.
 		{
 			byteData&=0xFE;
 		}
