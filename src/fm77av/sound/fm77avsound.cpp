@@ -53,6 +53,14 @@ inline void WordOp_Set(unsigned char *ptr,short value)
 FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 {
 	PowerOn();
+	for(auto &b : ym2203cRegisterMonitor)
+	{
+		b=0;
+	}
+	for(auto &b : ay38910RegisterMonitor)
+	{
+		b=0;
+	}
 }
 /* virtual */ void FM77AVSound::PowerOn(void)
 {
@@ -116,6 +124,14 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			if(2==state.ay38910LastControl && 0==control) // Write Data
 			{
 				state.ay38910.Write(fm77avPtr->state.fm77avTime,state.ay38910AddrLatch,state.ay38910LastData);
+				if(0!=ay38910RegisterMonitor[state.ay38910AddrLatch])
+				{
+					std::cout << "AY38910 Reg[$"+cpputil::Ubtox(state.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(state.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
+					if(MC6809::Debugger::BRKPNT_FLAG_BREAK==ay38910RegisterMonitor[state.ay38910AddrLatch])
+					{
+						fm77avPtr->mainCPU.debugger.stop=true;
+					}
+				}
 			}
 			state.ay38910LastControl=control;
 		}
@@ -165,6 +181,14 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			state.ym2203cAddrLatch=state.ym2203cDataWrite;
 			break;
 		case 2: // Data Write
+			if(0!=ym2203cRegisterMonitor[state.ym2203cAddrLatch])
+			{
+				std::cout << "YM2203C Reg[$"+cpputil::Ubtox(state.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(state.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
+				if(MC6809::Debugger::BRKPNT_FLAG_BREAK==ym2203cRegisterMonitor[state.ym2203cAddrLatch])
+				{
+					fm77avPtr->mainCPU.debugger.stop=true;
+				}
+			}
 			if(state.ym2203cAddrLatch<=0x0F)
 			{
 				state.ay38910.Write(fm77avPtr->state.fm77avTime,state.ym2203cAddrLatch,state.ym2203cDataWrite);

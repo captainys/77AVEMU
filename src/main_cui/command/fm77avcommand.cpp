@@ -149,6 +149,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["MEMW"]=BREAK_ON_MEM_WRITE;
 	breakEventMap["HWDRAW"]=BREAK_ON_HARDWARE_VRAM_WRITE;
 	breakEventMap["HWLINE"]=BREAK_ON_HARDWARE_LINE_DRAWING;
+	breakEventMap["PSGWRITE"]=BREAK_ON_AY38910_WRITE;
+	breakEventMap["FMWRITE"]=BREAK_ON_YM2203C_WRITE;
+
 
 	dumpableMap["FDC"]=DUMP_FDC;
 	dumpableMap["TAPE"]=DUMP_TAPE;
@@ -444,6 +447,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "HWDRAW type" << std::endl;
 	std::cout << "  Break on hardware VRAM write.  Type can be" << std::endl;
 	std::cout << "  0:PSET 1:N/A 2:OR 3:AND 4:XOR 5:NOT 6:TILE 7:COMPARE" << std::endl;
+	std::cout << "PSGWRITE reg" << std::endl;
+	std::cout << "FMWRITE reg" << std::endl;
+	std::cout << "  Write to PSG(AY3-8910) or FM(YM2203C) register.  If reg is omitted," << std::endl;
+	std::cout << "  break or monitor on writes to any register." << std::endl;
+
 
 	std::cout << "<< Printable >>" << std::endl;
 	std::cout << "FDC" << std::endl;
@@ -1940,6 +1948,8 @@ void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV
 		auto EVT=cmd.argv[1];
 		cpputil::Capitalize(EVT);
 		auto found=breakEventMap.find(EVT);
+		uint8_t debuggerFlag=(true!=justMonitorDontBreak ? MC6809::Debugger::BRKPNT_FLAG_BREAK : MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY);
+
 		if(breakEventMap.end()!=found)
 		{
 			switch(found->second)
@@ -1955,14 +1965,7 @@ void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV
 					auto num=cpputil::Xtoi(cmd.argv[2].data());
 					if(num<FM7_MAX_SUB_CMD)
 					{
-						if(true!=justMonitorDontBreak)
-						{
-							av.var.breakOnSubCmd[num]=MC6809::Debugger::BRKPNT_FLAG_BREAK;
-						}
-						else
-						{
-							av.var.breakOnSubCmd[num]=MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY;
-						}
+						av.var.breakOnSubCmd[num]=debuggerFlag;
 						std::cout << verb << " on Sub-CPU Command " << cpputil::Ubtox(num) << " " << SubCmdToStr(num) << std::endl;
 					}
 					else
@@ -1986,6 +1989,44 @@ void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV
 				break;
 			case BREAK_ON_HARDWARE_LINE_DRAWING:
 				av.crtc.BreakOnHardwareLineDrawing(justMonitorDontBreak);
+				break;
+			case BREAK_ON_AY38910_WRITE:
+				if(3<=cmd.argv.size())
+				{
+					auto reg=cpputil::Xtoi(cmd.argv[2].c_str());
+					if(reg<16)
+					{
+						av.sound.ay38910RegisterMonitor[reg]=debuggerFlag;
+						std::cout << verb << "on write to PSG register $"+cpputil::Ubtox(reg) << std::endl;
+					}
+				}
+				else
+				{
+					for(auto &reg : av.sound.ay38910RegisterMonitor)
+					{
+						reg=debuggerFlag;
+					}
+					std::cout << verb << " on write to any PSG register." << std::endl << std::endl;
+				}
+				break;
+			case BREAK_ON_YM2203C_WRITE:
+				if(3<=cmd.argv.size())
+				{
+					auto reg=cpputil::Xtoi(cmd.argv[2].c_str());
+					if(reg<256)
+					{
+						av.sound.ym2203cRegisterMonitor[reg]=debuggerFlag;
+						std::cout << verb << "on write to FM(YM2203C) register $"+cpputil::Ubtox(reg) << std::endl;
+					}
+				}
+				else
+				{
+					for(auto &reg : av.sound.ym2203cRegisterMonitor)
+					{
+						reg=debuggerFlag;
+					}
+					std::cout << verb << " on write to any FM(YM2203C) register." << std::endl;
+				}
 				break;
 			}
 		}
@@ -2047,6 +2088,44 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 				break;
 			case BREAK_ON_HARDWARE_LINE_DRAWING:
 				av.crtc.ClearBreakOnHardwareLineDrawing();
+				break;
+			case BREAK_ON_AY38910_WRITE:
+				if(3<=cmd.argv.size())
+				{
+					auto reg=cpputil::Xtoi(cmd.argv[2].c_str());
+					if(reg<16)
+					{
+						av.sound.ay38910RegisterMonitor[reg]=0;
+						std::cout << "on write to PSG register $"+cpputil::Ubtox(reg) << std::endl;
+					}
+				}
+				else
+				{
+					for(auto &reg : av.sound.ay38910RegisterMonitor)
+					{
+						reg=0;
+					}
+					std::cout << " on write to any PSG register." << std::endl;
+				}
+				break;
+			case BREAK_ON_YM2203C_WRITE:
+				if(3<=cmd.argv.size())
+				{
+					auto reg=cpputil::Xtoi(cmd.argv[2].c_str());
+					if(reg<256)
+					{
+						av.sound.ym2203cRegisterMonitor[reg]=0;
+						std::cout << "on write to FM(YM2203C) register $"+cpputil::Ubtox(reg) << std::endl;
+					}
+				}
+				else
+				{
+					for(auto &reg : av.sound.ym2203cRegisterMonitor)
+					{
+						reg=0;
+					}
+					std::cout << " on write to any FM(YM2203C) register." << std::endl;
+				}
 				break;
 			}
 		}
