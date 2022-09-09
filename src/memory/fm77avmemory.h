@@ -195,6 +195,11 @@ public:
 		bool brkOnRead=false;
 		bool justMonitorDontBreakOnRead=false;
 		uint8_t brkOnReadMinMax[2]={0,255};
+
+		// Memory filter.
+		// 512KB.  Adding two bytes per FM77AV byte only consumes 1MB extra  :-P
+		bool filter=true;
+		uint8_t prevValue;
 	};
 	class Variable
 	{
@@ -233,6 +238,15 @@ public:
 	uint8_t *GetVRAMBank(int bank);
 	uint32_t GetVRAMBankSize(int bank) const;
 	uint8_t *GetCurrentVRAMBank(void);
+
+	/*!
+	*/
+	void BeginMemFilter(uint8_t iniValue);
+	void BeginMemFilter(void);
+	void ApplyMemFilter(uint8_t currentValue);
+	void ApplyMemFilterDecrease(void);
+	void ApplyMemFilterIncrease(void);
+	void PrintMemFilter(void);
 
 	/*! See comment in memory.h
 	*/

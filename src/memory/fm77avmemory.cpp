@@ -1467,6 +1467,76 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	return text;
 }
 
+void PhysicalMemory::BeginMemFilter(uint8_t iniValue)
+{
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		var.memAttr[i].filter=(state.data[i]==iniValue);
+		var.memAttr[i].prevValue=state.data[i];
+	}
+}
+void PhysicalMemory::BeginMemFilter(void)
+{
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		var.memAttr[i].filter=true;
+		var.memAttr[i].prevValue=state.data[i];
+	}
+}
+void PhysicalMemory::ApplyMemFilter(uint8_t currentValue)
+{
+	int nRemaining=0;
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		if(state.data[i]!=currentValue)
+		{
+			var.memAttr[i].filter=false;
+		}
+		if(true==var.memAttr[i].filter)
+		{
+			++nRemaining;
+		}
+	}
+	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+}
+void PhysicalMemory::ApplyMemFilterDecrease(void)
+{
+	int nRemaining=0;
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		if(state.data[i]<var.memAttr[i].prevValue)
+		{
+			var.memAttr[i].filter=false;
+		}
+		if(true==var.memAttr[i].filter)
+		{
+			++nRemaining;
+		}
+		var.memAttr[i].prevValue=state.data[i];
+	}
+	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+}
+void PhysicalMemory::ApplyMemFilterIncrease(void)
+{
+	int nRemaining=0;
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		if(var.memAttr[i].prevValue<state.data[i])
+		{
+			var.memAttr[i].filter=false;
+		}
+		if(true==var.memAttr[i].filter)
+		{
+			++nRemaining;
+		}
+		var.memAttr[i].prevValue=state.data[i];
+	}
+	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+}
+void PhysicalMemory::PrintMemFilter(void)
+{
+}
+
 /* virtual */ uint32_t SubCPUAccess::SerializeVersion(void) const
 {
 	return 0;
