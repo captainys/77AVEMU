@@ -1467,13 +1467,19 @@ std::vector <std::string> MainCPUAccess::GetStatusText(void) const
 	return text;
 }
 
-void PhysicalMemory::BeginMemFilter(uint8_t iniValue)
+unsigned int  PhysicalMemory::BeginMemFilter(uint8_t iniValue)
 {
+	unsigned int N=0;
 	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
 	{
 		var.memAttr[i].filter=(state.data[i]==iniValue);
 		var.memAttr[i].prevValue=state.data[i];
+		if(true==var.memAttr[i].filter)
+		{
+			++N;
+		}
 	}
+	return N;
 }
 void PhysicalMemory::BeginMemFilter(void)
 {
@@ -1483,7 +1489,7 @@ void PhysicalMemory::BeginMemFilter(void)
 		var.memAttr[i].prevValue=state.data[i];
 	}
 }
-void PhysicalMemory::ApplyMemFilter(uint8_t currentValue)
+unsigned int PhysicalMemory::ApplyMemFilter(uint8_t currentValue)
 {
 	int nRemaining=0;
 	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
@@ -1498,8 +1504,9 @@ void PhysicalMemory::ApplyMemFilter(uint8_t currentValue)
 		}
 	}
 	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+	return nRemaining;
 }
-void PhysicalMemory::ApplyMemFilterDecrease(void)
+unsigned int PhysicalMemory::ApplyMemFilterDecrease(void)
 {
 	int nRemaining=0;
 	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
@@ -1515,8 +1522,9 @@ void PhysicalMemory::ApplyMemFilterDecrease(void)
 		var.memAttr[i].prevValue=state.data[i];
 	}
 	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+	return nRemaining;
 }
-void PhysicalMemory::ApplyMemFilterIncrease(void)
+unsigned int PhysicalMemory::ApplyMemFilterIncrease(void)
 {
 	int nRemaining=0;
 	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
@@ -1532,9 +1540,56 @@ void PhysicalMemory::ApplyMemFilterIncrease(void)
 		var.memAttr[i].prevValue=state.data[i];
 	}
 	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+	return nRemaining;
+}
+unsigned int PhysicalMemory::ApplyMemFilterDifferent(void)
+{
+	int nRemaining=0;
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		if(var.memAttr[i].prevValue!=state.data[i])
+		{
+			var.memAttr[i].filter=false;
+		}
+		if(true==var.memAttr[i].filter)
+		{
+			++nRemaining;
+		}
+		var.memAttr[i].prevValue=state.data[i];
+	}
+	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+	return nRemaining;
+}
+unsigned int PhysicalMemory::ApplyMemFilterEqual(void)
+{
+	int nRemaining=0;
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		if(var.memAttr[i].prevValue==state.data[i])
+		{
+			var.memAttr[i].filter=false;
+		}
+		if(true==var.memAttr[i].filter)
+		{
+			++nRemaining;
+		}
+		var.memAttr[i].prevValue=state.data[i];
+	}
+	std::cout << "Memory Filter " << nRemaining << " remaining." << std::endl;
+	return nRemaining;
 }
 void PhysicalMemory::PrintMemFilter(void)
 {
+	unsigned int N=0;
+	for(unsigned int i=0; i<PHYSMEM_SIZE; ++i)
+	{
+		if(true==var.memAttr[i].filter)
+		{
+			std::cout << "PHYS:" << cpputil::Uitox(i) << std::endl;
+			++N;
+		}
+	}
+	std::cout << "Memory Filter " << N << " remaining." << std::endl;
 }
 
 /* virtual */ uint32_t SubCPUAccess::SerializeVersion(void) const

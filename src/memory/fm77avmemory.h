@@ -241,11 +241,13 @@ public:
 
 	/*!
 	*/
-	void BeginMemFilter(uint8_t iniValue);
+	unsigned int BeginMemFilter(uint8_t iniValue);
 	void BeginMemFilter(void);
-	void ApplyMemFilter(uint8_t currentValue);
-	void ApplyMemFilterDecrease(void);
-	void ApplyMemFilterIncrease(void);
+	unsigned int ApplyMemFilter(uint8_t currentValue);
+	unsigned int ApplyMemFilterDecrease(void);
+	unsigned int ApplyMemFilterIncrease(void);
+	unsigned int ApplyMemFilterDifferent(void);
+	unsigned int ApplyMemFilterEqual(void);
 	void PrintMemFilter(void);
 
 	/*! See comment in memory.h

@@ -143,6 +143,9 @@ public:
 		CMD_CALCULATE,
 		CMD_STRING_TO_ASCII,
 		CMD_ASCII_TO_STRING,
+
+		CMD_MAKE_MEMORY_FILTER,
+		CMD_UPDATE_MEMORY_FILTER,
 	};
 
 	enum
@@ -189,6 +192,7 @@ public:
 		DUMP_PSG_LOG,
 		DUMP_CAS0,
 		DUMP_CAS1,
+		DUMP_MEMORY_FILTER,
 	};
 
 	class Command
@@ -281,6 +285,8 @@ public:
 	void Execute_SymbolInquiry(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77av,Command &cmd,unsigned int numBytes);
 	void Execute_Calculate(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
+	void Execute_MakeMemoryFilter(FM77AV &fm77av,Command &cmd);
+	void Execute_UpdateMemoryFilter(FM77AV &fm77av,Command &cmd);
 };
 
 /* } */

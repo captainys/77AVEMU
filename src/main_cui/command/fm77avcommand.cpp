@@ -121,6 +121,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CALC"]=CMD_CALCULATE;
 	primaryCmdMap["ASC"]=CMD_STRING_TO_ASCII;
 	primaryCmdMap["CHR"]=CMD_ASCII_TO_STRING;
+	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
+	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -165,6 +167,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["PSGLOG"]=DUMP_PSG_LOG;
 	dumpableMap["CAS0"]=DUMP_CAS0;
 	dumpableMap["CAS1"]=DUMP_CAS1;
+	dumpableMap["MEMFILTER"]=DUMP_MEMORY_FILTER;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -323,6 +326,18 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "EMW seg:offset data" <<std::endl;
 	std::cout << "EMS seg:offset data" <<std::endl;
 	std::cout << "  Edit memory byte/word/string respectively." << std::endl;
+
+	std::cout << "MKMEMFILTER byteData" << std::endl;
+	std::cout << "  Make memory filter.  Memory filter caches physical addresses that has the given value." << std::endl;
+	std::cout << "UPDMEMFILTER byteData" << std::endl;
+	std::cout << "  Update memory filter.  Physical addresses that does not have the given value" << std::endl;
+	std::cout << "  are deleted from the memory filter." << std::endl;
+	std::cout << "UPDMEMFILTER INCREASE|DECREASE|DIFFERENT|SAME" << std::endl;
+	std::cout << "  Update memory filter." << std::endl;
+	std::cout << "  INCREASE(INC) keeps bytes that have increased, unsigned." << std::endl;
+	std::cout << "  DECREASE(DEC) keeps bytes that have decreased, unsigned." << std::endl;
+	std::cout << "  DIFFERENT(DIFF) keeps bytes that have changed." << std::endl;
+	std::cout << "  SAME(EQUAL,EQU) keeps bytes that have not changed." << std::endl;
 
 	std::cout << "LOADEVT filename.txt" << std::endl;
 	std::cout << "  Load Event Log." << std::endl;
@@ -1187,6 +1202,13 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		}
 		std::cout << std::endl;
 		break;
+
+	case CMD_MAKE_MEMORY_FILTER:
+		Execute_MakeMemoryFilter(fm77av,cmd);
+		break;
+	case CMD_UPDATE_MEMORY_FILTER:
+		Execute_UpdateMemoryFilter(fm77av,cmd);
+		break;
 	}
 }
 
@@ -1682,6 +1704,9 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 						std::cout << " at " << file.ptr << std::endl;
 					}
 				}
+				break;
+			case DUMP_MEMORY_FILTER:
+				fm77av.physMem.PrintMemFilter();
 				break;
 			}
 		}
@@ -3528,5 +3553,54 @@ void FM77AVCommandInterpreter::Execute_Calculate(FM77AVThread &thr,FM77AV &fm77a
 			auto value=parser.Evaluate();
 			std::cout << cmd.argv[i] << "=" << value << "(" << cpputil::Uitox(value&0xFFFFFFFF) << ")" << std::endl;
 		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_MakeMemoryFilter(FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto byteData=cpputil::Xtoi(cmd.argv[1].c_str());
+		auto N=fm77av.physMem.BeginMemFilter(byteData);
+		std::cout << N << " occurrences" << std::endl;
+	}
+	else
+	{
+		fm77av.physMem.BeginMemFilter();
+	}
+}
+void FM77AVCommandInterpreter::Execute_UpdateMemoryFilter(FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto cond=cmd.argv[1];
+		cpputil::Capitalize(cond);
+		unsigned int N=0;
+
+		if("INCREASE"==cond || "INC"==cond)
+		{
+			N=fm77av.physMem.ApplyMemFilterIncrease();
+		}
+		else if("DECREASE"==cond || "DEC"==cond)
+		{
+			N=fm77av.physMem.ApplyMemFilterDecrease();
+		}
+		else if("DIFFERENT"==cond || "DIFF"==cond)
+		{
+			N=fm77av.physMem.ApplyMemFilterDifferent();
+		}
+		else if("SAME"==cond || "EQUAL"==cond || "EQU"==cond)
+		{
+			N=fm77av.physMem.ApplyMemFilterEqual();
+		}
+		else
+		{
+			auto byteData=cpputil::Xtoi(cmd.argv[1].c_str());
+			N=fm77av.physMem.ApplyMemFilter(byteData);
+		}
+		std::cout << N << " occurrences" << std::endl;
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }
