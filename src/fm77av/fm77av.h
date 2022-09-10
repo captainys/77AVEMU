@@ -245,7 +245,7 @@ public:
 		Address powerOffAt;
 	};
 	Variable var;
-	MemoryEvaluation mapX,mapY;
+	MemoryEvaluation mapXY[2];
 
 	FM77AVEventLog eventLog;
 

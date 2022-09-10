@@ -95,6 +95,15 @@ void FM77AVArgv::Help(void)
 	std::cout << "  y0 and hei is FM-7's screen coordinate in 320x200 and 640x400 mode," << std::endl;
 	std::cout << "  FM-7's screen coordinate times 2 in 640x200 mode." << std::endl;
 	std::cout << "  In other words, it is all in screen-shot coordinate." << std::endl;
+	std::cout << "-MAPX expression  -MAPY expression" << std::endl;
+	std::cout << "  Specify formula for calculating map coordinate for 2D game." << std::endl;
+	std::cout << "  Requires some effort for finding the expression, but once found," << std::endl;
+	std::cout << "  you can use PRI MAPCOORD to print your coordinate while playing" << std::endl;
+	std::cout << "  a typical RPG.  If the byte at main-system memory space $600A," << std::endl;
+	std::cout << "  expression can be BYTE_MAIN:$600A.  Unlike other commands you" << std::endl;
+	std::cout << "  need to use $ or 0x to make it hexadecimal.  Or, if the game" << std::endl;
+	std::cout << "  stores a pointer instead of XY coord, you can write like" << std::endl;
+	std::cout << "  (WORD_MAIN:$4005-$4E77)/$50." << std::endl;
 	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 	std::cout << "-INITCMD cmd" << std::endl;
@@ -410,6 +419,16 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			scrnShotWid=cpputil::Atoi(argv[i+3]);
 			scrnShotHei=cpputil::Atoi(argv[i+4]);
 			i+=4;
+		}
+		else if("-MAPX"==ARG && i+1<argc)
+		{
+			mapXYExpression[0]=argv[i+1];
+			++i;
+		}
+		else if("-MAPY"==ARG && i+1<argc)
+		{
+			mapXYExpression[1]=argv[i+1];
+			++i;
 		}
 		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
 		{

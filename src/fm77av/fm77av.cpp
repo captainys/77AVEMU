@@ -188,8 +188,7 @@ FM77AV::FM77AV() :
 	gameport(this),
 	serialport(this),
 	dmac(this),
-	mapX(this),
-	mapY(this)
+	mapXY{this,this}
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);
@@ -358,6 +357,21 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 	{
 		serialport.state.enabled[i]=param.enableCOM[i];
 	}
+
+
+	for(int i=0; i<2; ++i)
+	{
+		if(""!=param.mapXYExpression[i])
+		{
+			mapXY[i].Decode(param.mapXYExpression[i]);
+			if(true==mapXY[i].error)
+			{
+				std::cout << "Error in map-X expression" << std::endl;
+				std::cout << mapXY[i].errorMessage << std::endl;
+			}
+		}
+	}
+
 
 	for(auto hsc : param.hostShortCutKeys)
 	{
@@ -1077,19 +1091,19 @@ bool FM77AV::AutoSaveSymbolTable(void) const
 
 bool FM77AV::IsMapXAvailable(void) const
 {
-	return IsMemoryEvaluationAvailable(mapX);
+	return IsMemoryEvaluationAvailable(mapXY[0]);
 }
 int FM77AV::GetMapX(void) const
 {
-	return GetMemoryEvaluation(mapX);
+	return GetMemoryEvaluation(mapXY[0]);
 }
 bool FM77AV::IsMapYAvailable(void) const
 {
-	return IsMemoryEvaluationAvailable(mapY);
+	return IsMemoryEvaluationAvailable(mapXY[1]);
 }
 int FM77AV::GetMapY(void) const
 {
-	return GetMemoryEvaluation(mapY);
+	return GetMemoryEvaluation(mapXY[1]);
 }
 bool FM77AV::IsMemoryEvaluationAvailable(const MemoryEvaluation &mapLoc) const
 {

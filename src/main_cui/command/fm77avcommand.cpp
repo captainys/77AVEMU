@@ -168,6 +168,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["CAS0"]=DUMP_CAS0;
 	dumpableMap["CAS1"]=DUMP_CAS1;
 	dumpableMap["MEMFILTER"]=DUMP_MEMORY_FILTER;
+	dumpableMap["WHEREIAM"]=DUMP_WHERE_I_AM;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -487,6 +488,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Cassette files." << std::endl;
 	std::cout << "CAS1" << std::endl;
 	std::cout << "  Cassette (Save) files." << std::endl;
+	std::cout << "WHEREIAM" << std::endl;
+	std::cout << "  Print coordinate of the player/map when the coordinate expression is know." << std::endl;
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -1707,6 +1710,22 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				break;
 			case DUMP_MEMORY_FILTER:
 				fm77av.physMem.PrintMemFilter();
+				break;
+			case DUMP_WHERE_I_AM:
+				for(int i=0; i<2; ++i)
+				{
+					std::cout << (0==i ? "X:" : "Y:");
+					if(true==fm77av.mapXY[i].ready)
+					{
+						auto eval=fm77av.mapXY[i].Evaluate();
+						std::cout << eval;
+						std::cout << "($" << cpputil::Ustox(eval) << ")" << std::endl;
+					}
+					else
+					{
+						std::cout << "Unavailable" << std::endl;
+					}
+				}
 				break;
 			}
 		}

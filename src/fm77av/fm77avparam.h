@@ -106,6 +106,10 @@ public:
 
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
+
+
+	// Toward semi-automated 1X RPG map generation.
+	std::string mapXYExpression[2];
 };
 
 

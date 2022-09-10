@@ -193,6 +193,7 @@ public:
 		DUMP_CAS0,
 		DUMP_CAS1,
 		DUMP_MEMORY_FILTER,
+		DUMP_WHERE_I_AM,
 	};
 
 	class Command
