@@ -183,24 +183,23 @@ public:
 		MemoryEvaluation(FM77AV *fm77avPtr);
 
 		bool ready=false;
-		mutable bool error=false;
-		mutable std::string errorMessage;
 
 		bool Decode(std::string str);
 
+		std::string MatchCustomKeyword(std::string str) const override;
+		bool IsCustomUnaryOperator(std::string str) const override;
+		long long int EvaluateCustomUnaryOperator(const Term *t,long long int operand) const override;
+
 		// Eg.  Write formula like the following.  PHYS:, MAIN:, SUB: can be a short form P:, M:, S:, respectively.
-		//   BYTE#PHYS:$3600A
-		//   (WORD#PHYS:0x3600A-0x4E00)/0x50
-		//   (WORD#MAIN:0x600A-0x4E00)%0x50
+		//   BYTE_PHYS:$3600A
+		//   (WORD_PHYS:0x3600A-0x4E00)/0x50
+		//   (WORD_MAIN:0x600A-0x4E00)%0x50
 		// Main/Sub won't be decoded at run time.  MAIN: will be mapped to physical 0x30000 to 0x3FFF
-		// At this time, formula cannot be used in the address.
-		//   OK    WORD#MAIN:0x107F
-		//   ERR   WORD#MAIN:(0x1000+0x7F)
 		long long int EvaluateRawNumber(const std::string &str) const override;
 
-		unsigned int EvaluateMemoryReference(const std::string &str,unsigned int nBytes) const;
+		unsigned int EvaluateMemoryReference(const std::string &str,unsigned int addr,unsigned int nBytes) const;
 
-		unsigned int DecodePhysicalAddress(std::string term) const;
+		unsigned int DecodePhysicalAddressBase(std::string term) const;
 	};
 
 

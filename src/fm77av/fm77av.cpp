@@ -9,6 +9,170 @@
 
 #include "../exas_compiler/exas_compiler.h"
 
+
+
+FM77AV::MemoryEvaluation::MemoryEvaluation(FM77AV *fm77avPtr)
+{
+	this->fm77avPtr=fm77avPtr;
+}
+
+bool FM77AV::MemoryEvaluation::Decode(std::string str)
+{
+	ready=false;
+	errorMessage="";
+	cpputil::Capitalize(str);
+	if(true==Analyze(str))
+	{
+		Evaluate(); // Dummy-evaluate.
+		if(true!=error)
+		{
+			ready=true;
+		}
+	}
+	if(""==errorMessage)
+	{
+		errorMessage="There was error(s) in the expression.";
+	}
+	return ready;
+}
+
+std::string FM77AV::MemoryEvaluation::MatchCustomKeyword(std::string str) const
+{
+	unsigned int skip=0;
+	if("BYTE_"==str.substr(0,5))
+	{
+		skip=5;
+	}
+	else if("WORD_"==str.substr(0,5))
+	{
+		skip=5;
+	}
+	else if("DWORD_"==str.substr(0,6))
+	{
+		skip=6;
+	}
+	else
+	{
+		return "";
+	}
+	if("PHYS:"==str.substr(skip,5) ||
+	   "MAIN:"==str.substr(skip,5))
+	{
+		return str.substr(0,skip+5);
+	}
+	if("SUB:"==str.substr(skip,3))
+	{
+		return str.substr(0,skip+5);
+	}
+	if("P:"==str.substr(skip,2) ||
+	   "M:"==str.substr(skip,2) ||
+	   "S:"==str.substr(skip,2))
+	{
+		return str.substr(0,skip+2);
+	}
+	return "";
+}
+bool FM77AV::MemoryEvaluation::IsCustomUnaryOperator(std::string str) const
+{
+	unsigned int skip=0;
+	if("BYTE_"==str.substr(0,5))
+	{
+		skip=5;
+	}
+	else if("WORD_"==str.substr(0,5))
+	{
+		skip=5;
+	}
+	else if("DWORD_"==str.substr(0,6))
+	{
+		skip=6;
+	}
+	else
+	{
+		return false;
+	}
+	if("P:"==str.substr(skip) ||
+	   "M:"==str.substr(skip) ||
+	   "S:"==str.substr(skip) ||
+	   "PHYS:"==str.substr(skip) ||
+	   "MAIN:"==str.substr(skip) ||
+	   "SUB:"==str.substr(skip))
+	{
+		return true;
+	}
+	return false;
+}
+long long int FM77AV::MemoryEvaluation::EvaluateCustomUnaryOperator(const Term *t,long long int operand) const
+{
+	// All capitalized in Decode.
+	if("BYTE_"==t->label.substr(0,5))
+	{
+		return EvaluateMemoryReference(t->label.substr(5),operand,1);
+	}
+	else if("WORD_"==t->label.substr(0,5))
+	{
+		return EvaluateMemoryReference(t->label.substr(5),operand,2);
+	}
+	else if("DWORD_"==t->label.substr(0,6))
+	{
+		return EvaluateMemoryReference(t->label.substr(6),operand,4);
+	}
+	return 0;
+}
+
+long long int FM77AV::MemoryEvaluation::EvaluateRawNumber(const std::string &str) const
+{
+	return cpputil::Atoi(str.c_str());
+}
+
+unsigned int FM77AV::MemoryEvaluation::EvaluateMemoryReference(const std::string &str,unsigned int addr,unsigned int nBytes) const
+{
+	addr+=DecodePhysicalAddressBase(str);
+	int data=0;
+	if(addr+nBytes<PhysicalMemory::PHYSMEM_SIZE)
+	{
+		for(int i=0; i<nBytes; ++i)
+		{
+			data<<=8;
+			data|=fm77avPtr->physMem.NonDestructiveFetchByte(addr+i);
+		}
+	}
+	return data;
+}
+
+unsigned int FM77AV::MemoryEvaluation::DecodePhysicalAddressBase(std::string term) const
+{
+	if("PHYS:"==term.substr(0,5))
+	{
+		return 0;
+	}
+	else if("P:"==term.substr(0,2))
+	{
+		return 0;
+	}
+	else if("MAIN:"==term.substr(0,5))
+	{
+		return PhysicalMemory::MAINSYS_BEGIN;
+	}
+	else if("M:"==term.substr(0,2))
+	{
+		return PhysicalMemory::MAINSYS_BEGIN;
+	}
+	else if("SUB:"==term.substr(0,4))
+	{
+		return PhysicalMemory::SUBSYS_BEGIN;
+	}
+	else if("S:"==term.substr(0,2))
+	{
+		return PhysicalMemory::SUBSYS_BEGIN;
+	}
+	errorMessage="Address needs to start with PHYS:, MAIN:, or SUB:.";
+	error=true;
+	return 0;
+}
+
+////////////////////////////////////////////////////////////
+
 FM77AV::FM77AV() :
 	Device(this),
 	physMem(this),
@@ -934,98 +1098,4 @@ bool FM77AV::IsMemoryEvaluationAvailable(const MemoryEvaluation &mapLoc) const
 int FM77AV::GetMemoryEvaluation(const MemoryEvaluation &mapLoc) const
 {
 	return mapLoc.Evaluate();
-}
-
-FM77AV::MemoryEvaluation::MemoryEvaluation(FM77AV *fm77avPtr)
-{
-	this->fm77avPtr=fm77avPtr;
-}
-
-bool FM77AV::MemoryEvaluation::Decode(std::string str)
-{
-	ready=false;
-	errorMessage="";
-	cpputil::Capitalize(str);
-	if(true==Analyze(str))
-	{
-		Evaluate(); // Dummy-evaluate.
-		if(true!=error)
-		{
-			ready=true;
-		}
-	}
-	if(""==errorMessage)
-	{
-		errorMessage="There was error(s) in the expression.";
-	}
-	return ready;
-}
-
-long long int FM77AV::MemoryEvaluation::EvaluateRawNumber(const std::string &str) const
-{
-	// All capitalized in Decode.
-	if("BYTE#"==str.substr(0,5))
-	{
-		return EvaluateMemoryReference(str.substr(5),1);
-	}
-	else if("WORD#"==str.substr(0,5))
-	{
-		return EvaluateMemoryReference(str.substr(5),2);
-	}
-	else if("DWORD#"==str.substr(0,6))
-	{
-		return EvaluateMemoryReference(str.substr(6),4);
-	}
-	else
-	{
-		return cpputil::Atoi(str.c_str());
-	}
-}
-
-unsigned int FM77AV::MemoryEvaluation::EvaluateMemoryReference(const std::string &str,unsigned int nBytes) const
-{
-	auto addr=DecodePhysicalAddress(str);
-	int data=0;
-	if(addr+nBytes<PhysicalMemory::PHYSMEM_SIZE)
-	{
-		for(int i=0; i<nBytes; ++i)
-		{
-			data<<=8;
-			data|=fm77avPtr->physMem.NonDestructiveFetchByte(addr+i);
-		}
-	}
-	return data;
-}
-
-unsigned int FM77AV::MemoryEvaluation::DecodePhysicalAddress(std::string term) const
-{
-	PhysicalMemory::Reference ref;
-	// All capitalized in Decode.
-	if("PHYS:"==term.substr(0,5))
-	{
-		return cpputil::Atoi(term.c_str()+5);
-	}
-	else if("P:"==term.substr(0,2))
-	{
-		return cpputil::Atoi(term.c_str()+2);
-	}
-	else if("MAIN:"==term.substr(0,5))
-	{
-		return cpputil::Atoi(term.c_str()+5)+PhysicalMemory::MAINSYS_BEGIN;
-	}
-	else if("M:"==term.substr(0,2))
-	{
-		return cpputil::Atoi(term.c_str()+2)+PhysicalMemory::MAINSYS_BEGIN;
-	}
-	else if("SUB:"==term.substr(0,4))
-	{
-		return cpputil::Atoi(term.c_str()+4)+PhysicalMemory::SUBSYS_BEGIN;
-	}
-	else if("S:"==term.substr(0,2))
-	{
-		return cpputil::Atoi(term.c_str()+2)+PhysicalMemory::SUBSYS_BEGIN;
-	}
-	errorMessage="Address needs to start with PHYS:, MAIN:, or SUB:.";
-	error=true;
-	return 0;
 }
