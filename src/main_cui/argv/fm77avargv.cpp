@@ -90,6 +90,11 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Enable COM port." << std::endl;
 	std::cout << "-QUICKSSDIR dir" << std::endl;
 	std::cout << "  Specify quick screen shot directory." << std::endl;
+	std::cout << "-SSCROP x0 y0 wid hei" << std::endl;
+	std::cout << "  Crop screen shot.  x0 and wid is FM-7's screen coordinate." << std::endl;
+	std::cout << "  y0 and hei is FM-7's screen coordinate in 320x200 and 640x400 mode," << std::endl;
+	std::cout << "  FM-7's screen coordinate times 2 in 640x200 mode." << std::endl;
+	std::cout << "  In other words, it is all in screen-shot coordinate." << std::endl;
 	std::cout << "-HOSTSHORTCUT hostKey ctrl shift \"command\"" << std::endl;
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 	std::cout << "-INITCMD cmd" << std::endl;
@@ -397,6 +402,14 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			quickScrnShotDir=argv[i+1];
 			++i;
+		}
+		else if("-SSCROP"==ARG && i+4<argc)
+		{
+			scrnShotX0=cpputil::Atoi(argv[i+1]);
+			scrnShotY0=cpputil::Atoi(argv[i+2]);
+			scrnShotWid=cpputil::Atoi(argv[i+3]);
+			scrnShotHei=cpputil::Atoi(argv[i+4]);
+			i+=4;
 		}
 		else if("-HOSTSHORTCUT"==ARG && i+4<argc)
 		{

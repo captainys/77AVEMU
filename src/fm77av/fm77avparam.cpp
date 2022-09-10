@@ -49,6 +49,11 @@ void FM77AVParam::CleanUp(void)
 	bool unitTest=false; // If true, CUI will not be attached.  Implies termination condition.
 
 	quickScrnShotDir="";
+	scrnShotX0=0;
+	scrnShotY0=0;
+	scrnShotWid=0;
+	scrnShotHei=0;
+
 	hostShortCutKeys.clear();
 
 	//quickStateSaveFName="";

@@ -38,6 +38,10 @@ public:
 	*/
 	void Create(int wid,int hei);
 
+	/*!
+	*/
+	void Crop(unsigned int x0,unsigned int y0,unsigned int wid,unsigned int hei);
+
 	/*! 
 	*/
 	void Prepare(const FM77AV &fm77av);

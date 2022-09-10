@@ -171,6 +171,11 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 	keyboard.var.autoStopKey=param.autoStopKey;
 
 	var.quickScrnShotDir=param.quickScrnShotDir;
+	var.scrnShotX0=param.scrnShotX0;
+	var.scrnShotY0=param.scrnShotY0;
+	var.scrnShotWid=param.scrnShotWid;
+	var.scrnShotHei=param.scrnShotHei;
+
 	var.initialCmd=param.initialCmd;
 
 	if(0<param.playbackEventLogFName.size())

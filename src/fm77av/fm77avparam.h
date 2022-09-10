@@ -84,6 +84,7 @@ public:
 	std::unordered_map <std::string,std::string> fileNameAlias;
 
 	std::string quickScrnShotDir;
+	unsigned int scrnShotX0=0,scrnShotY0=0,scrnShotWid=0,scrnShotHei=0;
 
 	std::string playbackEventLogFName;
 

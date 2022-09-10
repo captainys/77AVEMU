@@ -2883,20 +2883,7 @@ void FM77AVCommandInterpreter::Execute_SaveScreenShot(FM77AV &fm77av,Command &cm
 {
 	if(2<=cmd.argv.size())
 	{
-		FM77AVRender render;
-		fm77av.RenderQuiet(render);
-
-		auto img=render.GetImage();
-
-		YsRawPngEncoder encoder;
-		if(YSOK==encoder.EncodeToFile(cmd.argv[1].c_str(),img.wid,img.hei,8,6,img.rgba))
-		{
-			std::cout << "Saved to " << cmd.argv[1] << std::endl;
-		}
-		else
-		{
-			std::cout << "Save error." << std::endl;
-		}
+		SaveScreenShot(fm77av,cmd.argv[1]);
 	}
 	else
 	{
@@ -2936,15 +2923,24 @@ void FM77AVCommandInterpreter::Execute_QuickScreenShot(FM77AV &fm77av,Command &c
 		}
 	}
 
+	SaveScreenShot(fm77av,ful);
+}
+void FM77AVCommandInterpreter::SaveScreenShot(FM77AV &fm77av,std::string fName)
+{
 	FM77AVRender render;
 	fm77av.RenderQuiet(render);
+
+	if(0!=fm77av.var.scrnShotWid && 0!=fm77av.var.scrnShotHei)
+	{
+		render.Crop(fm77av.var.scrnShotX0,fm77av.var.scrnShotY0,fm77av.var.scrnShotWid,fm77av.var.scrnShotHei);
+	}
 
 	auto img=render.GetImage();
 
 	YsRawPngEncoder encoder;
-	if(YSOK==encoder.EncodeToFile(ful.c_str(),img.wid,img.hei,8,6,img.rgba))
+	if(YSOK==encoder.EncodeToFile(fName.c_str(),img.wid,img.hei,8,6,img.rgba))
 	{
-		std::cout << "Saved to " << ful << std::endl;
+		std::cout << "Saved to " << fName << std::endl;
 	}
 	else
 	{

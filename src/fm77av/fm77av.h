@@ -200,6 +200,9 @@ public:
 		std::vector <std::string> imgSearchPaths;
 
 		std::string quickScrnShotDir;
+		// scrnShotWid==0 or scrnShotHei==0 mean no cropping.
+		unsigned int scrnShotX0=0,scrnShotY0=0,scrnShotWid=0,scrnShotHei=0;
+
 		std::vector <std::string> initialCmd;
 
 		std::unordered_map <std::string,std::string> fileNameAlias;
