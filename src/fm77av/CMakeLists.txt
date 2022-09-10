@@ -13,7 +13,8 @@ add_subdirectory(dma)
 set(TARGET_NAME fm77av)
 add_library(${TARGET_NAME} fm77av.h fm77av.cpp fm77avint.cpp fm77avio.cpp fm77avstate.cpp)
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(${TARGET_NAME} outside_world fm77aveventlog fm77avdef fm77avmemory fm77avrender fm77avcrtc fm77avfdc fm77avsound fm77avkeyboard fm77avkey fm77avgameport fm77avdatarecorder fm77avserialport fm77av40dmac ym2203c device cpputil mc6809 mc6809util vmbase)
+target_link_libraries(${TARGET_NAME} outside_world fm77aveventlog fm77avdef fm77avmemory fm77avrender fm77avcrtc fm77avfdc fm77avsound fm77avkeyboard fm77avkey fm77avgameport fm77avdatarecorder fm77avserialport fm77av40dmac ym2203c device cpputil mc6809 mc6809util vmbase lineParser)
+# lineparser is for MemoryEvaluation class.
 
 
 

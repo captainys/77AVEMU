@@ -4,6 +4,7 @@
 
 #include <string>
 #include <stdint.h>
+#include "lineparser.h"
 #include "vmbase.h"
 #include "mc6809.h"
 #include "fm77avmemory.h"
@@ -168,6 +169,41 @@ public:
 	};
 	State state;
 
+
+	// Toward semi-automated map generation.
+	// Some games (like Dragon Slayer) stores the location as a pointer,
+	// in which case, X and Y can be calculated as:
+	//    X=(addr-constant1)%constant2
+	//    Y=(addr-constant1)/constant2
+	class MemoryEvaluation : public LineParser
+	{
+	private:
+		FM77AV *fm77avPtr=nullptr;
+	public:
+		MemoryEvaluation(FM77AV *fm77avPtr);
+
+		bool ready=false;
+		mutable bool error=false;
+		mutable std::string errorMessage;
+
+		bool Decode(std::string str);
+
+		// Eg.  Write formula like the following.  PHYS:, MAIN:, SUB: can be a short form P:, M:, S:, respectively.
+		//   BYTE#PHYS:$3600A
+		//   (WORD#PHYS:0x3600A-0x4E00)/0x50
+		//   (WORD#MAIN:0x600A-0x4E00)%0x50
+		// Main/Sub won't be decoded at run time.  MAIN: will be mapped to physical 0x30000 to 0x3FFF
+		// At this time, formula cannot be used in the address.
+		//   OK    WORD#MAIN:0x107F
+		//   ERR   WORD#MAIN:(0x1000+0x7F)
+		long long int EvaluateRawNumber(const std::string &str) const override;
+
+		unsigned int EvaluateMemoryReference(const std::string &str,unsigned int nBytes) const;
+
+		unsigned int DecodePhysicalAddress(std::string term) const;
+	};
+
+
 	class Variable
 	{
 	public:
@@ -210,6 +246,7 @@ public:
 		Address powerOffAt;
 	};
 	Variable var;
+	MemoryEvaluation mapX,mapY;
 
 	FM77AVEventLog eventLog;
 
@@ -242,6 +279,14 @@ public:
 	static std::string FindFile(std::string fName,const std::unordered_map<std::string,std::string> &aliases,const std::vector <std::string> &imgSearchPaths);
 
 	bool NoWait(void) const;
+
+	bool IsMapXAvailable(void) const;
+	int GetMapX(void) const;
+	bool IsMapYAvailable(void) const;
+	int GetMapY(void) const;
+private:
+	bool IsMemoryEvaluationAvailable(const MemoryEvaluation &mapLoc) const;
+	int GetMemoryEvaluation(const MemoryEvaluation &mapLoc) const;
 
 private:
 	void RunFastDevicePollingInternal(void);

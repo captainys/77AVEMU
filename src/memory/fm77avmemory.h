@@ -209,6 +209,14 @@ public:
 	Variable var;
 
 
+	class Reference
+	{
+	public:
+		uint8_t nBytes=0; // 0:Invalid/Inaccessible  1:Byte  2:Word  4:Double Word
+		uint32_t addr=0;  // Physical address
+	};
+
+
 	virtual const char *DeviceName(void) const{return "PHYSMEM";}
 	PhysicalMemory(VMBase *vmBase);
 

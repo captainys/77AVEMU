@@ -23,7 +23,9 @@ FM77AV::FM77AV() :
 	sound(this),
 	gameport(this),
 	serialport(this),
-	dmac(this)
+	dmac(this),
+	mapX(this),
+	mapY(this)
 {
 	allDevices.push_back(&mainCPU);
 	allDevices.push_back(&subCPU);
@@ -906,4 +908,124 @@ bool FM77AV::AutoSaveSymbolTable(void) const
 		std::cout << "Cannot Auto-Save." << std::endl;
 		return false;
 	}
+}
+
+
+bool FM77AV::IsMapXAvailable(void) const
+{
+	return IsMemoryEvaluationAvailable(mapX);
+}
+int FM77AV::GetMapX(void) const
+{
+	return GetMemoryEvaluation(mapX);
+}
+bool FM77AV::IsMapYAvailable(void) const
+{
+	return IsMemoryEvaluationAvailable(mapY);
+}
+int FM77AV::GetMapY(void) const
+{
+	return GetMemoryEvaluation(mapY);
+}
+bool FM77AV::IsMemoryEvaluationAvailable(const MemoryEvaluation &mapLoc) const
+{
+	return (0!=mapLoc.ready);
+}
+int FM77AV::GetMemoryEvaluation(const MemoryEvaluation &mapLoc) const
+{
+	return mapLoc.Evaluate();
+}
+
+FM77AV::MemoryEvaluation::MemoryEvaluation(FM77AV *fm77avPtr)
+{
+	this->fm77avPtr=fm77avPtr;
+}
+
+bool FM77AV::MemoryEvaluation::Decode(std::string str)
+{
+	ready=false;
+	errorMessage="";
+	cpputil::Capitalize(str);
+	if(true==Analyze(str))
+	{
+		Evaluate(); // Dummy-evaluate.
+		if(true!=error)
+		{
+			ready=true;
+		}
+	}
+	if(""==errorMessage)
+	{
+		errorMessage="There was error(s) in the expression.";
+	}
+	return ready;
+}
+
+long long int FM77AV::MemoryEvaluation::EvaluateRawNumber(const std::string &str) const
+{
+	// All capitalized in Decode.
+	if("BYTE#"==str.substr(0,5))
+	{
+		return EvaluateMemoryReference(str.substr(5),1);
+	}
+	else if("WORD#"==str.substr(0,5))
+	{
+		return EvaluateMemoryReference(str.substr(5),2);
+	}
+	else if("DWORD#"==str.substr(0,6))
+	{
+		return EvaluateMemoryReference(str.substr(6),4);
+	}
+	else
+	{
+		return cpputil::Atoi(str.c_str());
+	}
+}
+
+unsigned int FM77AV::MemoryEvaluation::EvaluateMemoryReference(const std::string &str,unsigned int nBytes) const
+{
+	auto addr=DecodePhysicalAddress(str);
+	int data=0;
+	if(addr+nBytes<PhysicalMemory::PHYSMEM_SIZE)
+	{
+		for(int i=0; i<nBytes; ++i)
+		{
+			data<<=8;
+			data|=fm77avPtr->physMem.NonDestructiveFetchByte(addr+i);
+		}
+	}
+	return data;
+}
+
+unsigned int FM77AV::MemoryEvaluation::DecodePhysicalAddress(std::string term) const
+{
+	PhysicalMemory::Reference ref;
+	// All capitalized in Decode.
+	if("PHYS:"==term.substr(0,5))
+	{
+		return cpputil::Atoi(term.c_str()+5);
+	}
+	else if("P:"==term.substr(0,2))
+	{
+		return cpputil::Atoi(term.c_str()+2);
+	}
+	else if("MAIN:"==term.substr(0,5))
+	{
+		return cpputil::Atoi(term.c_str()+5)+PhysicalMemory::MAINSYS_BEGIN;
+	}
+	else if("M:"==term.substr(0,2))
+	{
+		return cpputil::Atoi(term.c_str()+2)+PhysicalMemory::MAINSYS_BEGIN;
+	}
+	else if("SUB:"==term.substr(0,4))
+	{
+		return cpputil::Atoi(term.c_str()+4)+PhysicalMemory::SUBSYS_BEGIN;
+	}
+	else if("S:"==term.substr(0,2))
+	{
+		return cpputil::Atoi(term.c_str()+2)+PhysicalMemory::SUBSYS_BEGIN;
+	}
+	errorMessage="Address needs to start with PHYS:, MAIN:, or SUB:.";
+	error=true;
+	return 0;
 }
