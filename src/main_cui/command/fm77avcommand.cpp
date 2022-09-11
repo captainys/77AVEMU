@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <iostream>
 #include "cpputil.h"
 #include "miscutil.h"
@@ -2924,16 +2927,33 @@ void FM77AVCommandInterpreter::Execute_QuickScreenShot(FM77AV &fm77av,Command &c
 	std::string ful;
 	for(int count=0; count<100; ++count)
 	{
-		char fmt[256];
-		sprintf(fmt,"%04d%02d%02d%02d%02d%02d%02d.png",year,month,date,hour,min,sec,count);
+		std::string fName;
+		{
+			char fmt[256];
+			sprintf(fmt,"%04d%02d%02d%02d%02d%02d%02d",year,month,date,hour,min,sec,count);
+			fName=fmt;
+
+			if(true==fm77av.IsMapXAvailable())
+			{
+				sprintf(fmt,"$X=%d",fm77av.GetMapX());
+				fName+=std::string(fmt);
+			}
+			if(true==fm77av.IsMapYAvailable())
+			{
+				sprintf(fmt,"$Y=%d",fm77av.GetMapY());
+				fName+=std::string(fmt);
+			}
+
+			fName+=".png";
+		}
 
 		if(""!=fm77av.var.quickScrnShotDir)
 		{
-			ful=cpputil::MakeFullPathName(fm77av.var.quickScrnShotDir,fmt);
+			ful=cpputil::MakeFullPathName(fm77av.var.quickScrnShotDir,fName);
 		}
 		else
 		{
-			ful=fmt;
+			ful=fName;
 		}
 
 		if(true!=cpputil::FileExists(ful))
@@ -2956,9 +2976,14 @@ void FM77AVCommandInterpreter::SaveScreenShot(FM77AV &fm77av,std::string fName)
 
 	auto img=render.GetImage();
 
+	auto fNameTmp=fName+".tmp";
+
 	YsRawPngEncoder encoder;
-	if(YSOK==encoder.EncodeToFile(fName.c_str(),img.wid,img.hei,8,6,img.rgba))
+	if(YSOK==encoder.EncodeToFile(fNameTmp.c_str(),img.wid,img.hei,8,6,img.rgba))
 	{
+		// To support auto-save.  If map-tool reads intermediate PNG, it will fail.
+		remove(fName.c_str());
+		rename(fNameTmp.c_str(),fName.c_str());
 		std::cout << "Saved to " << fName << std::endl;
 	}
 	else
