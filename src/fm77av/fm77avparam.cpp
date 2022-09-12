@@ -228,6 +228,20 @@ std::vector <std::string> FM77AVProfile::Serialize(void) const
 		text.back()+=MachineTypeToStr(machineType);
 	}
 
+	sstream.str("");
+	sstream << "SCRNCROP " << scrnShotX0 << " " << scrnShotY0 << " " << scrnShotWid << " " << scrnShotHei;
+	text.push_back(sstream.str());
+
+	text.push_back("MAPLOC_X ");
+	text.back().push_back('\"');
+	text.back()+=mapXYExpression[0];
+	text.back().push_back('\"');
+
+	text.push_back("MAPLOC_Y ");
+	text.back().push_back('\"');
+	text.back()+=mapXYExpression[1];
+	text.back().push_back('\"');
+
 	for(auto iter=fileNameAlias.begin(); fileNameAlias.end()!=iter; ++iter)
 	{
 		if(""!=iter->first)
@@ -445,6 +459,30 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 		else if(ARGV0=="IMGALIAS")
 		{
 			fileNameAlias[argv[1]]=argv[2];
+		}
+		else if(ARGV0=="SCRNCROP")
+		{
+			if(5<=argv.size())
+			{
+				scrnShotX0=cpputil::Atoi(argv[1].c_str());
+				scrnShotY0=cpputil::Atoi(argv[2].c_str());
+				scrnShotWid=cpputil::Atoi(argv[3].c_str());
+				scrnShotHei=cpputil::Atoi(argv[4].c_str());
+			}
+		}
+		else if(ARGV0=="MAPLOC_X")
+		{
+			if(2<=argv.size())
+			{
+				mapXYExpression[0]=argv[1];
+			}
+		}
+		else if(ARGV0=="MAPLOC_Y")
+		{
+			if(2<=argv.size())
+			{
+				mapXYExpression[1]=argv[1];
+			}
 		}
 		else
 		{
