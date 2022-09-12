@@ -126,6 +126,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CHR"]=CMD_ASCII_TO_STRING;
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
+	primaryCmdMap["DISPPAGE"]=CMD_DISPLAY_PAGE;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -201,6 +202,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  TRANS3 will make virtual BREAK from physical ESC." << std::endl;
 	std::cout << "  DIRECT mode is good for games, but affected by the keyboard layout." << std::endl;
 	std::cout << "  US keyboard cannot type some of the characters." << std::endl;
+	std::cout << "DISPPAGE 1/0" << std::endl;
+	std::cout << "  Set display page.  Valid only in 640x200 mode and machine type is FM77AV or newer." << std::endl;
 	std::cout << "TYPE string" << std::endl;
 	std::cout << "  Virtually type string." << std::endl;
 
@@ -1214,6 +1217,13 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_UPDATE_MEMORY_FILTER:
 		Execute_UpdateMemoryFilter(fm77av,cmd);
+		break;
+	case CMD_DISPLAY_PAGE:
+		if(2<=cmd.argv.size())
+		{
+			fm77av.crtc.state.displayPage=(1&cpputil::Atoi(cmd.argv[1].c_str()));
+			std::cout << "Set display page to " << fm77av.crtc.state.displayPage << std::endl;
+		}
 		break;
 	}
 }
