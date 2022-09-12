@@ -366,7 +366,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 			mapXY[i].Decode(param.mapXYExpression[i]);
 			if(true==mapXY[i].error)
 			{
-				std::cout << "Error in map-X expression" << std::endl;
+				std::cout << "Error in map-XY expression" << std::endl;
 				std::cout << mapXY[i].errorMessage << std::endl;
 			}
 		}
