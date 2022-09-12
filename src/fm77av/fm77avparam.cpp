@@ -54,6 +54,9 @@ void FM77AVParam::CleanUp(void)
 	scrnShotWid=0;
 	scrnShotHei=0;
 
+	mapXYExpression[0]="";
+	mapXYExpression[1]="";
+
 	hostShortCutKeys.clear();
 
 	//quickStateSaveFName="";

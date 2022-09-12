@@ -62,6 +62,10 @@ public:
 	FsGuiDropList *autoStopKeyDrp;
 
 
+	FsGuiTextBox *scrnShotCropTxt[4];
+	FsGuiTextBox *mapXYExpressionTxt[2];
+
+
 	FsGuiDropList *hostShortCutKeyLabelDrp[MAX_NUM_HOST_SHORTCUT];
 	FsGuiButton *hostShortCutKeyCtrlBtn[MAX_NUM_HOST_SHORTCUT];
 	FsGuiButton *hostShortCutKeyShiftBtn[MAX_NUM_HOST_SHORTCUT];

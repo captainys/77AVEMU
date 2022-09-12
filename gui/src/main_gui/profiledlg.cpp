@@ -380,6 +380,32 @@ void ProfileDialog::Make(void)
 	}
 
 	{
+		auto tabId=AddTab(tab,"ScreenShot");
+		BeginAddTabItem(tab,tabId);
+
+		AddStaticText(0,FSKEY_NULL,L"AutoCrop:",YSTRUE);
+		scrnShotCropTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"X0",5,YSFALSE);
+		scrnShotCropTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"Y0",5,YSFALSE);
+		scrnShotCropTxt[2]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"WID",5,YSFALSE);
+		scrnShotCropTxt[3]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"HEI",5,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,L"Map Location:",YSTRUE);
+		mapXYExpressionTxt[0]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"X:",16,YSTRUE);
+		mapXYExpressionTxt[1]=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"Y:",16,YSFALSE);
+
+		AddStaticText(0,FSKEY_NULL,
+			"If the addresses of the memory bytes where the map coordinates\n"
+			"are written are known, you can set map location expressions in\n"
+			"here.  Then X and Y coordinates are automatically added to the\n"
+			"quick-screenshot file name, so that another program can locate\n"
+			"the screenshot at the correct location.\n"
+			,
+			YSTRUE);
+
+		EndAddTabItem();
+	}
+
+	{
 		auto tabId=AddTab(tab,"Application");
 		BeginAddTabItem(tab,tabId);
 
@@ -770,6 +796,13 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 		}
 	}
 
+	profile.scrnShotX0=scrnShotCropTxt[0]->GetInteger();
+	profile.scrnShotY0=scrnShotCropTxt[1]->GetInteger();
+	profile.scrnShotWid=scrnShotCropTxt[2]->GetInteger();
+	profile.scrnShotHei=scrnShotCropTxt[3]->GetInteger();
+	profile.mapXYExpression[0]=mapXYExpressionTxt[0]->GetString().c_str();
+	profile.mapXYExpression[1]=mapXYExpressionTxt[1]->GetString().c_str();
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const FM77AVProfile &profile)
@@ -899,4 +932,11 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 			}
 		}
 	}
+
+	scrnShotCropTxt[0]->SetInteger(profile.scrnShotX0);
+	scrnShotCropTxt[1]->SetInteger(profile.scrnShotY0);
+	scrnShotCropTxt[2]->SetInteger(profile.scrnShotWid);
+	scrnShotCropTxt[3]->SetInteger(profile.scrnShotHei);
+	mapXYExpressionTxt[0]->SetText(profile.mapXYExpression[0].c_str());
+	mapXYExpressionTxt[1]->SetText(profile.mapXYExpression[1].c_str());
 }
