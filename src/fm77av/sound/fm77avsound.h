@@ -24,7 +24,8 @@ public:
 		MILLISEC_PER_WAVE=40, // Maybe because I am developing on VirtualBox, I am getting outrageously slow latency of 80ms (40ms*2).
 #endif
 		// 2ms resolution is needed for "What?" sound of Xanadu.
-		MILLISEC_PER_WAVE_GENERATION=2,
+		// Silpheed "Presented by Game Arts" requires higher time resolution.  Will need to go down to 500us.
+		MILLISEC_PER_WAVE_GENERATION=1,
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
