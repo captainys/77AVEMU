@@ -502,11 +502,6 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 				{
 					break;
 				}
-
-				if(0==FSKEYState[c])
-				{
-					lastPressedFsKey=c;
-				}
 			}
 		}
 		for(int key=FSKEY_NULL; key<FSKEY_NUM_KEYCODE; ++key)
@@ -554,6 +549,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 				{
 					nextKeyRepeatTime=fm77av.state.fm77avTime+fm77av.keyboard.GetKeyRepeatStartTime();
 					fm77av.keyboard.Press(KeyFlagsFilter(keyFlags,key),FSKEYtoFM77AVKEY[key]);
+					lastPressedFsKey=key;
 				}
 				else
 				{
