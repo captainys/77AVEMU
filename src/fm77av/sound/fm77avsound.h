@@ -87,7 +87,7 @@ public:
 
 	inline bool IsFMPlaying(void) const
 	{
-		return 0!=state.ym2203c.state.playingCh;
+		return 0!=state.ym2203c.state.playingCh || 0<state.ym2203c.regWriteSched.size();
 	}
 	inline bool IsPSGPlaying(void) const
 	{
