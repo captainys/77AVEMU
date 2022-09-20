@@ -324,6 +324,7 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState) && nullptr!=outside_world)
 	{
 		auto fm77avPtr=(FM77AV *)vmPtr;
+		auto lastWaveGenTime=nextWaveGenTime-MILLISEC_PER_WAVE_GENERATION*1000000;
 		if(nextWaveGenTime<=fm77avPtr->state.fm77avTime)
 		{
 			const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.
@@ -346,12 +347,12 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 
 				if(true==IsFMPlaying())
 				{
-					state.ym2203c.MakeWaveForNSamples(fillPtr,fillNumSamples,nextWaveGenTime-MILLISEC_PER_WAVE_GENERATION*1000000);
+					state.ym2203c.MakeWaveForNSamples(fillPtr,fillNumSamples,lastWaveGenTime);
 				}
 				if(true==state.ay38910.IsPlaying())
 				{
 					unsigned int numSamples=0;
-					state.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples);
+					state.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
 				}
 				if(BEEP_OFF!=state.beepState)
 				{

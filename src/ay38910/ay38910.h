@@ -52,7 +52,7 @@ public:
 		ENV_KEEP
 	};
 
-	class RegisterLog
+	class RegWriteLog
 	{
 	public:
 		uint64_t t;
@@ -88,7 +88,7 @@ public:
 	static const unsigned int DAConvOut[16];
 
 	bool takeRegisterLog=false;
-	std::vector <RegisterLog> registerLog;
+	std::vector <RegWriteLog> registerLog;
 
 	AY38910();
 	void Reset(void);
@@ -110,12 +110,41 @@ public:
 	inline uint32_t LFSR24(uint32_t lfsr) const;
 	void StartEnvelopeSegment(void);
 
-	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec);
-	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples);
+	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec,uint64_t lastWaveGentime);
+	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples,uint64_t lastWaveGentime);
+private:
+	class WithScheduler;
+	class WithoutScheduler;
+	template <class SCHEDULER>
+	void AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsigned long long int numSamples,uint64_t lastWaveGentime);
 
+public:
 	std::vector <std::string> GetStatusText(void) const;
 
 	std::vector <std::string> FormatRegisterLog(void) const;
+
+
+
+	/* Some PSG magicians bangs registers faster than the wave-generation interval.  In such situation,
+	   AY38910 class needs to remember register-write log, and update as it generates wave.
+
+	   Schedule must be flushed:
+	     After every wave generation,
+	     Before saving state.
+
+	   To enable scheduling, 
+	      (1) useScheduling=true;
+	      (2) Use WriteRegisterSchedule instead of WriteRegister.
+	      (3) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
+	*/
+	bool useScheduling=false;
+	uint8_t regCache[NUM_REGS];
+	// AY registers are readable.  Some may be using register read to identify FM-7 and FM-8.
+	// Therefore, register values need to be written to the registers immediately, but to
+	// delay writing, it needs to remember the state of the registers at the end of last wave generation.
+	std::vector <RegWriteLog> regWriteSched;
+	void WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t vmTime);
+	void FlushRegisterSchedule(void);
 };
 
 /* } */

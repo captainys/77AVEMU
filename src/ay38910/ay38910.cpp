@@ -24,6 +24,10 @@ AY38910::AY38910()
 	std::cout << "AY-3-8910 Emulator for Mutsu - DONDANZ" << std::endl;
 	std::cout << "by CaptainYS" << std::endl;
 	std::cout << "http://www.ysflight.com" << std::endl;
+	for(auto &b : regCache)
+	{
+		b=0;
+	}
 	Reset();
 }
 
@@ -57,7 +61,7 @@ void AY38910::WriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime)
 
 	if(true==takeRegisterLog)
 	{
-		RegisterLog l;
+		RegWriteLog l;
 		l.t=vmTime;
 		l.reg=reg;
 		l.value=value;
@@ -102,7 +106,7 @@ inline unsigned int AY38910::GetAmplitude(int ch) const
 	}
 }
 
-std::vector <unsigned char> AY38910::MakeWaveAllChannels(unsigned long long int millisec)
+std::vector <unsigned char> AY38910::MakeWaveAllChannels(unsigned long long int millisec,uint64_t lastWaveGenTime)
 {
 	std::vector <unsigned char> wave;
 
@@ -114,7 +118,7 @@ std::vector <unsigned char> AY38910::MakeWaveAllChannels(unsigned long long int 
 	wave.resize(4*numSamples);
 	memset(wave.data(),0,wave.size());
 
-	AddWaveAllChannelsForNumSamples(wave.data(),numSamples);
+	AddWaveAllChannelsForNumSamples(wave.data(),numSamples,lastWaveGenTime);
 	return wave;
 }
 inline unsigned int AY38910::EnvelopeFreqX1000(void) const
@@ -259,8 +263,90 @@ inline uint32_t AY38910::LFSR24(uint32_t lfsr) const
 }
 
 
-void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples)
+class AY38910::WithScheduler
 {
+public:
+	unsigned int schedPtr=0;
+	unsigned int balance=0;
+	unsigned int numSamples=0;
+	unsigned int totalNanosec=0;
+
+	inline void BeginMakeWave(AY38910 *ay,uint64_t numSamples)
+	{
+		for(int i=0; i<AY38910::NUM_REGS; ++i)
+		{
+			ay->state.regs[i]=ay->regCache[i];
+		}
+		totalNanosec=1000000000*numSamples/AY38910::WAVE_SAMPLING_RATE;
+		this->numSamples=numSamples;
+	}
+	inline void Increment(AY38910 *ay,uint64_t count,uint64_t lastWaveGenTime)
+	{
+		// 44100Hz.  1sample=22675nanosec=23us.
+		// Divide it rather than DDA it.
+		if(schedPtr<ay->regWriteSched.size() && 0<numSamples)
+		{
+			auto nanosec=count;
+			nanosec*=totalNanosec;
+			nanosec/=numSamples;
+			nanosec+=lastWaveGenTime;
+			while(schedPtr<ay->regWriteSched.size() && ay->regWriteSched[schedPtr].t<=nanosec)
+			{
+				auto &sched=ay->regWriteSched[schedPtr];
+				ay->WriteRegister(sched.reg,sched.value,sched.t);
+				++schedPtr;
+			}
+		}
+	}
+	inline void EndMakeWave(AY38910 *ay)
+	{
+		while(schedPtr<ay->regWriteSched.size())
+		{
+			auto &sched=ay->regWriteSched[schedPtr];
+			ay->WriteRegister(sched.reg,sched.value,sched.t);
+			++schedPtr;
+		}
+		ay->regWriteSched.clear();
+		for(int i=0; i<AY38910::NUM_REGS; ++i)
+		{
+			ay->regCache[i]=ay->state.regs[i];
+		}
+	}
+};
+
+class AY38910::WithoutScheduler
+{
+public:
+	static inline void BeginMakeWave(AY38910 *ay,uint64_t numSamples)
+	{
+		ay->FlushRegisterSchedule();
+	}
+	static inline void Increment(AY38910 *ay,uint64_t count,uint64_t lastWaveGenTime)
+	{
+	}
+	static inline void EndMakeWave(AY38910 *ay)
+	{
+	}
+};
+
+void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples,uint64_t systemTimeInNS)
+{
+	if(true==useScheduling)
+	{
+		AddWaveAllChannelsForNumSamplesTemplate<WithScheduler>(data,numSamples,systemTimeInNS);
+	}
+	else
+	{
+		AddWaveAllChannelsForNumSamplesTemplate<WithoutScheduler>(data,numSamples,systemTimeInNS);
+	}
+}
+
+template <class SCHEDULER>
+void AY38910::AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsigned long long int numSamples,uint64_t lastWaveGenTime)
+{
+	SCHEDULER scheduler;
+	scheduler.BeginMakeWave(this,numSamples);
+
 	uint32_t halfTonePeriodX1000[3]={0,0,0};
 	for(int ch=0; ch<3; ++ch)
 	{
@@ -304,6 +390,8 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 	}
 	for(unsigned long long int i=0; i<numSamples; ++i)
 	{
+		scheduler.Increment(this,i,lastWaveGenTime);
+
 		auto dataPtr=data+i*4; // 16-bit stereo
 		for(int ch=0; ch<3; ++ch)
 		{
@@ -385,6 +473,8 @@ void AY38910::AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long
 			}
 		}
 	}
+
+	scheduler.EndMakeWave(this);
 }
 
 std::vector <std::string> AY38910::GetStatusText(void) const
@@ -429,4 +519,23 @@ std::vector <std::string> AY38910::FormatRegisterLog(void) const
 		}
 	}
 	return text;
+}
+
+////////////////////////////////////////////////////////////
+
+void AY38910::WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
+{
+	RegWriteLog rwl;
+	rwl.reg=reg;
+	rwl.value=value;
+	rwl.t=systemTimeInNS;
+	regWriteSched.push_back(rwl);
+}
+void AY38910::FlushRegisterSchedule(void)
+{
+	for(auto sched : regWriteSched)
+	{
+		WriteRegister(sched.reg,sched.value,sched.t);
+	}
+	regWriteSched.clear();
 }
