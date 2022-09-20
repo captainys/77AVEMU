@@ -262,6 +262,15 @@ inline uint32_t AY38910::LFSR24(uint32_t lfsr) const
 	return lfsr;
 }
 
+class AY38910::PlaybackParam
+{
+public:
+	uint32_t halfTonePeriodX1000[3]={0,0,0};
+	uint32_t envPeriodX1000=0;
+	uint32_t envType=0;
+	uint32_t noisePeriodX1000=0;
+
+};
 
 class AY38910::WithScheduler
 {
@@ -280,7 +289,7 @@ public:
 		totalNanosec=1000000000*numSamples/AY38910::WAVE_SAMPLING_RATE;
 		this->numSamples=numSamples;
 	}
-	inline void Increment(AY38910 *ay,uint64_t count,uint64_t lastWaveGenTime)
+	inline void Increment(AY38910 *ay,PlaybackParam &pp,uint64_t count,uint64_t lastWaveGenTime)
 	{
 		// 44100Hz.  1sample=22675nanosec=23us.
 		// Divide it rather than DDA it.
@@ -294,6 +303,7 @@ public:
 			{
 				auto &sched=ay->regWriteSched[schedPtr];
 				ay->WriteRegister(sched.reg,sched.value,sched.t);
+				ay->RecalculatePlaybackParam(pp);
 				++schedPtr;
 			}
 		}
@@ -319,9 +329,8 @@ class AY38910::WithoutScheduler
 public:
 	static inline void BeginMakeWave(AY38910 *ay,uint64_t numSamples)
 	{
-		ay->FlushRegisterSchedule();
 	}
-	static inline void Increment(AY38910 *ay,uint64_t count,uint64_t lastWaveGenTime)
+	static inline void Increment(AY38910 *ay,PlaybackParam &pp,uint64_t count,uint64_t lastWaveGenTime)
 	{
 	}
 	static inline void EndMakeWave(AY38910 *ay)
@@ -345,65 +354,26 @@ template <class SCHEDULER>
 void AY38910::AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsigned long long int numSamples,uint64_t lastWaveGenTime)
 {
 	SCHEDULER scheduler;
+	PlaybackParam pp;
 	scheduler.BeginMakeWave(this,numSamples);
+	RecalculatePlaybackParam(pp);
 
-	uint32_t halfTonePeriodX1000[3]={0,0,0};
-	for(int ch=0; ch<3; ++ch)
-	{
-		if(0==(state.regs[REG_MIXER]&(1<<ch)))
-		{
-			uint64_t toneFreqX1000=ChannelFrequencyX1000(ch);
-			if(0<toneFreqX1000)
-			{
-				uint64_t tonePeriodX1000=WAVE_SAMPLING_RATE;
-				tonePeriodX1000*=1000000;
-				tonePeriodX1000/=toneFreqX1000;
-				halfTonePeriodX1000[ch]=uint32_t(tonePeriodX1000/2);
-			}
-		}
-	}
-
-	uint32_t envPeriodX1000=0;
-	uint32_t envType=GetEnvelopePatternType();
-	{
-		uint64_t envFreqX1000=EnvelopeFreqX1000();
-		if(0<envFreqX1000)
-		{
-			uint64_t periodX1000=WAVE_SAMPLING_RATE;
-			periodX1000*=1000000;
-			periodX1000/=envFreqX1000;
-			envPeriodX1000=uint32_t(periodX1000);
-		}
-	}
-
-	uint32_t noisePeriodX1000=0;
-	if(0b00111000!=(state.regs[REG_MIXER]&0b00111000))
-	{
-		uint64_t noiseFreqX1000=NoiseFreqX1000();
-		if(0<noiseFreqX1000)
-		{
-			uint64_t periodX1000=WAVE_SAMPLING_RATE;
-			periodX1000*=1000000;
-			periodX1000/=noiseFreqX1000;
-			noisePeriodX1000=uint32_t(periodX1000);
-		}
-	}
 	for(unsigned long long int i=0; i<numSamples; ++i)
 	{
-		scheduler.Increment(this,i,lastWaveGenTime);
+		scheduler.Increment(this,pp,i,lastWaveGenTime);
 
 		auto dataPtr=data+i*4; // 16-bit stereo
 		for(int ch=0; ch<3; ++ch)
 		{
-			if(0<halfTonePeriodX1000[ch])
+			if(0<pp.halfTonePeriodX1000[ch])
 			{
 				if(0==(state.regs[REG_MIXER]&(1<<ch)))
 				{
 					state.ch[ch].tonePeriodBalance+=1000;
-					if(halfTonePeriodX1000[ch]<=state.ch[ch].tonePeriodBalance)
+					if(pp.halfTonePeriodX1000[ch]<=state.ch[ch].tonePeriodBalance)
 					{
 						state.ch[ch].toneSign=1-state.ch[ch].toneSign;
-						state.ch[ch].tonePeriodBalance-=halfTonePeriodX1000[ch];
+						state.ch[ch].tonePeriodBalance-=pp.halfTonePeriodX1000[ch];
 					}
 
 					int ampl=GetAmplitude(ch);
@@ -419,7 +389,7 @@ void AY38910::AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsig
 					}
 				}
 			}
-			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<noisePeriodX1000)
+			if(0==(state.regs[REG_MIXER]&(8<<ch)) && 0<pp.noisePeriodX1000)
 			{
 				if(true!=channelMute[ch])
 				{
@@ -436,26 +406,26 @@ void AY38910::AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsig
 
 		// Like drawing a line from (0,0)-(envPeriod,ENV_OUT_MAX) with DDA.
 		state.envPeriodBalance+=(ENV_OUT_MAX*1000);
-		if(envPeriodX1000<=state.envPeriodBalance)
+		if(pp.envPeriodX1000<=state.envPeriodBalance)
 		{
-			state.envPeriodBalance-=envPeriodX1000;
-			if(ENV_UP==envPtn[envType][state.envPatternSeg])
+			state.envPeriodBalance-=pp.envPeriodX1000;
+			if(ENV_UP==envPtn[pp.envType][state.envPatternSeg])
 			{
 				++state.envOut;
 			}
-			if(ENV_DOWN==envPtn[envType][state.envPatternSeg] && 0<state.envOut)
+			if(ENV_DOWN==envPtn[pp.envType][state.envPatternSeg] && 0<state.envOut)
 			{
 				--state.envOut;
 			}
 		}
 
 		state.envPhase+=1000;
-		if(envPeriodX1000<=state.envPhase)
+		if(pp.envPeriodX1000<=state.envPhase)
 		{
-			if(ENV_KEEP!=envPtn[envType][state.envPatternSeg])
+			if(ENV_KEEP!=envPtn[pp.envType][state.envPatternSeg])
 			{
 				state.envPatternSeg=(state.envPatternSeg+1)&3;
-				if(ENV_REPT==envPtn[envType][state.envPatternSeg])
+				if(ENV_REPT==envPtn[pp.envType][state.envPatternSeg])
 				{
 					state.envPatternSeg=0;
 				}
@@ -463,18 +433,63 @@ void AY38910::AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsig
 			}
 		}
 
-		if(0!=noisePeriodX1000)
+		if(0!=pp.noisePeriodX1000)
 		{
 			state.noisePeriodBalance+=1000;
-			while(noisePeriodX1000<=state.noisePeriodBalance)
+			while(pp.noisePeriodX1000<=state.noisePeriodBalance)
 			{
-				state.noisePeriodBalance-=noisePeriodX1000;
+				state.noisePeriodBalance-=pp.noisePeriodX1000;
 				state.LFSR=LFSR24(state.LFSR);
 			}
 		}
 	}
 
 	scheduler.EndMakeWave(this);
+}
+
+void AY38910::RecalculatePlaybackParam(PlaybackParam &pp)
+{
+	for(int ch=0; ch<3; ++ch)
+	{
+		pp.halfTonePeriodX1000[ch]=0;
+		if(0==(state.regs[REG_MIXER]&(1<<ch)))
+		{
+			uint64_t toneFreqX1000=ChannelFrequencyX1000(ch);
+			if(0<toneFreqX1000)
+			{
+				uint64_t tonePeriodX1000=WAVE_SAMPLING_RATE;
+				tonePeriodX1000*=1000000;
+				tonePeriodX1000/=toneFreqX1000;
+				pp.halfTonePeriodX1000[ch]=uint32_t(tonePeriodX1000/2);
+			}
+		}
+	}
+
+	pp.envPeriodX1000=0;
+	pp.envType=GetEnvelopePatternType();
+	{
+		uint64_t envFreqX1000=EnvelopeFreqX1000();
+		if(0<envFreqX1000)
+		{
+			uint64_t periodX1000=WAVE_SAMPLING_RATE;
+			periodX1000*=1000000;
+			periodX1000/=envFreqX1000;
+			pp.envPeriodX1000=uint32_t(periodX1000);
+		}
+	}
+
+	pp.noisePeriodX1000=0;
+	if(0b00111000!=(state.regs[REG_MIXER]&0b00111000))
+	{
+		uint64_t noiseFreqX1000=NoiseFreqX1000();
+		if(0<noiseFreqX1000)
+		{
+			uint64_t periodX1000=WAVE_SAMPLING_RATE;
+			periodX1000*=1000000;
+			periodX1000/=noiseFreqX1000;
+			pp.noisePeriodX1000=uint32_t(periodX1000);
+		}
+	}
 }
 
 std::vector <std::string> AY38910::GetStatusText(void) const
@@ -530,6 +545,10 @@ void AY38910::WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t
 	rwl.value=value;
 	rwl.t=systemTimeInNS;
 	regWriteSched.push_back(rwl);
+
+	// FM-8 games may be checking presence of AY38910 by writing to the register and reading it back.
+	// The change of the value needs to be visible immediately.
+	state.regs[reg]=value;
 }
 void AY38910::FlushRegisterSchedule(void)
 {

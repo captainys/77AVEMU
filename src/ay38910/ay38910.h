@@ -97,7 +97,7 @@ public:
 
 	inline bool IsPlaying(void) const
 	{
-		return (state.regs[REG_MIXER]&0x3F)!=0x3F;
+		return ((state.regs[REG_MIXER]&0x3F)!=0x3F || 0<regWriteSched.size());
 	}
 
 	inline unsigned int GetF_NUM(int ch) const;
@@ -113,10 +113,12 @@ public:
 	std::vector <unsigned char> MakeWaveAllChannels(unsigned long long int millisec,uint64_t lastWaveGentime);
 	void AddWaveAllChannelsForNumSamples(unsigned char data[],unsigned long long int numSamples,uint64_t lastWaveGentime);
 private:
+	class PlaybackParam;
 	class WithScheduler;
 	class WithoutScheduler;
 	template <class SCHEDULER>
 	void AddWaveAllChannelsForNumSamplesTemplate(unsigned char data[],unsigned long long int numSamples,uint64_t lastWaveGentime);
+	void RecalculatePlaybackParam(PlaybackParam &pp);
 
 public:
 	std::vector <std::string> GetStatusText(void) const;
