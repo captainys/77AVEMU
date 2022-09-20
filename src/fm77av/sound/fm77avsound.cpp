@@ -439,7 +439,9 @@ void FM77AVSound::SaveRecording(std::string fName) const
 // Difference from Tsugaru is it includes preScaler.
 void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) const
 {
-	auto &ym2203c=state.ym2203c;
+	auto ym2203c=state.ym2203c; // Make a copy to flush register schedule.
+
+	ym2203c.FlushRegisterSchedule();
 
 	PushUint32(data,ym2203c.state.preScaler);
 
@@ -521,6 +523,8 @@ void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) cons
 void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version)
 {
 	auto &ym2203c=state.ym2203c;
+
+	ym2203c.FlushRegisterSchedule();
 
 	for(auto &ch : ym2203c.state.channels)
 	{
