@@ -124,7 +124,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			}
 			if(2==state.ay38910LastControl && 0==control) // Write Data
 			{
-				state.ay38910.Write(fm77avPtr->state.fm77avTime,state.ay38910AddrLatch,state.ay38910LastData);
+				state.ay38910.WriteRegister(state.ay38910AddrLatch,state.ay38910LastData,fm77avPtr->state.fm77avTime);
 				if(0!=ay38910RegisterMonitor[state.ay38910AddrLatch])
 				{
 					std::cout << "AY38910 Reg[$"+cpputil::Ubtox(state.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(state.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
@@ -151,7 +151,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 		case 1: // Data Read
 			if(state.ym2203cAddrLatch<=0x0F)
 			{
-				state.ym2203cDataRead=state.ay38910.Read(state.ym2203cAddrLatch);
+				state.ym2203cDataRead=state.ay38910.ReadRegister(state.ym2203cAddrLatch);
 			}
 			else if(REG_PORTA==state.ym2203cAddrLatch)
 			{
@@ -192,7 +192,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			}
 			if(state.ym2203cAddrLatch<=0x0F)
 			{
-				state.ay38910.Write(fm77avPtr->state.fm77avTime,state.ym2203cAddrLatch,state.ym2203cDataWrite);
+				state.ay38910.WriteRegister(state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
 				if(REG_GAMEPORTENABLE==state.ym2203cAddrLatch)
 				{
 					// Question: Should I care?
@@ -281,7 +281,7 @@ uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
 	case FM77AVIO_PSG_DATA://                0xFD0E,
 		if(1==state.ay38910LastControl) // Read
 		{
-			return state.ay38910.Read(state.ay38910AddrLatch);
+			return state.ay38910.ReadRegister(state.ay38910AddrLatch);
 		}
 		break;
 

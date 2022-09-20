@@ -92,8 +92,8 @@ public:
 
 	AY38910();
 	void Reset(void);
-	uint8_t Read(uint8_t reg) const;
-	void Write(uint64_t vmTime,uint8_t reg,uint8_t value);
+	uint8_t ReadRegister(uint8_t reg) const;
+	void WriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime);
 
 	inline bool IsPlaying(void) const
 	{

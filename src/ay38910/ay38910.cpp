@@ -42,11 +42,11 @@ void AY38910::Reset(void)
 	state.preScaler=2;
 
 }
-uint8_t AY38910::Read(uint8_t reg) const
+uint8_t AY38910::ReadRegister(uint8_t reg) const
 {
 	return state.regs[reg];
 }
-void AY38910::Write(uint64_t vmTime,uint8_t reg,uint8_t value)
+void AY38910::WriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime)
 {
 	state.regs[reg]=value;
 	if(REG_ENV_PATTERN==reg)
