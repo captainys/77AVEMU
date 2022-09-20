@@ -25,7 +25,8 @@ public:
 #endif
 		// 2ms resolution is needed for "What?" sound of Xanadu.
 		// Silpheed "Presented by Game Arts" requires higher time resolution.  Will need to go down to 500us.
-		MILLISEC_PER_WAVE_GENERATION=1,
+		// OK, now I introduced Register-Write Scheduling, which should solve the problem.
+		MILLISEC_PER_WAVE_GENERATION=5,
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
