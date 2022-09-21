@@ -94,7 +94,10 @@ public:
 	void Reset(void);
 	uint8_t ReadRegister(uint8_t reg) const;
 	void WriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime);
-
+private:
+	void ReallyWriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime);
+	void WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t vmTime);
+public:
 	inline bool IsPlaying(void) const
 	{
 		return ((state.regs[REG_MIXER]&0x3F)!=0x3F || 0<regWriteSched.size());
@@ -136,8 +139,7 @@ public:
 
 	   To enable scheduling, 
 	      (1) useScheduling=true;
-	      (2) Use WriteRegisterSchedule instead of WriteRegister.
-	      (3) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
+	      (2) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
 	*/
 	bool useScheduling=false;
 	uint8_t regCache[NUM_REGS];
@@ -145,7 +147,6 @@ public:
 	// Therefore, register values need to be written to the registers immediately, but to
 	// delay writing, it needs to remember the state of the registers at the end of last wave generation.
 	std::vector <RegWriteLog> regWriteSched;
-	void WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t vmTime);
 	void FlushRegisterSchedule(void);
 };
 

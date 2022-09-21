@@ -125,7 +125,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			}
 			if(2==state.ay38910LastControl && 0==control) // Write Data
 			{
-				state.ay38910.WriteRegisterSchedule(state.ay38910AddrLatch,state.ay38910LastData,fm77avPtr->state.fm77avTime);
+				state.ay38910.WriteRegister(state.ay38910AddrLatch,state.ay38910LastData,fm77avPtr->state.fm77avTime);
 				if(0!=ay38910RegisterMonitor[state.ay38910AddrLatch])
 				{
 					std::cout << "AY38910 Reg[$"+cpputil::Ubtox(state.ay38910AddrLatch)+"]=$"+cpputil::Ubtox(state.ay38910LastData) << " at " << fm77avPtr->state.fm77avTime << std::endl;
@@ -193,7 +193,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 			}
 			if(state.ym2203cAddrLatch<=0x0F)
 			{
-				state.ay38910.WriteRegisterSchedule(state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+				state.ay38910.WriteRegister(state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
 				if(REG_GAMEPORTENABLE==state.ym2203cAddrLatch)
 				{
 					// Question: Should I care?

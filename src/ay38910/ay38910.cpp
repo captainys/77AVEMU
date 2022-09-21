@@ -50,7 +50,20 @@ uint8_t AY38910::ReadRegister(uint8_t reg) const
 {
 	return state.regs[reg];
 }
+
 void AY38910::WriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime)
+{
+	if(true==useScheduling)
+	{
+		WriteRegisterSchedule(reg,value,vmTime);
+	}
+	else
+	{
+		ReallyWriteRegister(reg,value,vmTime);
+	}
+}
+
+void AY38910::ReallyWriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime)
 {
 	state.regs[reg]=value;
 	if(REG_ENV_PATTERN==reg)
@@ -67,6 +80,19 @@ void AY38910::WriteRegister(uint8_t reg,uint8_t value,uint64_t vmTime)
 		l.value=value;
 		registerLog.push_back(l);
 	}
+}
+
+void AY38910::WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
+{
+	RegWriteLog rwl;
+	rwl.reg=reg;
+	rwl.value=value;
+	rwl.t=systemTimeInNS;
+	regWriteSched.push_back(rwl);
+
+	// FM-8 games may be checking presence of AY38910 by writing to the register and reading it back.
+	// The change of the value needs to be visible immediately.
+	state.regs[reg]=value;
 }
 
 inline unsigned int AY38910::GetF_NUM(int ch) const
@@ -302,7 +328,7 @@ public:
 			while(schedPtr<ay->regWriteSched.size() && ay->regWriteSched[schedPtr].t<=nanosec)
 			{
 				auto &sched=ay->regWriteSched[schedPtr];
-				ay->WriteRegister(sched.reg,sched.value,sched.t);
+				ay->ReallyWriteRegister(sched.reg,sched.value,sched.t);
 				ay->RecalculatePlaybackParam(pp);
 				++schedPtr;
 			}
@@ -313,7 +339,7 @@ public:
 		while(schedPtr<ay->regWriteSched.size())
 		{
 			auto &sched=ay->regWriteSched[schedPtr];
-			ay->WriteRegister(sched.reg,sched.value,sched.t);
+			ay->ReallyWriteRegister(sched.reg,sched.value,sched.t);
 			++schedPtr;
 		}
 		ay->regWriteSched.clear();
@@ -538,23 +564,11 @@ std::vector <std::string> AY38910::FormatRegisterLog(void) const
 
 ////////////////////////////////////////////////////////////
 
-void AY38910::WriteRegisterSchedule(unsigned int reg,unsigned int value,uint64_t systemTimeInNS)
-{
-	RegWriteLog rwl;
-	rwl.reg=reg;
-	rwl.value=value;
-	rwl.t=systemTimeInNS;
-	regWriteSched.push_back(rwl);
-
-	// FM-8 games may be checking presence of AY38910 by writing to the register and reading it back.
-	// The change of the value needs to be visible immediately.
-	state.regs[reg]=value;
-}
 void AY38910::FlushRegisterSchedule(void)
 {
 	for(auto sched : regWriteSched)
 	{
-		WriteRegister(sched.reg,sched.value,sched.t);
+		ReallyWriteRegister(sched.reg,sched.value,sched.t);
 	}
 	regWriteSched.clear();
 }
