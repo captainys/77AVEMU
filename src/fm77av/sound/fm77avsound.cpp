@@ -207,7 +207,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 				}
 
 				// YM2203C does not have additional 3 channels. Channel base is always 0.
-				state.ym2203c.WriteRegisterSchedule(0,state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
 				if(REG_PORTB==state.ym2203cAddrLatch)
 				{
 					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(data&0x10),data&3);
