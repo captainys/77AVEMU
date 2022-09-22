@@ -140,6 +140,7 @@ public:
 	   To enable scheduling, 
 	      (1) useScheduling=true;
 	      (2) VM needs to remember when the wave was generated for the last time, and pass it to MakeWaveForNSamples.
+	      (3) VM needs to copy regs to regCache on state load.
 	*/
 	bool useScheduling=false;
 	uint8_t regCache[NUM_REGS];

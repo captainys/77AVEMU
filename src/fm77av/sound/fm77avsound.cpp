@@ -648,6 +648,11 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 	state.ay38910.state.preScaler=ReadUint32(data);
 	state.ay38910.state.LFSR=ReadUint32(data);
 	state.ay38910.state.noisePeriodBalance=ReadUint32(data);
+
+	for(int i=0; i<AY38910::NUM_REGS; ++i)
+	{
+		state.ay38910.regCache[i]=state.ay38910.state.regs[i];
+	}
 }
 
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
