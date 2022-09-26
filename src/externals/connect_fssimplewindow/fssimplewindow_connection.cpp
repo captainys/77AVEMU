@@ -1411,8 +1411,8 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 /* virtual */ bool FsSimpleWindowConnection::FMPSGChannelPlaying(void)
 {
 #ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::SoundData dummyData;
-	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextSegment(FMPSGStream,dummyData);
+	unsigned int numSamples=(FM77AVSound::MILLISEC_PER_WAVE*YM2612::WAVE_SAMPLING_RATE+999)/1000;
+	return YSTRUE!=soundPlayer.StreamPlayerReadyToAcceptNextNumSample(FMPSGStream,numSamples);
 #else
 	return YSTRUE==soundPlayer.IsPlaying(FMPSGChannel);
 #endif
