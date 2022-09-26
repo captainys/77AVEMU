@@ -242,6 +242,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	soundPlayer.Start();
 #ifdef AUDIO_USE_STREAMING
 	YsSoundPlayer::StreamingOption FMPSGStreamOpt;
+	FMPSGStreamOpt.ringBufferLengthMillisec=FM77AVSound::MILLISEC_PER_WAVE*2;
 	soundPlayer.StartStreaming(FMPSGStream,FMPSGStreamOpt);
 #endif
 
