@@ -8,25 +8,46 @@ PEB01130@nifty.com
 ---
 
 # Introduction
-It is yet another emulator for legendary Fujitsu FM-7 series computers.  The goal is to emulate FM77AV40.  I never owned FM77AV40EX and AV40SX, and practically more than 99.9% of FM-7 series software runs on FM77AV.  Minimum goal is to support FM77AV.
+It is yet another emulator for legendary 8-bit computer, Fujitsu FM-7 series computers.  Some of the features are:
 
-Why another FM-7 series emulator?  Primary reason is because I like programming.  I was able to write FM Towns emulator.  I thought I should be able to write an FM77AV emulator by myself, especially I know pretty good internal mechanism.  But, I also want to make it (1)have functionalities for help preserving actual hardware, (2) have symbolic debugger like Tsugaru, (3)natively run on mac/Linux/Windows, (4) replicate copy-protection as is so that the program runs without altering the code.  I don't think none of the existing emulators have all.
+- Cross Platform (Windows/Linux/macOS).
+- Can choose Graphical and Command User Interface.
+- Powerful Debugger
+- Cooperation with 2D Retro Map Tool.
 
-At this time it can run only a few games with no sound.  Will add more features soon.
+The goal is to emulate FM77AV40.  I never owned FM77AV40EX and AV40SX, and practically more than 99.9% of FM-7 series software runs on FM77AV.  Minimum goal is to support FM77AV.
 
-I'm re-using code from FM-TOWNS Emulator Tsugaru.  So, CMakeLists.txt assumes that you have TOWNSEMU and 77AVEMU at the same level.
+In the future, I want to replicate copy-protection as is, rather than cracking it to run applications.
 
-Please run Mutsu_CUI -H for help.
+There are many excellent emulators for FM-7 series, so why another one?  Mainly because I like programming.  Well, I wanted to make one that is preservable.  Cross-platform is a must for a program to be preservable.  We never know if Windows exists 10 years from now.  Unless the software is written portable and cross-platform, the software dies with the platform.  When I wrote Tsugaru, I felt I should be able to write FM-7 series emulator, but I hesitated because there already were good emulators, but after talking with Game Preservation Society this (2022) summer that it would be nice to have an emulator that can replicate copy protection as is, I decided to go for it.
 
-伝説の明機富士通FM-7/FM77AV/FM77AV40エミュレータです。目標はFM77AV40を再現することです。FM77AV40EX, AV40SXは所有したことがないですし、現実的に99.9%以上のFM-7シリーズのゲームはFM77AVで実行できるので、FM77AVの再現が最低目標です。いや、FM77AVが再現できればいいかな、と思ったけど一応手元にAV40もあって実機で実験できるから。
+Let's look at the reality.  You can find a pirated copy of Thexder for FM-7 on the internet.  If you hear a beep on start up, it is most likely using an initial program loader written by a hacker called J.N. for evading the copy protection.  We don't know who he or she was.  But, real Thexder does not boot on start up.  I rather want to run the original by replicating its copy protection as is.
 
-FM-7シリーズには既にいくつかの非常に高い再現性を持つエミュレータが存在しますが、なぜあらためて作るのか、というと、僕はプログラミングが好きなので、FM TOWNSエミュレータが作れたんだからFM77AVも中身は結構知ってるつもりだからエミュレータ作れそう、と、思ったというのが最大の要因ですが、(1)実機の動態保存に使いやすいエミュレータにする、(2)資料研究のためにシンボリックデバッガを搭載する、(3)mac/Linux/Windowsにネイティブ対応、(4)コピープロテクトを忠実に再現することでプロテクトをソフトウェアの修正により解除しなくてもソフトウェアを実行できるようにする、のすべてを備えたエミュレータはまだ無いと思うので、この辺りを目指してます。
+Those pirated copies eventually would have a role in the preservation, but the copyright law is not ready to discuss what to do with preservation.  Don't tell me 'abandonware'.  Many game developers are still in business.  There is no such thing called abandonware.  The current copyright law protects the creators, but it is incapable of protecting what's created.
 
-現在、まだ限られた一部のゲームが実行できるだけで、音が鳴りませんが、順次サポートを広げていきます。
+The chicken race between the hackers and copy-protectors was a piece of technological history that I want to preserve.  The initial program loader by J.N. is part of this history.  Therefore, I want to preserve both.  How the original copy was working.  How it was cracked.
 
-なお、FM TOWNSエミュレータ「津軽」のコードを再利用しているので、CMakeLists.Txtは、77AVEMUと同じレベルのディレクトリにTOWNSEMUが存在することを前提としています。
 
-使い方はコンパイル後に Mutsu_CUI -H とコマンドをタイプしてください。
+
+伝説の名8ビットコンピュータ富士通FM-7/FM77AV/FM77AV40エミュレータです。特徴としては、
+
+- クロスプラットフォーム(Windows/Linux/macOS)対応
+- グラフィカルユーザーインターフェース、コマンドユーザーインターフェース選択可能
+- 強力なデバッガ
+- 二次元マップツールとの連携機能
+
+という点画あります。
+
+目標はFM77AV40を再現することです。FM77AV40EX, AV40SXは所有したことがないですし、現実的に99.9%以上のFM-7シリーズのゲームはFM77AVで実行できるので、FM77AVの再現が最低目標です。いや、FM77AVが再現できればいいかな、と思ったけど一応手元にAV40もあって実機で実験できるから。
+
+FM-7シリーズには既にいくつかの非常に高い再現性を持つエミュレータが存在しますが、なぜあらためて作るのか、というと、僕はプログラミングが好きだからです。いや、ひとつは、長期保存可能なエミュレータを作りたかったというのがあります。あるソフトウェアが長い時間生き残るためには、クロスプラットフォームであることが絶対条件です。今から10年後、Windowsはあるのでしょうか？誰にもわかりません。ポータブル、クロスプラットフォームに書かれていないプログラムは、プラットフォームと共に死にます。もうひとつは、FM TOWNSエミュレータ「津軽」の開発に成功して、これならFM77AVも行けそうだ、と、思っていたものの、でも需要無さそうだし、と、思っていたところが、この夏(2022)帰省したとき、ゲーム保存協会のジョセフさんと話しているとき、コピープロテクトをそのまま再現できるエミュレータがあるといいのにね、という話になって、じゃあやるか、と、思って作りました。（なお、既に津軽はコピープロテクトをそのまま再現するようになっています、というか、現在までのところFM TOWNS用ソフトに使われていたコピープロテクトで津軽で再現不可能なものは確認されていません。)
+
+現実に目を向けてみましょう。違法コピーされたレトロゲームはネットで簡単に見つけることができます。例えば、FM-7用のテグザー、もしも、起動時にビープ音がしたならば、それはまず間違いなく、謎のハッカーJ.N.氏によって書かれたコピープロテクトを回避するInitial Program Loaderが作動しています。誰なのか、彼なのか、彼女なのか、まったくわからないこの人物ですが、ThexderのそのIPLには本人の署名が残っています。陸奥では、クラックして実行するのではなく、もとのプログラムをそのままコピープロテクションごと再現して実行したい、と、思っています。
+
+今ネット上に存在する違法コピー、大半が日本国外のサーバーで見つかるので、日本国内の著作権法で取り締まろうとしても取り締まることはできないのが現実なのだと思います。が、この違法コピーは、いずれコンピュータ歴史・文化の保存になんらかの役割を持つ日が来るかもしれません。ただ、まだ著作権法はコンピュータやゲームの歴史・文化を保存するということに関して議論できる状態になっていません。今の著作権法は著作者を保護するものの、著作物を保護するという観点が決定的に欠落しています。
+
+また、コピープロテクトをかける人、はずす人のチキンレース自体も非常に興味深い歴史の一部と言えます。だから、テグザーのコピープロテクトはどのように作動していたのか、これも保存したいし、それがどうやってクラックされたのか、それも技術史の一部として残したいと考えています。
+
 
 ---
 
