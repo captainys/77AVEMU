@@ -707,7 +707,9 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instClock[INST_LBVS_IMM16]=5; // +1 clock if it jumps
 
 	instClock[INST_UNDEF_COMNEGA]=2; // Just guessing.  Same as COMA?
-	instClock[INST_UNDEF_RESET]=19;  // Just guessing.  Same as SWI?
+	instClock[INST_UNDEF_COMNEGB]=2; // Just guessing.  Same as COMA?
+	instClock[INST_UNDEF_RESET]=15;
+	instClock[INST_UNDEF_CLRA]=2;
 
 
 	instLabel[INST_ABX]=          "ABX";
@@ -1075,7 +1077,10 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instLabel[INST_LBVS_IMM16]=   "LBVS";
 
 	instLabel[INST_UNDEF_COMNEGA]="UNDEF_COMNEGA";
+	instLabel[INST_UNDEF_COMNEGB]="UNDEF_COMNEGB";
 	instLabel[INST_UNDEF_RESET]=  "UNDEF_RESET";
+	instLabel[INST_UNDEF_CLRA]=   "UNDEF_CLRA";
+
 
 	regToReg[ 0]=REG_D;
 	regToReg[ 1]=REG_X;
@@ -1454,6 +1459,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		break;
 
 	case INST_CLRA: //      0x4F,
+	case INST_UNDEF_CLRA: // 0x4E, // Daisenryaku FM IPL uses it.
 		state.SetA(0);
 		state.CC&=~(SF|VF|CF);
 		state.CC|=ZF;
@@ -3226,6 +3232,21 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			state.SetA(reg);
 		}
 		break;
+	case INST_UNDEF_COMNEGB: // 0x52, // Daisenryaku FM IPL uses it.
+		// Motorola 6809 and Hitachi 6309 Programming Reference pp.153
+		// "execute as a NEG instruction when the Carry bit in CC is 0, and as a COM instruction when the Carry bit is 1."
+		if(0==(state.CC&CF))
+		{
+			state.SetB(NEG(state.B()));
+		}
+		else
+		{
+			auto reg=~state.B();
+			Test8(reg);
+			state.CC|=CF;
+			state.SetB(reg);
+		}
+		break;
 	case INST_UNDEF_RESET: // 0x3E
 		// Motorola 6809 and Hitachi 6309 Programming Reference pp.153
 		// "similar to th SWI instruction.  loads the PC register with an address obtained from the RESET vector ($FFFE:F)."
@@ -3246,7 +3267,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		state.PC=mem.FetchWord(RESET_VECTOR_ADDR);
 		inst.length=0;
 		break;
-		break;
+
 	default:
 		Abort("Undefined instruction.");
 		inst.length=0;
