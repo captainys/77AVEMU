@@ -457,6 +457,7 @@ public:
 		INST_LBVS_IMM16=0x129, // 10 29
 
 		INST_UNDEF_COMNEGA=0x42,
+		INST_UNDEF_RESET=0x3E, // Xanadu Scenario II IPL uses it.
 	};
 
 	unsigned char instOperaType[0x300];
