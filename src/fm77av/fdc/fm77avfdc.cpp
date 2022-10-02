@@ -184,6 +184,17 @@ void FM77AVFDC::MakeReady(void)
 	case 0x90: // Read Data (Read Sector)
 		if(0==state.data.size()) // Need to prepare sector data.
 		{
+			if(true==monitorFDC)
+			{
+				if(state7.CCache!=compensateTrackNumber(drv.trackPos) ||
+				   state7.HCache!=state.side ||
+				   state7.RCache!=GetSectorReg())
+				{
+					// Value of C,H, or R changed after the command before actually reading?
+					std::cout << " ExecRead C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg() << std::endl;
+				}
+			}
+
 			if(nullptr!=imgPtr)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
@@ -608,6 +619,10 @@ void FM77AVFDC::MakeReady(void)
 				{
 					if(nullptr!=imgPtr)
 					{
+						state7.CCache=compensateTrackNumber(drv.trackPos);
+						state7.HCache=state.side;
+						state7.RCache=GetSectorReg();
+
 						bool verifySide=(0!=(state.lastCmd&2));
 						auto sector=imgPtr->ReadSector(
 						    diskIdx,compensateTrackNumber(drv.trackPos),state.side,
