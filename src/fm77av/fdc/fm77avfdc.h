@@ -44,6 +44,9 @@ public:
 		uint8_t currentDS=0;
 		uint8_t lastLogicalDriveWritten=0;
 
+		// For Albatross.
+		bool needIncrementSector=false;
+
 		// C H R cache.
 		uint8_t CCache=0,HCache=0,RCache=0;
 	};

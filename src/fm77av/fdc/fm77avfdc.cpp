@@ -184,6 +184,11 @@ void FM77AVFDC::MakeReady(void)
 	case 0x90: // Read Data (Read Sector)
 		if(0==state.data.size()) // Need to prepare sector data.
 		{
+			if(true==state7.needIncrementSector)
+			{
+				SetSectorReg(GetSectorReg()+1);
+			}
+
 			if(true==monitorFDC)
 			{
 				if(state7.CCache!=compensateTrackNumber(drv.trackPos) ||
@@ -378,6 +383,10 @@ void FM77AVFDC::MakeReady(void)
 				{
 					if(state.nextIndexHoleTime<fm77avPtr->state.fm77avTime)
 					{
+						if(true==monitorFDC)
+						{
+							std::cout << "Index Hole" << std::endl;
+						}
 						state.addrMarkReadCount=0;
 						state.nextIndexHoleTime=fm77avPtr->state.fm77avTime;
 						state.nextIndexHoleTime/=INDEXHOLE_INTERVAL;
@@ -572,6 +581,7 @@ void FM77AVFDC::MakeReady(void)
 	case FM77AVIO_FDC_STATUS_COMMAND://=      0xFD18,
 		SendCommand(data);
 		state.drive[DriveSelect()].diskChange=false; // Is this the right timing to erase diskChange flag?
+		state7.needIncrementSector=false; // This can be only true after reading a sector in consequtive read.
 
 		if(0xD0==(data&0xF0))
 		{
@@ -770,8 +780,20 @@ void FM77AVFDC::MakeReady(void)
 				{
 					state.data.clear();
 					state.dataReadPointer=0;
-					SetSectorReg(GetSectorReg()+1);
-					// Question.  Should I raise IRQ here?
+
+					// Albatross (Telenet) does this:
+					//   Read Data Register
+					//   If sector is incremented, break the loop.
+					//   If not store byte, and wait for next DRQ
+					// If sector register is incremented immediately, the last byte won't be stored.
+					// 
+
+					// In order to emulate Albatross, the following line needs delay. >>
+					// SetSectorReg(GetSectorReg()+1);
+					// << Need delay.
+					state7.needIncrementSector=true;
+
+					// Question.  Should I raise IRQ here?  ->  No.  Thanks, Albatross.
 				}
 				else
 				{
@@ -1048,7 +1070,8 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 	// Version 6 adds sectorPositionInTrack,nanosecPerByte,nextIndexHoleTime,DDMErrorAfterRead;
 	// -- Diverged from common serialization with Tsugaru --
 	// Version 7 adds driveMode,enableDriveMap,driveMapping[],currentDS,lastLogicalDriveWritten.
-	return 7;
+	// Version 8 adds needIncrementSector flag.
+	return 8;
 }
 /* virtual */ void FM77AVFDC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1060,6 +1083,9 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 	PushUcharArray(data,4,state7.driveMapping);
 	PushUint16(data,state7.currentDS);
 	PushUint16(data,state7.lastLogicalDriveWritten);
+
+	// Version 8
+	PushBool(data,state7.needIncrementSector);
 }
 /* virtual */ bool FM77AVFDC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1071,6 +1097,11 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 		ReadUcharArray(data,4,state7.driveMapping);
 		state7.currentDS=ReadUint16(data);
 		state7.lastLogicalDriveWritten=ReadUint16(data);
+
+		if(8<=version)
+		{
+			state7.needIncrementSector=ReadBool(data);
+		}
 	}
 	else
 	{
