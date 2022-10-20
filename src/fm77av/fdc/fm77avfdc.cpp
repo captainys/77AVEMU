@@ -717,11 +717,18 @@ void FM77AVFDC::MakeReady(void)
 					{
 						auto writeSize=std::max(state.dataReadPointer,len);
 						imgPtr->WriteSector(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg(),writeSize,state.data.data());
-						if(state.lastCmd&0x10 && 0<imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()+1)) // Multi Record
+						if(state.lastCmd&0x10) // Multi Record
 						{
 							SetSectorReg(GetSectorReg()+1);
-							state.expectedWriteLength=0; // Signal new sector
-							fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_BETWEEN_MULTI_SECTOR_READ);
+							if(0<imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()))
+							{
+								state.expectedWriteLength=0; // Signal new sector
+								fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_BETWEEN_MULTI_SECTOR_READ);
+							}
+							else
+							{
+								MakeReady();
+							}
 						}
 						else
 						{
