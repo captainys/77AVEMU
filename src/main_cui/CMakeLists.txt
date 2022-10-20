@@ -947,5 +947,9 @@ add_test(
 		-POWEROFFAT
 		MAIN
 		86F2
+		-TESTCONDMEM
+		MAIN   # Check multi-record read successfully read to the last byte.
+		BFFF
+		05
 		-NOWAIT
 )

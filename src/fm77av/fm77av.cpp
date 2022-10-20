@@ -331,6 +331,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 		var.powerOffAt.addr=param.powerOffAtAddr;
 		CPU(param.powerOffAtCPUType).debugger.SetBreakPoint(param.powerOffAtAddr,param.powerOffAtAddr);
 	}
+	var.testCondMem=param.testCondMem;
 
 	keyboard.var.autoStopAfterThis=param.autoStopType;
 	keyboard.var.autoStopKey=param.autoStopKey;
@@ -1112,4 +1113,25 @@ bool FM77AV::IsMemoryEvaluationAvailable(const MemoryEvaluation &mapLoc) const
 int FM77AV::GetMemoryEvaluation(const MemoryEvaluation &mapLoc) const
 {
 	return mapLoc.Evaluate();
+}
+
+int FM77AV::TestSuccess(void) const
+{
+	for(auto cond : var.testCondMem)
+	{
+		uint8_t data=0;
+		if(CPU_MAIN==cond.addrType)
+		{
+			data=mainMemAcc.NonDestructiveFetchByte(cond.addr&0xFFFF);
+		}
+		else
+		{
+			data=subMemAcc.NonDestructiveFetchByte(cond.addr&0xFFFF);
+		}
+		if(data!=cond.data)
+		{
+			return 1;
+		}
+	}
+	return 0;
 }

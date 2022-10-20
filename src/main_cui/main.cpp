@@ -55,7 +55,7 @@ int main(int argc,char *argv[])
 		vm.VMMainLoop(fm77av.get(),outside_world.get(),&noUI);
 		vm.VMEnd(fm77av.get(),outside_world.get(),&noUI);
 
-		// Test Success Condition
+		return fm77av->TestSuccess();
 	}
 
 	return 0;

@@ -106,6 +106,14 @@ public:
 
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
+	class TestCondMem
+	{
+	public:
+		uint8_t addrType;
+		uint32_t addr;
+		uint8_t data;
+	};
+	std::vector <TestCondMem> testCondMem;
 
 
 	// Toward semi-automated 1X RPG map generation.
