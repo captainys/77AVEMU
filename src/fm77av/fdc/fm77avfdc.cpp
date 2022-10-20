@@ -187,6 +187,15 @@ void FM77AVFDC::MakeReady(void)
 			if(true==state7.needIncrementSector)
 			{
 				SetSectorReg(GetSectorReg()+1);
+				if(nullptr==imgPtr || 0==imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()))
+				{
+					if(true==monitorFDC)
+					{
+						std::cout << "End of continuous read." << std::endl;
+					}
+					MakeReady();
+					break;
+				}
 			}
 
 			if(true==monitorFDC)
@@ -776,7 +785,7 @@ void FM77AVFDC::MakeReady(void)
 			{
 				state.CRCError=state.CRCErrorAfterRead;
 				state.recordType=state.DDMErrorAfterRead;
-				if(0x90==(state.lastCmd&0xF0) && nullptr!=imgPtr && 0<imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()+1)) // Read Sector + MultiRecordFlag
+				if(0x90==(state.lastCmd&0xF0) && nullptr!=imgPtr) // Read Sector + MultiRecordFlag
 				{
 					state.data.clear();
 					state.dataReadPointer=0;
