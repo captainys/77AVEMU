@@ -693,7 +693,11 @@ void FM77AVFDC::MakeReady(void)
 		}
 		break;
 	case FM77AVIO_FDC_TRACK://=               0xFD19,
-		state.drive[DriveSelect()].trackReg=data;
+		// state.drive[DriveSelect()].trackReg=data;
+		for(auto &drv : state.drive)
+		{
+			drv.trackReg=data;
+		}
 		break;
 	case FM77AVIO_FDC_SECTOR://=              0xFD1A,
 		SetSectorReg(data);
