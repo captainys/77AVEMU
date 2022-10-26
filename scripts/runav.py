@@ -47,6 +47,8 @@ def Run(argv):
 		MutsuExe(),
 		ROMDIR,
 		"-AUTOSCALE",
+		"-INITCMD",	"mute sub",
+		"-INITCMD",	"ena cst",
 		#"-SYM",
 		#os.path.join(MUTSUDIR,"symtables","RUN"+MACHINETYPE+".txt"),
 		#"-DEBUG",

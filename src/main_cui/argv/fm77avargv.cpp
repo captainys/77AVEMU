@@ -403,6 +403,15 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			powerOffAtAddr=cpputil::Xtoi(argv[i+2]);
 			i+=2;
 		}
+		else if("-TESTCONDMEM"==ARG && i+3<argc)
+		{
+			TestCondMem cond;
+			cond.addrType=StrToCPU(argv[i+1]);
+			cond.addr=cpputil::Xtoi(argv[i+2]);  // Hexadecimal
+			cond.data=cpputil::Xtoi(argv[i+3]);  // Hexadecimal
+			testCondMem.push_back(cond);
+			i+=3;
+		}
 		else if("-UNITTEST"==ARG)
 		{
 			unitTest=true;

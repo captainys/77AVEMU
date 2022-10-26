@@ -457,6 +457,9 @@ public:
 		INST_LBVS_IMM16=0x129, // 10 29
 
 		INST_UNDEF_COMNEGA=0x42,
+		INST_UNDEF_RESET=0x3E, // Xanadu Scenario II IPL uses it.
+		INST_UNDEF_COMNEGB=0x52, // Daisenryaku FM IPL uses it.
+		INST_UNDEF_CLRA=0x4E, // Daisenryaku FM IPL uses it.
 	};
 
 	unsigned char instOperaType[0x300];

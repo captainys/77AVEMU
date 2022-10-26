@@ -184,6 +184,31 @@ void FM77AVFDC::MakeReady(void)
 	case 0x90: // Read Data (Read Sector)
 		if(0==state.data.size()) // Need to prepare sector data.
 		{
+			if(true==state7.needIncrementSector)
+			{
+				SetSectorReg(GetSectorReg()+1);
+				if(nullptr==imgPtr || 0==imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()))
+				{
+					if(true==monitorFDC)
+					{
+						std::cout << "End of continuous read." << std::endl;
+					}
+					MakeReady();
+					break;
+				}
+			}
+
+			if(true==monitorFDC)
+			{
+				if(state7.CCache!=compensateTrackNumber(drv.trackPos) ||
+				   state7.HCache!=state.side ||
+				   state7.RCache!=GetSectorReg())
+				{
+					// Value of C,H, or R changed after the command before actually reading?
+					std::cout << " ExecRead C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg() << std::endl;
+				}
+			}
+
 			if(nullptr!=imgPtr)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
@@ -367,6 +392,10 @@ void FM77AVFDC::MakeReady(void)
 				{
 					if(state.nextIndexHoleTime<fm77avPtr->state.fm77avTime)
 					{
+						if(true==monitorFDC)
+						{
+							std::cout << "Index Hole" << std::endl;
+						}
 						state.addrMarkReadCount=0;
 						state.nextIndexHoleTime=fm77avPtr->state.fm77avTime;
 						state.nextIndexHoleTime/=INDEXHOLE_INTERVAL;
@@ -561,6 +590,7 @@ void FM77AVFDC::MakeReady(void)
 	case FM77AVIO_FDC_STATUS_COMMAND://=      0xFD18,
 		SendCommand(data);
 		state.drive[DriveSelect()].diskChange=false; // Is this the right timing to erase diskChange flag?
+		state7.needIncrementSector=false; // This can be only true after reading a sector in consequtive read.
 
 		if(0xD0==(data&0xF0))
 		{
@@ -608,6 +638,10 @@ void FM77AVFDC::MakeReady(void)
 				{
 					if(nullptr!=imgPtr)
 					{
+						state7.CCache=compensateTrackNumber(drv.trackPos);
+						state7.HCache=state.side;
+						state7.RCache=GetSectorReg();
+
 						bool verifySide=(0!=(state.lastCmd&2));
 						auto sector=imgPtr->ReadSector(
 						    diskIdx,compensateTrackNumber(drv.trackPos),state.side,
@@ -683,11 +717,18 @@ void FM77AVFDC::MakeReady(void)
 					{
 						auto writeSize=std::max(state.dataReadPointer,len);
 						imgPtr->WriteSector(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg(),writeSize,state.data.data());
-						if(state.lastCmd&0x10 && 0<imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()+1)) // Multi Record
+						if(state.lastCmd&0x10) // Multi Record
 						{
 							SetSectorReg(GetSectorReg()+1);
-							state.expectedWriteLength=0; // Signal new sector
-							fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_BETWEEN_MULTI_SECTOR_READ);
+							if(0<imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()))
+							{
+								state.expectedWriteLength=0; // Signal new sector
+								fm77avPtr->ScheduleDeviceCallBack(*this,fm77avPtr->state.fm77avTime+NANOSEC_BETWEEN_MULTI_SECTOR_READ);
+							}
+							else
+							{
+								MakeReady();
+							}
 						}
 						else
 						{
@@ -751,12 +792,24 @@ void FM77AVFDC::MakeReady(void)
 			{
 				state.CRCError=state.CRCErrorAfterRead;
 				state.recordType=state.DDMErrorAfterRead;
-				if(0x90==(state.lastCmd&0xF0) && nullptr!=imgPtr && 0<imgPtr->GetSectorLength(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg()+1)) // Read Sector + MultiRecordFlag
+				if(0x90==(state.lastCmd&0xF0) && nullptr!=imgPtr) // Read Sector + MultiRecordFlag
 				{
 					state.data.clear();
 					state.dataReadPointer=0;
-					SetSectorReg(GetSectorReg()+1);
-					// Question.  Should I raise IRQ here?
+
+					// Albatross (Telenet) does this:
+					//   Read Data Register
+					//   If sector is incremented, break the loop.
+					//   If not store byte, and wait for next DRQ
+					// If sector register is incremented immediately, the last byte won't be stored.
+					// 
+
+					// In order to emulate Albatross, the following line needs delay. >>
+					// SetSectorReg(GetSectorReg()+1);
+					// << Need delay.
+					state7.needIncrementSector=true;
+
+					// Question.  Should I raise IRQ here?  ->  No.  Thanks, Albatross.
 				}
 				else
 				{
@@ -1033,7 +1086,8 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 	// Version 6 adds sectorPositionInTrack,nanosecPerByte,nextIndexHoleTime,DDMErrorAfterRead;
 	// -- Diverged from common serialization with Tsugaru --
 	// Version 7 adds driveMode,enableDriveMap,driveMapping[],currentDS,lastLogicalDriveWritten.
-	return 7;
+	// Version 8 adds needIncrementSector flag.
+	return 8;
 }
 /* virtual */ void FM77AVFDC::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -1045,6 +1099,9 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 	PushUcharArray(data,4,state7.driveMapping);
 	PushUint16(data,state7.currentDS);
 	PushUint16(data,state7.lastLogicalDriveWritten);
+
+	// Version 8
+	PushBool(data,state7.needIncrementSector);
 }
 /* virtual */ bool FM77AVFDC::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -1056,6 +1113,11 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 		ReadUcharArray(data,4,state7.driveMapping);
 		state7.currentDS=ReadUint16(data);
 		state7.lastLogicalDriveWritten=ReadUint16(data);
+
+		if(8<=version)
+		{
+			state7.needIncrementSector=ReadBool(data);
+		}
 	}
 	else
 	{

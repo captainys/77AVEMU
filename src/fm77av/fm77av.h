@@ -202,7 +202,6 @@ public:
 		unsigned int DecodePhysicalAddressBase(std::string term) const;
 	};
 
-
 	class Variable
 	{
 	public:
@@ -243,6 +242,7 @@ public:
 		std::unordered_map <std::string,std::string> fileNameAlias;
 
 		Address powerOffAt;
+		std::vector <FM77AVParam::TestCondMem> testCondMem;
 	};
 	Variable var;
 	MemoryEvaluation mapXY[2];
@@ -415,6 +415,8 @@ public:
 
 	bool LoadSymbolTable(std::string fName);
 	bool AutoSaveSymbolTable(void) const;
+
+	int TestSuccess(void) const;
 };
 
 /* } */
