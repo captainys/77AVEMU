@@ -41,7 +41,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 
 	case FM77AVIO_IRQ_BEEP://=                0xFD03,
 		// Write to FD03 is taken by sound.
-		sound.IOWriteByte(ioAddr,value);
+		sound.IOWrite(ioAddr,value);
 		break;
 
 	case FM77AVIO_FIRQ_SUBSYS_INTERFACE://=   0xFD04,
@@ -162,7 +162,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_YM2203C_DATA://            0xFD16,
 	case FM77AVIO_PSG_CONTROL://             0xFD0D,
 	case FM77AVIO_PSG_DATA://                0xFD0E,
-		sound.IOWriteByte(ioAddr,value);
+		sound.IOWrite(ioAddr,value);
 		break;
 
 	case FM77AVIO_SHADOW_RAM: //=              0xFD0F,
@@ -192,7 +192,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
 	case FM77AVIO_FDC_DRIVE_MODE://          0xFD1E,
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
-		fdc.IOWriteByte(ioAddr,value);
+		fdc.IOWrite(ioAddr,value);
 		break;
 
 	case FM77AVIO_KANJI_ADDR_HIGH://=         0xFD20,
@@ -318,7 +318,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		ClearMainToSubIRQFlag();
 		break;
 	case FM77AVIO_BEEP:// =                    0xD403,
-		sound.IOWriteByte(ioAddr,value);
+		sound.IOWrite(ioAddr,value);
 		break;
 	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
 		// FM-Techknow pp. pp.483 and Oh!FM May 1985 pp.47 tells Read D404 to send attnention IRQ to main CPU.
@@ -656,7 +656,7 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 	case FM77AVIO_FDC_MOTOR_DRIVE://         0xFD1D,
 	case FM77AVIO_FDC_DRIVE_MODE://          0xFD1E,
 	case FM77AVIO_FDC_DRQ_IRQ://             0xFD1F,
-		byteData=fdc.IOReadByte(ioAddr);
+		byteData=fdc.IORead(ioAddr);
 		break;
 
 	case FM77AVIO_AV40_DMAC_DATA://          0xFD99,
@@ -673,7 +673,7 @@ uint8_t FM77AV::IORead(uint16_t ioAddr)
 		ClearMainToSubIRQFlag();
 		break;
 	case FM77AVIO_BEEP:// =                    0xD403,
-		sound.IOReadByte(ioAddr);
+		sound.IORead(ioAddr);
 		break;
 	case FM77AVIO_IRQ_TO_MAINCPU: //=          0xD404,
 		SetSubToMainFIRQFlag();

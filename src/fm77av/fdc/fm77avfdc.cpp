@@ -574,7 +574,7 @@ void FM77AVFDC::MakeReady(void)
 	state.lastStatus=MakeUpStatus(state.lastCmd);
 }
 
-/* virtual */ void FM77AVFDC::IOWriteByte(unsigned int ioport,unsigned int data)
+void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
 {
 	auto &drv=state.drive[DriveSelect()];
 	auto imgFilePtr=GetDriveImageFile(DriveSelect());
@@ -770,7 +770,7 @@ void FM77AVFDC::MakeReady(void)
 		break;
 	}
 }
-/* virtual */ unsigned int FM77AVFDC::IOReadByte(unsigned int ioport)
+unsigned int FM77AVFDC::IORead(unsigned int ioport)
 {
 	auto &drv=state.drive[DriveSelect()];
 	auto imgFilePtr=GetDriveImageFile(DriveSelect());

@@ -100,9 +100,9 @@ public:
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
-	virtual void IOWriteByte(unsigned int ioport,unsigned int data);
+	void IOWrite(unsigned int ioport,unsigned int data);
 
-	virtual unsigned int IOReadByte(unsigned int ioport);
+	unsigned int IORead(unsigned int ioport);
 	uint8_t NonDestructiveIOReadByte(unsigned int ioport) const;
 
 	/*! Called from FM77AV::RunFastDevicePolling.
