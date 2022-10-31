@@ -237,7 +237,10 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 			{
 				auto portSel=(state.ym2203c.ReadRegister(0,REG_PORTB)>>6)&1;
 				state.ym2203cDataRead=fm77avPtr->gameport.state.ports[portSel].Read(fm77avPtr->state.fm77avTime);
-				state.ym2203cDataRead|=0xC0;
+
+				// It used to be |=0xC0, but Gambler Jikochushinha by Game Arts expects it to return non-FF.
+				// If it was same as Towns, bit6 should be controled by COM out.
+				state.ym2203cDataRead|=0x80;
 			}
 			break;
 		default:
