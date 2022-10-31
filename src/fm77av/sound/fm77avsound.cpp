@@ -325,7 +325,7 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 
 void FM77AVSound::ProcessSound(Outside_World *outside_world)
 {
-	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState) && nullptr!=outside_world)
+	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState || 0<ringBufferClearTimeLeft) && nullptr!=outside_world)
 	{
 		auto fm77avPtr=(FM77AV *)vmPtr;
 		auto lastWaveGenTime=nextWaveGenTime-MILLISEC_PER_WAVE_GENERATION*1000000;
@@ -352,11 +352,13 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 				if(true==IsFMPlaying())
 				{
 					state.ym2203c.MakeWaveForNSamples(fillPtr,fillNumSamples,lastWaveGenTime);
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 				}
 				if(true==state.ay38910.IsPlaying())
 				{
 					unsigned int numSamples=0;
 					state.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 				}
 				if(BEEP_OFF!=state.beepState)
 				{
@@ -375,6 +377,7 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 						WordOp_Add(dataPtr,  waveOut);
 						WordOp_Add(dataPtr+2,waveOut);
 					}
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 				}
 				nextWaveFilledInMillisec+=MILLISEC_PER_WAVE_GENERATION;
 
@@ -394,6 +397,7 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 			{
 				nextWaveGenTime=fm77avPtr->state.fm77avTime+MILLISEC_PER_WAVE_GENERATION*1000000;
 			}
+			ringBufferClearTimeLeft-=MILLISEC_PER_WAVE_GENERATION*1000000;
 		}
 	}
 	else if(true!=nextWave.empty())
@@ -701,5 +705,6 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 	state.beepWaveOut=ReadUint16(data);
 
 	nextWaveGenTime=0;
+	ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 	return true;
 }

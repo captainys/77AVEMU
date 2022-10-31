@@ -27,6 +27,8 @@ public:
 		// Silpheed "Presented by Game Arts" requires higher time resolution.  Will need to go down to 500us.
 		// OK, now I introduced Register-Write Scheduling, which should solve the problem.
 		MILLISEC_PER_WAVE_GENERATION=5,
+
+		RINGBUFFER_CLEAR_TIME=1000000000, // Play this long after the last play-back to make sure ring buffer is clear.
 	};
 
 	virtual const char *DeviceName(void) const{return "SOUND";}
@@ -82,6 +84,7 @@ public:
 	uint8_t ym2203cRegisterMonitor[256];
 	uint8_t ay38910RegisterMonitor[AY38910::NUM_REGS];
 
+	int64_t ringBufferClearTimeLeft=0;
 	uint64_t nextWaveFilledInMillisec=0;
 	uint64_t nextWaveGenTime=0;
 	std::vector <unsigned char> nextWave;
