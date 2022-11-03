@@ -486,7 +486,6 @@ void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int ke
 	keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
 	keyComb.keyCode=keyCode;
 	auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
-std::cout << code << std::endl;
 	PushASCIICodeToQueueJISMode(code);
 }
 void FM77AVKeyboard::PushASCIICodeToQueueJISMode(uint16_t ascii)
@@ -541,8 +540,6 @@ bool FM77AVKeyboard::ArrowKeyHeldDown(void) const
 // Sub-System Monitor A writes $80 to $D431 and waits for $D432 bit 0 to clear on start up.
 void FM77AVKeyboard::WriteD431(uint8_t data)
 {
-std::cout << cpputil::Ubtox(data) << std::endl;
-
 	switch(state.encoderCmd)
 	{
 	default:
