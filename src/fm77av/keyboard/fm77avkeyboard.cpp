@@ -486,9 +486,10 @@ void FM77AVKeyboard::PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int ke
 	keyComb.graph=(0!=(keyFlags&KEYFLAG_GRAPH));
 	keyComb.keyCode=keyCode;
 	auto code=FM77AVTranslateKeyCombinationToChar(keyComb);
+std::cout << code << std::endl;
 	PushASCIICodeToQueueJISMode(code);
 }
-void FM77AVKeyboard::PushASCIICodeToQueueJISMode(unsigned char ascii)
+void FM77AVKeyboard::PushASCIICodeToQueueJISMode(uint16_t ascii)
 {
 	if(0!=ascii)
 	{

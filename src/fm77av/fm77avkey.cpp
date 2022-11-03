@@ -420,6 +420,7 @@ static const KeyTranslationTable keyTranslationTableSourceAdditional[]= // Addit
 	{'9', {AVKEY_NUM_9,         true ,false,false}},
 
 	{',', {AVKEY_COMMA,         false,false,false}},
+	{'.', {AVKEY_DOT,           false,false,false}},
 	{'\"',{AVKEY_2,             true ,false,false}},
 	{'*', {AVKEY_COLON,         true ,false,false}},
 	{'+', {AVKEY_SEMICOLON,     true ,false,false}},

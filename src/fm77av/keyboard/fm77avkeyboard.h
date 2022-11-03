@@ -150,7 +150,7 @@ public:
 	void Release(unsigned int keyFlags,unsigned int keyCode);
 protected:
 	void PushKeyToQueueJISMode(unsigned int keyFlags,unsigned int keyCode);
-	void PushASCIICodeToQueueJISMode(unsigned char ascii);
+	void PushASCIICodeToQueueJISMode(uint16_t ascii);
 	bool NumKeyHeldDown(void) const;
 	bool ArrowKeyHeldDown(void) const;
 
