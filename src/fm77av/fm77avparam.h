@@ -104,6 +104,8 @@ public:
 	unsigned int autoStopType=0;
 	unsigned int autoStopKey=AVKEY_NUM_5;
 
+	bool DOSMode=false;
+
 	uint8_t powerOffAtCPUType=CPU_UNKNOWN;
 	uint16_t powerOffAtAddr=0;
 	class TestCondMem

@@ -118,6 +118,10 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Maximize the window on start up" << std::endl;
 	std::cout << "-FULLSCREEN" << std::endl;
 	std::cout << "  Fullscreen on start up" << std::endl;
+	std::cout << "-DOSMODE" << std::endl;
+	std::cout << "  Start in DOS mode." << std::endl;
+	std::cout << "-BASMODE|-BASICMODE" << std::endl;
+	std::cout << "  Start in F-BASIC mode." << std::endl;
 	std::cout << "-SYM symbol-file" << std::endl;
 	std::cout << "  Load symbol file, and auto-save when modified." << std::endl;
 }
@@ -478,6 +482,14 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 			vk.button=cpputil::Atoi(argv[i+3]);
 			virtualKeys.push_back(vk);
 			i+=3;
+		}
+		else if("-DOSMODE"==ARG)
+		{
+			DOSMode=true;
+		}
+		else if("-BASMODE"==ARG || "-BASICMODE"==ARG)
+		{
+			DOSMode=false;
 		}
 		else if("-SYM"==ARG && i+1<argc)
 		{

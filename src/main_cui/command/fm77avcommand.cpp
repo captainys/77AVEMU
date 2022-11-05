@@ -127,6 +127,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
 	primaryCmdMap["DISPPAGE"]=CMD_DISPLAY_PAGE;
+	primaryCmdMap["DOSMODE"]=CMD_DOSMODE;
+	primaryCmdMap["BASMODE"]=CMD_BASMODE;
+	primaryCmdMap["BASICMODE"]=CMD_BASMODE;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -184,6 +187,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Quit." << std::endl;
 	std::cout << "NOWAIT" << std::endl;
 	std::cout << "  Run at full-speed without adjusting for real-time." << std::endl;
+	std::cout << "DOSMODE" << std::endl;
+	std::cout << "  Set to DOS mode." << std::endl;
+	std::cout << "BASMODE|BASICMODE" << std::endl;
+	std::cout << "  Set to F-BASIC mode." << std::endl;
 	std::cout << "SPEED FM8/FM7/FM77" << std::endl;
 	std::cout << "  Select speed." << std::endl;
 	std::cout << "  FM8 speed is for FM-7 in slow mode (Dip Switch 4)" << std::endl;
@@ -763,6 +770,15 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_YESWAIT:
 		fm77av.var.noWait=false;
+		break;
+
+	case CMD_DOSMODE:
+		fm77av.physMem.state.DOSMode=true;
+		std::cout << "DOS mode" << std::endl;
+		break;
+	case CMD_BASMODE:
+		fm77av.physMem.state.DOSMode=false;
+		std::cout << "F-BASIC mode" << std::endl;
 		break;
 
 	case CMD_FD0LOAD:

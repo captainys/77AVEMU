@@ -148,6 +148,9 @@ public:
 		CMD_UPDATE_MEMORY_FILTER,
 
 		CMD_DISPLAY_PAGE,
+
+		CMD_DOSMODE,
+		CMD_BASMODE,
 	};
 
 	enum

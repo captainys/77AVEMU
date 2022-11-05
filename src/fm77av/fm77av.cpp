@@ -313,10 +313,22 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 		gameport.state.ports[i].maxButtonHoldTime[1]=param.maxButtonHoldTime[i][1];
 	}
 
-	for(int i=0; i<32; ++i)
+	physMem.state.DOSMode=param.DOSMode;
+	if(true!=param.DOSMode)
 	{
-		//	MAINSYS_BOOT_ROM_END=       0x3FFE0,
-		physMem.state.data[PhysicalMemory::MAINSYS_INT_VECTOR+i]=physMem.ROM_BOOT_BASIC[0x1E0+i];
+		for(int i=0; i<32; ++i)
+		{
+			//	MAINSYS_BOOT_ROM_END=       0x3FFE0,
+			physMem.state.data[PhysicalMemory::MAINSYS_INT_VECTOR+i]=physMem.ROM_BOOT_BASIC[0x1E0+i];
+		}
+	}
+	else
+	{
+		for(int i=0; i<32; ++i)
+		{
+			//	MAINSYS_BOOT_ROM_END=       0x3FFE0,
+			physMem.state.data[PhysicalMemory::MAINSYS_INT_VECTOR+i]=physMem.ROM_BOOT_DOS[0x1E0+i];
+		}
 	}
 
 	physMem.state.data[PhysicalMemory::SUBSYS_RESET_VECTOR  ]=0xE0;
