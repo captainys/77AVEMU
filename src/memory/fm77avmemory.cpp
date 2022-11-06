@@ -142,6 +142,13 @@ PhysicalMemory::PhysicalMemory(VMBase *vmBase) : Device(vmBase)
 	{
 		d=0;
 	}
+
+	// Some programs expect non-zero initial RAM contents.  (I say it's a bug.)
+	for(size_t i=0x30000; i<0x3FFFF; ++i)
+	{
+		state.data[i]=0xCC;
+	}
+
 	for(auto &d : state.extVRAM)
 	{
 		d=0;
