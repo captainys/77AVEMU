@@ -415,7 +415,7 @@ void PhysicalMemory::Reset(void)
 	Device::Reset();
 	state.VRAMAccessMask=0;
 	state.FE00ROMMode=true;
-	state.shadowRAMEnabled=false;
+	state.shadowRAMEnabled=state.DOSMode;
 	state.avBootROM=false;
 	state.av40DicRAMEnabled=false;
 	state.av40DicROMEnabled=false;

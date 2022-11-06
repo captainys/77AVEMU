@@ -14,6 +14,12 @@ void FM77AVArgv::Help(void)
 	std::cout << "Options:" << std::endl;
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Pause on start." << std::endl;
+	std::cout << "-FM7" << std::endl;
+	std::cout << "  Use as FM-7. (Default auto-identify based on ROM availability)" << std::endl;
+	std::cout << "-FM77AV" << std::endl;
+	std::cout << "  Use as FM77AV. (Default auto-identify based on ROM availability)" << std::endl;
+	std::cout << "-FM77AV40" << std::endl;
+	std::cout << "  Use as FM77AV40. (Default auto-identify based on ROM availability)" << std::endl;
 	std::cout << "-IMGPATH dir" << std::endl;
 	std::cout << "  Image search path." << std::endl;
 	std::cout << "-T77|-TAPE t77file.t77" << std::endl;
@@ -176,6 +182,18 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-PAUSE"==ARG)
 		{
 			pauseOnStart=true;
+		}
+		else if("-FM7"==ARG)
+		{
+			machineType=MACHINETYPE_FM7;
+		}
+		else if("-FM77AV"==ARG)
+		{
+			machineType=MACHINETYPE_FM77AV;
+		}
+		else if("-FM77AV40"==ARG)
+		{
+			machineType=MACHINETYPE_FM77AV40;
 		}
 		else if("-NOWAIT"==ARG)
 		{
