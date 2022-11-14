@@ -226,6 +226,12 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 				{
 					state.ay38910.state.preScaler=1;
 				}
+
+				// Make sure to clear IRQ source if reg-write clears timer-up flag.
+				if(true!=(state.ym2203c.TimerAUp() && true!=state.ym2203c.TimerBUp()))
+				{
+					fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
+				}
 			}
 			break;
 		case 4: // Status Read
