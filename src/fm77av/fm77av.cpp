@@ -719,7 +719,7 @@ std::string FM77AV::MachineTypeStr(void) const
 void FM77AV::PrintSubSystemCommand(void) const
 {
 	std::cout << "SubSysCmd($FC80):";
-	for(int i=0; i<8; ++i)
+	for(int i=0; i<18; ++i)
 	{
 		std::cout << cpputil::Ubtox(physMem.state.data[PhysicalMemory::SUBSYS_SHARED_RAM_BEGIN+i]) << " ";
 	}

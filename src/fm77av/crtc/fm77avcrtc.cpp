@@ -659,9 +659,14 @@ void FM77AVCRTC::DrawLine(void)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
 
+	auto x0=state.hardDraw.x0;
+	auto y0=state.hardDraw.y0;
+	auto x1=state.hardDraw.x1;
+	auto y1=state.hardDraw.y1;
+
 	int vx,vy,dx,dy;
-	dx=state.hardDraw.x1-state.hardDraw.x0;
-	dy=state.hardDraw.y1-state.hardDraw.y0;
+	dx=x1-x0;
+	dy=y1-y0;
 	if(0<=dx)
 	{
 		vx=1;
@@ -718,8 +723,8 @@ void FM77AVCRTC::DrawLine(void)
 	unsigned int lineStippleBit=0x8000;
 
 	unsigned int balance=0,count=0;;
-	int x=state.hardDraw.x0;
-	int y=state.hardDraw.y0;
+	int x=x0;
+	int y=y0;
 
 	VRAMInLayerAddr[0]+=y*bytesPerLine+(x>>3);
 	VRAMInLayerAddr[1]+=y*bytesPerLine+(x>>3);
@@ -748,7 +753,7 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
-			if(y==state.hardDraw.y1)
+			if(y==y1)
 			{
 				break;
 			}
@@ -775,7 +780,7 @@ void FM77AVCRTC::DrawLine(void)
 				lineStippleBit=0x8000;
 			}
 
-			if(x==state.hardDraw.x1)
+			if(x==x1)
 			{
 				break;
 			}
@@ -783,6 +788,7 @@ void FM77AVCRTC::DrawLine(void)
 	}
 	else if(dy<dx) // Long in X
 	{
+		balance=dy/2;
 		++dx;
 		++dy;
 		for(;;)
@@ -812,7 +818,7 @@ void FM77AVCRTC::DrawLine(void)
 				lineStippleBit=0x8000;
 			}
 
-			if(x==state.hardDraw.x1 && y==state.hardDraw.y1)
+			if(x==x1 && y==y1)
 			{
 				break;
 			}
@@ -820,6 +826,7 @@ void FM77AVCRTC::DrawLine(void)
 	}
 	else // if(dx<dy) // Long in Y
 	{
+		balance=dx/2;
 		++dx;
 		++dy;
 		for(;;)
@@ -849,7 +856,7 @@ void FM77AVCRTC::DrawLine(void)
 				lineStippleBit=0x8000;
 			}
 
-			if(x==state.hardDraw.x1 && y==state.hardDraw.y1)
+			if(x==x1 && y==y1)
 			{
 				break;
 			}
