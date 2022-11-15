@@ -783,6 +783,8 @@ void FM77AVCRTC::DrawLine(void)
 	}
 	else if(dy<dx) // Long in X
 	{
+		++dx;
+		++dy;
 		for(;;)
 		{
 			auto prevX=x;
@@ -818,6 +820,8 @@ void FM77AVCRTC::DrawLine(void)
 	}
 	else // if(dx<dy) // Long in Y
 	{
+		++dx;
+		++dy;
 		for(;;)
 		{
 			y+=vy;
