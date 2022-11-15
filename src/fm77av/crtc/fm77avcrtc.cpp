@@ -356,7 +356,7 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 			VRAMByte[2]=fm77avPtr->physMem.GetVRAMBank(2)+(VRAMAddrIn&0x7FFF);
 		}
 
-		if(0!=(state.hardDraw.condition&2))
+		if(0!=(state.hardDraw.condition&2) || HD_CMD_CMP==state.hardDraw.cmd)
 		{
 			state.hardDraw.compareResult=0;
 		}
@@ -370,12 +370,14 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 				goto NEXT;
 			}
 
-			if(0!=(state.hardDraw.condition&2))
+			if(0!=(state.hardDraw.condition&2) || HD_CMD_CMP==state.hardDraw.cmd)
 			{
 				uint8_t srcColor=0;
 				srcColor|=(0!=((*VRAMByte[0])&bit) ? 1 : 0);
 				srcColor|=(0!=((*VRAMByte[1])&bit) ? 2 : 0);
 				srcColor|=(0!=((*VRAMByte[2])&bit) ? 4 : 0);
+
+				srcColor|=fm77avPtr->physMem.state.VRAMAccessMask;
 
 				bool match=false;
 				for(auto cmpColor : state.hardDraw.compareColor) // Should it work this way?
