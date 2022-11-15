@@ -739,7 +739,7 @@ void FM77AVCRTC::DrawLine(void)
 	}
 	else if(0==dx) // Vertical
 	{
-		for(;;)
+		while(y!=y1)
 		{
 			y+=vy;
 			VRAMInLayerAddr[0]+=VRAMVy;
@@ -753,15 +753,11 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
-			if(y==y1)
-			{
-				break;
-			}
 		}
 	}
 	else if(0==dy) // Horizontal
 	{
-		for(;;)
+		while(x!=x1)
 		{
 			auto prevX=x;
 			x+=vx;
@@ -779,11 +775,6 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
-
-			if(x==x1)
-			{
-				break;
-			}
 		}
 	}
 	else if(dy<dx) // Long in X
@@ -791,7 +782,7 @@ void FM77AVCRTC::DrawLine(void)
 		balance=dy/2;
 		++dx;
 		++dy;
-		for(;;)
+		while(x!=x1 || y!=y1)
 		{
 			auto prevX=x;
 			x+=vx;
@@ -817,11 +808,6 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
-
-			if(x==x1 && y==y1)
-			{
-				break;
-			}
 		}
 	}
 	else // if(dx<dy) // Long in Y
@@ -829,7 +815,7 @@ void FM77AVCRTC::DrawLine(void)
 		balance=dx/2;
 		++dx;
 		++dy;
-		for(;;)
+		while(x!=x1 || y!=y1)
 		{
 			y+=vy;
 			VRAMInLayerAddr[0]+=VRAMVy;
@@ -854,11 +840,6 @@ void FM77AVCRTC::DrawLine(void)
 			if(0==lineStippleBit)
 			{
 				lineStippleBit=0x8000;
-			}
-
-			if(x==x1 && y==y1)
-			{
-				break;
 			}
 		}
 	}
