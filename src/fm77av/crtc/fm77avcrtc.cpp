@@ -438,8 +438,9 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 			case HD_CMD_XOR://4,
 				*VRAMByte[i]^=(writeBits&rgb);
 				break;
+			case 1: // FM77AV Demo uses 1.  My guess is it is for erasing a line.
 			case HD_CMD_NOT://5,
-				*VRAMByte[i]^=writeBits;
+				*VRAMByte[i]&=~(rgb&writeBits);
 				break;
 			case HD_CMD_CMP://7,
 				break;
@@ -733,7 +734,7 @@ void FM77AVCRTC::DrawLine(void)
 	}
 	else if(0==dx) // Vertical
 	{
-		while(y!=state.hardDraw.y1)
+		for(;;)
 		{
 			y+=vy;
 			VRAMInLayerAddr[0]+=VRAMVy;
@@ -747,11 +748,15 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
+			if(y==state.hardDraw.y1)
+			{
+				break;
+			}
 		}
 	}
 	else if(0==dy) // Horizontal
 	{
-		while(x!=state.hardDraw.x1)
+		for(;;)
 		{
 			auto prevX=x;
 			x+=vx;
@@ -769,11 +774,16 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
+
+			if(x==state.hardDraw.x1)
+			{
+				break;
+			}
 		}
 	}
 	else if(dy<dx) // Long in X
 	{
-		while(x!=state.hardDraw.x1 || y!=state.hardDraw.y1)
+		for(;;)
 		{
 			auto prevX=x;
 			x+=vx;
@@ -799,11 +809,16 @@ void FM77AVCRTC::DrawLine(void)
 			{
 				lineStippleBit=0x8000;
 			}
+
+			if(x==state.hardDraw.x1 && y==state.hardDraw.y1)
+			{
+				break;
+			}
 		}
 	}
 	else // if(dx<dy) // Long in Y
 	{
-		while(x!=state.hardDraw.x1 || y!=state.hardDraw.y1)
+		for(;;)
 		{
 			y+=vy;
 			VRAMInLayerAddr[0]+=VRAMVy;
@@ -828,6 +843,11 @@ void FM77AVCRTC::DrawLine(void)
 			if(0==lineStippleBit)
 			{
 				lineStippleBit=0x8000;
+			}
+
+			if(x==state.hardDraw.x1 && y==state.hardDraw.y1)
+			{
+				break;
 			}
 		}
 	}
@@ -900,8 +920,9 @@ void FM77AVCRTC::PutDot(uint8_t *VRAMPlane[3],unsigned int VRAMAddr,uint8_t bit,
 		case HD_CMD_XOR://4,
 			VRAMPlane[i][VRAMAddr]^=(writeBit&rgb);
 			break;
-		case HD_CMD_NOT://5,
-			VRAMPlane[i][VRAMAddr]^=writeBit;
+		case 1: // FM77AV Demo uses 1.  My guess is it is for erasing a line.
+		case HD_CMD_NOT://5
+			VRAMPlane[i][VRAMAddr]&=~(rgb&writeBit);
 			break;
 		case HD_CMD_CMP://7,
 			break;
