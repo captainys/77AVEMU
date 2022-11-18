@@ -125,7 +125,19 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 			}
 			if(2==state.ay38910LastControl && 0==control) // Write Data
 			{
-				state.ay38910.WriteRegister(state.ay38910AddrLatch,state.ay38910LastData,fm77avPtr->state.fm77avTime);
+				auto lastData=state.ay38910LastData;
+
+				if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType && 7==state.ay38910AddrLatch)
+				{
+					// Observed on real FM77AV.
+					// Looks like real FM77AV is filtering highest two bits because those bits
+					// control joystick reading.
+					// For example, if value 0xF8 is written, it turns to 0xB8.
+					lastData&=0x3F;
+					lastData|=0x80;
+				}
+
+				state.ay38910.WriteRegister(state.ay38910AddrLatch,lastData,fm77avPtr->state.fm77avTime);
 				if(0!=ay38910RegisterMonitor[state.ay38910AddrLatch])
 				{
 					std::cout << "AY38910 Reg[$"+cpputil::Ubtox(state.ay38910AddrLatch)+"]=$"+cpputil::Ubtox(state.ay38910LastData) << " at " << fm77avPtr->state.fm77avTime << std::endl;
