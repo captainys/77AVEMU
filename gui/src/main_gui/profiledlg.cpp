@@ -545,7 +545,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 	{
 		if(aliasBrowseBtn[i]==btn)
 		{
-			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".D88",L".T77"};
+			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".RDD",L".D88",L".T77"};
 			Browse(L"Alias",aliasFileTxt[i],extList);
 		}
 	}
@@ -570,7 +570,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		{
 			YsWString label(L"Floppy Drive ");
 			label.push_back('0'+i);
-			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".D88"};
+			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".RDD",L".D88"};
 			Browse(label,FDImgTxt[i],extList);
 		}
 	}

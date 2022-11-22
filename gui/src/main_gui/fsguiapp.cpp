@@ -1038,7 +1038,6 @@ void FsGuiMainCanvas::File_New_320KB(FsGuiPopUpMenuItem *)
 	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
 	fdlg->multiSelect=YSFALSE;
 	fdlg->title.Set(L"Create 2D (320KB) Disk Image");
-	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
@@ -1055,7 +1054,6 @@ void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
 	fdlg->multiSelect=YSFALSE;
 	fdlg->title.Set(L"Create 2DD (640KB) Disk Image");
-	fdlg->fileExtensionArray.Append(L".BIN");
 	fdlg->fileExtensionArray.Append(L".D77");
 	fdlg->fileExtensionArray.Append(L".D88");
 	fdlg->defaultFileName=GetDefaultNewDiskImageFileName();
@@ -1798,6 +1796,7 @@ void FsGuiMainCanvas::FD0_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->title.Set(L"Open FD0 Image");
 		fdlg->fileExtensionArray.Append(L".BIN");
 		fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".RDD");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->defaultFileName=GetDefaultOpenDiskImageFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD0_ImageFileSelected,this);
@@ -1888,6 +1887,7 @@ void FsGuiMainCanvas::FD1_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->title.Set(L"Open FD1 Image");
 		fdlg->fileExtensionArray.Append(L".BIN");
 		fdlg->fileExtensionArray.Append(L".D77");
+		fdlg->fileExtensionArray.Append(L".RDD");
 		fdlg->fileExtensionArray.Append(L".D88");
 		fdlg->defaultFileName=GetDefaultOpenDiskImageFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::FD1_ImageFileSelected,this);
