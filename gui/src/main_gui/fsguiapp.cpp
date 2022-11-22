@@ -364,6 +364,14 @@ void FsGuiMainCanvas::OnInterval(void)
 {
 	FsGuiCanvas::Interval();
 
+	if(YSTRUE==VMMustResume)
+	{
+		VMMustResume=YSFALSE;
+		ResumeVMIfSameProc();
+		return;
+	}
+
+
 	if(true!=IsVMRunning() && YSTRUE!=IsDialogUsed(profileDlg))
 	{
 		AddDialog(profileDlg);
@@ -1238,7 +1246,7 @@ void FsGuiMainCanvas::State_SaveState_Save(YsWString fName)
 	cmd.Append("\"");
 	SendVMCommand(cmd.data());
 
-	ResumeVMIfSameProc();
+	VMMustResume=YSTRUE;
 }
 
 void FsGuiMainCanvas::State_LoadState(FsGuiPopUpMenuItem *)
@@ -1315,7 +1323,7 @@ void FsGuiMainCanvas::State_LoadState_FileSelected(FsGuiDialog *dlg,int returnCo
 				SendVMCommand("PAUSE");
 			}
 
-			ResumeVMIfSameProc();
+			VMMustResume=YSTRUE;
 
 			lastStateFName=selectedStateFName;
 		}
@@ -1336,7 +1344,7 @@ void FsGuiMainCanvas::State_LoadLastState(FsGuiPopUpMenuItem *)
 			cmd.Append(utf8);
 			cmd.Append("\"");
 			SendVMCommand(cmd.data());
-			ResumeVMIfSameProc();
+			VMMustResume=YSTRUE;
 		}
 	}
 	else
@@ -1360,7 +1368,7 @@ void FsGuiMainCanvas::State_LoadLastStateAndPause(FsGuiPopUpMenuItem *)
 			cmd.Append("\"");
 			SendVMCommand(cmd.data());
 			SendVMCommand("PAUSE");
-			ResumeVMIfSameProc();
+			VMMustResume=YSTRUE;
 		}
 	}
 	else
@@ -1403,7 +1411,7 @@ void FsGuiMainCanvas::VM_PowerOffConfirm(FsGuiDialog *dlg,int returnCode)
 	if((int)YSOK==returnCode)
 	{
 		SendVMCommand("Q\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 }
 void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
@@ -1411,7 +1419,7 @@ void FsGuiMainCanvas::VM_Reset(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("RESET\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1434,7 +1442,7 @@ void FsGuiMainCanvas::VM_Resume(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("RUN\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1446,7 +1454,7 @@ void FsGuiMainCanvas::VM_FM8Speed(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("SPEED FM8\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1458,7 +1466,7 @@ void FsGuiMainCanvas::VM_FM7Speed(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("SPEED FM7\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1470,7 +1478,7 @@ void FsGuiMainCanvas::VM_FM77Speed(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("SPEED FM77\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1483,7 +1491,7 @@ void FsGuiMainCanvas::VM_Keyboard_Direct(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("KEYBOARD DIRECT\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1495,7 +1503,7 @@ void FsGuiMainCanvas::VM_Keyboard_Translation1(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("KEYBOARD TRANS1\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1507,7 +1515,7 @@ void FsGuiMainCanvas::VM_Keyboard_Translation2(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("KEYBOARD TRANS2\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1519,7 +1527,7 @@ void FsGuiMainCanvas::VM_Keyboard_Translation3(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("KEYBOARD TRANS3\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1537,7 +1545,7 @@ void FsGuiMainCanvas::VM_Keyboard_AutoStop(FsGuiPopUpMenuItem *item)
 		YsString cmd="ENA AUTOSTOP ";
 		cmd.Append(label);
 		SendVMCommand(cmd.c_str());
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1549,7 +1557,7 @@ void FsGuiMainCanvas::VM_Keyboard_AutoStop_Num5(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("AUTOSTOPKEY NUM_5");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1561,7 +1569,7 @@ void FsGuiMainCanvas::VM_Keyboard_AutoStop_ESC(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("AUTOSTOPKEY ESC");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1573,7 +1581,7 @@ void FsGuiMainCanvas::VM_Keyboard_AutoStop_BackSpace(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("AUTOSTOPKEY BACKSPACE");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1618,7 +1626,7 @@ void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int return
 		cmd.push_back('\"');
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 }
 
@@ -1635,7 +1643,7 @@ void FsGuiMainCanvas::Tape_SelectAlias(FsGuiPopUpMenuItem *item)
 		cmd="TAPELOAD ";
 		cmd+=str.c_str();
 		VM.SendCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1653,7 +1661,7 @@ void FsGuiMainCanvas::Tape_SelectSaveAlias(FsGuiPopUpMenuItem *item)
 		cmd="TAPEFORSAVE ";
 		cmd+=str.c_str();
 		VM.SendCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1671,7 +1679,7 @@ void FsGuiMainCanvas::FD0_SelectAlias(FsGuiPopUpMenuItem *item)
 		cmd="FD0LOAD ";
 		cmd+=str.c_str();
 		VM.SendCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1689,7 +1697,7 @@ void FsGuiMainCanvas::FD1_SelectAlias(FsGuiPopUpMenuItem *item)
 		cmd="FD1LOAD ";
 		cmd+=str.c_str();
 		VM.SendCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1762,7 +1770,7 @@ void FsGuiMainCanvas::Tape_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
 		lastSelectedCDFName=fName;
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 }
 
@@ -1771,7 +1779,7 @@ void FsGuiMainCanvas::Tape_Eject(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("TAPEEJECT\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -1815,7 +1823,7 @@ void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\"');
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1828,7 +1836,7 @@ void FsGuiMainCanvas::FD0_WriteProtect(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("FD0WP\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD0_writeProtectMenu->SetCheck(YSTRUE);
 		FD0_writeUnprotectMenu->SetCheck(YSFALSE);
@@ -1843,7 +1851,7 @@ void FsGuiMainCanvas::FD0_WriteUnprotect(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("FD0UP\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1858,7 +1866,7 @@ void FsGuiMainCanvas::FD0_Eject(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("FD0EJECT\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD0_writeProtectMenu->SetCheck(YSFALSE);
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1905,7 +1913,7 @@ void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\"');
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1918,7 +1926,7 @@ void FsGuiMainCanvas::FD1_WriteProtect(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("FD1WP\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD1_writeProtectMenu->SetCheck(YSTRUE);
 		FD1_writeUnprotectMenu->SetCheck(YSFALSE);
@@ -1933,7 +1941,7 @@ void FsGuiMainCanvas::FD1_WriteUnprotect(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("FD1UP\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -1948,7 +1956,7 @@ void FsGuiMainCanvas::FD1_Eject(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("FD1EJECT\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		FD1_writeProtectMenu->SetCheck(YSFALSE);
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
@@ -2049,7 +2057,7 @@ void FsGuiMainCanvas::Device_GamePort_DeviceSelected(FsGuiDialog *dlgIn,int retu
 				char str[256];
 				sprintf(str,"GAMEPORT %d %s\n",dlg->port,GamePortEmuToStr(emulationType).c_str());
 				SendVMCommand(str);
-				ResumeVMIfSameProc();
+				VMMustResume=YSTRUE;
 			}
 		}
 	}
@@ -2083,7 +2091,7 @@ void FsGuiMainCanvas::Device_AutoShot(FsGuiPopUpMenuItem *menu)
 						char str[256];
 						sprintf(str,"AUTOSHOT %d %d %u",port,button,interval[speed]);
 						SendVMCommand(str);
-						ResumeVMIfSameProc();
+						VMMustResume=YSTRUE;
 					}
 				}
 			}
@@ -2106,7 +2114,7 @@ void FsGuiMainCanvas::EventLog_StartRecording(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("ENA EVENTLOG\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -2118,7 +2126,7 @@ void FsGuiMainCanvas::EventLog_EndRecording(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("DIS EVENTLOG\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -2131,7 +2139,7 @@ void FsGuiMainCanvas::EventLog_MakeRepeat(FsGuiPopUpMenuItem *)
 	{
 		SendVMCommand("DIS EVENTLOG\n");
 		SendVMCommand("MAKEREPEATEVENTLOG\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -2144,7 +2152,7 @@ void FsGuiMainCanvas::EventLog_Replay(FsGuiPopUpMenuItem *)
 	{
 		SendVMCommand("DIS EVENTLOG\n");
 		SendVMCommand("PLAYEVT");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -2156,7 +2164,7 @@ void FsGuiMainCanvas::EventLog_Stop(FsGuiPopUpMenuItem *)
 	if(true==IsVMRunning())
 	{
 		SendVMCommand("STOPEVT\n");
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 	}
 	else
 	{
@@ -2203,7 +2211,7 @@ void FsGuiMainCanvas::EventLog_Open_FileSelected(FsGuiDialog *dlg,int returnCode
 		cmd.Append("\"");
 		cmd.Append("\n");
 		SendVMCommand(cmd.data());
-		ResumeVMIfSameProc();
+		VMMustResume=YSTRUE;
 
 		lastEventFName=fName;
 	}
@@ -2269,7 +2277,7 @@ void FsGuiMainCanvas::EventLog_Save_Save(YsWString fName)
 	cmd.Append("\"");
 	cmd.Append("\n");
 	SendVMCommand(cmd.data());
-	ResumeVMIfSameProc();
+	VMMustResume=YSTRUE;
 
 	lastEventFName=fName;
 }
