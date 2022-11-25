@@ -137,7 +137,7 @@ jobs:
           cmake -E copy ../readme.md .
           cmake -E copy ../command.md .
           # cmake -E copy ../util/MutsuUtil.D77 .
-          cmake -E tar cvf macos_binary_latest.zip --format=zip Mutsu_GUI.appreadme.md command.md
+          cmake -E tar cvf macos_binary_latest.zip --format=zip Mutsu_GUI.app readme.md command.md
       working-directory: ./ci_macos
     - name: upload_to_artifact
       uses: actions/upload-artifact@v1
