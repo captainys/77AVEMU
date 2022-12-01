@@ -495,18 +495,6 @@ uint8_t *PhysicalMemory::GetCurrentVRAMBank(void)
 	return state.extVRAM+(state.VRAMBank-1)*FM77AV_VRAM_BANK_SIZE;
 }
 
-void PhysicalMemory::CLR(uint32_t addr)
-{
-	if(SubCPUAccess::SUBCPU_ADDR_BASE+FM77AVIO_SUBCPU_BUSY==addr)
-	{
-		// It creates 2 clocks of sub-CPU ready, which corresponds to 1000nanosec.
-		// This 2 clocks is before CLR finishes.
-		// This CLR function is called before fm77avTime is updated, therefore
-		// FM77AV::RunOneInstruction is responsible for adding delta and clearing it.
-		auto fm77avPtr=(FM77AV *)vmPtr;
-		fm77avPtr->state.subCPUTemporaryReadyTimeDelta=1000;
-	}
-}
 uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 {
 	auto fm77avPtr=(const FM77AV *)vmPtr;
@@ -1217,21 +1205,6 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	}
 	return 0xFF;
 }
-/* virtual */ void MainCPUAccess::CLR(uint16_t addr)
-{
-	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
-	{
-		physMemPtr->CLR(TWRAddressTranslation(addr));
-	}
-	else if(true==state.MMREnabled)
-	{
-		physMemPtr->CLR(MMRAddressTranslation(addr));
-	}
-	else
-	{
-		physMemPtr->CLR(MAINCPU_ADDR_BASE+addr);
-	}
-}
 /* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
 {
 	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
@@ -1386,10 +1359,6 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Device(vmPtr)
 {
 	this->physMemPtr=physMemPtr;
-}
-/* virtual */ void SubCPUAccess::CLR(uint16_t addr)
-{
-	return physMemPtr->CLR(SUBCPU_ADDR_BASE+addr);
 }
 /* virtual */ uint8_t SubCPUAccess::FetchByte(uint16_t addr)
 {

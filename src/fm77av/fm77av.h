@@ -150,10 +150,6 @@ public:
 		uint64_t next2msTimer=FM77AVTIME_MILLISEC*2;
 		uint64_t nextSecondInfm77avTime=0;
 
-		// MAGUS issue has been explained.  See comment in memory.h
-		uint64_t subCPUTemporaryReadyTime=0;
-		uint64_t subCPUTemporaryReadyTimeDelta=0;
-
 		int timeBalance=0;  // Positive means mainCPU is ahead.  Negative subCPU ahead.
 
 		/*! Nanoseconds VM is lagging behind the real time.
@@ -243,6 +239,8 @@ public:
 
 		Address powerOffAt;
 		std::vector <FM77AVParam::TestCondMem> testCondMem;
+
+		bool MAGUSAware=true;
 	};
 	Variable var;
 	MemoryEvaluation mapXY[2];

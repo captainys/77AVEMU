@@ -1477,7 +1477,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			StoreByte(mem,addr,0);
 			state.CC&=~(SF|VF|CF);
 			state.CC|=ZF;
-			mem.CLR(addr);
 		}
 		break;
 	case INST_CLR_IDX: //   0x6F,
@@ -1487,7 +1486,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			StoreByte(mem,addr,0);
 			state.CC&=~(SF|VF|CF);
 			state.CC|=ZF;
-			mem.CLR(addr);
 		}
 		break;
 	case INST_CLR_EXT: //   0x7F,
@@ -1497,7 +1495,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			StoreByte(mem,addr,0);
 			state.CC&=~(SF|VF|CF);
 			state.CC|=ZF;
-			mem.CLR(addr);
 		}
 		break;
 

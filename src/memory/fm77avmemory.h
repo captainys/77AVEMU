@@ -258,10 +258,6 @@ public:
 	unsigned int ApplyMemFilterEqual(void);
 	void PrintMemFilter(void);
 
-	/*! See comment in memory.h
-	*/
-	void CLR(uint32_t addr);
-
 	uint8_t FetchByteConst(uint32_t addr) const;
 
 	uint8_t FetchByte(uint32_t addr);
@@ -326,7 +322,7 @@ public:
 	uint8_t NonDestructiveIOReadByte(unsigned int ioport) const;
 
 	MainCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr);
-	virtual void CLR(uint16_t addr);
+
 	virtual uint8_t FetchByte(uint16_t addr);
 	virtual uint16_t FetchWord(uint16_t addr);
 	virtual void StoreByte(uint16_t addr,uint8_t data);
@@ -361,7 +357,7 @@ public:
 	PhysicalMemory *physMemPtr;
 
 	SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr);
-	virtual void CLR(uint16_t addr);
+
 	virtual uint8_t FetchByte(uint16_t addr);
 	virtual uint16_t FetchWord(uint16_t addr);
 	virtual void StoreByte(uint16_t addr,uint8_t data);

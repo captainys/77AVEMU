@@ -136,8 +136,8 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushUint64(data,state.next2msTimer);
 	PushUint64(data,state.nextSecondInfm77avTime);
 
-	PushUint64(data,state.subCPUTemporaryReadyTime);
-	PushUint64(data,state.subCPUTemporaryReadyTimeDelta);
+	PushUint64(data,0); // Sub-CPU temporary ready time is no longer used.
+	PushUint64(data,0);
 
 	PushInt32(data,state.timeBalance);
 
@@ -168,8 +168,8 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.next2msTimer=ReadUint64(data);
 	state.nextSecondInfm77avTime=ReadUint64(data);
 
-	state.subCPUTemporaryReadyTime=ReadUint64(data);
-	state.subCPUTemporaryReadyTimeDelta=ReadUint64(data);
+	auto subCPUTemporaryReadyTimeIsNoLongerUsed=ReadUint64(data);
+	auto subCPUTemporaryReadyTimeDeltaIsNoLongerUsed=ReadUint64(data);
 
 	state.timeBalance=ReadInt32(data);
 

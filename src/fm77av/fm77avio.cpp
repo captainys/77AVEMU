@@ -1,3 +1,4 @@
+#include <string.h>
 #include <iostream>
 #include "fm77av.h"
 
@@ -349,6 +350,54 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 
 	case FM77AVIO_SUBCPU_BUSY: // =             0xD40A,
 		state.subSysBusy=true;
+
+		// MAGUS is doing:
+		// C027 7FD40A     CLR     $D40A
+		// C02A 7FD40A     CLR     $D40A
+		// C02D B6D380     LDA     $D380
+		// C030 27F5       BEQ     $C027
+		// C032 7FD40A     CLR     $D40A
+		// C035 7FD40A     CLR     $D40A
+		// 
+		// It is obviously wrong.  Reading $D40A will make Sub-CPU ready, and then
+		// main CPU will write to shared RAM $D380.  However, MAGUS uses CLR
+		// instruction to make Sub-CPU ready.
+		// 
+		// How did it work?  6809's CLR instruction is executed in read-modify-write
+		// sequence.  Although what's read from the address doesn't matter, it does
+		// read from the address.  It creates 2 clock-long of ready period.  Somehow
+		// main CPU picks up this timing.
+		// 
+		// Emulating this sub-instruction behavior is very difficult.
+		// I have tried some implementations but it broke other games.
+		// I gave up.
+		// Rather, I make FM77AV I/O class MAGUS aware.
+		if(true==var.MAGUSAware && 0==value)
+		{
+			if(0xC000<=subCPU.state.PC && subCPU.state.PC<0xD000)
+			{
+				const unsigned char ptn[11]=
+				{
+					0x7F,0xD4,0x0A, // CMD_WAIT  CLR  $D40A
+					0x7F,0xD4,0x0A, //           CLR  $D40A
+					0xB6,0xD3,0x80, //           LDA  $D380
+					0x27,0xF5       //           BEQ  CMD_WAIT
+				};
+				uint32_t subCPU_PC=PhysicalMemory::SUBSYS_BEGIN+subCPU.state.PC;
+				if(0==memcmp(ptn+3,physMem.state.data+subCPU_PC,8) ||
+				   0==memcmp(ptn,physMem.state.data+subCPU_PC,11))
+				{
+					// Damn it.  Must be MAGUS.
+					static int MAGUSCount=8;
+					if(0<MAGUSCount)
+					{
+						std::cout << "Must be MAGUS" << std::endl;
+						--MAGUSCount;
+					}
+					state.subSysBusy=false;
+				}
+			}
+		}
 		break;
 	case FM77AVIO_VRAM_OFFSET_HIGH:// =        0xD40E,
 		crtc.WriteD40E(value);
@@ -771,17 +820,6 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 		if(true==state.subSysBusy)
 		{
 			byteData|=0x80;
-		}
-		// Undocumented behavior.  MAGUS used it most likely unintentionally.
-		if(state.fm77avTime<=state.subCPUTemporaryReadyTime)
-		{
-			static int MAGUSWarning=7;
-			if(0<MAGUSWarning && 0!=(byteData&0x80))
-			{
-				std::cout << "Is it MAGUS?" << std::endl;
-				--MAGUSWarning;
-			}
-			byteData&=0x7F;
 		}
 		break;
 
