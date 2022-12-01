@@ -1112,6 +1112,8 @@ void MC6809::Reset(void)
 	state.halt=false;
 	state.CWAI=false;
 	state.nmiEnabled=false;     
+	state.memoryWait=0;
+	state.middleInst=false;
 }
 void MC6809::NMI(class MemoryAccess &mem)
 {
