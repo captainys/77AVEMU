@@ -1217,6 +1217,12 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		return 0;
 	}
 
+	if(0<state.memoryWait)
+	{
+		auto w=state.memoryWait;
+		state.memoryWait=0;
+		return w;
+	}
 
 	auto inst=FetchInstruction(mem,state.PC);
 
@@ -4623,7 +4629,8 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 /* virtual */ uint32_t MC6809::SerializeVersion(void) const
 {
 	// Version 1 adds CWAI flag.
-	return 1;
+	// Version 2 adds memoryWait and middleInst.
+	return 2;
 }
 /* virtual */ void MC6809::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -4644,6 +4651,15 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 
 	// Version 1
 	PushBool(data,state.CWAI);
+
+	// Version 2
+	PushUint16(data,state.memoryWait);
+	PushBool(data,state.middleInst);
+	PushUint16(data,state.middleInstOpCode);
+	PushUint16(data,state.middleInstAddr);
+	PushUint16(data,state.middleInstLen);
+	PushUint16(data,state.middleInstClocks);
+
 }
 /* virtual */ bool MC6809::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -4668,6 +4684,25 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 	else
 	{
 		state.CWAI=false;
+	}
+
+	if(2<=version)
+	{
+		state.memoryWait=PopUint16(data);
+		state.middleInst=PopBool(data);
+		state.middleInstOpCode=PopUint16(data);
+		state.middleInstAddr=PopUint16(data);
+		state.middleInstLen=PopUint16(data);
+		state.middleInstClocks=PopUint16(data);
+	}
+	else
+	{
+		state.memoryWait=0;
+		state.middleInst=false;
+		state.middleInstOpCode=0;
+		state.middleInstAddr=0;
+		state.middleInstLen=0;
+		state.middleInstClocks=0;
 	}
 
 	return true;

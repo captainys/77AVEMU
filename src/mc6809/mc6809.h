@@ -582,6 +582,8 @@ public:
 		// Supposed to be 2.016MHz.
 		// Real FM77AV works like 1.8MHz.  WTF!?
 
+		uint16_t memoryWait=0;
+
 		bool middleInst=false;
 		uint16_t middleInstOpCode=0;
 		uint16_t middleInstAddr=0;

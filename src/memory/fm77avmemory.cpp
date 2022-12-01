@@ -677,8 +677,15 @@ uint8_t PhysicalMemory::FetchByte(uint32_t addr)
 		}
 		break;
 	case MEMTYPE_SUBSYS_IO:
-	case MEMTYPE_MAINSYS_IO:
 		return fm77avPtr->IORead(addr&0xFFFF);
+	case MEMTYPE_MAINSYS_IO:
+		// Thanks yas-sim again!  Main CPU seems to take 1-clock memory wait when accessing I/O and Boot-ROM area.
+		fm77avPtr->mainCPU.state.memoryWait=1;
+		return fm77avPtr->IORead(addr&0xFFFF);
+	case MEMTYPE_MAINSYS_BOOT_ROM:
+		// Thanks yas-sim again!  Main CPU seems to take 1-clock memory wait when accessing I/O and Boot-ROM area.
+		fm77avPtr->mainCPU.state.memoryWait=1;
+		break;
 	}
 
 	// Memo to self:  Never ever overwrite addr before FetchByteConst.
@@ -776,7 +783,11 @@ void PhysicalMemory::StoreByte(uint32_t addr,uint8_t d)
 		return;
 
 	case MEMTYPE_SUBSYS_IO:
+		fm77avPtr->IOWrite(addr,d);
+		return;
 	case MEMTYPE_MAINSYS_IO:
+		// Thanks yas-sim again!  Main CPU seems to take 1-clock memory wait when accessing I/O and Boot-ROM area.
+		fm77avPtr->mainCPU.state.memoryWait=1;
 		fm77avPtr->IOWrite(addr,d);
 		return;
 
