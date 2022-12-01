@@ -4690,12 +4690,12 @@ std::vector <std::string> MC6809::GetStatusText(void) const
 
 	if(2<=version)
 	{
-		state.memoryWait=PopUint16(data);
-		state.middleInst=PopBool(data);
-		state.middleInstOpCode=PopUint16(data);
-		state.middleInstAddr=PopUint16(data);
-		state.middleInstLen=PopUint16(data);
-		state.middleInstClocks=PopUint16(data);
+		state.memoryWait=ReadUint16(data);
+		state.middleInst=ReadBool(data);
+		state.middleInstOpCode=ReadUint16(data);
+		state.middleInstAddr=ReadUint16(data);
+		state.middleInstLen=ReadUint16(data);
+		state.middleInstClocks=ReadUint16(data);
 	}
 	else
 	{
