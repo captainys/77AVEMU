@@ -1212,6 +1212,10 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 			state.PC+=state.middleInstLen;
 			state.middleInst=false;
 
+			if(true==debugger.enabled)
+			{
+				debugger.AfterRunOneInstruction(*this,mem);
+			}
 			return state.middleInstClocks;
 		}
 		Abort("Instruction stopped in the middle unexpectedly.");
