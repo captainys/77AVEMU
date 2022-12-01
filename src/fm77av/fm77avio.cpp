@@ -372,32 +372,32 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		// I have tried some implementations but it broke other games.
 		// I gave up.
 		// Rather, I make FM77AV I/O class MAGUS aware.
-		if(true==var.MAGUSAware && 0==value)
-		{
-			if(0xC000<=subCPU.state.PC && subCPU.state.PC<0xD000)
-			{
-				const unsigned char ptn[11]=
-				{
-					0x7F,0xD4,0x0A, // CMD_WAIT  CLR  $D40A
-					0x7F,0xD4,0x0A, //           CLR  $D40A
-					0xB6,0xD3,0x80, //           LDA  $D380
-					0x27,0xF5       //           BEQ  CMD_WAIT
-				};
-				uint32_t subCPU_PC=PhysicalMemory::SUBSYS_BEGIN+subCPU.state.PC;
-				if(0==memcmp(ptn+3,physMem.state.data+subCPU_PC,8) ||
-				   0==memcmp(ptn,physMem.state.data+subCPU_PC,11))
-				{
-					// Damn it.  Must be MAGUS.
-					static int MAGUSCount=8;
-					if(0<MAGUSCount)
-					{
-						std::cout << "Must be MAGUS" << std::endl;
-						--MAGUSCount;
-					}
-					state.subSysBusy=false;
-				}
-			}
-		}
+		//if(true==var.MAGUSAware && 0==value)
+		//{
+		//	if(0xC000<=subCPU.state.PC && subCPU.state.PC<0xD000)
+		//	{
+		//		const unsigned char ptn[11]=
+		//		{
+		//			0x7F,0xD4,0x0A, // CMD_WAIT  CLR  $D40A
+		//			0x7F,0xD4,0x0A, //           CLR  $D40A
+		//			0xB6,0xD3,0x80, //           LDA  $D380
+		//			0x27,0xF5       //           BEQ  CMD_WAIT
+		//		};
+		//		uint32_t subCPU_PC=PhysicalMemory::SUBSYS_BEGIN+subCPU.state.PC;
+		//		if(0==memcmp(ptn+3,physMem.state.data+subCPU_PC,8) ||
+		//		   0==memcmp(ptn,physMem.state.data+subCPU_PC,11))
+		//		{
+		//			// Damn it.  Must be MAGUS.
+		//			static int MAGUSCount=8;
+		//			if(0<MAGUSCount)
+		//			{
+		//				std::cout << "Must be MAGUS" << std::endl;
+		//				--MAGUSCount;
+		//			}
+		//			state.subSysBusy=false;
+		//		}
+		//	}
+		//}
 		break;
 	case FM77AVIO_VRAM_OFFSET_HIGH:// =        0xD40E,
 		crtc.WriteD40E(value);

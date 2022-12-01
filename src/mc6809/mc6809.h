@@ -581,6 +581,12 @@ public:
 		unsigned int freq=DEFAULT_FREQ;
 		// Supposed to be 2.016MHz.
 		// Real FM77AV works like 1.8MHz.  WTF!?
+
+		bool middleInst=false;
+		uint16_t middleInstOpCode=0;
+		uint16_t middleInstAddr=0;
+		uint16_t middleInstLen=0;
+		uint16_t middleInstClocks=0;
 	};
 	State state;
 

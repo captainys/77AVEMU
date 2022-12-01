@@ -1115,7 +1115,7 @@ void MC6809::Reset(void)
 }
 void MC6809::NMI(class MemoryAccess &mem)
 {
-	if(true==state.nmiEnabled)
+	if(true==state.nmiEnabled && true!=state.middleInst)
 	{
 		if(true==debugger.enableCallStack)
 		{
@@ -1142,7 +1142,7 @@ void MC6809::NMI(class MemoryAccess &mem)
 }
 void MC6809::IRQ(class MemoryAccess &mem)
 {
-	if(0==(state.CC&IRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
+	if(0==(state.CC&IRQMASK) && true==state.nmiEnabled && true!=state.middleInst) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
 	{
 		if(true==debugger.enableCallStack)
 		{
@@ -1170,7 +1170,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 }
 void MC6809::FIRQ(class MemoryAccess &mem)
 {
-	if(0==(state.CC&FIRQMASK) && true==state.nmiEnabled) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
+	if(0==(state.CC&FIRQMASK) && true==state.nmiEnabled && true!=state.middleInst) // Aren't IRQ and FIRQ as well as NMI blocked until S is set?
 	{
 		if(true==debugger.enableCallStack)
 		{
@@ -1195,6 +1195,28 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	{
 		debugger.BeforeRunOneInstruction(*this,mem);
 	}
+
+
+	if(true==state.middleInst)
+	{
+		switch(state.middleInstOpCode)
+		{
+		case INST_CLR_EXT:
+			// Complete CLR_EXT instruction.
+			StoreByte(mem,state.middleInstAddr,0);
+			state.CC&=~(SF|VF|CF);
+			state.CC|=ZF;
+
+			state.PC+=state.middleInstLen;
+			state.middleInst=false;
+
+			return state.middleInstClocks;
+		}
+		Abort("Instruction stopped in the middle unexpectedly.");
+		std::cout << "OpCode=$" << cpputil::Ustox(state.middleInstOpCode) << std::endl;
+		return 0;
+	}
+
 
 	auto inst=FetchInstruction(mem,state.PC);
 
@@ -1492,9 +1514,16 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		{
 			auto addr=inst.ExtendedAddress();
 			FetchByte(mem,addr); // Dummy Read before clearing
-			StoreByte(mem,addr,0);
-			state.CC&=~(SF|VF|CF);
-			state.CC|=ZF;
+			state.middleInst=true;
+			state.middleInstOpCode=inst.opCode;
+			state.middleInstAddr=addr;
+			state.middleInstLen=inst.length;
+			state.middleInstClocks=inst.clocks-2;
+			inst.length=0;
+			inst.clocks=2;
+			// It does read-modify-write sequence.
+			// MAGUS was affected (or most likely unintentionally using) this 'read' cycle for clearling sub-CPU BUSY flag.
+			// Write should be completed subsequently.
 		}
 		break;
 

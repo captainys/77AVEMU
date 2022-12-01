@@ -240,7 +240,7 @@ public:
 		Address powerOffAt;
 		std::vector <FM77AVParam::TestCondMem> testCondMem;
 
-		bool MAGUSAware=true;
+		// bool MAGUSAware=true;
 	};
 	Variable var;
 	MemoryEvaluation mapXY[2];
@@ -304,7 +304,7 @@ public:
 	}
 	inline void ProcessInterrupts(void)
 	{
-		if(state.next20msTimer<=state.fm77avTime)
+		if(state.next20msTimer<=state.fm77avTime && true!=subCPU.state.middleInst)
 		{
 			state.next20msTimer=state.fm77avTime+FM77AVTIME_MILLISEC*20;
 			if(true!=SubCPUHalt() && true!=state.subNMIMask)
