@@ -121,7 +121,9 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 /* virtual */ uint32_t FM77AV::SerializeVersion(void) const
 {
-	return 0;
+	// Version 1
+	//   subSysHaltSoon flag.
+	return 1;
 }
 
 /* virtual */ void FM77AV::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -155,6 +157,9 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushUint16(data,state.sub.irqEnableBits);
 	PushUint16(data,state.sub.irqSource);
 	PushUint16(data,state.sub.firqSource);
+
+	// Version 1
+	PushBool(data,state.subSysHaltSoon);
 }
 /* virtual */ bool FM77AV::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -189,6 +194,15 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.sub.firqSource=ReadUint16(data);
 
 	VMBase::vmAbort=false;
+
+	if(1<=version)
+	{
+		state.subSysHaltSoon=ReadBool(data);
+	}
+	else
+	{
+		state.subSysHaltSoon=false;
+	}
 
 	return true;
 }

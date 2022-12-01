@@ -156,7 +156,7 @@ public:
 		*/
 		long long int timeDeficit=0;
 
-		bool subSysBusy,subSysHalt;
+		bool subSysBusy,subSysHalt,subSysHaltSoon;
 		bool subNMIMask=false;
 
 		bool CRTCHaltsSubCPU=false;  // True in FM-7/8 speed mode.

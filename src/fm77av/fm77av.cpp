@@ -548,6 +548,7 @@ void FM77AV::Reset(void)
 	}
 	state.subSysBusy=true; // Busy on reset.
 	state.subSysHalt=false;
+	state.subSysHaltSoon=false;
 	state.subNMIMask=false;
 	state.nextDevicePollingTime=0;
 	state.nextRenderingTime=0;
@@ -644,6 +645,13 @@ unsigned int FM77AV::RunOneInstruction(void)
 				DetectMainCPUBIOSCall();
 			}
 		}
+
+		if(true==state.subSysHaltSoon && state.timeBalance<=0 && true!=subCPU.state.middleInst)
+		{
+			state.subSysHalt=true;
+			state.subSysBusy=true;
+			state.subSysHaltSoon=false;
+		}
 	}
 	else if(true!=mainCPU.state.halt)
 	{
@@ -664,6 +672,13 @@ unsigned int FM77AV::RunOneInstruction(void)
 		nanosec=clocksPassed;
 		nanosec*=SCALE_NANO;
 		nanosec/=mainCPU.state.freq;
+
+		if(true==state.subSysHaltSoon)
+		{
+			state.subSysHalt=true;
+			state.subSysBusy=true;
+			state.subSysHaltSoon=false;
+		}
 	}
 	else // if(true==mainCPU.state.halt && true==subCPUHalt)
 	{

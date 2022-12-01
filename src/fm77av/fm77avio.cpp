@@ -56,8 +56,9 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 	case FM77AVIO_SUBSYS_BUSY_HALT: // 0xFD05
 		if(0!=(0x80&value))
 		{
-			state.subSysHalt=true;
-			state.subSysBusy=true;
+			// Sub-CPU should actually halt at the end of the instruction.  If main-CPU is ahead, it should halt when sub-CPU catches up with main CPU.
+			// In order to implement this lag, do not halt here, but let RunOneInstruction check if sub-CPU is ahead and then realy halt.
+			state.subSysHaltSoon=true;
 			// Question: What's going to happen if the main CPU writes $80 to $FD05
 			//           while the busy flag is true?  Does it halt the sub-CPU anyway?
 			//           Or, is it ignored?
