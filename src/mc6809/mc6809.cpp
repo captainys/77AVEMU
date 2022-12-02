@@ -1121,7 +1121,7 @@ void MC6809::NMI(class MemoryAccess &mem)
 	{
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_NMI,state.S,state.PC,0,mem.NonDestructiveFetchWord(NMI_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_NMI,state.S,state.PC,0,mem.NonDestructiveFetchWord(this,NMI_VECTOR_ADDR));
 		}
 		if(true!=state.CWAI)
 		{
@@ -1138,7 +1138,7 @@ void MC6809::NMI(class MemoryAccess &mem)
 		state.CWAI=false;
 		state.halt=false;
 		state.CC|=(IRQMASK|FIRQMASK);
-		state.PC=mem.FetchWord(NMI_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,NMI_VECTOR_ADDR);
 		debugger.OnNMI(*this,mem);
 	}
 }
@@ -1148,7 +1148,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 	{
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_IRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(IRQ_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_IRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(this,IRQ_VECTOR_ADDR));
 		}
 		if(true!=state.CWAI)
 		{
@@ -1166,7 +1166,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 		state.halt=false;
 		// Motorola 6809 and Hitatchi 6309 Programming Reference pp. 144.  IRQ request only masks IRQ.
 		state.CC|=IRQMASK;
-		state.PC=mem.FetchWord(IRQ_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,IRQ_VECTOR_ADDR);
 		debugger.OnIRQ(*this,mem);
 	}
 }
@@ -1176,7 +1176,7 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 	{
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_FIRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(FIRQ_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_FIRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(this,FIRQ_VECTOR_ADDR));
 		}
 		if(true!=state.CWAI)
 		{
@@ -1187,7 +1187,7 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 		state.CWAI=false;
 		state.halt=false;
 		state.CC|=(IRQMASK|FIRQMASK);
-		state.PC=mem.FetchWord(FIRQ_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,FIRQ_VECTOR_ADDR);
 		debugger.OnFIRQ(*this,mem);
 	}
 }
@@ -2942,7 +2942,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_SWI: //       0x3F,
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,SWI_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -2954,13 +2954,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
 		state.CC|=(IRQMASK|FIRQMASK);
-		state.PC=mem.FetchWord(SWI_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,SWI_VECTOR_ADDR);
 		inst.length=0;
 		break;
 	case INST_SWI2: //      0x13F,  // 10 3F
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI2,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI2_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI2,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,SWI2_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -2972,13 +2972,13 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
 		// Motorola 6809 and Hitatchi 6309 Programming Reference pp. 134.  SWI2 and SWI3 does not mask IRQ and FIRQ.
-		state.PC=mem.FetchWord(SWI2_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,SWI2_VECTOR_ADDR);
 		inst.length=0;
 		break;
 	case INST_SWI3: //      0x23F,  // 11 3F
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI3,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI3_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI3,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,SWI3_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -2990,7 +2990,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
 		// Motorola 6809 and Hitatchi 6309 Programming Reference pp. 134.  SWI2 and SWI3 does not mask IRQ and FIRQ.
-		state.PC=mem.FetchWord(SWI3_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,SWI3_VECTOR_ADDR);
 		inst.length=0;
 		break;
 
@@ -3290,7 +3290,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		// "similar to th SWI instruction.  loads the PC register with an address obtained from the RESET vector ($FFFE:F)."
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(RESET_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,RESET_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -3302,7 +3302,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		PushS8(mem,state.A());
 		PushS8(mem,state.CC);
 		state.CC|=(IRQMASK|FIRQMASK);
-		state.PC=mem.FetchWord(RESET_VECTOR_ADDR);
+		state.PC=mem.FetchWord(this,RESET_VECTOR_ADDR);
 		inst.length=0;
 		break;
 
@@ -3733,25 +3733,25 @@ void MC6809::SubByte(uint8_t &value1,uint16_t value2)
 class DestructiveMemoryFetch
 {
 public:
-	inline static uint8_t FetchByte(MemoryAccess &mem,uint16_t addr)
+	inline static uint8_t FetchByte(const MC6809 *cpuPtr,MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.FetchByte(addr);
+		return mem.FetchByte(cpuPtr,addr);
 	}
-	inline static uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
+	inline static uint16_t FetchWord(const MC6809 *cpuPtr,MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.FetchWord(addr);
+		return mem.FetchWord(cpuPtr,addr);
 	}
 };
 class NonDestructiveMemoryFetch
 {
 public:
-	inline static uint8_t FetchByte(const MemoryAccess &mem,uint16_t addr)
+	inline static uint8_t FetchByte(const MC6809 *cpuPtr,const MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.NonDestructiveFetchByte(addr);
+		return mem.NonDestructiveFetchByte(cpuPtr,addr);
 	}
-	inline static uint16_t FetchWord(const MemoryAccess &mem,uint16_t addr)
+	inline static uint16_t FetchWord(const MC6809 *cpuPtr,const MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.NonDestructiveFetchWord(addr);
+		return mem.NonDestructiveFetchWord(cpuPtr,addr);
 	}
 };
 template <class ConstOrNonConstMemoryAccess,class MemoryFetch>
@@ -3759,7 +3759,7 @@ MC6809::Instruction MC6809::FetchInstructionTemplate(ConstOrNonConstMemoryAccess
 {
 	Instruction inst;
 
-	inst.opCode=MemoryFetch::FetchByte(mem,PC++);
+	inst.opCode=MemoryFetch::FetchByte(this,mem,PC++);
 	inst.length=1;
 
 REFETCH_MULTI_BYTE:
@@ -3770,32 +3770,32 @@ REFETCH_MULTI_BYTE:
 	{
 	case OPER_MULTI_BYTE_10:
 		inst.length=2;
-		inst.opCode=0x100|MemoryFetch::FetchByte(mem,PC++);
+		inst.opCode=0x100|MemoryFetch::FetchByte(this,mem,PC++);
 		goto REFETCH_MULTI_BYTE;
 	case OPER_MULTI_BYTE_11:
 		inst.length=2;
-		inst.opCode=0x200|MemoryFetch::FetchByte(mem,PC++);
+		inst.opCode=0x200|MemoryFetch::FetchByte(this,mem,PC++);
 		goto REFETCH_MULTI_BYTE;
 	case OPER_IMM:
 	case OPER_DP:
 	case OPER_REG:
 		// 1-byte operand
 		++inst.length;
-		inst.operand[0]=MemoryFetch::FetchByte(mem,PC++);
+		inst.operand[0]=MemoryFetch::FetchByte(this,mem,PC++);
 		break;
 	case OPER_EXT:
 	case OPER_IMM16:
 		// 2-bytes operand
 		inst.length+=2;
-		inst.operand[0]=MemoryFetch::FetchByte(mem,PC++);
-		inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+		inst.operand[0]=MemoryFetch::FetchByte(this,mem,PC++);
+		inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
 		break;
 	case OPER_INHERENT:
 		// No operand.
 		break;
 	case OPER_IDX:
 		++inst.length;
-		inst.operand[0]=MemoryFetch::FetchByte(mem,PC++);
+		inst.operand[0]=MemoryFetch::FetchByte(this,mem,PC++);
 		inst.indexReg=REG_X+((inst.operand[0]>>5)&3);
 		if(0==(inst.operand[0]&0x80)) // 5-bit offset from REG
 		{
@@ -3824,7 +3824,7 @@ REFETCH_MULTI_BYTE:
 				++inst.length;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
@@ -3833,7 +3833,7 @@ REFETCH_MULTI_BYTE:
 				++inst.length;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80);
 				break;
@@ -3842,8 +3842,8 @@ REFETCH_MULTI_BYTE:
 				inst.length+=2;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
-				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
@@ -3852,8 +3852,8 @@ REFETCH_MULTI_BYTE:
 				inst.length+=2;
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
-				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000);
 				break;
@@ -3935,7 +3935,7 @@ REFETCH_MULTI_BYTE:
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80)+inst.length;
 				break;
@@ -3945,7 +3945,7 @@ REFETCH_MULTI_BYTE:
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=inst.operand[1];
 				inst.offset=(inst.offset&0x7F)-(inst.offset&0x80)+inst.length;
 				break;
@@ -3955,8 +3955,8 @@ REFETCH_MULTI_BYTE:
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=false;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
-				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000)+inst.length;
 				break;
@@ -3966,8 +3966,8 @@ REFETCH_MULTI_BYTE:
 				inst.indexType=INDEX_CONST_OFFSET_FROM_REG;
 				inst.indexIndir=true;
 				inst.indexReg=REG_PC;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
-				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				inst.offset=(inst.offset&0x7FFF)-(inst.offset&0x8000)+inst.length;
 				break;
@@ -3976,8 +3976,8 @@ REFETCH_MULTI_BYTE:
 				inst.length+=2;
 				inst.indexType=INDEX_EXTENDED;
 				inst.indexIndir=true;
-				inst.operand[1]=MemoryFetch::FetchByte(mem,PC++);
-				inst.operand[2]=MemoryFetch::FetchByte(mem,PC++);
+				inst.operand[1]=MemoryFetch::FetchByte(this,mem,PC++);
+				inst.operand[2]=MemoryFetch::FetchByte(this,mem,PC++);
 				inst.offset=mc6809util::FetchWord(inst.operand[1],inst.operand[2]);
 				break;
 			default:
@@ -4041,7 +4041,7 @@ std::string MC6809::DecoratedDisassembly(const MemoryAccess &mem,uint16_t PC,boo
 	auto inst=NonDestructiveFetchInstruction(mem,PC);
 	if(true==debugger.OS9Mode && INST_SWI2==inst.opCode)
 	{
-		inst.operand[0]=mem.NonDestructiveFetchByte(PC+2);
+		inst.operand[0]=mem.NonDestructiveFetchByte(this,PC+2);
 		inst.length=3;
 	}
 

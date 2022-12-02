@@ -3552,7 +3552,7 @@ void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77
 				auto &mem=fm77av.MemAccess(ptr.type);
 				for(int i=0; i<cmd.argv[2].size(); ++i)
 				{
-					mem.StoreByte(ptr.addr+i,cmd.argv[2][i]);
+					mem.StoreByte(nullptr,ptr.addr+i,cmd.argv[2][i]);
 				}
 			}
 			std::cout << "Stored string to memory." << std::endl;
@@ -3584,10 +3584,10 @@ void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77
 						switch(numBytes)
 						{
 						case 1:
-							mem.StoreByte(addr,parser.Evaluate());
+							mem.StoreByte(nullptr,addr,parser.Evaluate());
 							break;
 						case 2:
-							mem.StoreWord(addr,parser.Evaluate());
+							mem.StoreWord(nullptr,addr,parser.Evaluate());
 							break;
 						}
 					}

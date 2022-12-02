@@ -1216,7 +1216,7 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 	}
 	return 0xFF;
 }
-/* virtual */ uint8_t MainCPUAccess::FetchByte(uint16_t addr)
+/* virtual */ uint8_t MainCPUAccess::FetchByte(const CanAccessMemory *accessFrom,uint16_t addr)
 {
 	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
@@ -1231,14 +1231,14 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 		return physMemPtr->FetchByte(MAINCPU_ADDR_BASE+addr);
 	}
 }
-/* virtual */ uint16_t MainCPUAccess::FetchWord(uint16_t addr)
+/* virtual */ uint16_t MainCPUAccess::FetchWord(const CanAccessMemory *accessFrom,uint16_t addr)
 {
 	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
 		// Making sure to the high byte is accessed first.
 		uint16_t res;
-		res  = FetchByte(addr  )<<8;
-		res |= FetchByte(addr+1);
+		res  = FetchByte(accessFrom,addr  )<<8;
+		res |= FetchByte(accessFrom,addr+1);
 		return res;
 	}
 	else if(true==state.MMREnabled)
@@ -1254,7 +1254,7 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 			MAINCPU_ADDR_BASE+addr+1);
 	}
 }
-/* virtual */ void MainCPUAccess::StoreByte(uint16_t addr,uint8_t data)
+/* virtual */ void MainCPUAccess::StoreByte(const CanAccessMemory *accessFrom,uint16_t addr,uint8_t data)
 {
 	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
@@ -1269,12 +1269,12 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 		physMemPtr->StoreByte(MAINCPU_ADDR_BASE+addr,data);
 	}
 }
-/* virtual */ void MainCPUAccess::StoreWord(uint16_t addr,uint16_t data)
+/* virtual */ void MainCPUAccess::StoreWord(const CanAccessMemory *accessFrom,uint16_t addr,uint16_t data)
 {
 	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
-		StoreByte(addr  ,(data>>8));
-		StoreByte(addr+1,data&0xFF);
+		StoreByte(accessFrom,addr  ,(data>>8));
+		StoreByte(accessFrom,addr+1,data&0xFF);
 	}
 	else if(true==state.MMREnabled)
 	{
@@ -1291,7 +1291,7 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 			data);
 	}
 }
-/* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
+/* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(const CanAccessMemory *accessFrom,uint16_t addr) const
 {
 	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
@@ -1306,13 +1306,13 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 		return physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr);
 	}
 }
-/* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
+/* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(const CanAccessMemory *accessFrom,uint16_t addr) const
 {
 	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
 		uint16_t res;
-		res  = NonDestructiveFetchByte(addr)<<8;
-		res |= NonDestructiveFetchByte(addr+1);
+		res  = NonDestructiveFetchByte(accessFrom,addr)<<8;
+		res |= NonDestructiveFetchByte(accessFrom,addr+1);
 		return res;
 	}
 	else if(true==state.MMREnabled)
@@ -1371,32 +1371,32 @@ SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Dev
 {
 	this->physMemPtr=physMemPtr;
 }
-/* virtual */ uint8_t SubCPUAccess::FetchByte(uint16_t addr)
+/* virtual */ uint8_t SubCPUAccess::FetchByte(const CanAccessMemory *accessFrom,uint16_t addr)
 {
 	return physMemPtr->FetchByte(SUBCPU_ADDR_BASE+addr);
 }
-/* virtual */ uint16_t SubCPUAccess::FetchWord(uint16_t addr)
+/* virtual */ uint16_t SubCPUAccess::FetchWord(const CanAccessMemory *accessFrom,uint16_t addr)
 {
 	return physMemPtr->FetchWord(
 		SUBCPU_ADDR_BASE+addr,
 		SUBCPU_ADDR_BASE+((addr+1)&0xFFFF));
 }
-/* virtual */ void SubCPUAccess::StoreByte(uint16_t addr,uint8_t data)
+/* virtual */ void SubCPUAccess::StoreByte(const CanAccessMemory *accessFrom,uint16_t addr,uint8_t data)
 {
 	physMemPtr->StoreByte(SUBCPU_ADDR_BASE+addr,data);
 }
-/* virtual */ void SubCPUAccess::StoreWord(uint16_t addr,uint16_t data)
+/* virtual */ void SubCPUAccess::StoreWord(const CanAccessMemory *accessFrom,uint16_t addr,uint16_t data)
 {
 	physMemPtr->StoreWord(
 		SUBCPU_ADDR_BASE+addr,
 		SUBCPU_ADDR_BASE+((addr+1)&0xFFFF),
 		data);
 }
-/* virtual */ uint8_t SubCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
+/* virtual */ uint8_t SubCPUAccess::NonDestructiveFetchByte(const CanAccessMemory *accessFrom,uint16_t addr) const
 {
 	return physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr);
 }
-/* virtual */ uint16_t SubCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
+/* virtual */ uint16_t SubCPUAccess::NonDestructiveFetchWord(const CanAccessMemory *accessFrom,uint16_t addr) const
 {
 	uint8_t hiByte = physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr);
 	uint8_t loByte = physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+((addr+1)&0xFFFF));

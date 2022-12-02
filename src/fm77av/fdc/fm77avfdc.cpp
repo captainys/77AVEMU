@@ -278,7 +278,7 @@ void FM77AVFDC::MakeReady(void)
 				fm77avPtr->mainMemAcc.state.MMRSEG = 0;
 				for(unsigned int i=0; i<fm77avPtr->dmac.NumBytes() && i<state.data.size(); ++i)
 				{
-					fm77avPtr->mainMemAcc.StoreByte(addr0+i,state.data[i]);
+					fm77avPtr->mainMemAcc.StoreByte(&fm77avPtr->dmac,addr0+i,state.data[i]);
 				}
 				fm77avPtr->mainMemAcc.state.MMRSEG = mmrseg_bkup;
 				fm77avPtr->dmac.SetDMAEnd(true);
@@ -441,7 +441,7 @@ void FM77AVFDC::MakeReady(void)
 				fm77avPtr->mainMemAcc.state.MMRSEG = 0;
 				for(unsigned int i=0; i<fm77avPtr->dmac.NumBytes() && i<state.data.size(); ++i)
 				{
-					fm77avPtr->mainMemAcc.StoreByte(addr0+i,state.data[i]);
+					fm77avPtr->mainMemAcc.StoreByte(&fm77avPtr->dmac,addr0+i,state.data[i]);
 				}
 				fm77avPtr->mainMemAcc.state.MMRSEG = mmrseg_bkup;
 				fm77avPtr->dmac.SetDMAEnd(true);

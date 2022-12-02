@@ -840,9 +840,9 @@ void FM77AV::DetectMainCPUBIOSCall(void)
 		std::cout << "BIOS Call:";
 		for(uint16_t i=0; i<10; ++i)
 		{
-			std::cout << " " << cpputil::Ubtox(mainMemAcc.FetchByte(mainCPU.state.X+i));
+			std::cout << " " << cpputil::Ubtox(mainMemAcc.FetchByte(&mainCPU,mainCPU.state.X+i));
 		}
-		std::cout << " " << BIOSCmdToStr(mainMemAcc.FetchByte(mainCPU.state.X)) << std::endl;
+		std::cout << " " << BIOSCmdToStr(mainMemAcc.FetchByte(&mainCPU,mainCPU.state.X)) << std::endl;
 	}
 }
 
@@ -1143,11 +1143,11 @@ int FM77AV::TestSuccess(void) const
 		uint8_t data=0;
 		if(CPU_MAIN==cond.addrType)
 		{
-			data=mainMemAcc.NonDestructiveFetchByte(cond.addr&0xFFFF);
+			data=mainMemAcc.NonDestructiveFetchByte(&mainCPU,cond.addr&0xFFFF);
 		}
 		else
 		{
-			data=subMemAcc.NonDestructiveFetchByte(cond.addr&0xFFFF);
+			data=subMemAcc.NonDestructiveFetchByte(&mainCPU,cond.addr&0xFFFF);
 		}
 		if(data!=cond.data)
 		{

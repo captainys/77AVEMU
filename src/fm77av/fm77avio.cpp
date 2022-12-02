@@ -182,7 +182,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			// Confirmed on actual FM77AV.  Sub-CPU resets even if the monitor type
 			// doesn't change.  POKE &HFD13,0 from F-BASIC will reset sub-CPU.
 			subCPU.Reset();
-			subCPU.state.PC=subMemAcc.FetchWord(0xFFFE);
+			subCPU.state.PC=subMemAcc.FetchWord(&subCPU,0xFFFE);
 			state.subSysBusy=true; // Busy on reset.
 		}
 		break;

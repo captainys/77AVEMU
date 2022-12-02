@@ -927,12 +927,12 @@ public:
 	{
 		if(true!=debugger.enabled || 0==debugger.memRead[addr].flags)
 		{
-			return mem.FetchByte(addr);
+			return mem.FetchByte(this,addr);
 		}
 		else
 		{
 			auto option=debugger.memRead[addr];
-			auto data=mem.FetchByte(addr);
+			auto data=mem.FetchByte(this,addr);
 			if(option.min<=data && data<=option.max)
 			{
 				std::cout << "Memory Read " << cpputil::Ustox(addr) << " Value=" << cpputil::Ubtox(data) << std::endl;
@@ -948,7 +948,7 @@ public:
 	{
 		if(true!=debugger.enabled || 0==debugger.memRead[addr].flags || 0==debugger.memRead[(addr+1)&0xFFFF].flags)
 		{
-			return mem.FetchWord(addr);
+			return mem.FetchWord(this,addr);
 		}
 		else
 		{
@@ -960,7 +960,7 @@ public:
 	}
 	inline void StoreByte(MemoryAccess &mem,uint16_t addr,uint8_t data)
 	{
-		mem.StoreByte(addr,data);
+		mem.StoreByte(this,addr,data);
 		if(true==debugger.enabled && 0!=debugger.memWrite[addr].flags)
 		{
 			auto option=debugger.memWrite[addr];
@@ -980,7 +980,7 @@ public:
 		   0==debugger.memWrite[addr].flags &&
 		   0==debugger.memWrite[(addr+1)&0xFFFF].flags)
 		{
-			mem.StoreWord(addr,data);
+			mem.StoreWord(this,addr,data);
 		}
 		else
 		{

@@ -5,8 +5,9 @@
 
 
 #include "device.h"
+#include "memory.h"
 
-class FM77AV40DMAC : public Device
+class FM77AV40DMAC : public Device, public CanAccessMemory
 {
 public:
 	virtual const char *DeviceName(void) const{return "DMAC";}
