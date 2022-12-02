@@ -118,6 +118,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 					mainCPU.debugger.ExternalBreak(str);
 				}
 			}
+			state.subSysHaltSoon=false;
 			state.subSysHalt=false;
 		}
 		if(0!=(0x40&value))
