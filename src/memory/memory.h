@@ -7,6 +7,10 @@
 
 
 
+class CanAccessMemory
+{
+};
+
 class MemoryAccess
 {
 public:

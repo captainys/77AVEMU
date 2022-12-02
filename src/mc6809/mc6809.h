@@ -12,7 +12,7 @@
 #include "mc6809util.h"
 #include "mc6809symtable.h"
 
-class MC6809 : public Device
+class MC6809 : public Device, public CanAccessMemory
 {
 public:
 	enum
