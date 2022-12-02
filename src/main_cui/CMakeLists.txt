@@ -983,3 +983,41 @@ add_test(
 		05
 		-NOWAIT
 )
+
+add_test(
+	NAME BLUEFOX
+	COMMAND
+		${TARGET_NAME}
+		"${FM7ROMDIR}"
+		-TAPE
+		"${TAPEIMAGE_DIR}/BlueFox.t77"
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		2477
+		-TESTCONDMEM
+		MAIN   # Check $2477 is JSR.
+		2477
+		BD
+		-NOWAIT
+)
+
+add_test(
+	NAME VOLGUARD
+	COMMAND
+		${TARGET_NAME}
+		"${FM7ROMDIR}"
+		-TAPE
+		"${TAPEIMAGE_DIR}/Volguard.t77"
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		2D75
+		-TESTCONDMEM
+		MAIN   # Check $2D75 is RTS.
+		2D75
+		39
+		-NOWAIT
+)
