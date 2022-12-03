@@ -3544,7 +3544,7 @@ void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77
 			{
 				for(int i=0; i<cmd.argv[2].size(); ++i)
 				{
-					fm77av.physMem.StoreByte(ptr.addr+i,cmd.argv[2][i]);
+					fm77av.physMem.StoreByte(nullptr,ptr.addr+i,cmd.argv[2][i]);
 				}
 			}
 			else
@@ -3571,10 +3571,10 @@ void FM77AVCommandInterpreter::Execute_EditMemory(FM77AVThread &thr,FM77AV &fm77
 						switch(numBytes)
 						{
 						case 1:
-							fm77av.physMem.StoreByte(addr,parser.Evaluate());
+							fm77av.physMem.StoreByte(nullptr,addr,parser.Evaluate());
 							break;
 						case 2:
-							fm77av.physMem.StoreWord(addr,addr+1,parser.Evaluate());
+							fm77av.physMem.StoreWord(nullptr,addr,addr+1,parser.Evaluate());
 							break;
 						}
 					}
