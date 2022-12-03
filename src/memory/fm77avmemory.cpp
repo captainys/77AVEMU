@@ -660,10 +660,28 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 		auto data=FetchByteConst(addr);
 		if(var.memAttr[addr].brkOnReadMinMax[0]<=data && data<=var.memAttr[addr].brkOnReadMinMax[1])
 		{
+			auto dmac=fm77avPtr->ToDMAC(accessFrom);
+			if(nullptr!=dmac)
+			{
+				std::cout << "DMAC ";
+			}
 			std::cout << "Memory Read " << cpputil::Uitox(addr) << " Value=" << cpputil::Ubtox(data) << std::endl;
 			if(true!=var.memAttr[addr].justMonitorDontBreakOnRead)
 			{
-				fm77avPtr->mainCPU.debugger.stop=true;
+				auto cpu=fm77avPtr->ToCPU(accessFrom);
+				if(nullptr!=cpu)
+				{
+					cpu->debugger.stop=true;
+				}
+				else if(nullptr!=dmac)
+				{
+					fm77avPtr->mainCPU.debugger.stop=true;
+				}
+				else
+				{
+					std::cout << "Unknown source" << std::endl;
+					fm77avPtr->mainCPU.debugger.stop=true;
+				}
 			}
 		}
 	}

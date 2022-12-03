@@ -505,6 +505,47 @@ MemoryAccess &FM77AV::MemAccess(unsigned int mainOrSub)
 	return mainMemAcc;
 }
 
+MC6809 *FM77AV::ToCPU(const CanAccessMemory *accessFrom)
+{
+	if(&mainCPU==accessFrom)
+	{
+		return &mainCPU;
+	}
+	else if(&subCPU==accessFrom)
+	{
+		return &subCPU;
+	}
+	return nullptr;
+}
+const MC6809 *FM77AV::ToCPU(const CanAccessMemory *accessFrom) const
+{
+	if(&mainCPU==accessFrom)
+	{
+		return &mainCPU;
+	}
+	else if(&subCPU==accessFrom)
+	{
+		return &subCPU;
+	}
+	return nullptr;
+}
+FM77AV40DMAC *FM77AV::ToDMAC(const CanAccessMemory *accessFrom)
+{
+	if(&dmac==accessFrom)
+	{
+		return &dmac;
+	}
+	return nullptr;
+}
+const FM77AV40DMAC *FM77AV::ToDMAC(const CanAccessMemory *accessFrom) const
+{
+	if(&dmac==accessFrom)
+	{
+		return &dmac;
+	}
+	return nullptr;
+}
+
 void FM77AV::SetFM8Speed(void)
 {
 	mainCPU.state.freq=FM8_FREQ;

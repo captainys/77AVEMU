@@ -369,6 +369,12 @@ public:
 	const MC6809 &CPU(unsigned int mainOrSub) const;
 	MemoryAccess &MemAccess(unsigned int mainOrSub);
 
+	MC6809 *ToCPU(const CanAccessMemory *accessFrom);
+	const MC6809 *ToCPU(const CanAccessMemory *accessFrom) const;
+
+	FM77AV40DMAC *ToDMAC(const CanAccessMemory *accessFrom);
+	const FM77AV40DMAC *ToDMAC(const CanAccessMemory *accessFrom) const;
+
 	/*! SubCPU can halt:
 	      by HLT instruction,
 	      by main CPU I/O $FD05, or
