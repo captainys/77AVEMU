@@ -1099,3 +1099,22 @@ add_test(
 		35
 		-NOWAIT
 )
+
+add_test(
+	NAME CASTLE_EXCELLENT
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AV40ROMDIR}"
+		-TAPE
+		"${TAPEIMAGE_DIR}/CastleExcellent.t77"
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		SUB
+		BF4F
+		-TESTCONDMEM
+		SUB   # Check $BF4F is RTS
+		BF4F
+		39
+		-NOWAIT
+)
