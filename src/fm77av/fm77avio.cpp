@@ -4,7 +4,7 @@
 
 
 
-void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
+void FM77AV::IOWrite(const CanAccessMemory *accessFrom,uint16_t ioAddr,uint8_t value)
 {
 	if((0xFD00==(ioAddr&0xFF00) && true==var.monitorIOWriteMain[ioAddr&0xFF]) ||
 	   (0xD400==(ioAddr&0xFF00) && true==var.monitorIOWriteSub[ioAddr&0xFF]))
@@ -19,7 +19,16 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 			std::cout << "SUB: " << cpputil::Ustox(subCPU.state.PC) << " ";
 		}
 		std::cout << "IO:" << cpputil::Ustox(ioAddr) << " ";
-		std::cout << "VALUE:" << cpputil::Ubtox(value) << std::endl;
+		std::cout << "VALUE:" << cpputil::Ubtox(value);
+		if(&mainCPU==ToCPU(accessFrom))
+		{
+			std::cout << " by Main CPU";
+		}
+		else if(&subCPU==ToCPU(accessFrom))
+		{
+			std::cout << " by Sub CPU";
+		}
+		std::cout << std::endl;
 	}
 
 	switch(ioAddr)
@@ -614,7 +623,7 @@ void FM77AV::IOWrite(uint16_t ioAddr,uint8_t value)
 		break;
 	}
 }
-uint8_t FM77AV::IORead(uint16_t ioAddr)
+uint8_t FM77AV::IORead(const CanAccessMemory *accessFrom,uint16_t ioAddr)
 {
 	uint8_t byteData=NonDestructiveIORead(ioAddr);
 

@@ -695,11 +695,11 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 		}
 		break;
 	case MEMTYPE_SUBSYS_IO:
-		return fm77avPtr->IORead(addr&0xFFFF);
+		return fm77avPtr->IORead(accessFrom,addr&0xFFFF);
 	case MEMTYPE_MAINSYS_IO:
 		// Thanks yas-sim again!  Main CPU seems to take 1-clock memory wait when accessing I/O and Boot-ROM area.
 		fm77avPtr->mainCPU.state.memoryWait=1;
-		return fm77avPtr->IORead(addr&0xFFFF);
+		return fm77avPtr->IORead(accessFrom,addr&0xFFFF);
 	case MEMTYPE_MAINSYS_BOOT_ROM:
 		// Thanks yas-sim again!  Main CPU seems to take 1-clock memory wait when accessing I/O and Boot-ROM area.
 		fm77avPtr->mainCPU.state.memoryWait=1;
@@ -801,12 +801,12 @@ void PhysicalMemory::StoreByte(const CanAccessMemory *accessFrom,uint32_t addr,u
 		return;
 
 	case MEMTYPE_SUBSYS_IO:
-		fm77avPtr->IOWrite(addr,d);
+		fm77avPtr->IOWrite(accessFrom,addr,d);
 		return;
 	case MEMTYPE_MAINSYS_IO:
 		// Thanks yas-sim again!  Main CPU seems to take 1-clock memory wait when accessing I/O and Boot-ROM area.
 		fm77avPtr->mainCPU.state.memoryWait=1;
-		fm77avPtr->IOWrite(addr,d);
+		fm77avPtr->IOWrite(accessFrom,addr,d);
 		return;
 
 	case MEMTYPE_SUBSYS_FONT_ROM:

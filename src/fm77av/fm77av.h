@@ -260,8 +260,8 @@ public:
 
 	bool SetUp(const FM77AVParam &param,class Outside_World *outside_world);
 
-	void IOWrite(uint16_t ioAddr,uint8_t value);
-	uint8_t IORead(uint16_t ioAddr);
+	void IOWrite(const CanAccessMemory *accessFrom,uint16_t ioAddr,uint8_t value);
+	uint8_t IORead(const CanAccessMemory *accessFrom,uint16_t ioAddr);
 	uint8_t NonDestructiveIORead(uint16_t ioAddr) const;
 
 	/*! Returns aliased file name if input matches an alias label.
