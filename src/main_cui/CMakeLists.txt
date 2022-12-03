@@ -1118,3 +1118,22 @@ add_test(
 		39
 		-NOWAIT
 )
+
+add_test(
+	NAME CHACK_N_POP
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AV40ROMDIR}"
+		-TAPE
+		"${TAPEIMAGE_DIR}/ChackNPop.t77"
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		2E40
+		-TESTCONDMEM
+		MAIN   # Check $2E40 is BRA
+		2E40
+		20
+		-NOWAIT
+)
