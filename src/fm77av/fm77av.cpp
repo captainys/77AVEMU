@@ -1143,11 +1143,11 @@ int FM77AV::TestSuccess(void) const
 		uint8_t data=0;
 		if(CPU_MAIN==cond.addrType)
 		{
-			data=mainMemAcc.NonDestructiveFetchByte(&mainCPU,cond.addr&0xFFFF);
+			data=mainMemAcc.NonDestructiveFetchByte(cond.addr&0xFFFF);
 		}
 		else
 		{
-			data=subMemAcc.NonDestructiveFetchByte(&mainCPU,cond.addr&0xFFFF);
+			data=subMemAcc.NonDestructiveFetchByte(cond.addr&0xFFFF);
 		}
 		if(data!=cond.data)
 		{

@@ -1295,7 +1295,7 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 			data);
 	}
 }
-/* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(const CanAccessMemory *accessFrom,uint16_t addr) const
+/* virtual */ uint8_t MainCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
 {
 	if(true==state.TWREnabled && (0x7C00==(addr&0xFC00)))
 	{
@@ -1310,13 +1310,13 @@ uint8_t MainCPUAccess::NonDestructiveIOReadByte(unsigned int ioport) const
 		return physMemPtr->NonDestructiveFetchByte(MAINCPU_ADDR_BASE+addr);
 	}
 }
-/* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(const CanAccessMemory *accessFrom,uint16_t addr) const
+/* virtual */ uint16_t MainCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
 {
 	if(true==state.TWREnabled) // There is a possibility like LDX $7BFF or LDX $7FFF.
 	{
 		uint16_t res;
-		res  = NonDestructiveFetchByte(accessFrom,addr)<<8;
-		res |= NonDestructiveFetchByte(accessFrom,addr+1);
+		res  = NonDestructiveFetchByte(addr)<<8;
+		res |= NonDestructiveFetchByte(addr+1);
 		return res;
 	}
 	else if(true==state.MMREnabled)
@@ -1398,11 +1398,11 @@ SubCPUAccess::SubCPUAccess(class VMBase *vmPtr,PhysicalMemory *physMemPtr) : Dev
 		SUBCPU_ADDR_BASE+((addr+1)&0xFFFF),
 		data);
 }
-/* virtual */ uint8_t SubCPUAccess::NonDestructiveFetchByte(const CanAccessMemory *accessFrom,uint16_t addr) const
+/* virtual */ uint8_t SubCPUAccess::NonDestructiveFetchByte(uint16_t addr) const
 {
 	return physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr);
 }
-/* virtual */ uint16_t SubCPUAccess::NonDestructiveFetchWord(const CanAccessMemory *accessFrom,uint16_t addr) const
+/* virtual */ uint16_t SubCPUAccess::NonDestructiveFetchWord(uint16_t addr) const
 {
 	uint8_t hiByte = physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+addr);
 	uint8_t loByte = physMemPtr->NonDestructiveFetchByte(SUBCPU_ADDR_BASE+((addr+1)&0xFFFF));

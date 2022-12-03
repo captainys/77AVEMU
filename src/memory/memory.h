@@ -38,8 +38,8 @@ public:
 	// Fetching a byte for debugging purpose like memory dump or disassembly
 	// shouldn't change the device status.  For those purposes, non-destructive
 	// fetch is necessary.
-	virtual uint8_t NonDestructiveFetchByte(const CanAccessMemory *accessFrom,uint16_t addr) const=0;
-	virtual uint16_t NonDestructiveFetchWord(const CanAccessMemory *accessFrom,uint16_t addr) const=0;
+	virtual uint8_t NonDestructiveFetchByte(uint16_t addr) const=0;
+	virtual uint16_t NonDestructiveFetchWord(uint16_t addr) const=0;
 };
 
 /* } */

@@ -90,7 +90,7 @@ std::vector <std::string> miscutil::MakeMemDump(const MC6809 &cpu,const MemoryAc
 				}
 				else
 				{
-					str+=" "+cpputil::Ubtox(mem.NonDestructiveFetchByte(&cpu,addr));
+					str+=" "+cpputil::Ubtox(mem.NonDestructiveFetchByte(addr));
 				}
 			}
 			str.push_back('|');
@@ -103,7 +103,7 @@ std::vector <std::string> miscutil::MakeMemDump(const MC6809 &cpu,const MemoryAc
 				}
 				else
 				{
-					auto byte=mem.NonDestructiveFetchByte(&cpu,addr);
+					auto byte=mem.NonDestructiveFetchByte(addr);
 					if(byte<' ' || (true!=shiftJIS && 0x80<=byte))
 					{
 						str.push_back(' ');
@@ -306,8 +306,8 @@ std::vector <std::string> miscutil::MakeMemDump2(const MC6809 &cpu,const MemoryA
 	return text;
 }
 
-unsigned char miscutil::GetByte(const MC6809 &cpu,const MemoryAccess &mem,uint32_t addr)
+unsigned char miscutil::GetByte(const MC6809 &,const MemoryAccess &mem,uint32_t addr)
 {
-	return mem.NonDestructiveFetchByte(&cpu,addr);
+	return mem.NonDestructiveFetchByte(addr);
 }
 

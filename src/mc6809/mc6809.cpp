@@ -1121,7 +1121,7 @@ void MC6809::NMI(class MemoryAccess &mem)
 	{
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_NMI,state.S,state.PC,0,mem.NonDestructiveFetchWord(this,NMI_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_NMI,state.S,state.PC,0,mem.NonDestructiveFetchWord(NMI_VECTOR_ADDR));
 		}
 		if(true!=state.CWAI)
 		{
@@ -1148,7 +1148,7 @@ void MC6809::IRQ(class MemoryAccess &mem)
 	{
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_IRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(this,IRQ_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_IRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(IRQ_VECTOR_ADDR));
 		}
 		if(true!=state.CWAI)
 		{
@@ -1176,7 +1176,7 @@ void MC6809::FIRQ(class MemoryAccess &mem)
 	{
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_FIRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(this,FIRQ_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_FIRQ,state.S,state.PC,0,mem.NonDestructiveFetchWord(FIRQ_VECTOR_ADDR));
 		}
 		if(true!=state.CWAI)
 		{
@@ -2942,7 +2942,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_SWI: //       0x3F,
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,SWI_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -2960,7 +2960,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_SWI2: //      0x13F,  // 10 3F
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI2,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,SWI2_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI2,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI2_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -2978,7 +2978,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 	case INST_SWI3: //      0x23F,  // 11 3F
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI3,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,SWI3_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI3,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(SWI3_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -3290,7 +3290,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		// "similar to th SWI instruction.  loads the PC register with an address obtained from the RESET vector ($FFFE:F)."
 		if(true==debugger.enableCallStack)
 		{
-			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(this,RESET_VECTOR_ADDR));
+			debugger.PushCallStack(Debugger::CALLTYPE_SWI,state.S,state.PC,inst.length,mem.NonDestructiveFetchWord(RESET_VECTOR_ADDR));
 		}
 		state.CC|=EF;
 		PushS16(mem,state.PC+inst.length);
@@ -3747,11 +3747,11 @@ class NonDestructiveMemoryFetch
 public:
 	inline static uint8_t FetchByte(const MC6809 *cpuPtr,const MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.NonDestructiveFetchByte(cpuPtr,addr);
+		return mem.NonDestructiveFetchByte(addr);
 	}
 	inline static uint16_t FetchWord(const MC6809 *cpuPtr,const MemoryAccess &mem,uint16_t addr)
 	{
-		return mem.NonDestructiveFetchWord(cpuPtr,addr);
+		return mem.NonDestructiveFetchWord(addr);
 	}
 };
 template <class ConstOrNonConstMemoryAccess,class MemoryFetch>
@@ -4041,7 +4041,7 @@ std::string MC6809::DecoratedDisassembly(const MemoryAccess &mem,uint16_t PC,boo
 	auto inst=NonDestructiveFetchInstruction(mem,PC);
 	if(true==debugger.OS9Mode && INST_SWI2==inst.opCode)
 	{
-		inst.operand[0]=mem.NonDestructiveFetchByte(this,PC+2);
+		inst.operand[0]=mem.NonDestructiveFetchByte(PC+2);
 		inst.length=3;
 	}
 
