@@ -1061,3 +1061,22 @@ add_test(
 		35
 		-NOWAIT
 )
+
+add_test(
+	NAME COURAGEOUS_PERSEUS
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AV40ROMDIR}"
+		-TAPE
+		"${TAPEIMAGE_DIR}/CourageousPerseus.t77"
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		50A9
+		-TESTCONDMEM
+		MAIN   # Check $50A9 is LBSR
+		50A9
+		17
+		-NOWAIT
+)
