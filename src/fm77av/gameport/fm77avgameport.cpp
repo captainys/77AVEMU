@@ -104,12 +104,9 @@ void FM77AVGamePort::Port::Write(long long int fm77avTime,bool COM,unsigned char
 }
 unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 {
-	unsigned char data=0;
-	if(true==COM)
-	{
-		data|=0x40;
-	}
-
+	// FM Techknow pp.131 tells that high 2 bits are always 1.
+	// Bothtec Hot Dog expect high 2 bits to be 1.
+	unsigned char data=0xC0;
 
 	bool buttonVirtual[2]={button[0],button[1]};
 	for(int b=0; b<2; ++b)
