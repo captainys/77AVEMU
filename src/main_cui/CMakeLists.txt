@@ -1177,3 +1177,23 @@ add_test(
 		32
 		-NOWAIT
 )
+
+add_test(
+	NAME MANHATTAN_REQUIEM
+	COMMAND
+		${TARGET_NAME}
+		"${FM7ROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/Manhattan_A.RDD"
+		-FD1
+		"${DISKIMAGE_DIR}/Manhattan_B.RDD"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		18C8
+		-TESTCONDMEM
+		MAIN   # Check $18C8 is CLR
+		18C8
+		0F
+		-NOWAIT
+)
