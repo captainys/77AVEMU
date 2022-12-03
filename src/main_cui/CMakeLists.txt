@@ -1157,3 +1157,23 @@ add_test(
 		20
 		-NOWAIT
 )
+
+add_test(
+	NAME NOBUNAGA_ZENKOKU_AV
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AV40ROMDIR}"
+		-FD0
+		"${DISKIMAGE_DIR}/NobuzenAV_A.RDD"
+		-FD1
+		"${DISKIMAGE_DIR}/NobuzenAV_B.RDD"
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		57B5
+		-TESTCONDMEM
+		MAIN   # Check $57B5 is LEAS
+		57B5
+		32
+		-NOWAIT
+)
