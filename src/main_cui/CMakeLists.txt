@@ -1080,3 +1080,22 @@ add_test(
 		17
 		-NOWAIT
 )
+
+add_test(
+	NAME THUNDER_FORCE
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AV40ROMDIR}"
+		-TAPE
+		"${TAPEIMAGE_DIR}/ThunderForce.t77"
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		2183
+		-TESTCONDMEM
+		MAIN   # Check $2183 is PULS
+		2183
+		35
+		-NOWAIT
+)
