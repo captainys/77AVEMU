@@ -106,7 +106,13 @@ unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 {
 	// FM Techknow pp.131 tells that high 2 bits are always 1.
 	// Bothtec Hot Dog expect high 2 bits to be 1.
-	unsigned char data=0xC0;
+	// However, some games checks that this byte is not $FF for checking YM2203C installation.
+	// Looks like b6 of joystick data is complement of COM.
+	unsigned char data=0;
+	if(true!=COM)
+	{
+		data|=0x40;
+	}
 
 	bool buttonVirtual[2]={button[0],button[1]};
 	for(int b=0; b<2; ++b)

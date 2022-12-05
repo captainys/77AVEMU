@@ -146,6 +146,13 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 						fm77avPtr->mainCPU.debugger.stop=true;
 					}
 				}
+
+				if(REG_PORTB==state.ay38910AddrLatch)
+				{
+					auto d=state.ay38910LastData;
+					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
+					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
+				}
 			}
 			state.ay38910LastControl=control;
 		}
@@ -210,6 +217,12 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 				{
 					// Question: Should I care?
 				}
+				if(REG_PORTB==state.ym2203cAddrLatch)
+				{
+					auto d=state.ym2203cDataWrite;
+					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
+					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
+				}
 			}
 			else
 			{
@@ -220,11 +233,7 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 
 				// YM2203C does not have additional 3 channels. Channel base is always 0.
 				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
-				if(REG_PORTB==state.ym2203cAddrLatch)
-				{
-					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(data&0x10),data&3);
-					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(data&0x20),(data>>2)&3);
-				}
+
 				// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
 				if(YM2612::REG_PRESCALER_0==state.ym2203cAddrLatch)
 				{
