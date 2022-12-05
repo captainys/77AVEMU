@@ -29,7 +29,7 @@ public:
 
 	enum
 	{
-		NANOSEC_PER_T77_ONE=8889
+		NANOSEC_PER_T77_ONE=9000
 	};
 
 	class
