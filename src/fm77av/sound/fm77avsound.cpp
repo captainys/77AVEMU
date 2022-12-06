@@ -117,7 +117,8 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 			auto control=(data&3);
 			if(3==state.ay38910LastControl && 0==control) // Latch Address
 			{
-				state.ay38910AddrLatch=(state.ay38910LastData&AY38910::REG_MASK);
+				// Apparently, if register 16 or higher is selected, it should read/write nothing to PSG.
+				state.ay38910AddrLatch=state.ay38910LastData;
 			}
 			if(1==control) // Read Data
 			{
@@ -137,7 +138,10 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 					lastData|=0x80;
 				}
 
-				state.ay38910.WriteRegister(state.ay38910AddrLatch,lastData,fm77avPtr->state.fm77avTime);
+				if(state.ay38910AddrLatch<AY38910::NUM_REGS)
+				{
+					state.ay38910.WriteRegister(state.ay38910AddrLatch,lastData,fm77avPtr->state.fm77avTime);
+				}
 				if(0!=ay38910RegisterMonitor[state.ay38910AddrLatch])
 				{
 					std::cout << "AY38910 Reg[$"+cpputil::Ubtox(state.ay38910AddrLatch)+"]=$"+cpputil::Ubtox(state.ay38910LastData) << " at " << fm77avPtr->state.fm77avTime << std::endl;

@@ -82,7 +82,7 @@ public:
 	bool recordAudio=false;
 	std::vector <unsigned char> audioRecording;
 	uint8_t ym2203cRegisterMonitor[256];
-	uint8_t ay38910RegisterMonitor[AY38910::NUM_REGS];
+	uint8_t ay38910RegisterMonitor[256];
 
 	int64_t ringBufferClearTimeLeft=0;
 	uint64_t nextWaveFilledInMillisec=0;
