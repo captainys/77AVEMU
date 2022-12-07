@@ -29,6 +29,22 @@ public:
 	bool debugBreakOnCommandWrite=false;
 	bool monitorFDC=false;
 
+	class DebugCondition
+	{
+	public:
+		bool monitorOnly=false;
+		bool anyTrack=false;
+		uint8_t cmd;
+		uint8_t C,H,R;
+
+		bool MatchCHR(uint8_t C,uint8_t H,uint8_t R) const
+		{
+			return (true!=anyTrack && C==this->C && H==this->H && R==this->R) ||
+			       (true==anyTrack && R==this->R);
+		}
+	};
+	std::vector <DebugCondition> debugCond;
+
 	enum
 	{
 		FDD_DRIVE_TYPE_2DD=0,
@@ -75,6 +91,12 @@ public:
 	inline bool has2DD(void) const;
 	unsigned int compensateTrackNumber(unsigned int trackPos);
 	inline unsigned int mapDrive(unsigned int logicalDrive) const;
+
+	void BreakOnSectorRead(uint8_t C,uint8_t H,uint8_t R,bool monitorOnly);
+	void BreakOnSectorRead(uint8_t R,bool monitorOnly);
+	void ClearBreakOnSectorRead(uint8_t C,uint8_t H,uint8_t R);
+	void ClearBreakOnSectorRead(uint8_t R);
+	void ClearBreakOnAllSectorRead(void);
 
 
 	uint32_t SerializeVersion(void) const override;

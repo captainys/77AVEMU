@@ -198,16 +198,29 @@ void FM77AVFDC::MakeReady(void)
 				}
 			}
 
-			if(true==monitorFDC)
+			if(state7.CCache!=compensateTrackNumber(drv.trackPos) ||
+			   state7.HCache!=state.side ||
+			   state7.RCache!=GetSectorReg())
 			{
-				if(state7.CCache!=compensateTrackNumber(drv.trackPos) ||
-				   state7.HCache!=state.side ||
-				   state7.RCache!=GetSectorReg())
+				if(true==monitorFDC)
 				{
 					// Value of C,H, or R changed after the command before actually reading?
 					std::cout << " ExecRead C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg() << std::endl;
 				}
+				for(auto &c : debugCond)
+				{
+					if(true==c.MatchCHR(GetTrackReg(),state.side,GetSectorReg()))
+					{
+						std::cout << "Read Sector (Sector Change after Command)" << std::endl;;
+						std::cout << "C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg();
+						if(true!=c.monitorOnly)
+						{
+							fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command");
+						}
+					}
+				}
 			}
+
 
 			if(nullptr!=imgPtr)
 			{
@@ -607,6 +620,20 @@ void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
 		{
 			fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command Write "+cpputil::Ubtox(data)+" "+FDCCommandToExplanation(data));
 		}
+
+		for(auto &c : debugCond)
+		{
+			if((data&0xE0)==c.cmd && 0x80==c.cmd && true==c.MatchCHR(GetTrackReg(),state.side,GetSectorReg()))
+			{
+				std::cout << "Read Sector";
+				std::cout << " C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg();
+				if(true!=c.monitorOnly)
+				{
+					fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command");
+				}
+			}
+		}
+
 		if(true==monitorFDC)
 		{
 			std::cout << "At PC=" + cpputil::Ustox(fm77avPtr->mainCPU.state.PC);
@@ -1146,4 +1173,57 @@ inline unsigned int FM77AVFDC::mapDrive(unsigned int logicalDrive) const {
 		}
 	}
 	return res;
+}
+
+void FM77AVFDC::BreakOnSectorRead(uint8_t C,uint8_t H,uint8_t R,bool monitorOnly)
+{
+	DebugCondition cond;
+	cond.monitorOnly=monitorOnly;
+	cond.anyTrack=false;
+	cond.cmd=0x80;
+	cond.C=C;
+	cond.H=H;
+	cond.R=R;
+	debugCond.push_back(cond);
+}
+void FM77AVFDC::BreakOnSectorRead(uint8_t R,bool monitorOnly)
+{
+	DebugCondition cond;
+	cond.monitorOnly=monitorOnly;
+	cond.anyTrack=true;
+	cond.cmd=0x80;
+	cond.C=0xFF;
+	cond.H=0xFF;
+	cond.R=R;
+	debugCond.push_back(cond);
+}
+void FM77AVFDC::ClearBreakOnSectorRead(uint8_t C,uint8_t H,uint8_t R)
+{
+	for(int i=debugCond.size()-1; 0<=i; --i)
+	{
+		if(0x80==debugCond[i].cmd && true==debugCond[i].MatchCHR(C,H,R))
+		{
+			debugCond.erase(debugCond.begin()+i);
+		}
+	}
+}
+void FM77AVFDC::ClearBreakOnSectorRead(uint8_t R)
+{
+	for(int i=debugCond.size()-1; 0<=i; --i)
+	{
+		if(0x80==debugCond[i].cmd && R==debugCond[i].R)
+		{
+			debugCond.erase(debugCond.begin()+i);
+		}
+	}
+}
+void FM77AVFDC::ClearBreakOnAllSectorRead(void)
+{
+	for(int i=debugCond.size()-1; 0<=i; --i)
+	{
+		if(0x80==debugCond[i].cmd)
+		{
+			debugCond.erase(debugCond.begin()+i);
+		}
+	}
 }

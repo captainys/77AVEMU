@@ -307,9 +307,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Delete a break point." << std::endl;
 	std::cout << "  Num is the number printed by PRINT BRK." << std::endl;
 	std::cout << "  BC * to erase all break points." << std::endl;
-	std::cout << "BL main|sub" << std::endl;
+	std::cout << "BL" << std::endl;
 	std::cout << "  List break points." << std::endl;
-	std::cout << "  Break on event." << std::endl;
 	std::cout << "BRKON event" << std::endl;
 	std::cout << "  Break on event." << std::endl;
 	std::cout << "CBRKON event" << std::endl;
@@ -354,6 +353,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  DECREASE(DEC) keeps bytes that have decreased, unsigned." << std::endl;
 	std::cout << "  DIFFERENT(DIFF) keeps bytes that have changed." << std::endl;
 	std::cout << "  SAME(EQUAL,EQU) keeps bytes that have not changed." << std::endl;
+
+	std::cout << "FIND byteData" << std::endl;
+	std::cout << "  Search memory for byteData." << std::endl;
+	std::cout << "FINDS string" << std::endl;
+	std::cout << "  Search memory for string." << std::endl;
 
 	std::cout << "LOADEVT filename.txt" << std::endl;
 	std::cout << "  Load Event Log." << std::endl;
