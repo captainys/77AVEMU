@@ -882,10 +882,20 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			case CPU_MAIN:
 				thr.output.main.mute=true;
 				std::cout << "Muted Main CPU" << std::endl;
+				if(true==thr.output.sub.mute)
+				{
+					thr.output.sub.mute=false;
+					std::cout << "Unmuted Sub-CPU" << std::endl;
+				}
 				break;
 			case CPU_SUB:
 				thr.output.sub.mute=true;
-				std::cout << "Muted Sub CPU" << std::endl;
+				std::cout << "Muted Sub-CPU" << std::endl;
+				if(true==thr.output.main.mute)
+				{
+					thr.output.main.mute=true;
+					std::cout << "Unmuted Main CPU" << std::endl;
+				}
 				break;
 			default:
 				Error_UnknownCPU(cmd);
@@ -2812,42 +2822,44 @@ void FM77AVCommandInterpreter::Execute_DeleteBreakPoint(FM77AVThread &thr,FM77AV
 }
 void FM77AVCommandInterpreter::Execute_ListBreakPoints(FM77AVThread &thr,FM77AV &fm77av,Command &cmd)
 {
-	if(cmd.argv.size()<2)
+	for(int i=0; i<2; ++i)
 	{
-		Error_TooFewArgs(cmd);
-		return;
-	}
-
-	auto mainOrSub=StrToCPU(cmd.argv[1]);
-	if(CPU_UNKNOWN==mainOrSub)
-	{
-		mainOrSub=thr.OnlyOneCPUIsUnmuted();
-	}
-	if(CPU_UNKNOWN==mainOrSub)
-	{
-		Error_UnknownCPU(cmd);
-		return;
-	}
-
-	auto &cpu=fm77av.CPU(mainOrSub);
-	for(uint32_t addr=0; addr<0x10000; ++addr)
-	{
-		if(0!=(cpu.debugger.breakPoints[addr].flags))
+		const MC6809 *cpuPtr;
+		if(0==i)
 		{
-			std::cout << cpputil::Ustox(addr);
-			if(0!=(MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY&cpu.debugger.breakPoints[addr].flags))
+			cpuPtr=&fm77av.mainCPU;
+		}
+		else
+		{
+			cpuPtr=&fm77av.subCPU;
+		}
+		auto &cpu=*cpuPtr;
+		bool first=true;
+		for(uint32_t addr=0; addr<0x10000; ++addr)
+		{
+			if(0!=(cpu.debugger.breakPoints[addr].flags))
 			{
-				std::cout << " M";
+				if(true==first)
+				{
+					first=false;
+					std::cout << (0==i ? "Main CPU" : "Sub-CPU") << std::endl;
+				}
+
+				std::cout << cpputil::Ustox(addr);
+				if(0!=(MC6809::Debugger::BRKPNT_FLAG_MONITOR_ONLY&cpu.debugger.breakPoints[addr].flags))
+				{
+					std::cout << " M";
+				}
+				else
+				{
+					std::cout << "  ";
+				}
+				if(0!=cpu.debugger.breakPoints[addr].passCount)
+				{
+					std::cout << " " << cpu.debugger.breakPoints[addr].passed << "/" << cpu.debugger.breakPoints[addr].passCount;
+				}
+				std::cout << std::endl;
 			}
-			else
-			{
-				std::cout << "  ";
-			}
-			if(0!=cpu.debugger.breakPoints[addr].passCount)
-			{
-				std::cout << " " << cpu.debugger.breakPoints[addr].passed << "/" << cpu.debugger.breakPoints[addr].passCount;
-			}
-			std::cout << std::endl;
 		}
 	}
 }
