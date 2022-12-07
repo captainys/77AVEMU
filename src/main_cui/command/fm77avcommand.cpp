@@ -126,6 +126,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CHR"]=CMD_ASCII_TO_STRING;
 	primaryCmdMap["MKMEMFILTER"]=CMD_MAKE_MEMORY_FILTER;
 	primaryCmdMap["UPDMEMFILTER"]=CMD_UPDATE_MEMORY_FILTER;
+	primaryCmdMap["FIND"]=CMD_FIND;
+	primaryCmdMap["FINDS"]=CMD_FIND_STRING;
 	primaryCmdMap["DISPPAGE"]=CMD_DISPLAY_PAGE;
 	primaryCmdMap["DOSMODE"]=CMD_DOSMODE;
 	primaryCmdMap["BASMODE"]=CMD_BASMODE;
@@ -1244,6 +1246,14 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_UPDATE_MEMORY_FILTER:
 		Execute_UpdateMemoryFilter(fm77av,cmd);
 		break;
+
+	case CMD_FIND:
+		Execute_Search_Bytes(fm77av,cmd);
+		break;
+	case CMD_FIND_STRING:
+		Execute_Search_String(fm77av,cmd);
+		break;
+
 	case CMD_DISPLAY_PAGE:
 		if(2<=cmd.argv.size())
 		{
@@ -3681,4 +3691,98 @@ void FM77AVCommandInterpreter::Execute_UpdateMemoryFilter(FM77AV &fm77av,Command
 	{
 		Error_TooFewArgs(cmd);
 	}
+}
+
+void FM77AVCommandInterpreter::Execute_Search_Bytes(FM77AV &fm77av,Command &cmd)
+{
+	std::vector <unsigned char> bytes;
+	for(int i=1; i<cmd.argv.size(); ++i)
+	{
+		auto arg=cmd.argv[i];
+		char hex[3]={0,0,0};
+		if(0!=arg.size()%2)
+		{
+			arg="0"+arg;
+		}
+		for(int j=0; j+2<=arg.size(); j+=2)
+		{
+			hex[0]=arg[j];
+			hex[1]=arg[j+1];
+			bytes.push_back(cpputil::Xtoi(hex));
+		}
+	}
+	return Execute_Search_ByteSequence(fm77av,bytes);
+}
+void FM77AVCommandInterpreter::Execute_Search_String(FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		for(unsigned int i=1; i<cmd.argv.size(); ++i)
+		{
+			std::vector <unsigned char> bytes;
+			for(auto c : cmd.argv[i])
+			{
+				bytes.push_back(c);
+			}
+			std::cout << "Searching: " << cmd.argv[i] << std::endl;
+			Execute_Search_ByteSequence(fm77av,bytes);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+void FM77AVCommandInterpreter::Execute_Search_ByteSequence(FM77AV &fm77av,const std::vector <unsigned char> &bytes)
+{
+	if(0==bytes.size())
+	{
+		return;
+	}
+
+	int maxCount=100;
+	for(unsigned int addr=0; addr+bytes.size()<=PhysicalMemory::PHYSMEM_SIZE; ++addr)
+	{
+		bool equal=true;
+		for(int i=0; i<bytes.size(); ++i)
+		{
+			if(bytes[i]!=fm77av.physMem.NonDestructiveFetchByte(addr+i))
+			{
+				equal=false;
+				break;
+			}
+		}
+		if(true==equal)
+		{
+			FoundAt(fm77av,addr);
+		}
+	}
+}
+
+void FM77AVCommandInterpreter::FoundAt(FM77AV &fm77av,unsigned int physAddr)
+{
+	std::cout << "PhysAddr:" << cpputil::Uitox(physAddr);
+
+	if(true==fm77av.mainMemAcc.state.MMREnabled)
+	{
+		for(uint32_t mainAddr=0; mainAddr<0x10000; mainAddr+=0x1000)
+		{
+			auto addr=mainAddr+(physAddr&0xFFF);
+			if(physAddr==fm77av.mainMemAcc.MMRAddressTranslation(addr))
+			{
+				std::cout << "  MainCPU:" << cpputil::Ustox(addr) << std::endl;
+			}
+		}
+	}
+	else if(PhysicalMemory::MAINSYS_BEGIN<=physAddr && physAddr<PhysicalMemory::MAINSYS_BEGIN+0x10000)
+	{
+		std::cout << "  MainCPU:" << cpputil::Ustox(physAddr&0xFFFF) << std::endl;
+	}
+
+	if(PhysicalMemory::SUBSYS_BEGIN<=physAddr && physAddr<PhysicalMemory::SUBSYS_BEGIN+0x10000)
+	{
+		std::cout << "   SubCPU:" << cpputil::Ustox(physAddr&0xFFFF);
+	}
+
+	std::cout << std::endl;
 }

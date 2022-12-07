@@ -147,6 +147,9 @@ public:
 		CMD_MAKE_MEMORY_FILTER,
 		CMD_UPDATE_MEMORY_FILTER,
 
+		CMD_FIND,
+		CMD_FIND_STRING,
+
 		CMD_DISPLAY_PAGE,
 
 		CMD_DOSMODE,
@@ -294,6 +297,10 @@ public:
 	void Execute_Calculate(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_MakeMemoryFilter(FM77AV &fm77av,Command &cmd);
 	void Execute_UpdateMemoryFilter(FM77AV &fm77av,Command &cmd);
+	void Execute_Search_Bytes(FM77AV &fm77av,Command &cmd);
+	void Execute_Search_String(FM77AV &fm77av,Command &cmd);
+	void Execute_Search_ByteSequence(FM77AV &fm77av,const std::vector <unsigned char> &bytes);
+	void FoundAt(FM77AV &fm77av,unsigned int physAddr);
 };
 
 /* } */
