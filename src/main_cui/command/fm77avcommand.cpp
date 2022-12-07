@@ -162,6 +162,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["HWLINE"]=BREAK_ON_HARDWARE_LINE_DRAWING;
 	breakEventMap["PSGWRITE"]=BREAK_ON_AY38910_WRITE;
 	breakEventMap["FMWRITE"]=BREAK_ON_YM2203C_WRITE;
+	breakEventMap["READSECTOR"]=BREAK_ON_READ_SECTOR;
 
 
 	dumpableMap["FDC"]=DUMP_FDC;
@@ -486,6 +487,12 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "FMWRITE reg" << std::endl;
 	std::cout << "  Write to PSG(AY3-8910) or FM(YM2203C) register.  If reg is omitted," << std::endl;
 	std::cout << "  break or monitor on writes to any register." << std::endl;
+	std::cout << "READSECTOR C H R" << std::endl;
+	std::cout << "READSECTOR R" << std::endl;
+	std::cout << "  Read specific sector." << std::endl;
+	std::cout << "  If no C and H are given, break when a specific sector number of any drive is read." << std::endl;
+	std::cout << "  Majority of other commands takes hexa-decimal numbers only, but this takes decimal." << std::endl;
+	std::cout << "  Use 0x to specify a sector by hexa-decimal." << std::endl;
 
 
 	std::cout << "<< Printable >>" << std::endl;
@@ -2125,6 +2132,26 @@ void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV
 					std::cout << verb << " on write to any FM(YM2203C) register." << std::endl;
 				}
 				break;
+			case BREAK_ON_READ_SECTOR:
+				if(5<=cmd.argv.size()) // BRKON READSECTOR 0 0 0xF7
+				{
+					uint8_t C=cpputil::Atoi(cmd.argv[2].c_str());
+					uint8_t H=cpputil::Atoi(cmd.argv[3].c_str());
+					uint8_t R=cpputil::Atoi(cmd.argv[4].c_str());
+					std::cout << " on Read Sector " << (int)C <<" " << (int)H << " " << (int)R << std::endl;
+					av.fdc.BreakOnSectorRead(C,H,R,justMonitorDontBreak);
+				}
+				else if(3<=cmd.argv.size())
+				{
+					uint8_t R=cpputil::Atoi(cmd.argv[2].c_str());
+					std::cout << " on Read Sector " <<  (int)R << " of any track."<< std::endl;
+					av.fdc.BreakOnSectorRead(R,justMonitorDontBreak);
+				}
+				else
+				{
+					Error_TooFewArgs(cmd);
+				}
+				break;
 			}
 		}
 		else
@@ -2222,6 +2249,27 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 						reg=0;
 					}
 					std::cout << " on write to any FM(YM2203C) register." << std::endl;
+				}
+				break;
+			case BREAK_ON_READ_SECTOR:
+				if(5<=cmd.argv.size()) // BRKON READSECTOR 0 0 0xF7
+				{
+					uint8_t C=cpputil::Atoi(cmd.argv[2].c_str());
+					uint8_t H=cpputil::Atoi(cmd.argv[3].c_str());
+					uint8_t R=cpputil::Atoi(cmd.argv[4].c_str());
+					std::cout << " on Read Sector " << (int)C <<" " << (int)H << " " << (int)R << std::endl;
+					av.fdc.ClearBreakOnSectorRead(C,H,R);
+				}
+				else if(3<=cmd.argv.size())
+				{
+					uint8_t R=cpputil::Atoi(cmd.argv[2].c_str());
+					std::cout << " on Read Sector " <<  (int)R << " of any track."<< std::endl;
+					av.fdc.ClearBreakOnSectorRead(R);
+				}
+				else
+				{
+					std::cout << " on Read Sector" << std::endl;
+					av.fdc.ClearBreakOnAllSectorRead();
 				}
 				break;
 			}

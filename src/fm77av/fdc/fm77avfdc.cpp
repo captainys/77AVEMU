@@ -212,7 +212,7 @@ void FM77AVFDC::MakeReady(void)
 					if(true==c.MatchCHR(GetTrackReg(),state.side,GetSectorReg()))
 					{
 						std::cout << "Read Sector (Sector Change after Command)" << std::endl;;
-						std::cout << "C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg();
+						std::cout << "C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg() << " ";
 						if(true!=c.monitorOnly)
 						{
 							fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command");
@@ -625,8 +625,12 @@ void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
 		{
 			if((data&0xE0)==c.cmd && 0x80==c.cmd && true==c.MatchCHR(GetTrackReg(),state.side,GetSectorReg()))
 			{
+				state7.CCache=compensateTrackNumber(drv.trackPos);
+				state7.HCache=state.side;
+				state7.RCache=GetSectorReg();
+
 				std::cout << "Read Sector";
-				std::cout << " C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg();
+				std::cout << " C " << compensateTrackNumber(drv.trackPos) << " H " << state.side << " R " << GetSectorReg() << " ";
 				if(true!=c.monitorOnly)
 				{
 					fm77avPtr->mainCPU.debugger.ExternalBreak("FDC Command");
