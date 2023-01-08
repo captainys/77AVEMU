@@ -296,6 +296,13 @@ void FM77AVKeyboard::Type(unsigned int ASCIICode)
 
 void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 {
+	if(true!=var.enableKeyStrokes)
+	{
+		// If false, it ignores input from outside_world.
+		// Used for preventing accidental key strokes while VM is paused.
+		return;
+	}
+
 	FM77AV *fm77av=(FM77AV *)vmPtr;
 	uint8_t eightBit=keyCode;
 
@@ -367,6 +374,13 @@ void FM77AVKeyboard::Press(unsigned int keyFlags,unsigned int keyCode)
 }
 void FM77AVKeyboard::Release(unsigned int keyFlags,unsigned int keyCode)
 {
+	if(true!=var.enableKeyStrokes)
+	{
+		// If false, it ignores input from outside_world.
+		// Used for preventing accidental key strokes while VM is paused.
+		return;
+	}
+
 	FM77AV *fm77av=(FM77AV *)vmPtr;
 	uint8_t eightBit=keyCode;
 

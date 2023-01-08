@@ -67,13 +67,12 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		auto realTime0=std::chrono::high_resolution_clock::now();
 		auto fm77avTime0=fm77avPtr->state.fm77avTime;
 
-		int runModeCopy=0;
-
-		runModeCopy=runMode;
+		int runModeCopy=runMode;
 
 		bool clockTicking=false;  // Will be made true if VM is running.
 
 		fm77avPtr->var.justLoadedState=false;
+		fm77avPtr->keyboard.var.enableKeyStrokes=(RUNMODE_PAUSE!=runMode);
 
 		switch(runMode)
 		{

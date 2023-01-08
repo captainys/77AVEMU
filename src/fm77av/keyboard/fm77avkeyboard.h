@@ -123,6 +123,10 @@ public:
 		uint16_t autoStopAfterThis=AUTOSTOP_NONE;
 		std::queue <uint16_t> autoType;
 
+		// If false, it ignores input from outside_world.
+		// Used for preventing accidental key strokes while VM is paused.
+		bool enableKeyStrokes=true;
+
 		bool rKanaMode=false;
 		std::string romaji;
 	};
