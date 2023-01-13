@@ -457,6 +457,19 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 	}
 }
 
+void FM77AVSound::ProcessSilence(class Outside_World *outside_world)
+{
+	if(true!=outside_world->FMPSGChannelPlaying())
+	{
+		std::vector <unsigned char> silence;
+		const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.
+		const uint32_t numSamplesPerWave=MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
+		silence.resize(numSamplesPerWave*4);
+		memset(silence.data(),0,silence.size());
+		outside_world->FMPSGPlay(silence);
+	}
+}
+
 void FM77AVSound::StartRecording(void)
 {
 	recordAudio=true;

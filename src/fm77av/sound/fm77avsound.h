@@ -118,6 +118,10 @@ public:
 	*/
 	void ProcessSound(class Outside_World *outside_world);
 
+	/*! Call this function while VM is paused.
+	*/
+	void ProcessSilence(class Outside_World *outside_world);
+
 	void StartRecording(void);
 	void EndRecording(void);
 	void SaveRecording(std::string fName) const;

@@ -86,6 +86,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 				fm77avPtr->mainCPU.debugger.stop=false;
 				fm77avPtr->subCPU.debugger.stop=false;
 			}
+			fm77avPtr->sound.ProcessSilence(outside_world);
 			break;
 		case RUNMODE_RUN:
 			clockTicking=true;
