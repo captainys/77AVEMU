@@ -881,6 +881,10 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 		{
 			data&=0x7F;
 		}
+		else
+		{
+			data|=0x80;
+		}
 		switch(state.lastCmd&0xF0)
 		{
 		case 0x00: // Restore
@@ -904,7 +908,6 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 		case 0xF0: // Write Track
 			break;
 		}
-
 		return data;
 	case FM77AVIO_FDC_TRACK://=               0xFD19,
 		return state.drive[DriveSelect()].trackReg;
