@@ -294,7 +294,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 	{
 		if(""!=param.fdImgFName[drv])
 		{
-			fdc.LoadD77orRDDorRAW(drv,FindFile(param.fdImgFName[drv]).c_str());
+			fdc.LoadD77orRDDorRAW(drv,FindFile(param.fdImgFName[drv]).c_str(),state.fm77avTime);
 			if(true==param.fdImgWriteProtect[drv])
 			{
 				// D77 image may have write-protect switch.

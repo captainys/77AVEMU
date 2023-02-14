@@ -584,7 +584,7 @@ void FM77AVFDC::MakeReady(void)
 		state.busy=false;
 		break;
 	}
-	state.lastStatus=MakeUpStatus(state.lastCmd);
+	state.lastStatus=MakeUpStatus(state.lastCmd,fm77avTime);
 }
 
 void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
@@ -781,7 +781,7 @@ void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
 					MakeReady();
 				}
 			}
-			state.lastStatus=MakeUpStatus(state.lastCmd);
+			state.lastStatus=MakeUpStatus(state.lastCmd,fm77avPtr->state.fm77avTime);
 		}
 		state.drive[DriveSelect()].dataReg=data;
 		break;
@@ -852,7 +852,7 @@ unsigned int FM77AVFDC::IORead(unsigned int ioport)
 				}
 			}
 		}
-		state.lastStatus=MakeUpStatus(state.lastCmd);
+		state.lastStatus=MakeUpStatus(state.lastCmd,fm77avPtr->state.fm77avTime);
 	}
 	else if(FM77AVIO_FDC_DRIVE_MODE==ioport)//=          0xFD1E,
 	{
@@ -877,7 +877,7 @@ unsigned int FM77AVFDC::NonDestructiveIORead(unsigned int ioport) const
 		// Presumably, bit 7 of this byte returns current drive-ready state.
 		// I assume FM-7 FDC works the same.  It's Fujitsu-made chip.
 		data=state.lastStatus;
-		if(true==DriveReady())
+		if(true==DriveReady(fm77avPtr->state.fm77avTime))
 		{
 			data&=0x7F;
 		}
