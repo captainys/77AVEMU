@@ -193,7 +193,7 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	state.sub.irqSource=ReadUint16(data);
 	state.sub.firqSource=ReadUint16(data);
 
-	VMBase::vmAbort=false;
+	VMBase::ClearAbortFlag();
 
 	if(1<=version)
 	{
