@@ -339,6 +339,8 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instOperaType[INST_BVS_IMM]=OPER_IMM;
 	instOperaType[INST_LBVS_IMM16]=OPER_IMM16;
 
+	instOperaType[INST_UNDEF_LSR_DP]=OPER_DP;
+	instOperaType[INST_UNDEF_COMNEG_DP]=OPER_DP;
 
 
 	instClock[INST_ABX]=3;
@@ -706,6 +708,8 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instClock[INST_BVS_IMM]=3;
 	instClock[INST_LBVS_IMM16]=5; // +1 clock if it jumps
 
+	instClock[INST_UNDEF_LSR_DP]=-6;    // Just guessing.
+	instClock[INST_UNDEF_COMNEG_DP]=6;  // Just guessing.
 	instClock[INST_UNDEF_COMNEGA]=2; // Just guessing.  Same as COMA?
 	instClock[INST_UNDEF_COMNEGB]=2; // Just guessing.  Same as COMA?
 	instClock[INST_UNDEF_RESET]=15;
@@ -1076,6 +1080,8 @@ MC6809::MC6809(VMBase *vmBase) : Device(vmBase)
 	instLabel[INST_BVS_IMM]=      "BVS";
 	instLabel[INST_LBVS_IMM16]=   "LBVS";
 
+	instLabel[INST_UNDEF_LSR_DP]="UNDEF_LSR";
+	instLabel[INST_UNDEF_COMNEG_DP]="UNDEF_COMNEG";
 	instLabel[INST_UNDEF_COMNEGA]="UNDEF_COMNEGA";
 	instLabel[INST_UNDEF_COMNEGB]="UNDEF_COMNEGB";
 	instLabel[INST_UNDEF_RESET]=  "UNDEF_RESET";
@@ -2260,6 +2266,7 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		}
 		break;
 
+	case INST_UNDEF_LSR_DP: // 0x05
 	case INST_LSR_DP: //    0x04,
 		{
 			auto addr=DecodeDirectPageAddress(inst);
@@ -3253,6 +3260,23 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		if(0!=(state.CC&VF))
 		{
 			state.PC+=inst.BranchOffset16();
+		}
+		break;
+	case INST_UNDEF_COMNEG_DP: // 0x02
+		{
+			auto addr=DecodeDirectPageAddress(inst);
+			auto reg=FetchByte(mem,addr);
+			if(0==(state.CC&CF))
+			{
+				reg=NEG(reg);
+			}
+			else
+			{
+				reg=~reg;
+				Test8(reg);
+				state.CC|=CF;
+			}
+			StoreByte(mem,addr,reg);
 		}
 		break;
 	case INST_UNDEF_COMNEGA: // 0x42

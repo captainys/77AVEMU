@@ -456,6 +456,8 @@ public:
 		INST_BVS_IMM=   0x29,
 		INST_LBVS_IMM16=0x129, // 10 29
 
+		INST_UNDEF_LSR_DP=0x05,     // World Golf uses it.
+		INST_UNDEF_COMNEG_DP=0x02,  // World Golf uses it.
 		INST_UNDEF_COMNEGA=0x42,
 		INST_UNDEF_RESET=0x3E, // Xanadu Scenario II IPL uses it.
 		INST_UNDEF_COMNEGB=0x52, // Daisenryaku FM IPL uses it.
