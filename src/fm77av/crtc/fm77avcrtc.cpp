@@ -365,10 +365,8 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 		uint8_t writeBits=0;
 		for(int i=0; i<8; ++i)
 		{
-			if(0!=(state.hardDraw.maskBits&bit))
-			{
-				goto NEXT;
-			}
+			// CHAIN SHOT!, published in Monthly ASCII November 1985 issue, pp.241, while running from F-BASIC V3.3,
+			// suggests that maskBits are really write-mask bits.  Mask bits should not affect COMPARE operation.
 
 			if(0!=(state.hardDraw.condition&2) || HD_CMD_CMP==state.hardDraw.cmd)
 			{
@@ -400,8 +398,11 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 					goto NEXT;
 				}
 			}
-			writeBits|=bit;
 
+			if(0==(state.hardDraw.maskBits&bit))
+			{
+				writeBits|=bit;
+			}
 		NEXT:
 			bit>>=1;
 		}
