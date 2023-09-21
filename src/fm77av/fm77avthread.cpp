@@ -45,10 +45,12 @@ void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,
 	outside_world->Start();
 	fm77avPtr->dataRecorder.outside_world=outside_world;
 }
-void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread)
+void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::Sound *soundPtr,FM77AVUIThread *uiThread)
 {
 	// Just in case, if there is a remains of the rendering from the previous run, discard it.
 	renderingThread->DiscardRunningRenderingTask();
+
+	soundPtr->Start();
 
 	PrintStatus(*fm77avPtr);	
 
@@ -86,7 +88,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 				fm77avPtr->mainCPU.debugger.stop=false;
 				fm77avPtr->subCPU.debugger.stop=false;
 			}
-			fm77avPtr->sound.ProcessSilence(outside_world);
+			fm77avPtr->sound.ProcessSilence(soundPtr);
 			break;
 		case RUNMODE_RUN:
 			clockTicking=true;
@@ -151,7 +153,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 					}
 				}
 			}
-			fm77avPtr->ProcessSound(outside_world);
+			fm77avPtr->ProcessSound(soundPtr);
 			fm77avPtr->eventLog.RunOneStep(*fm77avPtr);
 
 			renderingThread->CheckRenderingTimer(*fm77avPtr,render);
@@ -161,6 +163,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			if(fm77avPtr->state.nextDevicePollingTime<fm77avPtr->state.fm77avTime)
 			{
 				outside_world->DevicePolling(*fm77avPtr);
+				soundPtr->Polling();
 				fm77avPtr->state.nextDevicePollingTime=fm77avPtr->state.fm77avTime+FM77AV::DEVICE_POLLING_INTERVAL;
 			}
 			//fm77avPtr->eventLog.Interval(*fm77avPtr);
@@ -227,9 +230,11 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		}
 		else if(true==clockTicking)
 		{
-			AdjustRealTime(fm77avPtr,fm77avPtr->state.fm77avTime-fm77avTime0,realTime0,outside_world);
+			AdjustRealTime(fm77avPtr,fm77avPtr->state.fm77avTime-fm77avTime0,realTime0,soundPtr);
 		}
 	}
+
+	soundPtr->Stop();
 
 	// Rendering thread may be working on local fm77avRender.
 	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
@@ -254,7 +259,7 @@ void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM
 	}
 }
 
-void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World *outside_world)
+void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World::Sound *soundPtr)
 {
 	long long int realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 
@@ -280,7 +285,7 @@ void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,
 		{
 			while(fm77avPtr->state.timeDeficit+realTimePassed<cpuTimePassed)
 			{
-				fm77avPtr->ProcessSound(outside_world);
+				fm77avPtr->ProcessSound(soundPtr);
 				realTimePassed=std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-time0).count();
 			}
 			int64_t newBalance=cpuTimePassed-(fm77avPtr->state.timeDeficit+realTimePassed);

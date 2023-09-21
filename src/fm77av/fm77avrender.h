@@ -2,7 +2,6 @@
 #define FM77AVRENDER_IS_INCLUDED
 /* { */
 
-#include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avcrtc.h"
 
@@ -44,7 +43,7 @@ public:
 
 	/*! 
 	*/
-	void Prepare(const FM77AV &fm77av);
+	void Prepare(const class FM77AV &fm77av);
 
 	/*! 
 	*/

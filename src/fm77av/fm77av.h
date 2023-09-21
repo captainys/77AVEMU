@@ -19,6 +19,7 @@
 #include "fm77aveventlog.h"
 #include "fm77avserialport.h"
 #include "fm77av40dmac.h"
+#include "outside_world.h"
 
 #include "../exas_compiler/exas_compiler.h"
 
@@ -298,9 +299,9 @@ public:
 		}
 	}
 
-	inline void ProcessSound(class Outside_World *outside_world)
+	inline void ProcessSound(class Outside_World::Sound *soundPtr)
 	{
-		sound.ProcessSound(outside_world);
+		sound.ProcessSound(soundPtr);
 	}
 	inline void ProcessInterrupts(void)
 	{

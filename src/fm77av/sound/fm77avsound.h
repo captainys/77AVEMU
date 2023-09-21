@@ -11,6 +11,7 @@
 #include "ay38910.h"
 #include "ym2612.h"
 #include "fm77avdef.h"
+#include "outside_world.h"
 
 class FM77AVSound : public Device
 {
@@ -116,11 +117,11 @@ public:
 
 	/*! Call this function periodically to continue sound playback.
 	*/
-	void ProcessSound(class Outside_World *outside_world);
+	void ProcessSound(Outside_World::Sound *soundPtr);
 
 	/*! Call this function while VM is paused.
 	*/
-	void ProcessSilence(class Outside_World *outside_world);
+	void ProcessSilence(class Outside_World::Sound *outside_world);
 
 	void StartRecording(void);
 	void EndRecording(void);

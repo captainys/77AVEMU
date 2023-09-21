@@ -354,9 +354,9 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 	return text;
 }
 
-void FM77AVSound::ProcessSound(Outside_World *outside_world)
+void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 {
-	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState || 0<ringBufferClearTimeLeft) && nullptr!=outside_world)
+	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState || 0<ringBufferClearTimeLeft) && nullptr!=soundPtr)
 	{
 		auto fm77avPtr=(FM77AV *)vmPtr;
 		auto lastWaveGenTime=nextWaveGenTime-MILLISEC_PER_WAVE_GENERATION*1000000;
@@ -443,30 +443,30 @@ void FM77AVSound::ProcessSound(Outside_World *outside_world)
 		nextWaveGenTime=0;
 	}
 
-	if(true!=outside_world->FMPSGChannelPlaying() && MILLISEC_PER_WAVE<=nextWaveFilledInMillisec)
+	if(true!=soundPtr->FMPSGChannelPlaying() && MILLISEC_PER_WAVE<=nextWaveFilledInMillisec)
 	{
 		// Hope wave playback is done before nextWaveGenTime.
 		if(true==recordAudio)
 		{
 			audioRecording.insert(audioRecording.end(),nextWave.begin(),nextWave.end());
 		}
-		outside_world->FMPSGPlay(nextWave);
+		soundPtr->FMPSGPlay(nextWave);
 		nextWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
 		// state.ym2612.CheckToneDoneAllChannels();
 		nextWaveFilledInMillisec=0;
 	}
 }
 
-void FM77AVSound::ProcessSilence(class Outside_World *outside_world)
+void FM77AVSound::ProcessSilence(class Outside_World::Sound *sound)
 {
-	if(true!=outside_world->FMPSGChannelPlaying())
+	if(true!=sound->FMPSGChannelPlaying())
 	{
 		std::vector <unsigned char> silence;
 		const unsigned int WAVE_OUT_SAMPLING_RATE=AY38910::WAVE_SAMPLING_RATE; // Must be same for AY-3-8910 and YM2612.
 		const uint32_t numSamplesPerWave=MILLISEC_PER_WAVE*WAVE_OUT_SAMPLING_RATE/1000;
 		silence.resize(numSamplesPerWave*4);
 		memset(silence.data(),0,silence.size());
-		outside_world->FMPSGPlay(silence);
+		sound->FMPSGPlay(silence);
 	}
 }
 

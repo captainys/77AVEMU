@@ -239,12 +239,6 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	this->winWid=640;
 	this->winHei=400;
 	FsSetWindowTitle("FM-7/FM77AV/FM77AV40 Emulator - MUTSU");
-	soundPlayer.Start();
-#ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::StreamingOption FMPSGStreamOpt;
-	FMPSGStreamOpt.ringBufferLengthMillisec=FM77AVSound::MILLISEC_PER_WAVE*2;
-	soundPlayer.StartStreaming(FMPSGStream,FMPSGStreamOpt);
-#endif
 
 	glClearColor(0,0,0,0);
 	mainTexId=GenTexture();
@@ -268,12 +262,10 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	{
 		FsUnmaximizeWindow();
 	}
-	soundPlayer.End();
 }
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FM77AV &fm77av)
 {
-	soundPlayer.KeepPlaying();
 	FsPollDevice();
 	bool ctrlKey=(0!=FsGetKeyState(FSKEY_CTRL));
 	bool shiftKey=(0!=FsGetKeyState(FSKEY_SHIFT));
@@ -1394,7 +1386,29 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	}
 }
 
-/* virtual */ void FsSimpleWindowConnection::FMPSGPlay(std::vector <unsigned char> &wave)
+////////////////////////////////////////////////////////////////
+
+void FsSimpleWindowConnection::SoundConnection::Start(void)
+{
+	soundPlayer.Start();
+#ifdef AUDIO_USE_STREAMING
+	YsSoundPlayer::StreamingOption FMPSGStreamOpt;
+	FMPSGStreamOpt.ringBufferLengthMillisec=FM77AVSound::MILLISEC_PER_WAVE*2;
+	soundPlayer.StartStreaming(FMPSGStream,FMPSGStreamOpt);
+#endif
+}
+
+void FsSimpleWindowConnection::SoundConnection::Stop(void)
+{
+	soundPlayer.End();
+}
+
+void FsSimpleWindowConnection::SoundConnection::Polling(void)
+{
+	soundPlayer.KeepPlaying();
+}
+
+/* virtual */ void FsSimpleWindowConnection::SoundConnection::FMPSGPlay(std::vector <unsigned char> &wave)
 {
 #ifdef AUDIO_USE_STREAMING
 	YsSoundPlayer::SoundData nextWave;
@@ -1405,10 +1419,10 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	soundPlayer.PlayOneShot(FMPSGChannel);
 #endif
 }
-/* virtual */ void FsSimpleWindowConnection::FMPSGPlayStop(void)
+/* virtual */ void FsSimpleWindowConnection::SoundConnection::FMPSGPlayStop(void)
 {
 }
-/* virtual */ bool FsSimpleWindowConnection::FMPSGChannelPlaying(void)
+/* virtual */ bool FsSimpleWindowConnection::SoundConnection::FMPSGChannelPlaying(void)
 {
 #ifdef AUDIO_USE_STREAMING
 	unsigned int numSamples=(FM77AVSound::MILLISEC_PER_WAVE*YM2612::WAVE_SAMPLING_RATE+999)/1000;
@@ -1416,4 +1430,14 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 #else
 	return YSTRUE==soundPlayer.IsPlaying(FMPSGChannel);
 #endif
+}
+
+Outside_World::Sound *FsSimpleWindowConnection::CreateSound(void) const
+{
+	return new SoundConnection;
+}
+void FsSimpleWindowConnection::DeleteSound(Sound *ptr) const
+{
+	auto realPtr=dynamic_cast <SoundConnection *>(ptr);
+	delete realPtr;
 }

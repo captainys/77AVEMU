@@ -42,18 +42,22 @@ int main(int argc,char *argv[])
 		FM77AVCUIThread cui;
 		std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
 
+		auto sound=outside_world->CreateSound();
 		vm.VMStart(fm77av.get(),outside_world.get(),&cui);
-		vm.VMMainLoop(fm77av.get(),outside_world.get(),&cui);
+		vm.VMMainLoop(fm77av.get(),outside_world.get(),sound,&cui);
 		vm.VMEnd(fm77av.get(),outside_world.get(),&cui);
+		outside_world->DeleteSound(sound);
 
 		cuiThread.join();
 	}
 	else
 	{
 		FM77AVUIThread noUI;
+		auto sound=outside_world->CreateSound();
 		vm.VMStart(fm77av.get(),outside_world.get(),&noUI);
-		vm.VMMainLoop(fm77av.get(),outside_world.get(),&noUI);
+		vm.VMMainLoop(fm77av.get(),outside_world.get(),sound,&noUI);
 		vm.VMEnd(fm77av.get(),outside_world.get(),&noUI);
+		outside_world->DeleteSound(sound);
 
 		return fm77av->TestSuccess();
 	}

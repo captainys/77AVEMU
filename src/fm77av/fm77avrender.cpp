@@ -1,4 +1,5 @@
 #include <algorithm>
+#include "fm77av.h"
 #include "fm77avrender.h"
 #include "string.h"
 

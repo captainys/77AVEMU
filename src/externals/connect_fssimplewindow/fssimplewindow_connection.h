@@ -110,16 +110,28 @@ public:
 
 
 
-	YsSoundPlayer soundPlayer;
+	class SoundConnection : public Sound
+	{
+	public:
+		YsSoundPlayer soundPlayer;
 
-#ifdef AUDIO_USE_STREAMING
-	YsSoundPlayer::Stream FMPSGStream;
-#else
-	YsSoundPlayer::SoundData FMPSGChannel;
-#endif
-	virtual void FMPSGPlay(std::vector <unsigned char > &wave);
-	virtual void FMPSGPlayStop(void);
-	virtual bool FMPSGChannelPlaying(void);
+	#ifdef AUDIO_USE_STREAMING
+		YsSoundPlayer::Stream FMPSGStream;
+	#else
+		YsSoundPlayer::SoundData FMPSGChannel;
+	#endif
+
+		virtual void Start(void) override;
+		virtual void Stop(void) override;
+
+		virtual void Polling(void) override;
+
+		virtual void FMPSGPlay(std::vector <unsigned char > &wave) override;
+		virtual void FMPSGPlayStop(void) override;
+		virtual bool FMPSGChannelPlaying(void) override;
+	};
+	virtual Sound *CreateSound(void) const override;
+	virtual void DeleteSound(Sound *) const override;
 };
 
 /* } */

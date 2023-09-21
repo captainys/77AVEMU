@@ -7,6 +7,7 @@
 #include "fm77av.h"
 #include "fm77avrenderthread.h"
 #include "fm77aveventlog.h"
+#include "outside_world.h"
 
 class FM77AVUIThread
 {
@@ -70,10 +71,10 @@ public:
 	unsigned int OnlyOneCPUIsUnmuted(void) const;
 
 	void VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
-	void VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
+	void VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::Sound *soundPtr,FM77AVUIThread *uiThread);
 	void VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
 private:
-	void AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World *outside_world);
+	void AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World::Sound *soundPtr);
 
 public:
 	void PrintStatus(FM77AV &fm77av) const;

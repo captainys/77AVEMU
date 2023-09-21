@@ -20,7 +20,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <string>
 #include <queue>
 
-#include "fm77av.h"
 #include "fm77avdef.h"
 #include "fm77avparam.h"
 #include "fm77avrender.h"
@@ -185,9 +184,20 @@ public:
 
 
 public:
-	virtual void FMPSGPlay(std::vector <unsigned char > &wave)=0;
-	virtual void FMPSGPlayStop(void)=0;
-	virtual bool FMPSGChannelPlaying(void)=0;
+	class Sound
+	{
+	public:
+		virtual void Start(void)=0;
+		virtual void Stop(void)=0;
+
+		virtual void Polling(void)=0;
+
+		virtual void FMPSGPlay(std::vector <unsigned char > &wave)=0;
+		virtual void FMPSGPlayStop(void)=0;
+		virtual bool FMPSGChannelPlaying(void)=0;
+	};
+	virtual Sound *CreateSound(void) const=0;
+	virtual void DeleteSound(Sound *) const=0;
 };
 
 
