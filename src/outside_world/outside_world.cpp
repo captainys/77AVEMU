@@ -15,6 +15,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <iostream>
 
 #include "outside_world.h"
+#include "fm77av.h"
 
 Outside_World::Outside_World()
 {
@@ -212,6 +213,35 @@ Outside_World::WindowInterface::~WindowInterface()
 
 void Outside_World::WindowInterface::BaseInterval(void)
 {
+	bool rendered=false;
+	{
+		std::lock_guard <std::mutex> lock(newImageLock);
+		if(true==shared.needRender)
+		{
+			shared.renderer.BuildImage(shared.paletteCopy);
+			shared.needRender=false;
+			rendered=true;
+		}
+	}
+	if(true==rendered)
+	{
+		// VM Thread does not touch rendered image.  Safe to do outside of the critical section.
+		if(true==ImageNeedsFlip())
+		{
+			shared.renderer.FlipUpsideDown();
+		}
+		winThr.mostRecentImage=shared.renderer.GetImageCopy();
+		winThr.newImageRendered=true;
+	}
+}
+
+// Called in the VM thread.
+void Outside_World::WindowInterface::SendNewImageInfo(class FM77AV &fm77av)
+{
+	std::lock_guard <std::mutex> lock(newImageLock);
+	shared.renderer.Prepare(fm77av);
+	shared.paletteCopy=fm77av.crtc.GetPalette();
+	shared.needRender=true;
 }
 
 void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char icon16x16[])

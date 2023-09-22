@@ -19,6 +19,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <vector>
 #include <string>
 #include <queue>
+#include <thread>
+#include <mutex>
 
 #include "fm77avdef.h"
 #include "fm77avparam.h"
@@ -167,6 +169,37 @@ public:
 	class WindowInterface
 	{
 	public:
+		std::mutex deviceStateLock;
+		std::mutex rendererLock;
+		std::mutex newImageLock;
+
+		class SharedVariables
+		{
+		public:
+			// Locked by deviceStateLock
+
+			// Locked by rendererLock
+
+			// Locked by newImageLock
+			FM77AVRender renderer;
+			FM77AVCRTC::Palette paletteCopy;
+			bool needRender=false;
+		};
+		class VMThreadVariables
+		{
+		public:
+		};
+		class WindowThreadVariables
+		{
+		public:
+			bool newImageRendered=false;
+			FM77AVRender::ImageCopy mostRecentImage;
+		};
+		SharedVariables shared;
+		VMThreadVariables VMThr;
+		WindowThreadVariables winThr;
+
+
 		bool windowShift=false;
 
 		unsigned char *statusBitmap;
@@ -184,12 +217,6 @@ public:
 		unsigned int scaling=100; // In Percent
 
 
-		FM77AVRender::ImageCopy mostRecentImage;
-		FM77AVRender renderer;
-		FM77AVCRTC::Palette paletteCopy;
-		bool imageNeedsFlip=false;
-
-
 		int winWid=640,winHei=480;
 
 		WindowInterface();
@@ -203,8 +230,12 @@ public:
 		virtual void Interval(void)=0;
 
 		/*! Interval implementation must call this function.
+		    Called in the window thread.
 		*/
 		void BaseInterval(void);
+
+		// Called in the VM thread.
+		void SendNewImageInfo(class FM77AV &fm77av);
 
 		/*! Called in the VM thread.
 		*/
