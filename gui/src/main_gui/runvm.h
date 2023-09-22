@@ -41,6 +41,8 @@ public:
 	FM77AVThread *fm77avThreadPtr=nullptr;
 	FM77AVCommandQueue *cmdQueuePtr=nullptr;
 	FsSimpleWindowConnection *outsideWorldPtr=nullptr;
+	Outside_World::WindowInterface *windowPtr=nullptr;
+	Outside_World::Sound *soundPtr=nullptr;
 
 	FM77AVVM();
 	~FM77AVVM();

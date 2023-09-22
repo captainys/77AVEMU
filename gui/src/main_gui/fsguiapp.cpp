@@ -464,8 +464,10 @@ void FsGuiMainCanvas::Draw(void)
 		auto image=VM.lastImage.GetImage();
 		if(0<image.wid && 0<image.hei)
 		{
-			VM.outsideWorldPtr->UpdateStatusBitmap(*VM.fm77avPtr);
-			VM.outsideWorldPtr->RenderBeforeSwapBuffers(image,*VM.fm77avPtr);
+			printf("Under construction.  Come back here later.\n");
+			printf("%s %d\n",__FUNCTION__,__LINE__);
+			// VM.windowPtr->UpdateStatusBitmap(*VM.fm77avPtr);
+			// VM.windowPtr->RenderBeforeSwapBuffers(image,*VM.fm77avPtr);
 		}
 	}
 

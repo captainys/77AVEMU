@@ -48,11 +48,20 @@ void FM77AVVM::Alloc(void)
 	cmdQueuePtr=new FM77AVCommandQueue;
 	outsideWorldPtr=new FsSimpleWindowConnection;
 	outsideWorldPtr->lowerRightIcon=Outside_World::LOWER_RIGHT_MENU;
+	soundPtr=outsideWorldPtr->CreateSound();
+	windowPtr=outsideWorldPtr->CreateWindowInterface();
 	fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
 	fm77avThreadPtr->SetReturnOnPause(true);
 }
 void FM77AVVM::Free(void)
 {
+	if(nullptr!=outsideWorldPtr)
+	{
+		outsideWorldPtr->DeleteSound(soundPtr);
+		soundPtr=nullptr;
+		outsideWorldPtr->DeleteWindowInterface(windowPtr);
+		windowPtr=nullptr;
+	}
 	delete fm77avThreadPtr;
 	delete fm77avPtr;
 	delete cmdQueuePtr;
@@ -76,25 +85,27 @@ void FM77AVVM::Run(void)
 		Free();
 		Alloc();
 
-		fm77avPtr->SetUp(profile,outsideWorldPtr);
+		windowPtr->Start();
+		fm77avPtr->SetUp(profile,outsideWorldPtr,windowPtr);
 		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
-		fm77avThreadPtr->VMStart(fm77avPtr,outsideWorldPtr,cmdQueuePtr);
+		fm77avThreadPtr->VMStart(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
 	}
 	else
 	{
 		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
 	}
 
-	fm77avThreadPtr->VMMainLoop(fm77avPtr,outsideWorldPtr,cmdQueuePtr);
+	fm77avThreadPtr->VMMainLoop(fm77avPtr,outsideWorldPtr,windowPtr,soundPtr,cmdQueuePtr);
 
 	if(FM77AVThread::RUNMODE_EXIT==fm77avThreadPtr->GetRunMode())
 	{
-		fm77avThreadPtr->VMEnd(fm77avPtr,outsideWorldPtr,cmdQueuePtr);
+		fm77avThreadPtr->VMEnd(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
+		windowPtr->Stop();
 		Free();
 	}
 	else
 	{
-		fm77avPtr->ForceRender(lastImage,outsideWorldPtr);
+		fm77avPtr->ForceRender(lastImage,windowPtr);
 	}
 }
 bool FM77AVVM::IsRunning(void) const
