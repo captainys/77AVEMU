@@ -98,11 +98,25 @@ public:
 	class WindowConnection : public WindowInterface
 	{
 	public:
+		class SharedVariables
+		{
+		};
+		class VMThreadVariables
+		{
+		};
+		class WindowThreadVariables
+		{
+		public:
+			unsigned int sinceLastResize=0;
+			unsigned int prevTapePosition=0;
+		};
+		SharedVariables sharedEx;
+		VMThreadVariables vmThrEx;
+		WindowThreadVariables winThrEx;
+
 		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 		std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
 
-		unsigned int sinceLastResize=0;
-		unsigned int prevTapePosition=0;
 
 		void Start(void) override;
 		void Stop(void) override;

@@ -1038,8 +1038,8 @@ void FsSimpleWindowConnection::PollGamePads(void)
 
 void FsSimpleWindowConnection::WindowConnection::Start(void)
 {
-	int wid=640*scaling/100;
-	int hei=400*scaling/100;
+	int wid=640*shared.scaling/100;
+	int hei=400*shared.scaling/100;
 
 	int winY0=0;
 	if(true==windowShift)
@@ -1096,8 +1096,8 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 		break;
 	}
 
-	this->winWid=640;
-	this->winHei=400;
+	winThr.winWid=640;
+	winThr.winHei=400;
 	FsSetWindowTitle("FM-7/FM77AV/FM77AV40 Emulator - MUTSU");
 
 	glClearColor(0,0,0,0);
@@ -1130,67 +1130,101 @@ void FsSimpleWindowConnection::WindowConnection::Stop(void)
 void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
 	BaseInterval();
+
+	{
+		std::lock_guard <std::mutex> lock(deviceStateLock);
+	}
+	{
+		std::lock_guard <std::mutex> lock(rendererLock);
+		winThr.indicatedTapePosition=shared.indicatedTapePosition;
+	}
 }
 
 /*! Called in the VM thread.
 */
 void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *outside_world)
 {
-	indicatedTapePosition=outside_world->indicatedTapePosition;
-	lowerRightIcon=outside_world->lowerRightIcon;
-	visualizeAudioOut=outside_world->visualizeAudioOut;
+	{
+		std::lock_guard <std::mutex> lock(deviceStateLock);
+		shared.indicatedTapePosition=outside_world->indicatedTapePosition;
+		shared.lowerRightIcon=outside_world->lowerRightIcon;
+		shared.visualizeAudioOut=outside_world->visualizeAudioOut;
+	}
 
-	outside_world->dx=dx;
-	outside_world->dy=dy;
-	outside_world->scaling=scaling;
+	{
+		std::lock_guard <std::mutex> lock(rendererLock);
+		outside_world->dx=shared.dx;
+		outside_world->dy=shared.dy;
+		outside_world->scaling=shared.scaling;
+	}
 }
 
 void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 {
 	auto &img=winThr.mostRecentImage;
+	if(0==img.wid || 0==img.hei)
+	{
+		// Probably new image has not been rendered yet.
+		return;
+	}
 
 	int winWid,winHei;
 	FsGetWindowSize(winWid,winHei);
 
+	rendererLock.lock();
 	if(true==autoScaling)
 	{
 		if(0<img.wid && 0<img.hei)
 		{
 			unsigned int scaleX=100*winWid/img.wid;
 			unsigned int scaleY=100*(winHei-STATUS_HEI)/img.hei;
-			this->scaling=std::min(scaleX,scaleY);
+			shared.scaling=std::min(scaleX,scaleY);
 		}
 	}
 	else
 	{
 		if(320==img.wid)
 		{
-			this->scaling=200;
+			shared.scaling=200;
 		}
 		else
 		{
-			this->scaling=100;
+			shared.scaling=100;
 		}
-		if(this->winWid!=img.wid*this->scaling/100 || this->winHei!=img.hei*this->scaling/100)
+	}
+	unsigned int renderWid=img.wid*shared.scaling/100;
+	unsigned int renderHei=img.hei*shared.scaling/100;
+	shared.dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
+	shared.dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
+
+	auto scaling=shared.scaling;
+	auto dx=shared.dx;
+	auto dy=shared.dy;
+	auto lowerRightIcon=shared.lowerRightIcon;
+
+	rendererLock.unlock();
+
+
+
+	if(true!=autoScaling)
+	{
+		auto shouldBeWinWid=img.wid*scaling/100;
+		auto shouldBeWinHei=img.hei*scaling/100+STATUS_HEI;
+		if(winThr.winWid!=shouldBeWinWid || winThr.winHei!=shouldBeWinHei)
 		{
-			this->winWid=img.wid;
-			this->winHei=img.hei;
-			sinceLastResize=10;
+			winThr.winWid=shouldBeWinWid;
+			winThr.winHei=shouldBeWinHei;
+			winThrEx.sinceLastResize=10;
 		}
-		else if(0<sinceLastResize)
+		else if(0<winThrEx.sinceLastResize)
 		{
-			--sinceLastResize;
-			if(0==sinceLastResize)
+			--winThrEx.sinceLastResize;
+			if(0==winThrEx.sinceLastResize)
 			{
-				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+				FsResizeWindow(shouldBeWinWid,shouldBeWinHei);
 			}
 		}
 	}
-
-	unsigned int renderWid=img.wid*this->scaling/100;
-	unsigned int renderHei=img.hei*this->scaling/100;
-	this->dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
-	this->dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 	glViewport(0,0,winWid,winHei);
@@ -1230,7 +1264,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 
 
 	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba.data());
-	DrawTextureRect(this->dx,this->dy+img.hei*scaling/100,this->dx+img.wid*scaling/100,this->dy);
+	DrawTextureRect(dx,dy+img.hei*scaling/100,dx+img.wid*scaling/100,dy);
 
 	glDisable(GL_TEXTURE_2D);
 
@@ -1266,10 +1300,6 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	}
 	*/
 
-	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/
-
 	if(true==swapBuffers)
 	{
 		FsSwapBuffers();
@@ -1300,10 +1330,10 @@ void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV
 	// if tape status changed
 	// unsigned int tapeStatusBitmap=0;
 	// Tape icon will take 16 pixels from X=64
-	if(prevTapePosition!=indicatedTapePosition)
+	if(winThr.prevTapePosition!=winThr.indicatedTapePosition)
 	{
 		char str[256];
-		sprintf(str,"%u        ",indicatedTapePosition);
+		sprintf(str,"%u        ",winThr.indicatedTapePosition);
 		for(int i=0; i<8; ++i)
 		{
 			int x0=STATUS_TAPEPOS_X+i*8;

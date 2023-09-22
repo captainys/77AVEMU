@@ -177,13 +177,18 @@ public:
 		{
 		public:
 			// Locked by deviceStateLock
+			unsigned int indicatedTapePosition=0; // Written from the VM Thread
 
 			// Locked by rendererLock
+			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
+			unsigned int scaling=100; // In Percent
 
 			// Locked by newImageLock
 			FM77AVRender renderer;
 			FM77AVCRTC::Palette paletteCopy;
 			bool needRender=false;
+			unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
+			bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
 		};
 		class VMThreadVariables
 		{
@@ -194,6 +199,10 @@ public:
 		public:
 			bool newImageRendered=false;
 			FM77AVRender::ImageCopy mostRecentImage;
+			int winWid=640,winHei=480;
+
+			unsigned int indicatedTapePosition=0; // Written from the VM Thread
+			unsigned int prevTapePosition=0;
 		};
 		SharedVariables shared;
 		VMThreadVariables VMThr;
@@ -208,16 +217,8 @@ public:
 		unsigned int indicatedTapePosition=0;
 		bool insLED=false,capsLED=false,kanaLED=false;
 		bool autoScaling=false;
-		bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
 		unsigned int windowModeOnStartUp=FM77AVParam::WINDOW_NORMAL;
 
-		unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
-
-		unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
-		unsigned int scaling=100; // In Percent
-
-
-		int winWid=640,winHei=480;
 
 		WindowInterface();
 		~WindowInterface();

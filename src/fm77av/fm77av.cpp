@@ -390,7 +390,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 	{
 		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
 	}
-	window->scaling=param.scaling;
+	window->shared.scaling=param.scaling;
 	window->windowShift=param.windowShift;
 	window->autoScaling=param.autoScaling;
 	window->windowModeOnStartUp=param.windowModeOnStartUp;
