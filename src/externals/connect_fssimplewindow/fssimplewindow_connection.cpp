@@ -137,45 +137,50 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FM77AV &fm77av)
 {
-	FsPollDevice();
-	bool ctrlKey=(0!=FsGetKeyState(FSKEY_CTRL));
-	bool shiftKey=(0!=FsGetKeyState(FSKEY_SHIFT));
-	bool graphKey=(0!=FsGetKeyState(GRAPH_KEY_CODE));
+	PollGamePads();
+
+	bool ctrlKey=(0!=windowEvent.keyState[FSKEY_CTRL]);
+	bool shiftKey=(0!=windowEvent.keyState[FSKEY_SHIFT]);
+	bool graphKey=(0!=windowEvent.keyState[GRAPH_KEY_CODE]);
 
 	uint16_t keyFlags=
 	    (ctrlKey==true ? FM77AVKeyboard::KEYFLAG_CTRL : 0)|
 	    (shiftKey==true ? FM77AVKeyboard::KEYFLAG_SHIFT : 0)|
 	    (graphKey==true ? FM77AVKeyboard::KEYFLAG_GRAPH : 0);
 
-	PollGamePads();
-
-	int lb,mb,rb,mx,my;
-	auto mosEvt=FsGetMouseEvent(lb,mb,rb,mx,my);
-	if(LOWER_RIGHT_NONE!=lowerRightIcon && FSMOUSEEVENT_LBUTTONDOWN==mosEvt)
+	int wid=windowEvent.winWid;
+	int hei=windowEvent.winHei;
+	for(auto mos : windowEvent.mouseEvents)
 	{
-		int wid,hei;
-		FsGetWindowSize(wid,hei);
-
-		int iconWid=0;
-		int iconHei=0;
-		switch(lowerRightIcon)
+		if(LOWER_RIGHT_NONE!=lowerRightIcon && FSMOUSEEVENT_LBUTTONDOWN==mos.evt)
 		{
-		case LOWER_RIGHT_NONE:
-			break;
-		case LOWER_RIGHT_PAUSE:
-			iconWid=PAUSE_wid;
-			iconHei=PAUSE_hei;
-			break;
-		case LOWER_RIGHT_MENU:
-			iconWid=MENU_wid;
-			iconHei=MENU_hei;
-			break;
-		}
-		if(wid-iconWid<mx && hei-iconHei<my)
-		{
-			this->pauseKey=true;
+			int iconWid=0;
+			int iconHei=0;
+			switch(lowerRightIcon)
+			{
+			case LOWER_RIGHT_NONE:
+				break;
+			case LOWER_RIGHT_PAUSE:
+				iconWid=PAUSE_wid;
+				iconHei=PAUSE_hei;
+				break;
+			case LOWER_RIGHT_MENU:
+				iconWid=MENU_wid;
+				iconHei=MENU_hei;
+				break;
+			}
+			if(wid-iconWid<mos.mx && hei-iconHei<mos.my)
+			{
+				this->pauseKey=true;
+			}
 		}
 	}
+	int lb=windowEvent.lastKnownMouse.lb;
+	int mb=windowEvent.lastKnownMouse.mb;
+	int rb=windowEvent.lastKnownMouse.rb;
+	int mx=windowEvent.lastKnownMouse.mx;
+	int my=windowEvent.lastKnownMouse.my;
+
 
 
 	bool gamePadEmulationByKey=false; // Emulate a gamepad with keyboard
@@ -213,10 +218,9 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 	if(FM77AV_KEYBOARD_MODE_DIRECT!=keyboardMode) // Means one of the translation modes.
 	{
-		unsigned int c;
-		while(0!=(c=FsInkeyChar()))
+		for(auto c : windowEvent.charCode)
 		{
-			if(0==FsGetKeyState(FSKEY_CTRL))
+			if(0==windowEvent.keyState[FSKEY_CTRL])
 			{
 				if(' '<=c)
 				{
@@ -233,7 +237,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 				}
 			}
 		}
-		while(0!=(c=FsInkey()))
+		for(auto c : windowEvent.keyCode)
 		{
 			if(PAUSE_KEY_CODE==c)
 			{
@@ -321,8 +325,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	}
 	else // if(FM77AV_KEYBOARD_MODE_DIRECT==keyboardMode)
 	{
-		unsigned int c;
-		while(0!=(c=FsInkey()))
+		for(auto c : windowEvent.keyCode)
 		{
 			unsigned char byteData=0;
 			this->ProcessInkey(fm77av,FSKEYtoFM77AVKEY[c]);
@@ -406,7 +409,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 			}
 
 			unsigned char byteData=0;
-			auto sta=FsGetKeyState(key);
+			auto sta=windowEvent.keyState[key];
 			if(0!=FSKEYtoFM77AVKEY[key] && FSKEYState[key]!=sta)
 			{
 				if(0!=sta)
@@ -431,10 +434,6 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 			fm77av.keyboard.Press(KeyFlagsFilter(keyFlags,lastPressedFsKey),FSKEYtoFM77AVKEY[lastPressedFsKey]);
 			nextKeyRepeatTime=fm77av.state.fm77avTime+fm77av.keyboard.GetKeyRepeatInterval();
 		}
-
-		while(0!=FsInkeyChar())
-		{
-		}
 	}
 
  	if(fm77av.eventLog.state!=FM77AVEventLog::STATE_PLAYBACK)
@@ -448,18 +447,18 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
  				break;
  			case FM77AV_GAMEPORTEMU_KEYBOARD:
  				{
- 					bool Abutton=(0!=FsGetKeyState(FSKEY_Z));
- 					bool Bbutton=(0!=FsGetKeyState(FSKEY_X));
- 					bool run=(0!=FsGetKeyState(FSKEY_A));
- 					bool pause=(0!=FsGetKeyState(FSKEY_S));
- 					bool left=(0!=FsGetKeyState(FSKEY_LEFT));
- 					bool right=(0!=FsGetKeyState(FSKEY_RIGHT));
+ 					bool Abutton=(0!=windowEvent.keyState[FSKEY_Z]);
+ 					bool Bbutton=(0!=windowEvent.keyState[FSKEY_X]);
+ 					bool run=(0!=windowEvent.keyState[FSKEY_A]);
+ 					bool pause=(0!=windowEvent.keyState[FSKEY_S]);
+ 					bool left=(0!=windowEvent.keyState[FSKEY_LEFT]);
+ 					bool right=(0!=windowEvent.keyState[FSKEY_RIGHT]);
  					if(true==left && true==right)
  					{
  						right=false;
  					}
- 					bool up=(0!=FsGetKeyState(FSKEY_UP));
- 					bool down=(0!=FsGetKeyState(FSKEY_DOWN));
+ 					bool up=(0!=windowEvent.keyState[FSKEY_UP]);
+ 					bool down=(0!=windowEvent.keyState[FSKEY_DOWN]);
  					if(true==up && true==down)
  					{
  						down=false;
@@ -614,21 +613,21 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 						mouseEmulationByAnalogAxis=true;
 // 						if(FM77AV_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
 // 						{
-// 							upDownLeftRight[0]=(0!=FsGetKeyState(FSKEY_UP));
-// 							upDownLeftRight[1]=(0!=FsGetKeyState(FSKEY_DOWN));
-// 							upDownLeftRight[2]=(0!=FsGetKeyState(FSKEY_LEFT));
-// 							upDownLeftRight[3]=(0!=FsGetKeyState(FSKEY_RIGHT));
-// 							button[0]=(0!=FsGetKeyState(FSKEY_Z));
-// 							button[1]=(0!=FsGetKeyState(FSKEY_X));
+// 							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_UP]);
+// 							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_DOWN]);
+// 							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_LEFT]);
+// 							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_RIGHT]);
+// 							button[0]=(0!=windowEvent.keyState[FSKEY_Z]);
+// 							button[1]=(0!=windowEvent.keyState[FSKEY_X]);
 // 						}
 // 						else if(FM77AV_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
 // 						{
-// 							upDownLeftRight[0]=(0!=FsGetKeyState(FSKEY_TEN7) || 0!=FsGetKeyState(FSKEY_TEN8) || 0!=FsGetKeyState(FSKEY_TEN9));
-// 							upDownLeftRight[1]=(0!=FsGetKeyState(FSKEY_TEN1) || 0!=FsGetKeyState(FSKEY_TEN2) || 0!=FsGetKeyState(FSKEY_TEN3));
-// 							upDownLeftRight[2]=(0!=FsGetKeyState(FSKEY_TEN1) || 0!=FsGetKeyState(FSKEY_TEN4) || 0!=FsGetKeyState(FSKEY_TEN7));
-// 							upDownLeftRight[3]=(0!=FsGetKeyState(FSKEY_TEN3) || 0!=FsGetKeyState(FSKEY_TEN6) || 0!=FsGetKeyState(FSKEY_TEN9));
-// 							button[0]=(0!=FsGetKeyState(FSKEY_TENSLASH));
-// 							button[1]=(0!=FsGetKeyState(FSKEY_TENSTAR));
+// 							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_TEN7] || 0!=windowEvent.keyState[FSKEY_TEN8] || 0!=windowEvent.keyState[FSKEY_TEN9]);
+// 							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN2] || 0!=windowEvent.keyState[FSKEY_TEN3]);
+// 							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN4] || 0!=windowEvent.keyState[FSKEY_TEN7]);
+// 							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_TEN3] || 0!=windowEvent.keyState[FSKEY_TEN6] || 0!=windowEvent.keyState[FSKEY_TEN9]);
+// 							button[0]=(0!=windowEvent.keyState[FSKEY_TENSLASH]);
+// 							button[1]=(0!=windowEvent.keyState[FSKEY_TENSTAR]);
 // 						}
 // 						else
 // 						{
@@ -1130,6 +1129,45 @@ void FsSimpleWindowConnection::WindowConnection::Stop(void)
 void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
 	BaseInterval();
+	FsPollDevice();
+
+	FsGetWindowSize(winThrEx.primary.winWid,winThrEx.primary.winHei);
+
+	int code;
+	while(FSKEY_NULL!=(code=FsInkey()))
+	{
+		winThrEx.primary.keyCode.push_back(code);
+	}
+	while(0!=(code=FsInkeyChar()))
+	{
+		winThrEx.primary.charCode.push_back(code);
+	}
+	for(int key=0; key<FSKEY_NUM_KEYCODE; ++key)
+	{
+		winThrEx.primary.keyState[key]=FsGetKeyState(key);
+	}
+	for(;;)
+	{
+		winThrEx.primary.lastKnownMouse.Read();
+		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
+		{
+			break;
+		}
+		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
+	}
+
+	// PollGamePads();
+
+	{
+		std::lock_guard <std::mutex> lock(deviceStateLock);
+		winThr.VMClosed=shared.VMClosedFromVMThread;
+		winThr.gamePadsNeedUpdate=shared.gamePadsNeedUpdate;
+		if(true==sharedEx.readyToSend.EventEmpty())
+		{
+			sharedEx.readyToSend=winThrEx.primary;
+			winThrEx.primary.CleanUpEvents();
+		}
+	}
 
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
@@ -1143,14 +1181,23 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 /*! Called in the VM thread.
 */
-void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *outside_world)
+void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 {
+	auto outside_world=dynamic_cast<FsSimpleWindowConnection *>(ow);
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
 		shared.indicatedTapePosition=outside_world->indicatedTapePosition;
 		shared.lowerRightIcon=outside_world->lowerRightIcon;
 		shared.visualizeAudioOut=outside_world->visualizeAudioOut;
 		shared.currentStatusBarInfo=outside_world->currentStatusBarInfo;
+
+		// Kind of want to use swap, but Communicate can be called more than once before the
+		// next Interval is called, in which case state can go back and force between two
+		// samples.  Therefore, copy here.
+		outside_world->windowEvent=sharedEx.readyToSend;
+		sharedEx.readyToSend.CleanUpEvents();
+
+		shared.gamePadsNeedUpdate=outside_world->gamePadsNeedUpdate;
 	}
 
 	{

@@ -189,6 +189,8 @@ public:
 			// Locked by deviceStateLock
 			unsigned int indicatedTapePosition=0; // Written from the VM Thread
 			StatusBarInfo currentStatusBarInfo;   // Copied from Outside::World::currentStatusBarInfo in the VM Thread
+			bool VMClosedFromVMThread=false;
+			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 
 			// Locked by rendererLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
@@ -211,8 +213,10 @@ public:
 			bool newImageRendered=false;
 			FM77AVRender::ImageCopy mostRecentImage;
 			int winWid=640,winHei=480;
+			bool VMClosed=false;
 
 			StatusBarInfo statusBarInfo,prevStatusBarInfo;
+			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
 
 			unsigned int indicatedTapePosition=0; // Written from the VM Thread
 			unsigned int prevTapePosition=0;

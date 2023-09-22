@@ -44,6 +44,47 @@ So, my best decision is to use streaming mode in macOS, which should work perfec
 class FsSimpleWindowConnection : public Outside_World
 {
 public:
+	class MouseEvent
+	{
+	public:
+		int evt=0,lb=0,mb=0,rb=0,mx=0,my=0;
+		inline void Read(void)
+		{
+			evt=FsGetMouseEvent(lb,mb,rb,mx,my);
+		}
+	};
+	class DeviceAndEvent
+	{
+	public:
+		std::vector <unsigned int> keyCode,charCode;
+		std::vector <MouseEvent> mouseEvents;
+		unsigned char keyState[FSKEY_NUM_KEYCODE];
+		MouseEvent lastKnownMouse;
+
+		std::vector <struct YsGamePadReading> gamePads;
+
+		int winWid=640,winHei=480;
+
+		DeviceAndEvent()
+		{
+			for(auto &s : keyState)
+			{
+				s=0;
+			}
+		}
+
+		bool EventEmpty(void) const
+		{
+			return keyCode.empty() && charCode.empty() && mouseEvents.empty();
+		}
+		void CleanUpEvents(void)
+		{
+			keyCode.clear();
+			charCode.clear();
+			mouseEvents.clear();
+		}
+	};
+
 	class HostShortCut
 	{
 	public:
@@ -58,6 +99,8 @@ public:
 	{
 		STATUS_TAPEPOS_X=320,
 	};
+
+	DeviceAndEvent windowEvent;
 
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
@@ -100,6 +143,9 @@ public:
 	public:
 		class SharedVariables
 		{
+		public:
+			// Locked by deviceStateLock
+			DeviceAndEvent readyToSend;
 		};
 		class VMThreadVariables
 		{
@@ -109,6 +155,7 @@ public:
 		public:
 			unsigned int sinceLastResize=0;
 			unsigned int prevTapePosition=0;
+			DeviceAndEvent primary;
 
 			GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 			std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
