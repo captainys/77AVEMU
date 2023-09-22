@@ -210,6 +210,10 @@ Outside_World::WindowInterface::~WindowInterface()
 	statusBitmap=nullptr;
 }
 
+void Outside_World::WindowInterface::BaseInterval(void)
+{
+}
+
 void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char icon16x16[])
 {
 	auto dstPtr=statusBitmap+(STATUS_WID*y0+x0)*4;

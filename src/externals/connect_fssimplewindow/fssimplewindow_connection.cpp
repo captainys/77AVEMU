@@ -1127,8 +1127,9 @@ void FsSimpleWindowConnection::WindowConnection::Stop(void)
 
 /*! Called in the window thread.
 */
-void FsSimpleWindowConnection::WindowConnection::Interval(void) const
+void FsSimpleWindowConnection::WindowConnection::Interval(void)
 {
+	BaseInterval();
 }
 
 /*! Called in the VM thread.

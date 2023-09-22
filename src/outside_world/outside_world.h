@@ -23,6 +23,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "fm77avdef.h"
 #include "fm77avparam.h"
 #include "fm77avrender.h"
+#include "fm77avcrtc.h"
 
 class Outside_World
 {
@@ -182,6 +183,13 @@ public:
 		unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 		unsigned int scaling=100; // In Percent
 
+
+		FM77AVRender::ImageCopy mostRecentImage;
+		FM77AVRender renderer;
+		FM77AVCRTC::Palette paletteCopy;
+		bool imageNeedsFlip=false;
+
+
 		int winWid=640,winHei=480;
 
 		WindowInterface();
@@ -192,7 +200,11 @@ public:
 
 		/*! Called in the window thread.
 		*/
-		virtual void Interval(void) const=0;
+		virtual void Interval(void)=0;
+
+		/*! Interval implementation must call this function.
+		*/
+		void BaseInterval(void);
 
 		/*! Called in the VM thread.
 		*/

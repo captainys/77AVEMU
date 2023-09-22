@@ -55,6 +55,18 @@ FM77AVRender::Image FM77AVRender::GetImage(void) const
 	image.rgba=rgba.data();
 	return image;
 }
+FM77AVRender::ImageCopy FM77AVRender::GetImageCopy(void)
+{
+	ImageCopy image;
+	std::swap(image.rgba,rgba);
+	image.wid=wid;
+	image.hei=hei;
+
+	wid=0;
+	hei=0;
+	rgba.clear();
+	return image;
+}
 void FM77AVRender::Prepare(const FM77AV &fm77av)
 {
 	this->CRTEnabled=fm77av.crtc.state.CRTEnabled;

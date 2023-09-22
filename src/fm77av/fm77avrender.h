@@ -26,12 +26,23 @@ public:
 		unsigned int wid,hei;
 		const unsigned char *rgba;
 	};
+	class ImageCopy
+	{
+	public:
+		unsigned int wid,hei;
+		std::vector <unsigned char> rgba;
+	};
 
 	FM77AVRender();
 
 	/*!
 	*/
 	Image GetImage(void) const;
+
+	/*! This function moves the image ownership to the caller.
+	    After this function, the internally-stored image of FM77AVRender is empty.
+	*/
+	ImageCopy GetImageCopy(void);
 
 	/*! Create a bitmap image.
 	*/

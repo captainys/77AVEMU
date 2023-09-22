@@ -109,7 +109,7 @@ public:
 
 		/*! Called in the window thread.
 		*/
-		void Interval(void) const override;
+		void Interval(void) override;
 
 		/*! Called in the VM thread.
 		*/
