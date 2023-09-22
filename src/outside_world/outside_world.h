@@ -241,6 +241,8 @@ public:
 		*/
 		virtual void Communicate(Outside_World *outside_world)=0;
 
+		virtual void Render(void)=0;
+
 		virtual void UpdateStatusBitmap(class FM77AV &fm77av)=0;
 		virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)=0;
 

@@ -115,6 +115,8 @@ public:
 		*/
 		void Communicate(Outside_World *outside_world) override;
 
+		void Render(bool swapBuffers) override;
+
 		void UpdateStatusBitmap(class FM77AV &fm77av) override;
 		void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av) override;
 		void RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av);

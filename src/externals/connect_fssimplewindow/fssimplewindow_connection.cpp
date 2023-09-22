@@ -1145,6 +1145,10 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *outs
 	outside_world->scaling=scaling;
 }
 
+void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
+{
+}
+
 void FsSimpleWindowConnection::WindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
 {
 	RenderBeforeSwapBuffers(img,fm77av);
