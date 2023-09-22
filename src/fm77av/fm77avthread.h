@@ -5,7 +5,6 @@
 #include <thread>
 #include <mutex>
 #include "fm77av.h"
-#include "fm77avrenderthread.h"
 #include "fm77aveventlog.h"
 #include "outside_world.h"
 
@@ -21,7 +20,6 @@ class FM77AVThread
 {
 private:
 	FM77AV *fm77avPtr;
-	std::unique_ptr <FM77AVRenderingThread> renderingThread;
 	int runMode=RUNMODE_RUN;
 	bool returnOnPause=false;
 
@@ -75,6 +73,7 @@ public:
 	void VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,FM77AVUIThread *uiThread);
 private:
 	void AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World::Sound *soundPtr);
+	void CheckRenderingTimer(FM77AV &fm77av,Outside_World::WindowInterface &window);
 
 public:
 	void PrintStatus(FM77AV &fm77av) const;

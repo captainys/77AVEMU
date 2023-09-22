@@ -24,17 +24,11 @@ target_include_directories(fm77avdef PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 add_library(fm77avthread fm77avthread.cpp fm77avthread.h)
-target_link_libraries(fm77avthread fm77avdef fm77av fm77avrenderthread fm77avcommand outside_world)
+target_link_libraries(fm77avthread fm77avdef fm77av fm77avcommand outside_world)
 target_include_directories(fm77avthread PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(UNIX)
     target_link_libraries(fm77avthread pthread)
 endif()
-
-
-
-add_library(fm77avrenderthread fm77avrenderthread.cpp fm77avrenderthread.h)
-target_link_libraries(fm77avrenderthread fm77avdef fm77av fm77avrender outside_world)
-target_include_directories(fm77avrenderthread PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 

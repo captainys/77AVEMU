@@ -1147,15 +1147,8 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *outs
 
 void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 {
-}
+	auto &img=winThr.mostRecentImage;
 
-void FsSimpleWindowConnection::WindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
-{
-	RenderBeforeSwapBuffers(img,fm77av);
-	FsSwapBuffers();
-}
-void FsSimpleWindowConnection::WindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av)
-{
 	int winWid,winHei;
 	FsGetWindowSize(winWid,winHei);
 
@@ -1236,11 +1229,12 @@ void FsSimpleWindowConnection::WindowConnection::RenderBeforeSwapBuffers(const F
 	}
 
 
-	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba);
+	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba.data());
 	DrawTextureRect(this->dx,this->dy+img.hei*scaling/100,this->dx+img.wid*scaling/100,this->dy);
 
 	glDisable(GL_TEXTURE_2D);
 
+	/* Temporarily disabled
 	if(true==visualizeAudioOut)
 	{
 		glColor3ub(255,255,0);
@@ -1270,10 +1264,25 @@ void FsSimpleWindowConnection::WindowConnection::RenderBeforeSwapBuffers(const F
 		}
 		glEnd();
 	}
+	*/
 
 	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
 	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
 	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/
+
+	if(true==swapBuffers)
+	{
+		FsSwapBuffers();
+	}
+}
+
+void FsSimpleWindowConnection::WindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
+{
+	RenderBeforeSwapBuffers(img,fm77av);
+	FsSwapBuffers();
+}
+void FsSimpleWindowConnection::WindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av)
+{
 }
 void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV &fm77av)
 {

@@ -6,7 +6,7 @@
 
 
 
-FM77AVThread::FM77AVThread() : renderingThread(new FM77AVRenderingThread)
+FM77AVThread::FM77AVThread()
 {
 }
 FM77AVThread::~FM77AVThread()
@@ -39,7 +39,6 @@ unsigned int FM77AVThread::OnlyOneCPUIsUnmuted(void) const
 void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,FM77AVUIThread *uiThread)
 {
 	this->fm77avPtr=fm77avPtr;
-	renderingThread->imageNeedsFlip=window->ImageNeedsFlip();
 	// In Tsugaru,
 	//   Set outside_world pointers to devices
 	outside_world->Start();
@@ -48,9 +47,6 @@ void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,
 }
 void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,Outside_World::Sound *soundPtr,FM77AVUIThread *uiThread)
 {
-	// Just in case, if there is a remains of the rendering from the previous run, discard it.
-	renderingThread->DiscardRunningRenderingTask();
-
 	soundPtr->Start();
 
 	PrintStatus(*fm77avPtr);	
@@ -80,7 +76,6 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			renderingThread->WaitIdle();
 			fm77avPtr->ForceRender(render,window);
 			outside_world->DevicePolling(*fm77avPtr);
 			if(true==outside_world->PauseKeyPressed())
@@ -157,12 +152,20 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			fm77avPtr->ProcessSound(soundPtr);
 			fm77avPtr->eventLog.RunOneStep(*fm77avPtr);
 
-			renderingThread->CheckRenderingTimer(*fm77avPtr,render);
-			renderingThread->CheckImageReady(*fm77avPtr,*window);
+			CheckRenderingTimer(*fm77avPtr,*window);
 
 			// outside_world->ProcessAppSpecific(*fm77avPtr);
 			if(fm77avPtr->state.nextDevicePollingTime<fm77avPtr->state.fm77avTime)
 			{
+				// Interval will be called in the window thread.  Called here only during the transition >>
+				window->Interval();
+				if(true==window->winThr.newImageRendered)
+				{
+					window->Render(true);
+					window->winThr.newImageRendered;
+				}
+				// Interval will be called in the window thread.  Called here only during the transition <<
+
 				window->Communicate(outside_world);
 				outside_world->DevicePolling(*fm77avPtr);
 				soundPtr->Polling();
@@ -228,7 +231,6 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		uiThread->uiLock.unlock();
 		if(true==fm77avPtr->var.justLoadedState)
 		{
-			renderingThread->DiscardRunningRenderingTask();
 		}
 		else if(true==clockTicking)
 		{
@@ -237,10 +239,6 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 	}
 
 	soundPtr->Stop();
-
-	// Rendering thread may be working on local fm77avRender.
-	// WaitIdle to make sure the rendering thread is done with rendering before leaving this function.
-	renderingThread->DiscardRunningRenderingTask();
 }
 void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,FM77AVUIThread *uiThread)
 {
@@ -304,6 +302,17 @@ void FM77AVThread::AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,
 	if(FM77AV::CATCHUP_DEFICIT_CUTOFF<fm77avPtr->state.timeDeficit)
 	{
 		fm77avPtr->state.timeDeficit=FM77AV::CATCHUP_DEFICIT_CUTOFF;
+	}
+}
+void FM77AVThread::CheckRenderingTimer(FM77AV &fm77av,Outside_World::WindowInterface &window)
+{
+	if(fm77av.state.nextRenderingTime<=fm77av.state.fm77avTime && 
+	   true!=fm77av.crtc.InVSYNC(fm77av.state.fm77avTime))
+	{
+		if(true==window.SendNewImageInfo(fm77av))
+		{
+			fm77av.state.nextRenderingTime=fm77av.state.fm77avTime+FM77AV_RENDERING_FREQUENCY;
+		}
 	}
 }
 void FM77AVThread::PrintStatus(FM77AV &fm77av) const

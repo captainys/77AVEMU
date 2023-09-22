@@ -236,12 +236,17 @@ void Outside_World::WindowInterface::BaseInterval(void)
 }
 
 // Called in the VM thread.
-void Outside_World::WindowInterface::SendNewImageInfo(class FM77AV &fm77av)
+bool Outside_World::WindowInterface::SendNewImageInfo(class FM77AV &fm77av)
 {
-	std::lock_guard <std::mutex> lock(newImageLock);
-	shared.renderer.Prepare(fm77av);
-	shared.paletteCopy=fm77av.crtc.GetPalette();
-	shared.needRender=true;
+	if(true==newImageLock.try_lock())
+	{
+		shared.renderer.Prepare(fm77av);
+		shared.paletteCopy=fm77av.crtc.GetPalette();
+		shared.needRender=true;
+		newImageLock.unlock();
+		return true;
+	}
+	return false;
 }
 
 void Outside_World::WindowInterface::Put16x16(int x0,int y0,const unsigned char icon16x16[])

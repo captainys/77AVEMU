@@ -235,13 +235,13 @@ public:
 		void BaseInterval(void);
 
 		// Called in the VM thread.
-		void SendNewImageInfo(class FM77AV &fm77av);
+		bool SendNewImageInfo(class FM77AV &fm77av);
 
 		/*! Called in the VM thread.
 		*/
 		virtual void Communicate(Outside_World *outside_world)=0;
 
-		virtual void Render(void)=0;
+		virtual void Render(bool swapBuffers)=0;
 
 		virtual void UpdateStatusBitmap(class FM77AV &fm77av)=0;
 		virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)=0;
