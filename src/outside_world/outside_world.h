@@ -76,6 +76,16 @@ public:
 	bool gameDevsNeedUpdateCached=false;
 
 
+	class StatusBarInfo
+	{
+	public:
+		bool fdAccessLamp[4]={false,false,false,false};
+		bool insLED=false,capsLED=false,kanaLED=false;
+		void Update(const class FM77AV &fm77av);
+	};
+	StatusBarInfo currentStatusBarInfo;
+
+
 	inline float ApplyZeroZone(float rawInput,float zeroZone)
 	{
 		if(rawInput<-zeroZone)
@@ -178,6 +188,7 @@ public:
 		public:
 			// Locked by deviceStateLock
 			unsigned int indicatedTapePosition=0; // Written from the VM Thread
+			StatusBarInfo currentStatusBarInfo;   // Copied from Outside::World::currentStatusBarInfo in the VM Thread
 
 			// Locked by rendererLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
@@ -201,6 +212,8 @@ public:
 			FM77AVRender::ImageCopy mostRecentImage;
 			int winWid=640,winHei=480;
 
+			StatusBarInfo statusBarInfo,prevStatusBarInfo;
+
 			unsigned int indicatedTapePosition=0; // Written from the VM Thread
 			unsigned int prevTapePosition=0;
 		};
@@ -212,10 +225,6 @@ public:
 		bool windowShift=false;
 
 		unsigned char *statusBitmap;
-		bool fdAccessLamp[4]={false,false,false,false};
-		unsigned int tapeStatusBitmap=0;
-		unsigned int indicatedTapePosition=0;
-		bool insLED=false,capsLED=false,kanaLED=false;
 		bool autoScaling=false;
 		unsigned int windowModeOnStartUp=FM77AVParam::WINDOW_NORMAL;
 
@@ -244,14 +253,12 @@ public:
 
 		virtual void Render(bool swapBuffers)=0;
 
-		virtual void UpdateStatusBitmap(class FM77AV &fm77av)=0;
 		virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)=0;
 
 		/*! Implementation should return true if the image needs to be flipped before drawn on the window.
 		    The flag is transferred to rendering thread class at the beginning of the FM77AVThread::Start.
 		*/
 		virtual bool ImageNeedsFlip(void)=0;
-
 
 		void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
 		void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);

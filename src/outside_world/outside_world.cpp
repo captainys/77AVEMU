@@ -17,6 +17,22 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include "outside_world.h"
 #include "fm77av.h"
 
+void Outside_World::StatusBarInfo::Update(const class FM77AV &fm77av)
+{
+	// Update Status Bar Info
+	for(int fd=0; fd<4; ++fd)
+	{
+		fdAccessLamp[fd]=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
+	}
+	capsLED=fm77av.keyboard.state.CAPS;
+	kanaLED=fm77av.keyboard.state.KANA;
+	insLED=fm77av.keyboard.state.INSLED;
+}
+
+
+////////////////////////////////////////////////////////////////
+
+
 Outside_World::Outside_World()
 {
 	gamePort[0]=FM77AV_GAMEPORTEMU_NONE;

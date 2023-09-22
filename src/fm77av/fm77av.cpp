@@ -970,7 +970,6 @@ void FM77AV::ForceRender(class FM77AVRender &render,Outside_World::WindowInterfa
 		render.FlipUpsideDown();
 	}
 	window->Render(render.GetImage(),*this);
-	window->UpdateStatusBitmap(*this);
 }
 
 void FM77AV::RenderQuiet(class FM77AVRender &render)

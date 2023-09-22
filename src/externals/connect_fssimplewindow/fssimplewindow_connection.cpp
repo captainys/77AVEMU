@@ -1133,6 +1133,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
+		winThr.statusBarInfo=shared.currentStatusBarInfo;
 	}
 	{
 		std::lock_guard <std::mutex> lock(rendererLock);
@@ -1149,6 +1150,7 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *outs
 		shared.indicatedTapePosition=outside_world->indicatedTapePosition;
 		shared.lowerRightIcon=outside_world->lowerRightIcon;
 		shared.visualizeAudioOut=outside_world->visualizeAudioOut;
+		shared.currentStatusBarInfo=outside_world->currentStatusBarInfo;
 	}
 
 	{
@@ -1237,6 +1239,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
     glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
 	glColor3f(1,1,1);
 
+	UpdateStatusBitmap();
 	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
 	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
 
@@ -1308,22 +1311,17 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 
 void FsSimpleWindowConnection::WindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
 {
-	RenderBeforeSwapBuffers(img,fm77av);
 	FsSwapBuffers();
 }
-void FsSimpleWindowConnection::WindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av)
-{
-}
-void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV &fm77av)
+
+void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(void)
 {
 	// Update Status Bitmap
 	for(int fd=0; fd<4; ++fd)
 	{
-		bool busy=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
-		if(fdAccessLamp[fd]!=busy)
+		if(winThr.statusBarInfo.fdAccessLamp[fd]!=winThr.prevStatusBarInfo.fdAccessLamp[fd])
 		{
-			Put16x16SelectInvert(16*fd,15,FD_IDLE,FD_BUSY,busy);
-			fdAccessLamp[fd]=busy;
+			Put16x16SelectInvert(16*fd,15,FD_IDLE,FD_BUSY,winThr.statusBarInfo.fdAccessLamp[fd]);
 		}
 	}
 
@@ -1367,9 +1365,9 @@ void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV
 
 	// Don't forget ins, caps, kana LEDs.
 	int iconX=80;
-	if(capsLED!=fm77av.keyboard.state.CAPS)
+	if(winThr.statusBarInfo.capsLED!=winThr.prevStatusBarInfo.capsLED)
 	{
-		if(true==fm77av.keyboard.state.CAPS)
+		if(true==winThr.statusBarInfo.capsLED)
 		{
 			PutWx16Invert(iconX,15,CAPS_wid,::CAPS);
 		}
@@ -1377,12 +1375,11 @@ void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV
 		{
 			ClearWx16(iconX,15,CAPS_wid);
 		}
-		capsLED=fm77av.keyboard.state.CAPS;
 	}
 	iconX+=CAPS_wid;
-	if(kanaLED!=fm77av.keyboard.state.KANA)
+	if(winThr.statusBarInfo.kanaLED!=winThr.prevStatusBarInfo.kanaLED)
 	{
-		if(true==fm77av.keyboard.state.KANA)
+		if(true==winThr.statusBarInfo.kanaLED)
 		{
 			PutWx16Invert(iconX,15,KANA_wid,::KANA);
 		}
@@ -1390,12 +1387,11 @@ void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV
 		{
 			ClearWx16(iconX,15,KANA_wid);
 		}
-		kanaLED=fm77av.keyboard.state.KANA;
 	}
 	iconX+=KANA_wid;
-	if(insLED!=fm77av.keyboard.state.INSLED)
+	if(winThr.statusBarInfo.insLED!=winThr.prevStatusBarInfo.insLED)
 	{
-		if(true==fm77av.keyboard.state.INSLED)
+		if(true==winThr.statusBarInfo.insLED)
 		{
 			PutWx16Invert(iconX,15,KANA_wid,::INS);
 		}
@@ -1403,9 +1399,8 @@ void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV
 		{
 			ClearWx16(iconX,15,INS_wid);
 		}
-		insLED=fm77av.keyboard.state.INSLED;
 	}
-
+	winThr.prevStatusBarInfo=winThr.statusBarInfo;
 }
 bool FsSimpleWindowConnection::WindowConnection::ImageNeedsFlip(void)
 {

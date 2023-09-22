@@ -131,9 +131,10 @@ public:
 
 		void Render(bool swapBuffers) override;
 
-		void UpdateStatusBitmap(class FM77AV &fm77av) override;
+		void UpdateStatusBitmap(void);
+
 		void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av) override;
-		void RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av);
+
 		bool ImageNeedsFlip(void) override;
 
 		GLuint GenTexture(void);
