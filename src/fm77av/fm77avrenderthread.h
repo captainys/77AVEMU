@@ -51,7 +51,7 @@ public:
 	~FM77AVRenderingThread();
 
 	void CheckRenderingTimer(FM77AV &fm77av,class FM77AVRender &render);
-	void CheckImageReady(FM77AV &fm77av,class Outside_World &world);
+	void CheckImageReady(FM77AV &fm77av,class Outside_World::WindowInterface &window);
 	void WaitIdle(void);
 
 	void DiscardRunningRenderingTask(void);

@@ -76,54 +76,6 @@ FsSimpleWindowConnection::~FsSimpleWindowConnection()
 	delete [] FSKEYState;
 }
 
-GLuint FsSimpleWindowConnection::GenTexture(void)
-{
-	GLuint texId;
-
-	glGenTextures(1,&texId);  // Reserve one texture identifier
-	glBindTexture(GL_TEXTURE_2D,texId);  // Making the texture identifier current (or bring it to the deck)
-
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-
-	return texId;
-}
-
-void FsSimpleWindowConnection::UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const
-{
-	glBindTexture(GL_TEXTURE_2D,texId);
-	glTexImage2D
-	    (GL_TEXTURE_2D,
-	     0,
-	     GL_RGBA,
-	     wid,
-	     hei,
-	     0,
-	     GL_RGBA,
-	     GL_UNSIGNED_BYTE,
-	     rgba);
-}
-void FsSimpleWindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) const
-{
-	glBegin(GL_QUADS);
-
-	glTexCoord2f(0,0);
-	glVertex2i(x0,y1);
-
-	glTexCoord2f(1,0);
-	glVertex2i(x1,y1);
-
-	glTexCoord2f(1,1);
-	glVertex2i(x1,y0);
-
-	glTexCoord2f(0,1);
-	glVertex2i(x0,y0);
-
-	glEnd();
-}
-
 /* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeKeyMappingText(void) const
 {
 	std::vector <std::string> text;
@@ -178,90 +130,9 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 /* virtual */ void FsSimpleWindowConnection::Start(void)
 {
-	int wid=640*scaling/100;
-	int hei=400*scaling/100;
-
-	int winY0=0;
-	if(true==windowShift)
-	{
-		winY0=48;
-	}
-
-
-	// In tight GUI integration, FsResizeWindow will re-enter OnDraw call-back, and will crash inside
-	// unless bitmaps are ready.  Do it before FsResizeWindow.
-
-	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
-	PAUSEicon=MakeIcon(PAUSE,PAUSE_wid,PAUSE_hei);
-	MENUicon=MakeIcon(MENU,MENU_wid,MENU_hei);
-	CAPSicon=MakeIcon(CAPS,CAPS_wid,CAPS_hei);
-	KANAicon=MakeIcon(KANA,KANA_wid,KANA_hei);
-	INSicon=MakeIcon(INS,INS_wid,INS_hei);
-
-	FD_IDLEicon=MakeIcon(FD_IDLE,16,16);
-	FD_BUSYicon=MakeIcon(FD_BUSY,16,16);
-	TAPE_IDLEicon=MakeIcon(TAPE_IDLE,16,16);
-	TAPE_LOADINGicon=MakeIcon(TAPE_LOADING,16,16);
-	TAPE_SAVINGicon=MakeIcon(TAPE_SAVING,16,16);
-
-
-
-	if(0==FsCheckWindowOpen())
-	{
-		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
-	}
-	else
-	{
-		FsResizeWindow(wid,hei+STATUS_HEI);
-	}
-
-	switch(windowModeOnStartUp)
-	{
-	case FM77AVParam::WINDOW_MAXIMIZE:
-		FsPollDevice();
-		FsMaximizeWindow();
-		for(int i=0; i<10; ++i)
-		{
-			FsPollDevice();
-		}
-		break;
-	case FM77AVParam::WINDOW_FULLSCREEN:
-		FsPollDevice();
-		FsMakeFullScreen();
-		for(int i=0; i<10; ++i)
-		{
-			FsPollDevice();
-		}
-		autoScaling=true;
-		break;
-	}
-
-	this->winWid=640;
-	this->winHei=400;
-	FsSetWindowTitle("FM-7/FM77AV/FM77AV40 Emulator - MUTSU");
-
-	glClearColor(0,0,0,0);
-	mainTexId=GenTexture();
-	statusTexId=GenTexture();
-
-	pauseIconTexId=GenTexture();
-	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
-	menuIconTexId=GenTexture();
-	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
-
-	// Make initial status bitmap
-	for(int fd=0; fd<4; ++fd)
-	{
-		Put16x16Invert(16*fd,15,FD_IDLE);
-	}
-	Put16x16Invert(64,15,TAPE_IDLE);
 }
 /* virtual */ void FsSimpleWindowConnection::Stop(void)
 {
-	if(FM77AVParam::WINDOW_NORMAL!=windowModeOnStartUp)
-	{
-		FsUnmaximizeWindow();
-	}
 }
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FM77AV &fm77av)
@@ -1001,229 +872,6 @@ void FsSimpleWindowConnection::PollGamePads(void)
 		}
 	}
 }
-/* virtual */ void FsSimpleWindowConnection::UpdateStatusBitmap(class FM77AV &fm77av)
-{
-	// Update Status Bitmap
-	for(int fd=0; fd<4; ++fd)
-	{
-		bool busy=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
-		if(fdAccessLamp[fd]!=busy)
-		{
-			Put16x16SelectInvert(16*fd,15,FD_IDLE,FD_BUSY,busy);
-			fdAccessLamp[fd]=busy;
-		}
-	}
-
-	// if tape status changed
-	// unsigned int tapeStatusBitmap=0;
-	// Tape icon will take 16 pixels from X=64
-	if(prevTapePosition!=indicatedTapePosition)
-	{
-		char str[256];
-		sprintf(str,"%u        ",indicatedTapePosition);
-		for(int i=0; i<8; ++i)
-		{
-			int x0=STATUS_TAPEPOS_X+i*8;
-			auto fontPtr=YsFont8x12[str[i]];
-			auto rgbaPtr=statusBitmap+(2*STATUS_WID+x0)*4;
-			for(int y=0; y<12; ++y)
-			{
-				auto byteData=fontPtr[y*4];
-				for(int x=0; x<8; ++x)
-				{
-					if(0!=(byteData&0x80))
-					{
-						*(rgbaPtr++)=0;
-						*(rgbaPtr++)=0;
-						*(rgbaPtr++)=0;
-						*(rgbaPtr++)=255;
-					}
-					else
-					{
-						*(rgbaPtr++)=255;
-						*(rgbaPtr++)=255;
-						*(rgbaPtr++)=255;
-						*(rgbaPtr++)=255;
-					}
-					byteData<<=1;
-				}
-				rgbaPtr+=4*(STATUS_WID-8);
-			}
-		}
-	}
-
-	// Don't forget ins, caps, kana LEDs.
-	int iconX=80;
-	if(capsLED!=fm77av.keyboard.state.CAPS)
-	{
-		if(true==fm77av.keyboard.state.CAPS)
-		{
-			PutWx16Invert(iconX,15,CAPS_wid,::CAPS);
-		}
-		else
-		{
-			ClearWx16(iconX,15,CAPS_wid);
-		}
-		capsLED=fm77av.keyboard.state.CAPS;
-	}
-	iconX+=CAPS_wid;
-	if(kanaLED!=fm77av.keyboard.state.KANA)
-	{
-		if(true==fm77av.keyboard.state.KANA)
-		{
-			PutWx16Invert(iconX,15,KANA_wid,::KANA);
-		}
-		else
-		{
-			ClearWx16(iconX,15,KANA_wid);
-		}
-		kanaLED=fm77av.keyboard.state.KANA;
-	}
-	iconX+=KANA_wid;
-	if(insLED!=fm77av.keyboard.state.INSLED)
-	{
-		if(true==fm77av.keyboard.state.INSLED)
-		{
-			PutWx16Invert(iconX,15,KANA_wid,::INS);
-		}
-		else
-		{
-			ClearWx16(iconX,15,INS_wid);
-		}
-		insLED=fm77av.keyboard.state.INSLED;
-	}
-
-}
-/* virtual */ void FsSimpleWindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
-{
-	RenderBeforeSwapBuffers(img,fm77av);
-	FsSwapBuffers();
-}
-void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av)
-{
-	int winWid,winHei;
-	FsGetWindowSize(winWid,winHei);
-
-	if(true==autoScaling)
-	{
-		if(0<img.wid && 0<img.hei)
-		{
-			unsigned int scaleX=100*winWid/img.wid;
-			unsigned int scaleY=100*(winHei-STATUS_HEI)/img.hei;
-			this->scaling=std::min(scaleX,scaleY);
-		}
-	}
-	else
-	{
-		if(320==img.wid)
-		{
-			this->scaling=200;
-		}
-		else
-		{
-			this->scaling=100;
-		}
-		if(this->winWid!=img.wid*this->scaling/100 || this->winHei!=img.hei*this->scaling/100)
-		{
-			this->winWid=img.wid;
-			this->winHei=img.hei;
-			sinceLastResize=10;
-		}
-		else if(0<sinceLastResize)
-		{
-			--sinceLastResize;
-			if(0==sinceLastResize)
-			{
-				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
-			}
-		}
-	}
-
-	unsigned int renderWid=img.wid*this->scaling/100;
-	unsigned int renderHei=img.hei*this->scaling/100;
-	this->dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
-	this->dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
-
-	glClear(GL_COLOR_BUFFER_BIT);
-	glViewport(0,0,winWid,winHei);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
-
-
-	glEnable(GL_TEXTURE_2D);
-    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-	glColor3f(1,1,1);
-
-	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
-	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
-
-	/* glRasterPos2i(0,winHei-1);
-	glPixelZoom(1,1);
-	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap); */
-
-	switch(lowerRightIcon)
-	{
-	case LOWER_RIGHT_NONE:
-		break;
-	case LOWER_RIGHT_PAUSE:
-		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
-		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
-		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
-		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
-		break;
-	case LOWER_RIGHT_MENU:
-		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
-		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
-		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
-		// glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
-		break;
-	}
-
-
-	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba);
-	DrawTextureRect(this->dx,this->dy+img.hei*scaling/100,this->dx+img.wid*scaling/100,this->dy);
-
-	glDisable(GL_TEXTURE_2D);
-
-	if(true==visualizeAudioOut)
-	{
-		glColor3ub(255,255,0);
-		const int barWid=16;
-		const int x0=winWid-MENU_wid-barWid*12;
-		glBegin(GL_LINES);
-		for(int i=0; i<=3; ++i)
-		{
-			auto x=x0+barWid*i;
-			glVertex2i(x,winHei);
-			glVertex2i(x,winHei-1-MENU_hei);
-		}
-		glEnd();
-		glBegin(GL_QUADS);
-		for(int i=0; i<3; ++i)
-		{
-			auto &ch=fm77av.sound.state.ym2203c.state.channels[i];
-			auto outLevel=ch.lastAmplitudeMax;
-			outLevel*=MENU_hei;
-			outLevel/=YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
-
-			auto x=x0+barWid*i;
-			glVertex2i(x       ,winHei);
-			glVertex2i(x+barWid,winHei);
-			glVertex2i(x+barWid,winHei-outLevel);
-			glVertex2i(x       ,winHei-outLevel);
-		}
-		glEnd();
-	}
-
-	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
-	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
-	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/
-}
-/* virtual */ bool FsSimpleWindowConnection::ImageNeedsFlip(void)
-{
-	return false;
-}
 /* virtual */ void FsSimpleWindowConnection::SetKeyboardLayout(unsigned int layout)
 {
 	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
@@ -1386,7 +1034,411 @@ void FsSimpleWindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image
 	}
 }
 
-////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+
+void FsSimpleWindowConnection::WindowConnection::Start(void)
+{
+	int wid=640*scaling/100;
+	int hei=400*scaling/100;
+
+	int winY0=0;
+	if(true==windowShift)
+	{
+		winY0=48;
+	}
+
+
+	// In tight GUI integration, FsResizeWindow will re-enter OnDraw call-back, and will crash inside
+	// unless bitmaps are ready.  Do it before FsResizeWindow.
+
+	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
+	PAUSEicon=MakeIcon(PAUSE,PAUSE_wid,PAUSE_hei);
+	MENUicon=MakeIcon(MENU,MENU_wid,MENU_hei);
+	CAPSicon=MakeIcon(CAPS,CAPS_wid,CAPS_hei);
+	KANAicon=MakeIcon(KANA,KANA_wid,KANA_hei);
+	INSicon=MakeIcon(INS,INS_wid,INS_hei);
+
+	FD_IDLEicon=MakeIcon(FD_IDLE,16,16);
+	FD_BUSYicon=MakeIcon(FD_BUSY,16,16);
+	TAPE_IDLEicon=MakeIcon(TAPE_IDLE,16,16);
+	TAPE_LOADINGicon=MakeIcon(TAPE_LOADING,16,16);
+	TAPE_SAVINGicon=MakeIcon(TAPE_SAVING,16,16);
+
+
+
+	if(0==FsCheckWindowOpen())
+	{
+		FsOpenWindow(0,winY0,wid,hei+STATUS_HEI,1);
+	}
+	else
+	{
+		FsResizeWindow(wid,hei+STATUS_HEI);
+	}
+
+	switch(windowModeOnStartUp)
+	{
+	case FM77AVParam::WINDOW_MAXIMIZE:
+		FsPollDevice();
+		FsMaximizeWindow();
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+		break;
+	case FM77AVParam::WINDOW_FULLSCREEN:
+		FsPollDevice();
+		FsMakeFullScreen();
+		for(int i=0; i<10; ++i)
+		{
+			FsPollDevice();
+		}
+		autoScaling=true;
+		break;
+	}
+
+	this->winWid=640;
+	this->winHei=400;
+	FsSetWindowTitle("FM-7/FM77AV/FM77AV40 Emulator - MUTSU");
+
+	glClearColor(0,0,0,0);
+	mainTexId=GenTexture();
+	statusTexId=GenTexture();
+
+	pauseIconTexId=GenTexture();
+	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
+	menuIconTexId=GenTexture();
+	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
+
+	// Make initial status bitmap
+	for(int fd=0; fd<4; ++fd)
+	{
+		Put16x16Invert(16*fd,15,FD_IDLE);
+	}
+	Put16x16Invert(64,15,TAPE_IDLE);
+}
+
+void FsSimpleWindowConnection::WindowConnection::Stop(void)
+{
+	if(FM77AVParam::WINDOW_NORMAL!=windowModeOnStartUp)
+	{
+		FsUnmaximizeWindow();
+	}
+}
+
+/*! Called in the window thread.
+*/
+void FsSimpleWindowConnection::WindowConnection::Interval(void) const
+{
+}
+
+/*! Called in the VM thread.
+*/
+void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *outside_world)
+{
+	indicatedTapePosition=outside_world->indicatedTapePosition;
+	lowerRightIcon=outside_world->lowerRightIcon;
+	visualizeAudioOut=outside_world->visualizeAudioOut;
+
+	outside_world->dx=dx;
+	outside_world->dy=dy;
+	outside_world->scaling=scaling;
+}
+
+void FsSimpleWindowConnection::WindowConnection::Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)
+{
+	RenderBeforeSwapBuffers(img,fm77av);
+	FsSwapBuffers();
+}
+void FsSimpleWindowConnection::WindowConnection::RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av)
+{
+	int winWid,winHei;
+	FsGetWindowSize(winWid,winHei);
+
+	if(true==autoScaling)
+	{
+		if(0<img.wid && 0<img.hei)
+		{
+			unsigned int scaleX=100*winWid/img.wid;
+			unsigned int scaleY=100*(winHei-STATUS_HEI)/img.hei;
+			this->scaling=std::min(scaleX,scaleY);
+		}
+	}
+	else
+	{
+		if(320==img.wid)
+		{
+			this->scaling=200;
+		}
+		else
+		{
+			this->scaling=100;
+		}
+		if(this->winWid!=img.wid*this->scaling/100 || this->winHei!=img.hei*this->scaling/100)
+		{
+			this->winWid=img.wid;
+			this->winHei=img.hei;
+			sinceLastResize=10;
+		}
+		else if(0<sinceLastResize)
+		{
+			--sinceLastResize;
+			if(0==sinceLastResize)
+			{
+				FsResizeWindow(this->winWid*scaling/100,this->winHei*scaling/100+STATUS_HEI);
+			}
+		}
+	}
+
+	unsigned int renderWid=img.wid*this->scaling/100;
+	unsigned int renderHei=img.hei*this->scaling/100;
+	this->dx=(renderWid<winWid ? (winWid-renderWid)/2 : 0);
+	this->dy=(renderHei<(winHei-STATUS_HEI) ? (winHei-STATUS_HEI-renderHei)/2 : 0);
+
+	glClear(GL_COLOR_BUFFER_BIT);
+	glViewport(0,0,winWid,winHei);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0.0f,float(winWid),float(winHei),0.0f,-1,1);
+
+
+	glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+	glColor3f(1,1,1);
+
+	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
+	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
+
+	/* glRasterPos2i(0,winHei-1);
+	glPixelZoom(1,1);
+	glDrawPixels(STATUS_WID,STATUS_HEI,GL_RGBA,GL_UNSIGNED_BYTE,statusBitmap); */
+
+	switch(lowerRightIcon)
+	{
+	case LOWER_RIGHT_NONE:
+		break;
+	case LOWER_RIGHT_PAUSE:
+		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
+		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
+		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
+		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
+		break;
+	case LOWER_RIGHT_MENU:
+		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
+		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
+		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
+		// glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
+		break;
+	}
+
+
+	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba);
+	DrawTextureRect(this->dx,this->dy+img.hei*scaling/100,this->dx+img.wid*scaling/100,this->dy);
+
+	glDisable(GL_TEXTURE_2D);
+
+	if(true==visualizeAudioOut)
+	{
+		glColor3ub(255,255,0);
+		const int barWid=16;
+		const int x0=winWid-MENU_wid-barWid*12;
+		glBegin(GL_LINES);
+		for(int i=0; i<=3; ++i)
+		{
+			auto x=x0+barWid*i;
+			glVertex2i(x,winHei);
+			glVertex2i(x,winHei-1-MENU_hei);
+		}
+		glEnd();
+		glBegin(GL_QUADS);
+		for(int i=0; i<3; ++i)
+		{
+			auto &ch=fm77av.sound.state.ym2203c.state.channels[i];
+			auto outLevel=ch.lastAmplitudeMax;
+			outLevel*=MENU_hei;
+			outLevel/=YM2612::WAVE_OUTPUT_AMPLITUDE_MAX_DEFAULT;
+
+			auto x=x0+barWid*i;
+			glVertex2i(x       ,winHei);
+			glVertex2i(x+barWid,winHei);
+			glVertex2i(x+barWid,winHei-outLevel);
+			glVertex2i(x       ,winHei-outLevel);
+		}
+		glEnd();
+	}
+
+	/*glPixelZoom((float)scaling/100.0f,(float)scaling/100.0f);
+	glRasterPos2i(this->dx,(img.hei*scaling/100)+dy);
+	glDrawPixels(img.wid,img.hei,GL_RGBA,GL_UNSIGNED_BYTE,img.rgba);*/
+}
+void FsSimpleWindowConnection::WindowConnection::UpdateStatusBitmap(class FM77AV &fm77av)
+{
+	// Update Status Bitmap
+	for(int fd=0; fd<4; ++fd)
+	{
+		bool busy=(fd==fm77av.fdc.DriveSelect() && true==fm77av.fdc.state.busy);
+		if(fdAccessLamp[fd]!=busy)
+		{
+			Put16x16SelectInvert(16*fd,15,FD_IDLE,FD_BUSY,busy);
+			fdAccessLamp[fd]=busy;
+		}
+	}
+
+	// if tape status changed
+	// unsigned int tapeStatusBitmap=0;
+	// Tape icon will take 16 pixels from X=64
+	if(prevTapePosition!=indicatedTapePosition)
+	{
+		char str[256];
+		sprintf(str,"%u        ",indicatedTapePosition);
+		for(int i=0; i<8; ++i)
+		{
+			int x0=STATUS_TAPEPOS_X+i*8;
+			auto fontPtr=YsFont8x12[str[i]];
+			auto rgbaPtr=statusBitmap+(2*STATUS_WID+x0)*4;
+			for(int y=0; y<12; ++y)
+			{
+				auto byteData=fontPtr[y*4];
+				for(int x=0; x<8; ++x)
+				{
+					if(0!=(byteData&0x80))
+					{
+						*(rgbaPtr++)=0;
+						*(rgbaPtr++)=0;
+						*(rgbaPtr++)=0;
+						*(rgbaPtr++)=255;
+					}
+					else
+					{
+						*(rgbaPtr++)=255;
+						*(rgbaPtr++)=255;
+						*(rgbaPtr++)=255;
+						*(rgbaPtr++)=255;
+					}
+					byteData<<=1;
+				}
+				rgbaPtr+=4*(STATUS_WID-8);
+			}
+		}
+	}
+
+	// Don't forget ins, caps, kana LEDs.
+	int iconX=80;
+	if(capsLED!=fm77av.keyboard.state.CAPS)
+	{
+		if(true==fm77av.keyboard.state.CAPS)
+		{
+			PutWx16Invert(iconX,15,CAPS_wid,::CAPS);
+		}
+		else
+		{
+			ClearWx16(iconX,15,CAPS_wid);
+		}
+		capsLED=fm77av.keyboard.state.CAPS;
+	}
+	iconX+=CAPS_wid;
+	if(kanaLED!=fm77av.keyboard.state.KANA)
+	{
+		if(true==fm77av.keyboard.state.KANA)
+		{
+			PutWx16Invert(iconX,15,KANA_wid,::KANA);
+		}
+		else
+		{
+			ClearWx16(iconX,15,KANA_wid);
+		}
+		kanaLED=fm77av.keyboard.state.KANA;
+	}
+	iconX+=KANA_wid;
+	if(insLED!=fm77av.keyboard.state.INSLED)
+	{
+		if(true==fm77av.keyboard.state.INSLED)
+		{
+			PutWx16Invert(iconX,15,KANA_wid,::INS);
+		}
+		else
+		{
+			ClearWx16(iconX,15,INS_wid);
+		}
+		insLED=fm77av.keyboard.state.INSLED;
+	}
+
+}
+bool FsSimpleWindowConnection::WindowConnection::ImageNeedsFlip(void)
+{
+	return false;
+}
+
+GLuint FsSimpleWindowConnection::WindowConnection::GenTexture(void)
+{
+	GLuint texId;
+
+	glGenTextures(1,&texId);  // Reserve one texture identifier
+	glBindTexture(GL_TEXTURE_2D,texId);  // Making the texture identifier current (or bring it to the deck)
+
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+
+	return texId;
+}
+
+void FsSimpleWindowConnection::WindowConnection::UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const
+{
+	glBindTexture(GL_TEXTURE_2D,texId);
+	glTexImage2D
+	    (GL_TEXTURE_2D,
+	     0,
+	     GL_RGBA,
+	     wid,
+	     hei,
+	     0,
+	     GL_RGBA,
+	     GL_UNSIGNED_BYTE,
+	     rgba);
+}
+void FsSimpleWindowConnection::WindowConnection::DrawTextureRect(int x0,int y0,int x1,int y1) const
+{
+	glBegin(GL_QUADS);
+
+	glTexCoord2f(0,0);
+	glVertex2i(x0,y1);
+
+	glTexCoord2f(1,0);
+	glVertex2i(x1,y1);
+
+	glTexCoord2f(1,1);
+	glVertex2i(x1,y0);
+
+	glTexCoord2f(0,1);
+	glVertex2i(x0,y0);
+
+	glEnd();
+}
+
+
+FsSimpleWindowConnection::WindowInterface *FsSimpleWindowConnection::CreateWindowInterface(void) const
+{
+	return new WindowConnection;
+}
+void FsSimpleWindowConnection::DeleteWindowInterface(WindowInterface *ptr) const
+{
+	auto realPtr=dynamic_cast<WindowConnection *>(ptr);
+	delete realPtr;
+}
+
+////////////////////////////////////////////////////////////
+
+
+Outside_World::Sound *FsSimpleWindowConnection::CreateSound(void) const
+{
+	return new SoundConnection;
+}
+void FsSimpleWindowConnection::DeleteSound(Sound *ptr) const
+{
+	auto realPtr=dynamic_cast <SoundConnection *>(ptr);
+	delete realPtr;
+}
 
 void FsSimpleWindowConnection::SoundConnection::Start(void)
 {
@@ -1430,14 +1482,4 @@ void FsSimpleWindowConnection::SoundConnection::Polling(void)
 #else
 	return YSTRUE==soundPlayer.IsPlaying(FMPSGChannel);
 #endif
-}
-
-Outside_World::Sound *FsSimpleWindowConnection::CreateSound(void) const
-{
-	return new SoundConnection;
-}
-void FsSimpleWindowConnection::DeleteSound(Sound *ptr) const
-{
-	auto realPtr=dynamic_cast <SoundConnection *>(ptr);
-	delete realPtr;
 }

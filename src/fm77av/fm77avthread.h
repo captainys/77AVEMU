@@ -70,9 +70,9 @@ public:
 	*/
 	unsigned int OnlyOneCPUIsUnmuted(void) const;
 
-	void VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
-	void VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::Sound *soundPtr,FM77AVUIThread *uiThread);
-	void VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,FM77AVUIThread *uiThread);
+	void VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,FM77AVUIThread *uiThread);
+	void VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,Outside_World::Sound *soundPtr,FM77AVUIThread *uiThread);
+	void VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,FM77AVUIThread *uiThread);
 private:
 	void AdjustRealTime(FM77AV *fm77avPtr,long long int cpuTimePassed,std::chrono::time_point<std::chrono::high_resolution_clock> time0,class Outside_World::Sound *soundPtr);
 

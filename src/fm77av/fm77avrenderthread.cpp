@@ -88,7 +88,7 @@ void FM77AVRenderingThread::CheckRenderingTimer(FM77AV &fm77av,FM77AVRender &ren
 	}
 }
 
-void FM77AVRenderingThread::CheckImageReady(FM77AV &fm77av,Outside_World &world)
+void FM77AVRenderingThread::CheckImageReady(FM77AV &fm77av,class Outside_World::WindowInterface &window)
 {
 	if(STATE_RENDERING==state && checkImageAfterThisTIme<fm77av.state.fm77avTime)
 	{
@@ -99,8 +99,8 @@ void FM77AVRenderingThread::CheckImageReady(FM77AV &fm77av,Outside_World &world)
 		}
 		if(true==imageReady)
 		{
-			world.Render(rendererPtr->GetImage(),fm77av);
-			world.UpdateStatusBitmap(fm77av);
+			window.Render(rendererPtr->GetImage(),fm77av);
+			window.UpdateStatusBitmap(fm77av);
 			state=STATE_IDLE;
 		}
 	}

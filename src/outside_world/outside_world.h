@@ -27,6 +27,18 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 class Outside_World
 {
 public:
+	enum
+	{
+		LOWER_RIGHT_NONE,
+		LOWER_RIGHT_PAUSE,
+		LOWER_RIGHT_MENU,
+	};
+	enum
+	{
+		STATUS_WID=640,
+		STATUS_HEI=16
+	};
+
 	class VirtualKey
 	{
 	public:
@@ -34,8 +46,6 @@ public:
 		int physicalId=-1;
 		unsigned int button=0;
 	};
-
-	bool windowShift=false;
 
 	unsigned int gamePort[FM77AV_NUM_GAMEPORTS];
 
@@ -46,6 +56,8 @@ public:
 	};
 	bool mouseIntegrationActive=false;
 	int lastMx,lastMy,mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+
+	bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
 
 	/*! Virtual Keys.
 	*/
@@ -86,30 +98,13 @@ public:
 		KEYBOARD_LAYOUT_JP,
 	};
 
-	enum
-	{
-		LOWER_RIGHT_NONE,
-		LOWER_RIGHT_PAUSE,
-		LOWER_RIGHT_MENU,
-	};
-	enum
-	{
-		STATUS_WID=640,
-		STATUS_HEI=16
-	};
-	unsigned char *statusBitmap;
-	bool fdAccessLamp[4]={false,false,false,false};
-	unsigned int tapeStatusBitmap=0;
+	bool pauseKey=false;
 	unsigned int indicatedTapePosition=0;
-	bool insLED=false,capsLED=false,kanaLED=false;
-	bool autoScaling=false;
-	unsigned int windowModeOnStartUp=FM77AVParam::WINDOW_NORMAL;
+
 	unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
 	unsigned int scaling=100; // In Percent
-	bool pauseKey=false;
 
 	unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
-	bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
 
 	Outside_World();
 	virtual ~Outside_World();
@@ -117,13 +112,6 @@ public:
 	virtual void Start(void)=0;
 	virtual void Stop(void)=0;
 	virtual void DevicePolling(class FM77AV &fm77av)=0;
-	virtual void UpdateStatusBitmap(class FM77AV &fm77av)=0;
-	virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)=0;
-
-	/*! Implementation should return true if the image needs to be flipped before drawn on the window.
-	    The flag is transferred to rendering thread class at the beginning of the FM77AVThread::Start.
-	*/
-	virtual bool ImageNeedsFlip(void)=0;
 
 	void SetKeyboardMode(unsigned int mode);
 	virtual void SetKeyboardLayout(unsigned int layout)=0;
@@ -133,15 +121,6 @@ public:
 	/*! Return pauseKey flag.  The flag is clear after this function.
 	*/
 	bool PauseKeyPressed(void);
-
-	void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
-	void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);
-
-	void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
-	void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
-
-	void PutWx16Invert(int x0,int y0,int W,const unsigned char icon[]);
-	void ClearWx16(int x0,int y0,int W);
 
 	/*! Implementation should call this function for each inkey for application-specific augmentation to work correctly.
 	*/
@@ -184,6 +163,62 @@ public:
 
 
 public:
+	class WindowInterface
+	{
+	public:
+		bool windowShift=false;
+
+		unsigned char *statusBitmap;
+		bool fdAccessLamp[4]={false,false,false,false};
+		unsigned int tapeStatusBitmap=0;
+		unsigned int indicatedTapePosition=0;
+		bool insLED=false,capsLED=false,kanaLED=false;
+		bool autoScaling=false;
+		bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
+		unsigned int windowModeOnStartUp=FM77AVParam::WINDOW_NORMAL;
+
+		unsigned int lowerRightIcon=LOWER_RIGHT_NONE;
+
+		unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)
+		unsigned int scaling=100; // In Percent
+
+		int winWid=640,winHei=480;
+
+		WindowInterface();
+		~WindowInterface();
+
+		virtual void Start(void)=0;
+		virtual void Stop(void)=0;
+
+		/*! Called in the window thread.
+		*/
+		virtual void Interval(void) const=0;
+
+		/*! Called in the VM thread.
+		*/
+		virtual void Communicate(Outside_World *outside_world)=0;
+
+		virtual void UpdateStatusBitmap(class FM77AV &fm77av)=0;
+		virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av)=0;
+
+		/*! Implementation should return true if the image needs to be flipped before drawn on the window.
+		    The flag is transferred to rendering thread class at the beginning of the FM77AVThread::Start.
+		*/
+		virtual bool ImageNeedsFlip(void)=0;
+
+
+		void Put16x16(int x0,int y0,const unsigned char icon16x16[]);
+		void Put16x16Invert(int x0,int y0,const unsigned char icon16x16[]);
+
+		void Put16x16Select(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+		void Put16x16SelectInvert(int x0,int y0,const unsigned char idleIcon16x16[],const unsigned char busyIcon16x16[],bool busy);
+
+		void PutWx16Invert(int x0,int y0,int W,const unsigned char icon[]);
+		void ClearWx16(int x0,int y0,int W);
+	};
+	virtual WindowInterface *CreateWindowInterface(void) const=0;
+	virtual void DeleteWindowInterface(WindowInterface *) const=0;
+
 	class Sound
 	{
 	public:

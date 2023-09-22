@@ -59,8 +59,6 @@ public:
 		STATUS_TAPEPOS_X=320,
 	};
 
-	GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
-
 	HostShortCut hostShortCut[FSKEY_NUM_KEYCODE];
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
 	unsigned int GRAPH_KEY_CODE=FSKEY_NULL;
@@ -71,12 +69,6 @@ public:
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
-	GLuint GenTexture(void);
-	void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
-	void DrawTextureRect(int x0,int y0,int x1,int y1) const;
-
-	std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
-
 	std::vector <struct YsGamePadReading> gamePads,prevGamePads;
 
 	// For mouse emulation by pad digital axes.
@@ -86,8 +78,6 @@ public:
 	uint64_t nextKeyRepeatTime=0;
 
 	int winWid=640,winHei=480;
-	unsigned int sinceLastResize=0;
-	unsigned int prevTapePosition=0;
 
 
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;
@@ -98,16 +88,44 @@ public:
 	virtual void DevicePolling(class FM77AV &fm77av);
 	void PollGamePads(void);
 	unsigned int KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey);
-	virtual void UpdateStatusBitmap(class FM77AV &fm77av);
-	virtual void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av);
-	void RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av);
-	virtual bool ImageNeedsFlip(void);
 
 	virtual void SetKeyboardLayout(unsigned int layout);
 
 	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
 	virtual void RegisterPauseResume(std::string hostKeyLabel);
 
+
+	class WindowConnection : public WindowInterface
+	{
+	public:
+		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
+		std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
+
+		unsigned int sinceLastResize=0;
+		unsigned int prevTapePosition=0;
+
+		void Start(void) override;
+		void Stop(void) override;
+
+		/*! Called in the window thread.
+		*/
+		void Interval(void) const override;
+
+		/*! Called in the VM thread.
+		*/
+		void Communicate(Outside_World *outside_world) override;
+
+		void UpdateStatusBitmap(class FM77AV &fm77av) override;
+		void Render(const FM77AVRender::Image &img,const class FM77AV &fm77av) override;
+		void RenderBeforeSwapBuffers(const FM77AVRender::Image &img,const class FM77AV &fm77av);
+		bool ImageNeedsFlip(void) override;
+
+		GLuint GenTexture(void);
+		void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
+		void DrawTextureRect(int x0,int y0,int x1,int y1) const;
+	};
+	WindowInterface *CreateWindowInterface(void) const override;
+	void DeleteWindowInterface(WindowInterface *) const override;
 
 
 	class SoundConnection : public Sound

@@ -259,7 +259,7 @@ public:
 
 	FM77AV();
 
-	bool SetUp(const FM77AVParam &param,class Outside_World *outside_world);
+	bool SetUp(const FM77AVParam &param,class Outside_World *outside_world,Outside_World::WindowInterface *window);
 
 	void IOWrite(const CanAccessMemory *accessFrom,uint16_t ioAddr,uint8_t value);
 	uint8_t IORead(const CanAccessMemory *accessFrom,uint16_t ioAddr);
@@ -401,7 +401,7 @@ public:
 
 	void TypeCommandForStartingTapeProgram(void);
 
-	void ForceRender(class FM77AVRender &render,class Outside_World *outside_world);
+	void ForceRender(class FM77AVRender &render,class Outside_World::WindowInterface *window);
 
 	void RenderQuiet(class FM77AVRender &render);
 

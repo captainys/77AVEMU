@@ -25,8 +25,9 @@ int main(int argc,char *argv[])
 
 	std::unique_ptr <FM77AV> fm77av(new FM77AV);
 	std::unique_ptr <Outside_World> outside_world(new FsSimpleWindowConnection);
+	auto window=outside_world->CreateWindowInterface();
 
-	if(true!=fm77av->SetUp(fm77avargv,outside_world.get()))
+	if(true!=fm77av->SetUp(fm77avargv,outside_world.get(),window))
 	{
 		return 1;
 	}
@@ -43,9 +44,9 @@ int main(int argc,char *argv[])
 		std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
 
 		auto sound=outside_world->CreateSound();
-		vm.VMStart(fm77av.get(),outside_world.get(),&cui);
-		vm.VMMainLoop(fm77av.get(),outside_world.get(),sound,&cui);
-		vm.VMEnd(fm77av.get(),outside_world.get(),&cui);
+		vm.VMStart(fm77av.get(),outside_world.get(),window,&cui);
+		vm.VMMainLoop(fm77av.get(),outside_world.get(),window,sound,&cui);
+		vm.VMEnd(fm77av.get(),outside_world.get(),window,&cui);
 		outside_world->DeleteSound(sound);
 
 		cuiThread.join();
@@ -54,9 +55,9 @@ int main(int argc,char *argv[])
 	{
 		FM77AVUIThread noUI;
 		auto sound=outside_world->CreateSound();
-		vm.VMStart(fm77av.get(),outside_world.get(),&noUI);
-		vm.VMMainLoop(fm77av.get(),outside_world.get(),sound,&noUI);
-		vm.VMEnd(fm77av.get(),outside_world.get(),&noUI);
+		vm.VMStart(fm77av.get(),outside_world.get(),window,&noUI);
+		vm.VMMainLoop(fm77av.get(),outside_world.get(),window,sound,&noUI);
+		vm.VMEnd(fm77av.get(),outside_world.get(),window,&noUI);
 		outside_world->DeleteSound(sound);
 
 		return fm77av->TestSuccess();

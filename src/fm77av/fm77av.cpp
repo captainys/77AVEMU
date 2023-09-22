@@ -237,7 +237,7 @@ FM77AV::FM77AV() :
 	else ADDR_NONE;
 }
 
-bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
+bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside_World::WindowInterface *window)
 {
 	var.fileNameAlias=param.fileNameAlias;  // Do it before loading tape and disk images.
 	var.imgSearchPaths=param.imgSearchPaths;  // Do it before loading tape and disk images.
@@ -390,10 +390,10 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world)
 	{
 		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
 	}
-	outside_world->scaling=param.scaling;
-	outside_world->windowShift=param.windowShift;
-	outside_world->autoScaling=param.autoScaling;
-	outside_world->windowModeOnStartUp=param.windowModeOnStartUp;
+	window->scaling=param.scaling;
+	window->windowShift=param.windowShift;
+	window->autoScaling=param.autoScaling;
+	window->windowModeOnStartUp=param.windowModeOnStartUp;
 
 	outside_world->virtualKeys.clear();
 	for(auto vk : param.virtualKeys)
@@ -961,16 +961,16 @@ void FM77AV::RunFastDevicePollingInternal(void)
 	state.nextFastDevicePollingTime=state.fm77avTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
-void FM77AV::ForceRender(class FM77AVRender &render,class Outside_World *outside_world)
+void FM77AV::ForceRender(class FM77AVRender &render,Outside_World::WindowInterface *window)
 {
 	render.Prepare(*this);
 	render.BuildImage(crtc.GetPalette());
-	if(true==outside_world->ImageNeedsFlip())
+	if(true==window->ImageNeedsFlip())
 	{
 		render.FlipUpsideDown();
 	}
-	outside_world->Render(render.GetImage(),*this);
-	outside_world->UpdateStatusBitmap(*this);
+	window->Render(render.GetImage(),*this);
+	window->UpdateStatusBitmap(*this);
 }
 
 void FM77AV::RenderQuiet(class FM77AVRender &render)
