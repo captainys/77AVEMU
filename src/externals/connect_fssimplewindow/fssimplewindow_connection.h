@@ -109,13 +109,14 @@ public:
 		public:
 			unsigned int sinceLastResize=0;
 			unsigned int prevTapePosition=0;
+
+			GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
+			std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
 		};
 		SharedVariables sharedEx;
 		VMThreadVariables vmThrEx;
 		WindowThreadVariables winThrEx;
 
-		GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
-		std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
 
 
 		void Start(void) override;

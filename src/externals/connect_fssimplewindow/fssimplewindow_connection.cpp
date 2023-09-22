@@ -1052,17 +1052,17 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 	// unless bitmaps are ready.  Do it before FsResizeWindow.
 
 	// Make PAUSE and MENU icons.  Used only in the tightly-integrated GUI.
-	PAUSEicon=MakeIcon(PAUSE,PAUSE_wid,PAUSE_hei);
-	MENUicon=MakeIcon(MENU,MENU_wid,MENU_hei);
-	CAPSicon=MakeIcon(CAPS,CAPS_wid,CAPS_hei);
-	KANAicon=MakeIcon(KANA,KANA_wid,KANA_hei);
-	INSicon=MakeIcon(INS,INS_wid,INS_hei);
+	winThrEx.PAUSEicon=MakeIcon(PAUSE,PAUSE_wid,PAUSE_hei);
+	winThrEx.MENUicon=MakeIcon(MENU,MENU_wid,MENU_hei);
+	winThrEx.CAPSicon=MakeIcon(CAPS,CAPS_wid,CAPS_hei);
+	winThrEx.KANAicon=MakeIcon(KANA,KANA_wid,KANA_hei);
+	winThrEx.INSicon=MakeIcon(INS,INS_wid,INS_hei);
 
-	FD_IDLEicon=MakeIcon(FD_IDLE,16,16);
-	FD_BUSYicon=MakeIcon(FD_BUSY,16,16);
-	TAPE_IDLEicon=MakeIcon(TAPE_IDLE,16,16);
-	TAPE_LOADINGicon=MakeIcon(TAPE_LOADING,16,16);
-	TAPE_SAVINGicon=MakeIcon(TAPE_SAVING,16,16);
+	winThrEx.FD_IDLEicon=MakeIcon(FD_IDLE,16,16);
+	winThrEx.FD_BUSYicon=MakeIcon(FD_BUSY,16,16);
+	winThrEx.TAPE_IDLEicon=MakeIcon(TAPE_IDLE,16,16);
+	winThrEx.TAPE_LOADINGicon=MakeIcon(TAPE_LOADING,16,16);
+	winThrEx.TAPE_SAVINGicon=MakeIcon(TAPE_SAVING,16,16);
 
 
 
@@ -1101,13 +1101,13 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 	FsSetWindowTitle("FM-7/FM77AV/FM77AV40 Emulator - MUTSU");
 
 	glClearColor(0,0,0,0);
-	mainTexId=GenTexture();
-	statusTexId=GenTexture();
+	winThrEx.mainTexId=GenTexture();
+	winThrEx.statusTexId=GenTexture();
 
-	pauseIconTexId=GenTexture();
-	UpdateTexture(pauseIconTexId,PAUSE_wid,PAUSE_hei,PAUSEicon.data());
-	menuIconTexId=GenTexture();
-	UpdateTexture(menuIconTexId,MENU_wid,MENU_hei,MENUicon.data());
+	winThrEx.pauseIconTexId=GenTexture();
+	UpdateTexture(winThrEx.pauseIconTexId,PAUSE_wid,PAUSE_hei,winThrEx.PAUSEicon.data());
+	winThrEx.menuIconTexId=GenTexture();
+	UpdateTexture(winThrEx.menuIconTexId,MENU_wid,MENU_hei,winThrEx.MENUicon.data());
 
 	// Make initial status bitmap
 	for(int fd=0; fd<4; ++fd)
@@ -1240,7 +1240,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	glColor3f(1,1,1);
 
 	UpdateStatusBitmap();
-	UpdateTexture(statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
+	UpdateTexture(winThrEx.statusTexId,STATUS_WID,STATUS_HEI,statusBitmap);
 	DrawTextureRect(0,winHei-1-STATUS_HEI,STATUS_WID,winHei-1);
 
 	/* glRasterPos2i(0,winHei-1);
@@ -1252,13 +1252,13 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	case LOWER_RIGHT_NONE:
 		break;
 	case LOWER_RIGHT_PAUSE:
-		glBindTexture(GL_TEXTURE_2D,pauseIconTexId);
+		glBindTexture(GL_TEXTURE_2D,winThrEx.pauseIconTexId);
 		DrawTextureRect(winWid-PAUSE_wid,winHei-1-PAUSE_hei,winWid,winHei-1);
 		/* glRasterPos2i(winWid-PAUSE_wid,winHei-1);
 		glDrawPixels(PAUSE_wid,PAUSE_hei,GL_RGBA,GL_UNSIGNED_BYTE,PAUSEicon.data()); */
 		break;
 	case LOWER_RIGHT_MENU:
-		glBindTexture(GL_TEXTURE_2D,menuIconTexId);
+		glBindTexture(GL_TEXTURE_2D,winThrEx.menuIconTexId);
 		DrawTextureRect(winWid-MENU_wid,winHei-1-MENU_hei,winWid,winHei-1);
 		/* glRasterPos2i(winWid-MENU_wid,winHei-1);
 		// glDrawPixels(MENU_wid,MENU_hei,GL_RGBA,GL_UNSIGNED_BYTE,MENUicon.data()); */
@@ -1266,7 +1266,7 @@ void FsSimpleWindowConnection::WindowConnection::Render(bool swapBuffers)
 	}
 
 
-	UpdateTexture(mainTexId,img.wid,img.hei,img.rgba.data());
+	UpdateTexture(winThrEx.mainTexId,img.wid,img.hei,img.rgba.data());
 	DrawTextureRect(dx,dy+img.hei*scaling/100,dx+img.wid*scaling/100,dy);
 
 	glDisable(GL_TEXTURE_2D);
