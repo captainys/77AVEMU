@@ -240,6 +240,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 	}
 
 	soundPtr->Stop();
+	window->NotifyVMClosed();
 }
 void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,FM77AVUIThread *uiThread)
 {

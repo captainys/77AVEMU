@@ -44,6 +44,7 @@ int main(int argc,char *argv[])
 		std::thread cuiThread(&FM77AVCUIThread::Run,&cui);
 
 		auto sound=outside_world->CreateSound();
+		window->ClearVMClosedFlag();
 		vm.VMStart(fm77av.get(),outside_world.get(),window,&cui);
 		vm.VMMainLoop(fm77av.get(),outside_world.get(),window,sound,&cui);
 		vm.VMEnd(fm77av.get(),outside_world.get(),window,&cui);
@@ -55,6 +56,7 @@ int main(int argc,char *argv[])
 	{
 		FM77AVUIThread noUI;
 		auto sound=outside_world->CreateSound();
+		window->ClearVMClosedFlag();
 		vm.VMStart(fm77av.get(),outside_world.get(),window,&noUI);
 		vm.VMMainLoop(fm77av.get(),outside_world.get(),window,sound,&noUI);
 		vm.VMEnd(fm77av.get(),outside_world.get(),window,&noUI);

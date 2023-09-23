@@ -51,24 +51,6 @@ FsSimpleWindowConnection::FsSimpleWindowConnection()
 	{
 		FSKEYState[i]=0;
 	}
-
-	if(true!=gamePadInitialized)
-	{
-		YsGamePadInitialize();
-		gamePadInitialized=true;
-	}
-
-	auto nGameDevs=YsGamePadGetNumDevices();
-	if(0<nGameDevs)
-	{
-		gamePads.resize(nGameDevs);
-		prevGamePads.resize(nGameDevs);
-		for(unsigned int i=0; i<nGameDevs; ++i)
-		{
-			YsGamePadRead(&gamePads[i],i);
-			prevGamePads[i]=gamePads[i];
-		}
-	}
 }
 FsSimpleWindowConnection::~FsSimpleWindowConnection()
 {
@@ -137,7 +119,16 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 /* virtual */ void FsSimpleWindowConnection::DevicePolling(class FM77AV &fm77av)
 {
-	PollGamePads();
+	if(true!=Outside_World::gameDevsNeedUpdateCached)
+	{
+		std::cout << "Squawk!  Game Devices that need updates not cached!" << std::endl;
+	}
+
+	if(prevGamePads.size()!=windowEvent.gamePads.size())
+	{
+		// Must be the fisrt time called.
+		prevGamePads=windowEvent.gamePads;
+	}
 
 	bool ctrlKey=(0!=windowEvent.keyState[FSKEY_CTRL]);
 	bool shiftKey=(0!=windowEvent.keyState[FSKEY_SHIFT]);
@@ -200,11 +191,11 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 	for(auto vk : virtualKeys)
 	{
-		if(0<=vk.physicalId && vk.physicalId<gamePads.size())
+		if(0<=vk.physicalId && vk.physicalId<windowEvent.gamePads.size())
 		{
-			if(prevGamePads[vk.physicalId].buttons[vk.button]!=gamePads[vk.physicalId].buttons[vk.button])
+			if(prevGamePads[vk.physicalId].buttons[vk.button]!=windowEvent.gamePads[vk.physicalId].buttons[vk.button])
 			{
-				if(0!=gamePads[vk.physicalId].buttons[vk.button])
+				if(0!=windowEvent.gamePads[vk.physicalId].buttons[vk.button])
 				{
 					fm77av.keyboard.Press(keyFlags,vk.fm77avKey);
 				}
@@ -474,16 +465,11 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
  			case FM77AV_GAMEPORTEMU_PHYSICAL5:
  			case FM77AV_GAMEPORTEMU_PHYSICAL6:
  			case FM77AV_GAMEPORTEMU_PHYSICAL7:
- 				if(true!=gamePadInitialized)
- 				{
- 					YsGamePadInitialize();
- 					gamePadInitialized=true;
- 				}
  				{
  					int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_PHYSICAL0;
- 					if(0<=padId && padId<gamePads.size())
+ 					if(0<=padId && padId<windowEvent.gamePads.size())
  					{
- 						auto &reading=gamePads[padId];
+ 						auto &reading=windowEvent.gamePads[padId];
  						fm77av.SetGamePadState(
  						    portId,
  						    reading.buttons[0],
@@ -505,16 +491,11 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 			case FM77AV_GAMEPORTEMU_ANALOG5:
 // 			case FM77AV_GAMEPORTEMU_ANALOG6:
 // 			case FM77AV_GAMEPORTEMU_ANALOG7:
-// 				if(true!=gamePadInitialized)
-// 				{
-// 					YsGamePadInitialize();
-// 					gamePadInitialized=true;
-// 				}
 // 				{
 // 					int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_ANALOG0;
-// 					if(0<=padId && padId<gamePads.size())
+// 					if(0<=padId && padId<windowEvent.gamePads.size())
 // 					{
-// 						auto &reading=gamePads[padId];
+// 						auto &reading=windowEvent.gamePads[padId];
 // 						YsGamdPadTranslateAnalogToDigital(&reading.dirs[0],reading.axes[0],reading.axes[1]);
 // 						fm77av.SetGamePadState(
 // 						    portId,
@@ -538,16 +519,11 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 			case FM77AV_GAMEPORTEMU_CAPCOM_BY_PHYSICAL5:
 // 			case FM77AV_GAMEPORTEMU_CAPCOM_BY_PHYSICAL6:
 // 			case FM77AV_GAMEPORTEMU_CAPCOM_BY_PHYSICAL7:
-// 				if(true!=gamePadInitialized)
-// 				{
-// 					YsGamePadInitialize();
-// 					gamePadInitialized=true;
-// 				}
 // 				{
 // 					int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_CAPCOM_BY_PHYSICAL0;
-// 					if(0<=padId && padId<gamePads.size())
+// 					if(0<=padId && padId<windowEvent.gamePads.size())
 // 					{
-// 						auto &reading=gamePads[padId];
+// 						auto &reading=windowEvent.gamePads[padId];
 // 						bool up=reading.dirs[0].upDownLeftRight[2];
 // 						bool dn=reading.dirs[0].upDownLeftRight[3];
 // 						bool lf=reading.dirs[0].upDownLeftRight[0];
@@ -595,13 +571,6 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
 // 				{
-// 					if(FM77AV_GAMEPORTEMU_MOUSE_BY_KEY!=gamePort[portId] &&
-// 					   FM77AV_GAMEPORTEMU_MOUSE_BY_NUMPAD!=gamePort[portId] &&
-// 					   true!=gamePadInitialized)
-// 					{
-// 						YsGamePadInitialize();
-// 						gamePadInitialized=true;
-// 					}
 // 					{
 // 						const int accel=1;
 // 						const int maxSpeed=80;
@@ -697,19 +666,14 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_ANALOG6:
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_ANALOG7:
 // 				{
-// 					if(true!=gamePadInitialized)
-// 					{
-// 						YsGamePadInitialize();
-// 						gamePadInitialized=true;
-// 					}
 // 					{
 // 						const double maxSpeed=20.0;
 // 
 // 						mouseEmulationByAnalogAxis=true;
 // 						int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_MOUSE_BY_ANALOG0;
-// 						if(0<=padId && padId<gamePads.size())
+// 						if(0<=padId && padId<windowEvent.gamePads.size())
 // 						{
-// 							const auto &reading=gamePads[padId];
+// 							const auto &reading=windowEvent.gamePads[padId];
 // 							float dx=reading.axes[0]*maxSpeed;
 // 							float dy=reading.axes[1]*maxSpeed;
 // 							fm77av.SetMouseMotion(portId,-dx,-dy);
@@ -729,9 +693,9 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 			case FM77AV_GAMEPORTEMU_PHYSICAL7_AS_CYBERSTICK:
 // 				{
 // 					auto physId=gamePort[portId]-FM77AV_GAMEPORTEMU_PHYSICAL0_AS_CYBERSTICK;
-// 					if(0<=physId && physId<gamePads.size())
+// 					if(0<=physId && physId<windowEvent.gamePads.size())
 // 					{
-// 						auto axisReading=gamePads[physId];
+// 						auto axisReading=windowEvent.gamePads[physId];
 // 
 // 						float x=axisReading.axes[0];
 // 						float y=axisReading.axes[1];
@@ -765,20 +729,20 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 				break;
 // 
 // 			case FM77AV_GAMEPORTEMU_CYBERSTICK:
-// 				if(true==cyberStickAssignment && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<gamePads.size())
+// 				if(true==cyberStickAssignment && 0<=mouseByFlightstickPhysicalId && mouseByFlightstickPhysicalId<windowEvent.gamePads.size())
 // 				{
-// 					auto axisReading=gamePads[mouseByFlightstickPhysicalId];
+// 					auto axisReading=windowEvent.gamePads[mouseByFlightstickPhysicalId];
 // 					decltype(axisReading) throttleReading;
 // 					float z=0;
 // 					if(0<=throttlePhysicalId && throttlePhysicalId<gamePads.size())
 // 					{
-// 						throttleReading=gamePads[throttlePhysicalId];
-// 						z=gamePads[throttlePhysicalId].axes[throttleAxis];
+// 						throttleReading=windowEvent.gamePads[throttlePhysicalId];
+// 						z=windowEvent.gamePads[throttlePhysicalId].axes[throttleAxis];
 // 					}
 // 					else
 // 					{
 // 						throttleReading=axisReading;
-// 						z=gamePads[throttlePhysicalId].axes[2];
+// 						z=windowEvent.gamePads[throttlePhysicalId].axes[2];
 // 					}
 // 
 // 					float x=axisReading.axes[0];
@@ -843,6 +807,8 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 			}
 		}
 	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
+
+	prevGamePads=windowEvent.gamePads;
 }
 unsigned int FsSimpleWindowConnection::KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey)
 {
@@ -855,21 +821,6 @@ unsigned int FsSimpleWindowConnection::KeyFlagsFilter(unsigned int keyFlags,unsi
 		return keyFlags&~FM77AVKeyboard::KEYFLAG_CTRL;
 	}
 	return keyFlags;
-}
-void FsSimpleWindowConnection::PollGamePads(void)
-{
-	if(true!=Outside_World::gameDevsNeedUpdateCached)
-	{
-		std::cout << "Squawk!  Game Devices that need updates not cached!" << std::endl;
-	}
-	for(auto padId : Outside_World::gamePadsNeedUpdate)
-	{
-		if(padId<gamePads.size())
-		{
-			prevGamePads[padId]=gamePads[padId];
-			YsGamePadRead(&gamePads[padId],padId);
-		}
-	}
 }
 /* virtual */ void FsSimpleWindowConnection::SetKeyboardLayout(unsigned int layout)
 {
@@ -1114,6 +1065,23 @@ void FsSimpleWindowConnection::WindowConnection::Start(void)
 		Put16x16Invert(16*fd,15,FD_IDLE);
 	}
 	Put16x16Invert(64,15,TAPE_IDLE);
+
+
+	if(true!=winThrEx.gamePadInitialized)
+	{
+		YsGamePadInitialize();
+		winThrEx.gamePadInitialized=true;
+	}
+
+	auto nGameDevs=YsGamePadGetNumDevices();
+	if(0<nGameDevs)
+	{
+		winThrEx.primary.gamePads.resize(nGameDevs);
+		for(unsigned int i=0; i<nGameDevs; ++i)
+		{
+			YsGamePadRead(&winThrEx.primary.gamePads[i],i);
+		}
+	}
 }
 
 void FsSimpleWindowConnection::WindowConnection::Stop(void)
@@ -1156,7 +1124,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
 	}
 
-	// PollGamePads();
+	PollGamePads();
 
 	{
 		std::lock_guard <std::mutex> lock(deviceStateLock);
@@ -1172,6 +1140,17 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	{
 		std::lock_guard <std::mutex> lock(rendererLock);
 		winThr.indicatedTapePosition=shared.indicatedTapePosition;
+	}
+}
+
+void FsSimpleWindowConnection::WindowConnection::PollGamePads(void)
+{
+	for(auto padId : winThr.gamePadsNeedUpdate)
+	{
+		if(padId<winThrEx.primary.gamePads.size())
+		{
+			YsGamePadRead(&winThrEx.primary.gamePads[padId],padId);
+		}
 	}
 }
 

@@ -251,6 +251,26 @@ void Outside_World::WindowInterface::BaseInterval(void)
 	}
 }
 
+/*! Called from the VM thread to tell VM is closed.
+*/
+void Outside_World::WindowInterface::NotifyVMClosed(void)
+{
+	std::lock_guard <std::mutex> lock(deviceStateLock);
+	shared.VMClosedFromVMThread=true;
+}
+/*! Called in the Window Thread.
+*/
+bool Outside_World::WindowInterface::CheckVMClosed(void) const
+{
+	return winThr.VMClosed;
+}
+void Outside_World::WindowInterface::ClearVMClosedFlag(void)
+{
+	std::lock_guard <std::mutex> lock(deviceStateLock);
+	shared.VMClosedFromVMThread=false;
+	winThr.VMClosed=false;
+}
+
 // Called in the VM thread.
 bool Outside_World::WindowInterface::SendNewImageInfo(class FM77AV &fm77av)
 {

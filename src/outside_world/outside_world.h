@@ -251,6 +251,10 @@ public:
 		// Called in the VM thread.
 		bool SendNewImageInfo(class FM77AV &fm77av);
 
+		void NotifyVMClosed(void);
+		bool CheckVMClosed(void) const;
+		void ClearVMClosedFlag(void);
+
 		/*! Called in the VM thread.
 		*/
 		virtual void Communicate(Outside_World *outside_world)=0;

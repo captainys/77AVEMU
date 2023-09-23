@@ -86,12 +86,14 @@ void FM77AVVM::Run(void)
 		Alloc();
 
 		windowPtr->Start();
+		windowPtr->ClearVMClosedFlag();
 		fm77avPtr->SetUp(profile,outsideWorldPtr,windowPtr);
 		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
 		fm77avThreadPtr->VMStart(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
 	}
 	else
 	{
+		windowPtr->ClearVMClosedFlag();
 		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
 	}
 

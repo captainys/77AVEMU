@@ -106,13 +106,12 @@ public:
 	unsigned int PAUSE_KEY_CODE=DEFAULT_PAUSE_KEY_CODE;
 	unsigned int GRAPH_KEY_CODE=FSKEY_NULL;
 
-	bool gamePadInitialized=false;
 	unsigned int *FSKEYtoFM77AVKEY=nullptr;
 	unsigned int *FSKEYState=nullptr;
 	FsSimpleWindowConnection();
 	~FsSimpleWindowConnection();
 
-	std::vector <struct YsGamePadReading> gamePads,prevGamePads;
+	std::vector <struct YsGamePadReading> prevGamePads;
 
 	// For mouse emulation by pad digital axes.
 	int mouseDX=0,mouseDY=0;
@@ -129,7 +128,6 @@ public:
 	virtual void Start(void);
 	virtual void Stop(void);
 	virtual void DevicePolling(class FM77AV &fm77av);
-	void PollGamePads(void);
 	unsigned int KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey);
 
 	virtual void SetKeyboardLayout(unsigned int layout);
@@ -159,6 +157,8 @@ public:
 
 			GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 			std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
+
+			bool gamePadInitialized=false;
 		};
 		SharedVariables sharedEx;
 		VMThreadVariables vmThrEx;
@@ -188,6 +188,8 @@ public:
 		GLuint GenTexture(void);
 		void UpdateTexture(GLuint texId,int wid,int hei,const unsigned char *rgba) const;
 		void DrawTextureRect(int x0,int y0,int x1,int y1) const;
+
+		void PollGamePads(void);
 	};
 	WindowInterface *CreateWindowInterface(void) const override;
 	void DeleteWindowInterface(WindowInterface *) const override;
