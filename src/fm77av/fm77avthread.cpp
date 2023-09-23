@@ -42,7 +42,6 @@ void FM77AVThread::VMStart(FM77AV *fm77avPtr,class Outside_World *outside_world,
 	// In Tsugaru,
 	//   Set outside_world pointers to devices
 	outside_world->Start();
-	window->Start();
 	fm77avPtr->dataRecorder.outside_world=outside_world;
 }
 void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_world,Outside_World::WindowInterface *window,Outside_World::Sound *soundPtr,FM77AVUIThread *uiThread)
@@ -157,15 +156,6 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			// outside_world->ProcessAppSpecific(*fm77avPtr);
 			if(fm77avPtr->state.nextDevicePollingTime<fm77avPtr->state.fm77avTime)
 			{
-				// Interval will be called in the window thread.  Called here only during the transition >>
-				window->Interval();
-				if(true==window->winThr.newImageRendered)
-				{
-					window->Render(true);
-					window->winThr.newImageRendered;
-				}
-				// Interval will be called in the window thread.  Called here only during the transition <<
-
 				outside_world->currentStatusBarInfo.Update(*fm77avPtr);
 				window->Communicate(outside_world);
 				outside_world->DevicePolling(*fm77avPtr);
@@ -253,7 +243,6 @@ void FM77AVThread::VMEnd(FM77AV *fm77avPtr,class Outside_World *outside_world,Ou
 
 	// Save dictionary RAM?
 
-	window->Stop();
 	outside_world->Stop();
 
 	if(true==fm77avPtr->var.forceQuitOnPowerOff)
