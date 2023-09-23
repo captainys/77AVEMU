@@ -95,8 +95,6 @@ int main(int argc,char *argv[])
 
 		vmThread.join();
 		cuiThread.join();
-
-		window->Stop();
 	}
 	else
 	{
@@ -109,11 +107,10 @@ int main(int argc,char *argv[])
 			vm.VMMainLoop(fm77av.get(),outside_world.get(),window,sound,&noUI);
 			vm.VMEnd(fm77av.get(),outside_world.get(),window,&noUI);
 		});
-		outside_world->DeleteSound(sound);
 
 		RunWindowThreadLoop(window);
 
-		window->Stop();
+		outside_world->DeleteSound(sound);
 
 		return fm77av->TestSuccess();
 	}
