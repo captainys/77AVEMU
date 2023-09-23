@@ -91,10 +91,13 @@ int main(int argc,char *argv[])
 
 		RunWindowThreadLoop(window);
 
-		outside_world->DeleteSound(sound);
-
 		vmThread.join();
 		cuiThread.join();
+
+		window->Stop();
+
+		outside_world->DeleteSound(sound);
+		outside_world->DeleteWindowInterface(window);
 	}
 	else
 	{
@@ -110,7 +113,12 @@ int main(int argc,char *argv[])
 
 		RunWindowThreadLoop(window);
 
+		vmThread.join();
+
+		window->Stop();
+
 		outside_world->DeleteSound(sound);
+		outside_world->DeleteWindowInterface(window);
 
 		return fm77av->TestSuccess();
 	}
