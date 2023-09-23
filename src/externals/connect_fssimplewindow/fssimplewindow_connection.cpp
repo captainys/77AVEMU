@@ -1167,10 +1167,6 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 			sharedEx.readyToSend=winThrEx.primary;
 			winThrEx.primary.CleanUpEvents();
 		}
-	}
-
-	{
-		std::lock_guard <std::mutex> lock(deviceStateLock);
 		winThr.statusBarInfo=shared.currentStatusBarInfo;
 	}
 	{
