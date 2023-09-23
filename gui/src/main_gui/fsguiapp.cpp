@@ -461,14 +461,7 @@ void FsGuiMainCanvas::Draw(void)
 	   nullptr!=VM.outsideWorldPtr &&
 	   nullptr!=VM.fm77avPtr)
 	{
-		auto image=VM.lastImage.GetImage();
-		if(0<image.wid && 0<image.hei)
-		{
-			printf("Under construction.  Come back here later.\n");
-			printf("%s %d\n",__FUNCTION__,__LINE__);
-			// VM.windowPtr->UpdateStatusBitmap(*VM.fm77avPtr);
-			// VM.windowPtr->RenderBeforeSwapBuffers(image,*VM.fm77avPtr);
-		}
+		VM.windowPtr->Render(false);
 	}
 
 	YsGLSLUsePlain2DRenderer(YsGLSLSharedPlain2DRenderer());

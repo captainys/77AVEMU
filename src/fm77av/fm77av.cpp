@@ -961,17 +961,6 @@ void FM77AV::RunFastDevicePollingInternal(void)
 	state.nextFastDevicePollingTime=state.fm77avTime+FAST_DEVICE_POLLING_INTERVAL;
 }
 
-void FM77AV::ForceRender(class FM77AVRender &render,Outside_World::WindowInterface *window)
-{
-	render.Prepare(*this);
-	render.BuildImage(crtc.GetPalette());
-	if(true==window->ImageNeedsFlip())
-	{
-		render.FlipUpsideDown();
-	}
-	window->Render(render.GetImage(),*this);
-}
-
 void FM77AV::RenderQuiet(class FM77AVRender &render)
 {
 	render.Prepare(*this);

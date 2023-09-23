@@ -26,7 +26,6 @@ static void timeEndPeriod(int)
 void RunWindowThreadLoop(Outside_World::WindowInterface *window)
 {
 	auto t0=std::chrono::high_resolution_clock::now();
-	window->ClearVMClosedFlag();
 	while(true!=window->CheckVMClosed())
 	{
 		window->Interval();
@@ -75,6 +74,7 @@ int main(int argc,char *argv[])
 	}
 
 	window->Start();
+	window->ClearVMClosedFlag();
 
 	if(true!=fm77avargv.unitTest)
 	{

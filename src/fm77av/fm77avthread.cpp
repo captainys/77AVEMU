@@ -75,7 +75,7 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 		switch(runMode)
 		{
 		case RUNMODE_PAUSE:
-			fm77avPtr->ForceRender(render,window);
+			window->SendNewImageInfo(*fm77avPtr);
 			outside_world->DevicePolling(*fm77avPtr);
 			if(true==outside_world->PauseKeyPressed())
 			{

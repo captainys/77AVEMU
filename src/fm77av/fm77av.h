@@ -401,8 +401,6 @@ public:
 
 	void TypeCommandForStartingTapeProgram(void);
 
-	void ForceRender(class FM77AVRender &render,class Outside_World::WindowInterface *window);
-
 	void RenderQuiet(class FM77AVRender &render);
 
 	void DetectMainCPUBIOSCall(void);

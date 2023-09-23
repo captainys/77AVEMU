@@ -1,6 +1,18 @@
+#include <thread>
+#include <chrono>
 #include "runvm.h"
 #include "fssimplewindow_connection.h"
 
+#ifdef _WIN32
+#include <timeapi.h>
+#else
+static void timeBeginPeriod(int)
+{
+}
+static void timeEndPeriod(int)
+{
+}
+#endif
 
 /* virtual */ void FM77AVCommandQueue::Main(FM77AVThread &,FM77AV &,const FM77AVParam &,Outside_World &)
 {
@@ -79,6 +91,7 @@ std::vector <std::string> FM77AVVM::GetMissingROMFiles(void) const
 
 void FM77AVVM::Run(void)
 {
+	bool freshStart=false;
 	if(nullptr==fm77avPtr ||
 	   FM77AVThread::RUNMODE_EXIT==fm77avThreadPtr->GetRunMode())
 	{
@@ -86,28 +99,52 @@ void FM77AVVM::Run(void)
 		Alloc();
 
 		windowPtr->Start();
-		windowPtr->ClearVMClosedFlag();
 		fm77avPtr->SetUp(profile,outsideWorldPtr,windowPtr);
-		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
-		fm77avThreadPtr->VMStart(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
-	}
-	else
-	{
-		windowPtr->ClearVMClosedFlag();
-		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
+		freshStart=true;
 	}
 
-	fm77avThreadPtr->VMMainLoop(fm77avPtr,outsideWorldPtr,windowPtr,soundPtr,cmdQueuePtr);
+	windowPtr->ClearVMClosedFlag();
+
+	std::thread VMThr([&]
+	{
+		if(true==freshStart)
+		{
+			fm77avThreadPtr->VMStart(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
+		}
+		fm77avThreadPtr->SetRunMode(FM77AVThread::RUNMODE_RUN);
+		fm77avThreadPtr->VMMainLoop(fm77avPtr,outsideWorldPtr,windowPtr,soundPtr,cmdQueuePtr);
+		if(FM77AVThread::RUNMODE_EXIT==fm77avThreadPtr->GetRunMode())
+		{
+			fm77avThreadPtr->VMEnd(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
+		}
+	});
+
+	auto t0=std::chrono::high_resolution_clock::now();
+	while(true!=windowPtr->CheckVMClosed())
+	{
+		windowPtr->Interval();
+		auto t=std::chrono::high_resolution_clock::now();
+		auto dt=t-t0;
+		if(50<=std::chrono::duration_cast<std::chrono::milliseconds>(dt).count() || true==windowPtr->winThr.newImageRendered)
+		{
+			windowPtr->Render(true);
+			t0=t;
+			windowPtr->winThr.newImageRendered=false;
+		}
+		else
+		{
+			timeBeginPeriod(1);
+			std::this_thread::sleep_for(std::chrono::milliseconds(8));
+			timeEndPeriod(1);
+		}
+	}
+
+	VMThr.join();
 
 	if(FM77AVThread::RUNMODE_EXIT==fm77avThreadPtr->GetRunMode())
 	{
-		fm77avThreadPtr->VMEnd(fm77avPtr,outsideWorldPtr,windowPtr,cmdQueuePtr);
 		windowPtr->Stop();
 		Free();
-	}
-	else
-	{
-		fm77avPtr->ForceRender(lastImage,windowPtr);
 	}
 }
 bool FM77AVVM::IsRunning(void) const
