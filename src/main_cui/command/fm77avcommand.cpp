@@ -163,6 +163,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["PSGWRITE"]=BREAK_ON_AY38910_WRITE;
 	breakEventMap["FMWRITE"]=BREAK_ON_YM2203C_WRITE;
 	breakEventMap["READSECTOR"]=BREAK_ON_READ_SECTOR;
+	breakEventMap["FDCIRQ"]=BREAK_ON_FDC_IRQ;
 
 
 	dumpableMap["FDC"]=DUMP_FDC;
@@ -493,6 +494,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  If no C and H are given, break when a specific sector number of any drive is read." << std::endl;
 	std::cout << "  Majority of other commands takes hexa-decimal numbers only, but this takes decimal." << std::endl;
 	std::cout << "  Use 0x to specify a sector by hexa-decimal." << std::endl;
+	std::cout << "FDCIRQ" << std::endl;
+	std::cout << "  Break when FDC IRQ is set." << std::endl;
 
 
 	std::cout << "<< Printable >>" << std::endl;
@@ -2152,6 +2155,10 @@ void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV
 					Error_TooFewArgs(cmd);
 				}
 				break;
+			case BREAK_ON_FDC_IRQ:
+				std::cout << "Break on FDC IRQ." << std::endl;
+				av.fdc.debugBreakOnFDCIRQ=true;
+				break;
 			}
 		}
 		else
@@ -2271,6 +2278,10 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 					std::cout << " on Read Sector" << std::endl;
 					av.fdc.ClearBreakOnAllSectorRead();
 				}
+				break;
+			case BREAK_ON_FDC_IRQ:
+				std::cout << "Don't break on FDC IRQ." << std::endl;
+				av.fdc.debugBreakOnFDCIRQ=false;
 				break;
 			}
 		}

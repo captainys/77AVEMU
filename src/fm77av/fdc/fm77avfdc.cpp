@@ -42,6 +42,11 @@ void FM77AVFDC::MakeReady(void)
 	state.IRQ=true;
 	fm77avPtr->UnscheduleDeviceCallBack(*this);
 	state.lastStatus&=0xFE;  // Clear busy-flag.  Don't touch other status.
+
+	if(true==debugBreakOnFDCIRQ)
+	{
+		fm77avPtr->mainCPU.debugger.ExternalBreak("FDC IRQ");
+	}
 }
 
 ////////////////////////////////////////////////////////////

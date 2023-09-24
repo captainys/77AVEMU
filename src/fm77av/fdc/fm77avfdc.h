@@ -27,6 +27,7 @@ public:
 	class FM77AV *fm77avPtr;
 
 	bool debugBreakOnCommandWrite=false;
+	bool debugBreakOnFDCIRQ=false;
 	bool monitorFDC=false;
 
 	class DebugCondition
