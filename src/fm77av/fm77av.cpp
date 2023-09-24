@@ -1014,6 +1014,38 @@ std::vector <std::string> FM77AV::GetIRQStatusText(void) const
 			text.back()+="DMA ";
 		}
 	}
+	text.push_back("Unmasked IRQ:");
+	{
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_KEY&state.main.irqEnableBits))
+		{
+			text.back()+="KEY ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_PRINTER&state.main.irqEnableBits))
+		{
+			text.back()+="PRINTER ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_TIMER&state.main.irqEnableBits))
+		{
+			text.back()+="TIMER ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_FDC&state.main.irqEnableBits))
+		{
+			text.back()+="FDC ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_EXT&state.main.irqEnableBits))
+		{
+			text.back()+="EXT ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_YM2203C&state.main.irqEnableBits))
+		{
+			text.back()+="YM2203C ";
+		}
+		if(0!=(SystemState::MAIN_IRQ_SOURCE_DMA&state.main.irqEnableBits))
+		{
+			text.back()+="DMA ";
+		}
+	}
+
 	text.push_back("Pending FIRQ:");
 	if(0==state.main.firqSource)
 	{
