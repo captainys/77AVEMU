@@ -98,8 +98,8 @@ void FM77AVVM::Run(void)
 		Free();
 		Alloc();
 
-		windowPtr->Start();
 		fm77avPtr->SetUp(profile,outsideWorldPtr,windowPtr);
+		windowPtr->Start();
 		freshStart=true;
 	}
 
