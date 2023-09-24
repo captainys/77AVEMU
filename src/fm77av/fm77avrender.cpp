@@ -97,8 +97,11 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 			break;
 		}
 	}
+}
 
-	switch(fm77av.crtc.state.scrnMode)
+void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
+{
+	switch(this->scrnMode)
 	{
 	case SCRNMODE_640X200:
 	case SCRNMODE_640X400:
@@ -109,10 +112,7 @@ void FM77AVRender::Prepare(const FM77AV &fm77av)
 		Create(320,200);
 		break;
 	}
-}
 
-void FM77AVRender::BuildImage(const class FM77AVCRTC::Palette &palette)
-{
 	if(true!=this->CRTEnabled)
 	{
 		memset(rgba.data(),0,rgba.size());
