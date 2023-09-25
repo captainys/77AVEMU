@@ -180,7 +180,7 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AVROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/THEXDER.D77"
+		"${DISKIMAGE_DIR}/Thexder.D77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/THEXDER.evt"
 		-UNITTEST
@@ -300,7 +300,7 @@ add_test(
 		${TARGET_NAME}
 		"${FM7ROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/Magus.D77"
+		"${DISKIMAGE_DIR}/Magus.d77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/MAGUSTEST.evt"
 		-UNITTEST
@@ -316,7 +316,7 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AVROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/Magus.D77"
+		"${DISKIMAGE_DIR}/Magus.d77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/MAGUSTEST.evt"
 		-UNITTEST
@@ -332,7 +332,7 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AV40ROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/Magus.D77"
+		"${DISKIMAGE_DIR}/Magus.d77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/MAGUSTEST.evt"
 		-UNITTEST
@@ -457,7 +457,7 @@ add_test(
 		-FD0
 		"${DISKIMAGE_DIR}/DeathForce_1.D77"
 		-FD1
-		"${DISKIMAGE_DIR}/DeathForceUser.D77"
+		"${DISKIMAGE_DIR}/DeathForceUser.d77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/DEATHFORCETEST.evt"
 		-UNITTEST
@@ -475,7 +475,7 @@ add_test(
 		-FD0
 		"${DISKIMAGE_DIR}/DeathForce_1.D77"
 		-FD1
-		"${DISKIMAGE_DIR}/DeathForceUser.D77"
+		"${DISKIMAGE_DIR}/DeathForceUser.d77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/DEATHFORCETEST.evt"
 		-UNITTEST
@@ -574,9 +574,8 @@ add_test(
 		${TARGET_NAME}
 		"${FM7ROMDIR}"
 		-TAPE
-		"${TAPEIMAGE_DIR}/PolarStarIII.T77"
-		-EVTLOG
-		"${EVENTLOG_DIR}/LOADM.evt"
+		"${TAPEIMAGE_DIR}/PolarStarIII.t77"
+		-AUTOSTARTTAPE
 		-UNITTEST
 		-POWEROFFAT
 		MAIN
@@ -660,9 +659,8 @@ add_test(
 		${TARGET_NAME}
 		"${FM7ROMDIR}"
 		-TAPE
-		"${TAPEIMAGE_DIR}/DragonSlayer.T77"
-		-EVTLOG
-		"${EVENTLOG_DIR}/RUN.evt"
+		"${TAPEIMAGE_DIR}/DragonSlayer.t77"
+		-AUTOSTARTTAPE
 		-UNITTEST
 		-POWEROFFAT
 		MAIN
@@ -719,7 +717,7 @@ add_test(
 		"${FM77AVROMDIR}"
 		-FD0
 		"${DISKIMAGE_DIR}/YS2_PROG.D77"
-		-INITCMD "LOADSTATE ${STATE_DIR}/YS2ENDING.7state"
+		-INITCMD "LOADSTATE ${STATE_DIR}/YS2ENDING.7STATE"
 		-UNITTEST
 		-POWEROFFAT
 		MAIN
@@ -995,9 +993,9 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AVROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/DeepForest_1.d77"
+		"${DISKIMAGE_DIR}/DeepForest_1.D77"
 		-FD1
-		"${DISKIMAGE_DIR}/DeepForest_2.d77"
+		"${DISKIMAGE_DIR}/DeepForest_2.D77"
 		-UNITTEST
 		-POWEROFFAT
 		MAIN
@@ -1011,9 +1009,9 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AV40ROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/DeepForest_1.d77"
+		"${DISKIMAGE_DIR}/DeepForest_1.D77"
 		-FD1
-		"${DISKIMAGE_DIR}/DeepForest_2.d77"
+		"${DISKIMAGE_DIR}/DeepForest_2.D77"
 		-UNITTEST
 		-POWEROFFAT
 		MAIN
@@ -1027,9 +1025,9 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AVROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/LostPower_1.d77"
+		"${DISKIMAGE_DIR}/LostPower_1.D77"
 		-FD1
-		"${DISKIMAGE_DIR}/LostPower_2.d77"
+		"${DISKIMAGE_DIR}/LostPower_2.D77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/LOSTPOWERTEST.evt"
 		-UNITTEST
@@ -1045,9 +1043,9 @@ add_test(
 		${TARGET_NAME}
 		"${FM77AV40ROMDIR}"
 		-FD0
-		"${DISKIMAGE_DIR}/LostPower_1.d77"
+		"${DISKIMAGE_DIR}/LostPower_1.D77"
 		-FD1
-		"${DISKIMAGE_DIR}/LostPower_2.d77"
+		"${DISKIMAGE_DIR}/LostPower_2.D77"
 		-EVTLOG
 		"${EVENTLOG_DIR}/LOSTPOWERTEST.evt"
 		-UNITTEST
