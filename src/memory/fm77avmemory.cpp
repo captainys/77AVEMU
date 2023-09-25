@@ -110,7 +110,7 @@ bool HasROMImages::LoadROMFiles(std::string ROMPath,unsigned int machineType)
 	{
 		auto fullPath0=cpputil::MakeFullPathName(ROMPath,rom.fName);
 		std::ifstream ifp(fullPath0,std::ios::binary);
-		if(true!=ifp.is_open())
+		if(true!=ifp.is_open() && ""!=rom.fNameAlt)
 		{
 			auto fullPath1=cpputil::MakeFullPathName(ROMPath,rom.fNameAlt);
 			ifp.open(fullPath1,std::ios::binary);
