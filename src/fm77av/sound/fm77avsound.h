@@ -11,6 +11,7 @@
 #include "ay38910.h"
 #include "ym2612.h"
 #include "fm77avdef.h"
+#include "vgmrecorder.h"
 #include "outside_world.h"
 
 class FM77AVSound : public Device
@@ -79,6 +80,15 @@ public:
 	State state;
 
 
+	class Variable
+	{
+	public:
+		bool vgmRecordingArmed=false;
+		VGMRecorder vgmRecorder;
+	};
+	Variable var;
+
+
 
 	bool recordAudio=false;
 	std::vector <unsigned char> audioRecording;
@@ -105,6 +115,8 @@ public:
 	virtual void Reset(void);
 
 	void IOWrite(unsigned int ioport,unsigned int data);
+	void ProcessFMWrite(unsigned char reg,unsigned char value);
+	void ProcessPSGWrite(unsigned char reg,unsigned char value);
 
 	unsigned int IORead(unsigned int ioport);
 	uint8_t NonDestructiveIOReadByte(unsigned int ioport) const;
@@ -127,6 +139,11 @@ public:
 	void EndRecording(void);
 	void SaveRecording(std::string fName) const;
 
+	void ArmVGMRecording(void);
+	void StartVGMRecording(void);
+	void EndVGMRecording(void);
+	void TrimVGMRecording(void);
+	bool SaveVGMRecording(std::string fName) const;
 
 	void SerializeYM2203CFMPart(std::vector <unsigned char> &data) const;
 	void DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version);

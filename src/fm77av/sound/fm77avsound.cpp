@@ -157,6 +157,8 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
 					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
 				}
+
+				ProcessPSGWrite(state.ay38910AddrLatch,state.ay38910LastData);
 			}
 			state.ay38910LastControl=control;
 		}
@@ -191,14 +193,17 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 				if(YM2612::REG_PRESCALER_0==state.ym2203cAddrLatch)
 				{
 					state.ay38910.state.preScaler=4;
+					ProcessFMWrite(state.ym2203cAddrLatch,0xFF);
 				}
 				if(YM2612::REG_PRESCALER_1==state.ym2203cAddrLatch)
 				{
 					state.ay38910.state.preScaler=2;
+					ProcessFMWrite(state.ym2203cAddrLatch,0xFF);
 				}
 				if(YM2612::REG_PRESCALER_2==state.ym2203cAddrLatch)
 				{
 					state.ay38910.state.preScaler=1;
+					ProcessFMWrite(state.ym2203cAddrLatch,0xFF);
 				}
 			}
 			break;
@@ -206,6 +211,7 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 			state.ym2203cAddrLatch=state.ym2203cDataWrite;
 			break;
 		case 2: // Data Write
+			ProcessFMWrite(state.ym2203cAddrLatch,state.ym2203cDataWrite);
 			if(0!=ym2203cRegisterMonitor[state.ym2203cAddrLatch])
 			{
 				std::cout << "YM2203C Reg[$"+cpputil::Ubtox(state.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(state.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
@@ -294,6 +300,46 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		state.beepState=BEEP_ONE_SHOT;
 		state.beepStopTime=fm77avPtr->state.fm77avTime+SINGLE_BEEP_DURATION;
 		break;
+	}
+}
+void FM77AVSound::ProcessFMWrite(unsigned char reg,unsigned char value)
+{
+	if(true==var.vgmRecordingArmed)
+	{
+		FM77AV *fm77avPtr=(FM77AV *)vmPtr;
+		if(true!=var.vgmRecorder.enabled &&
+		   state.ym2203cAddrLatch!=YM2612::REG_TIMER_A_COUNT_HIGH &&
+		   state.ym2203cAddrLatch!=YM2612::REG_TIMER_A_COUNT_LOW &&
+		   state.ym2203cAddrLatch!=YM2612::REG_TIMER_B_COUNT &&
+		   state.ym2203cAddrLatch!=YM2612::REG_TIMER_CONTROL)
+		{
+			StartVGMRecording();
+		}
+		if(true==var.vgmRecorder.enabled)
+		{
+			var.vgmRecorder.WriteRegister(fm77avPtr->state.fm77avTime,VGMRecorder::REG_YM2203,reg,value);
+		}
+	}
+}
+void FM77AVSound::ProcessPSGWrite(unsigned char reg,unsigned char value)
+{
+	if(true==var.vgmRecordingArmed)
+	{
+		FM77AV *fm77avPtr=(FM77AV *)vmPtr;
+		if(true!=var.vgmRecorder.enabled)
+		{
+			StartVGMRecording();
+		}
+		if(MACHINETYPE_FM77AV<=fm77avPtr->state.machineType)
+		{
+			// FM77AV and later writes to the PSG-part of YM2203C.
+			var.vgmRecorder.WriteRegister(fm77avPtr->state.fm77avTime,VGMRecorder::REG_YM2203,reg,value);
+		}
+		else
+		{
+			// Pre-FM77AV models had separate PSG.
+			var.vgmRecorder.WriteRegister(fm77avPtr->state.fm77avTime,VGMRecorder::REG_AY8910,reg,value);
+		}
 	}
 }
 unsigned int FM77AVSound::IORead(unsigned int ioport)
@@ -488,6 +534,59 @@ void FM77AVSound::SaveRecording(std::string fName) const
 	auto wavFile=data.MakeWavByteData();
 	cpputil::WriteBinaryFile(fName,wavFile.size(),wavFile.data());
 }
+
+
+void FM77AVSound::ArmVGMRecording(void)
+{
+	var.vgmRecordingArmed=true;
+}
+
+void FM77AVSound::StartVGMRecording(void)
+{
+	FM77AV *fm77avPtr=(FM77AV *)vmPtr;
+	var.vgmRecorder.CleanUp();
+
+	switch(fm77avPtr->state.machineType)
+	{
+	case MACHINETYPE_FM7:
+		var.vgmRecorder.systemName="FM-7";
+		break;
+	case MACHINETYPE_FM77:
+		var.vgmRecorder.systemName="FM-77";
+		break;
+	default:
+	case MACHINETYPE_FM77AV:
+		var.vgmRecorder.systemName="FM77AV";
+		break;
+	case MACHINETYPE_FM77AV40:
+		var.vgmRecorder.systemName="FM77AV40";
+		break;
+	}
+	var.vgmRecorder.notes="Recorded using FM77AV Emulator Mutsu.";
+
+	var.vgmRecorder.enabled=true;
+	var.vgmRecorder.CaptureYM2203InitialCondition(fm77avPtr->state.fm77avTime,state.ym2203c,state.ay38910.state.regs);
+	if(fm77avPtr->state.machineType<MACHINETYPE_FM77AV)
+	{
+		var.vgmRecorder.CaptureAY8910InitialCondition(fm77avPtr->state.fm77avTime,state.ay38910.state.regs);
+	}
+}
+void FM77AVSound::EndVGMRecording(void)
+{
+	var.vgmRecordingArmed=false;
+	var.vgmRecorder.enabled=false;
+}
+void FM77AVSound::TrimVGMRecording(void)
+{
+	var.vgmRecorder.TrimUnusedDevices();
+	var.vgmRecorder.TrimNoSoundSegments();
+}
+bool FM77AVSound::SaveVGMRecording(std::string fName) const
+{
+	auto data=var.vgmRecorder.Encode();
+	return cpputil::WriteBinaryFile(fName,data.size(),data.data());
+}
+
 
 // Difference from Tsugaru is it includes preScaler.
 void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) const

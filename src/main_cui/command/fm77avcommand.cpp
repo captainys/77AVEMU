@@ -35,6 +35,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["ENDAUDIOREC"]=CMD_END_AUDIO_RECORDING;
 	primaryCmdMap["STOPAUDIOREC"]=CMD_END_AUDIO_RECORDING;
 	primaryCmdMap["SAVEAUDIOREC"]=CMD_SAVE_AUDIO_RECORDING;
+	primaryCmdMap["STARTVGMREC"]=CMD_START_VGM_RECORDING;
+	primaryCmdMap["ENDVGMREC"]=CMD_END_VGM_RECORDING;
+	primaryCmdMap["SAVEVGMREC"]=CMD_SAVE_VGM_RECORDING;
 	primaryCmdMap["FMCH"]=CMD_FMCH;
 	primaryCmdMap["PSGCH"]=CMD_PSGCH;
 	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
@@ -963,6 +966,30 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			fm77av.sound.SaveRecording(cmd.argv[1]);
 		}
 		break;
+
+	case CMD_START_VGM_RECORDING:
+		fm77av.sound.ArmVGMRecording();
+		std::cout << "Armed VGM Recording." << std::endl;
+		break;
+	case CMD_END_VGM_RECORDING:
+		fm77av.sound.EndVGMRecording();
+		std::cout << "Stopped VGM Recording." << std::endl;
+		break;
+	case CMD_SAVE_VGM_RECORDING:
+		if(2<=cmd.argv.size())
+		{
+			fm77av.sound.TrimVGMRecording();
+			if(true==fm77av.sound.SaveVGMRecording(cmd.argv[1]))
+			{
+				std::cout << "Saved VGM Recording." << std::endl;
+			}
+			else
+			{
+				std::cout << "Failed to save VGM Recording." << std::endl;
+			}
+		}
+		break;
+
 	case CMD_FMCH:
 		if(4<=cmd.argv.size())
 		{
