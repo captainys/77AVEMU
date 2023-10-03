@@ -261,6 +261,12 @@ private:
 	void VM_SaveScreenshot(FsGuiPopUpMenuItem *);
 	void VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int returnCode);
 
+	void Audio_Start_VGMCapture(FsGuiPopUpMenuItem *);
+	void Audio_Stop_VGMCapture(FsGuiPopUpMenuItem *);
+	void Audio_Save_VGMCapture(FsGuiPopUpMenuItem *);
+	void Audio_Save_VGMCapture_FileSelected(FsGuiDialog *dlg,int returnCode);
+	void Audio_Save_VGMCapture_Confirm(FsGuiDialog *dlgIn,int returnCode);
+	void Audio_Save_VGMCapture_Save(YsWString fName);
 
 	void Tape_SelectAlias(FsGuiPopUpMenuItem *item);
 	void Tape_SelectSaveAlias(FsGuiPopUpMenuItem *item);
