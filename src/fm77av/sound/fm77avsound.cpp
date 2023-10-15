@@ -402,9 +402,9 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 
 void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 {
+	auto fm77avPtr=(FM77AV *)vmPtr;
 	if((true==state.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState || 0<ringBufferClearTimeLeft) && nullptr!=soundPtr)
 	{
-		auto fm77avPtr=(FM77AV *)vmPtr;
 		auto lastWaveGenTime=nextWaveGenTime-MILLISEC_PER_WAVE_GENERATION*1000000;
 		if(nextWaveGenTime<=fm77avPtr->state.fm77avTime)
 		{
@@ -500,6 +500,9 @@ void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 		nextWave.clear(); // It was supposed to be cleared in FMPlay.  Just in case.
 		// state.ym2612.CheckToneDoneAllChannels();
 		nextWaveFilledInMillisec=0;
+
+		// Next piece of wave must be made immediately.  See buffer-timing.png in Tsugaru source.
+		nextWaveGenTime=fm77avPtr->state.fm77avTime;
 	}
 }
 
