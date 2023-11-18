@@ -422,7 +422,7 @@ void FM77AVFDC::MakeReady(void)
 					}
 
 					// Copy CHRN and CRC CRC to DMA.
-					state.data=imgPtr->ReadAddress(diskIdx,compensateTrackNumber(drv.trackPos),state.side,state.addrMarkReadCount);
+					state.data=imgPtr->ReadAddress(state.CRCErrorAfterRead,diskIdx,compensateTrackNumber(drv.trackPos),state.side,state.addrMarkReadCount);
 					if(0<state.data.size())
 					{
 						state.dataReadPointer=0;
