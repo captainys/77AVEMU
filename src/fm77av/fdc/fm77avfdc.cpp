@@ -236,10 +236,10 @@ void FM77AVFDC::MakeReady(void)
 					auto sector=imgPtr->ReadSectorFrom(diskIdx,
 					    compensateTrackNumber(drv.trackPos),state.side,
 					    drv.trackReg,state.side,GetSectorReg(),verifySide,state.sectorPositionInTrack,nSteps);
-					if(true==sector.exists)
+					if(true==sector.exists && D77File::D77_SECTOR_STATUS_RECORD_NOT_FOUND!=sector.crcStatus)
 					{
 						std::swap(state.data,sector.data);
-						state.CRCErrorAfterRead=(0!=sector.crcStatus);
+						state.CRCErrorAfterRead=(D77File::D77_SECTOR_STATUS_CRC==sector.crcStatus);
 						state.DDMErrorAfterRead=(0!=sector.DDM);
 						state.nanosecPerByte=imgPtr->GetNanoSecPerByte(diskIdx,compensateTrackNumber(drv.trackPos),state.side,GetSectorReg());
 						if(0==state.nanosecPerByte)
@@ -682,9 +682,13 @@ void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
 						auto sector=imgPtr->ReadSector(
 						    diskIdx,compensateTrackNumber(drv.trackPos),state.side,
 						    drv.trackReg,state.side,GetSectorReg(),verifySide);
-						if(true==sector.exists && 0!=sector.crcStatus)
+						if(true==sector.exists && D77File::D77_SECTOR_STATUS_CRC==sector.crcStatus)
 						{
 							std::cout << " CRC Error";
+						}
+						else if(true==sector.exists && D77File::D77_SECTOR_STATUS_RECORD_NOT_FOUND==sector.crcStatus)
+						{
+							std::cout << " Record Not Found";
 						}
 						else if(true!=sector.exists)
 						{
@@ -703,9 +707,13 @@ void FM77AVFDC::IOWrite(unsigned int ioport,unsigned int data)
 						auto sector=imgPtr->ReadSector(
 						    diskIdx,compensateTrackNumber(drv.trackPos),state.side,
 						    drv.trackReg,state.side,GetSectorReg(),verifySide);
-						if(true==sector.exists && 0!=sector.crcStatus)
+						if(true==sector.exists && D77File::D77_SECTOR_STATUS_CRC==sector.crcStatus)
 						{
 							std::cout << " CRC Error";
+						}
+						else if(true==sector.exists && D77File::D77_SECTOR_STATUS_RECORD_NOT_FOUND==sector.crcStatus)
+						{
+							std::cout << " Record Not Found";
 						}
 						else if(true!=sector.exists)
 						{
