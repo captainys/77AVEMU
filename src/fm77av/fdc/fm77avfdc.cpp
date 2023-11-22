@@ -1070,7 +1070,7 @@ void FM77AVFDC::WriteTrack(const std::vector <uint8_t> &formatData)
 						sector.Make(C,H,R,sectorSize);
 						for(unsigned int i=0; i<sectorSize; ++i)
 						{
-							sector.sectorData[i]=dataPtr[i];
+							sector.data[i]=dataPtr[i];
 						}
 						sectors.push_back(sector);
 						trackCapacity+=sectorSize;
