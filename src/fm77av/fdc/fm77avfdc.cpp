@@ -496,10 +496,23 @@ void FM77AVFDC::MakeReady(void)
 			{
 				if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
-					std::vector <unsigned char> rawRead;
-					for(int i=0; i<0x1800; ++i)
+					auto &drv=state.drive[DriveSelect()];
+					auto imgFilePtr=GetDriveImageFile(DriveSelect());
+					auto diskIdx=drv.diskIndex;
+					DiskDrive::DiskImage *imgPtr=nullptr;
+					if(nullptr!=imgFilePtr)
+					{
+						imgPtr=&imgFilePtr->img;
+					}
+
+					std::vector <unsigned char> rawRead=imgPtr->ReadTrack(diskIdx,compensateTrackNumber(drv.trackPos),state.side);
+					while(rawRead.size()<0x1800)
 					{
 						rawRead.push_back(0x4E);
+					}
+					if(0x1880<rawRead.size()) // Cannot be too much more than 0x1800
+					{
+						rawRead.resize(0x1880);
 					}
 
 					std::swap(state.data,rawRead);
