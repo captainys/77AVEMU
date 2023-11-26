@@ -68,9 +68,11 @@ public:
 	std::vector <std::string> VMLog;
 
 	mutable YsWString lastSelectedProfileFName;
-	mutable YsWString lastSelectedCDFName;
 	mutable YsWString lastSelectedFDFName;
 	mutable YsWString lastSelectedHDFName;
+	mutable YsWString lastSelectedTapeFName;
+	mutable YsWString lastScreenShotFName;
+	mutable YsWString lastVGMFName;
 	mutable YsWString lastEventFName;
 
 	// separateProcess flag may only be changed when starting the VM.
@@ -316,6 +318,38 @@ private:
 
 	void Help_About(FsGuiPopUpMenuItem *);
 	void Help_Help(FsGuiPopUpMenuItem *);
+
+
+
+	/* 1. Currently-open profile
+	   2. Any known directory of the profile dialog, if the profile dialog is open + "*.Mutsu"
+	   3. Any known directory of the file used by the VM + "*.Mutsu"
+	   4. User's home directory + "*.Mutsu"
+	*/
+	YsWString GetDefaultOpenProfileFileName(void) const;
+
+	/* 1. Last selected tape file name.
+	   2. Any known directory + "*.T77"
+	*/
+	YsWString GetDefaultTapeImageFileName(void) const;
+
+	/*! 1. lastStateFName
+	    3. Any known directory of the file used by the VM + "*.7State"
+	    4. User's home directory + "*.7State"
+	*/
+	YsWString GetDefaultVMStateFileName(void) const;
+
+	/*! Any known directory of the file used by the VM + "*.png"
+	*/
+	YsWString GetDefaultScreenShotFileName(void) const;
+
+	/*! Any known directory of the file used by the VM + "*.vgm"
+	*/
+	YsWString GetDefaultVGMFileName(void) const;
+
+	/*!
+	*/
+	YsWString GetAnyKnownDirectory(void) const;
 };
 
 /* } */

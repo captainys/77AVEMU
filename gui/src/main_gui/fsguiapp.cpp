@@ -671,22 +671,15 @@ void FsGuiMainCanvas::ResumeVMIfSameProc(void)
 
 YsWString FsGuiMainCanvas::GetDefaultNewDiskImageFileName(void) const
 {
-	YsWString fName;
+	YsWString path,file;
 	if(0<lastSelectedFDFName.Strlen())
 	{
-		fName=lastSelectedFDFName;
-	}
-	else if(0<lastSelectedProfileFName.Strlen())
-	{
-		fName=lastSelectedProfileFName;
+		lastSelectedFDFName.SeparatePathFile(path,file);
 	}
 	else
 	{
-		fName=profileDlg->profileFNameTxt->GetWText();
+		GetAnyKnownDirectory().SeparatePathFile(path,file);
 	}
-
-	YsWString path,file;
-	fName.SeparatePathFile(path,file);
 
 	YsWString ful;
 	ful.MakeFullPathName(path,L"disk.d77");
@@ -695,22 +688,15 @@ YsWString FsGuiMainCanvas::GetDefaultNewDiskImageFileName(void) const
 
 YsWString FsGuiMainCanvas::GetDefaultOpenDiskImageFileName(void) const
 {
+	YsWString path,file;
 	if(0<lastSelectedFDFName.Strlen())
 	{
-		return lastSelectedFDFName;
-	}
-
-	YsWString fName,path,file;
-	if(0<lastSelectedProfileFName.Strlen())
-	{
-		fName=lastSelectedProfileFName;
+		lastSelectedFDFName.SeparatePathFile(path,file);
 	}
 	else
 	{
-		fName=profileDlg->profileFNameTxt->GetWText();
+		GetAnyKnownDirectory().SeparatePathFile(path,file);
 	}
-
-	fName.SeparatePathFile(path,file);
 
 	YsWString ful;
 	ful.MakeFullPathName(path,L"*.d77");
@@ -719,22 +705,15 @@ YsWString FsGuiMainCanvas::GetDefaultOpenDiskImageFileName(void) const
 
 YsWString FsGuiMainCanvas::GetDefaultNewHardDiskImageFileName(void) const
 {
-	YsWString fName;
+	YsWString path,file;
 	if(0<lastSelectedHDFName.Strlen())
 	{
-		fName=lastSelectedHDFName;
-	}
-	else if(0<lastSelectedProfileFName.Strlen())
-	{
-		fName=lastSelectedProfileFName;
+		lastSelectedHDFName.SeparatePathFile(path,file);
 	}
 	else
 	{
-		fName=profileDlg->profileFNameTxt->GetWText();
+		path=GetAnyKnownDirectory();
 	}
-
-	YsWString path,file;
-	fName.SeparatePathFile(path,file);
 
 	YsWString ful;
 	ful.MakeFullPathName(path,L"harddisk.h0");
@@ -743,26 +722,143 @@ YsWString FsGuiMainCanvas::GetDefaultNewHardDiskImageFileName(void) const
 
 YsWString FsGuiMainCanvas::GetDefaultNewEventLogFileName(void) const
 {
-	YsWString fName;
+	YsWString path,file;
 	if(0<lastEventFName.Strlen())
 	{
-		fName=lastEventFName;
+		lastEventFName.SeparatePathFile(path,file);
 	}
-	else if(0<lastSelectedProfileFName.Strlen())
+	else 
 	{
-		fName=lastSelectedProfileFName;
+		path=GetAnyKnownDirectory();
 	}
-	else
-	{
-		fName=profileDlg->profileFNameTxt->GetWText();
-	}
-
-	YsWString path,file;
-	fName.SeparatePathFile(path,file);
 
 	YsWString ful;
 	ful.MakeFullPathName(path,L"newevent.evt");
 	return ful;
+}
+
+YsWString FsGuiMainCanvas::GetDefaultOpenProfileFileName(void) const
+{
+	YsWString defW=profileDlg->profileFNameTxt->GetWText();
+	if(0!=defW.Strcmp(L""))
+	{
+		return defW;
+	}
+
+	YsWString dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(L""))
+	{
+		defW.MakeFullPathName(dir,L"*.Mutsu");
+		return defW;
+	}
+
+	defW=YsSpecialPath::GetUserDocDirW();
+	defW.MakeFullPathName(dir,L"*.Mutsu");
+	return defW;
+}
+YsWString FsGuiMainCanvas::GetDefaultTapeImageFileName(void) const
+{
+	if(0!=lastSelectedTapeFName.Strcmp(L""))
+	{
+		return lastSelectedTapeFName;
+	}
+
+	YsWString defW,dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(L""))
+	{
+		defW.MakeFullPathName(dir,L"*.T77");
+		return defW;
+	}
+
+	defW=YsSpecialPath::GetUserDocDirW();
+	defW.MakeFullPathName(dir,L"*.T77");
+	return defW;
+}
+YsWString FsGuiMainCanvas::GetDefaultVMStateFileName(void) const
+{
+	if(0!=lastStateFName.Strcmp(L""))
+	{
+		return lastStateFName;
+	}
+
+	YsWString defW,dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(L""))
+	{
+		defW.MakeFullPathName(dir,L"*.7State");
+		return defW;
+	}
+
+	defW=YsSpecialPath::GetUserDocDirW();
+	defW.MakeFullPathName(dir,L"*.7State");
+	return defW;
+}
+YsWString FsGuiMainCanvas::GetDefaultScreenShotFileName(void) const
+{
+	if(0!=lastScreenShotFName.Strcmp(L""))
+	{
+		return lastScreenShotFName;
+	}
+
+	YsWString defW,dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(L""))
+	{
+		defW.MakeFullPathName(dir,L"*.png");
+		return defW;
+	}
+
+	defW=YsSpecialPath::GetUserDocDirW();
+	defW.MakeFullPathName(dir,L"*.png");
+	return defW;
+}
+
+YsWString FsGuiMainCanvas::GetDefaultVGMFileName(void) const
+{
+	if(0!=lastVGMFName.Strcmp(L""))
+	{
+		return lastVGMFName;
+	}
+
+	YsWString defW,dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(L""))
+	{
+		defW.MakeFullPathName(dir,L"*.vgm");
+		return defW;
+	}
+
+	defW=YsSpecialPath::GetUserDocDirW();
+	defW.MakeFullPathName(dir,L"*.vgm");
+	return defW;
+}
+YsWString FsGuiMainCanvas::GetAnyKnownDirectory(void) const
+{
+	YsWString dir;
+	dir.SetUTF8String(profileDlg->GetAnyKnownDirectory());
+	if(0!=dir.Strcmp(L""))
+	{
+		return dir;
+	}
+	// It is impossible to get here because the profile dialog must have a ROM directory minimum.
+
+	YsWString candidates[]=
+	{
+		lastSelectedProfileFName,
+		lastSelectedFDFName,
+		lastSelectedHDFName,
+		lastSelectedTapeFName,
+		lastScreenShotFName,
+		lastVGMFName,
+		lastEventFName,
+	};
+	for(auto c : candidates)
+	{
+		YsWString path,file;
+		c.SeparatePathFile(path,file);
+		if(0!=path.Strcmp(L"") && 0!=path.Strcmp(L"\\"))
+		{
+			return path;
+		}
+	}
+	return L"";
 }
 
 std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
@@ -860,7 +956,7 @@ void FsGuiMainCanvas::File_OpenProfile(FsGuiPopUpMenuItem *)
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Open Profile");
 		fdlg->fileExtensionArray.Append(L".Mutsu");
-		fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+		fdlg->defaultFileName=GetDefaultOpenProfileFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::File_OpenProfile_FileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -888,7 +984,7 @@ void FsGuiMainCanvas::File_SaveProfileAs(FsGuiPopUpMenuItem *)
 	fdlg->multiSelect=YSFALSE;
 	fdlg->title.Set(L"Save Profile As");
 	fdlg->fileExtensionArray.Append(L".Mutsu");
-	fdlg->defaultFileName=profileDlg->profileFNameTxt->GetWText();
+	fdlg->defaultFileName=GetDefaultOpenProfileFileName();
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_SaveProfileAs_FileSelected,this);
 	AttachModalDialog(fdlg);
 }
@@ -981,11 +1077,11 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 		}
 		if(""!=profile.t77Path)
 		{
-			lastSelectedCDFName.SetUTF8String(profile.t77Path.data());
+			lastSelectedTapeFName.SetUTF8String(profile.t77Path.data());
 		}
 		else if(""!=profile.t77SavePath)
 		{
-			lastSelectedCDFName.SetUTF8String(profile.t77SavePath.data());
+			lastSelectedTapeFName.SetUTF8String(profile.t77SavePath.data());
 		}
 	}
 }
@@ -1188,18 +1284,14 @@ void FsGuiMainCanvas::State_SaveState(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		auto defFn=lastStateFName;
-		if(0==defFn.Strlen())
-		{
-			defFn.MakeFullPathName(GetMutsuProfileDir(),L"*.TState");
-		}
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
 		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Save Machine State");
 		fdlg->fileExtensionArray.Append(L".TState");
-		fdlg->defaultFileName=defFn;
+		fdlg->fileExtensionArray.Append(L".tstate");
+		fdlg->defaultFileName=GetDefaultVMStateFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::State_SaveState_FileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -1253,18 +1345,13 @@ void FsGuiMainCanvas::State_LoadState(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		auto defFn=lastStateFName;
-		if(0==defFn.Strlen())
-		{
-			defFn.MakeFullPathName(GetMutsuProfileDir(),L"*.TState");
-		}
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
 		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Load Machine State");
 		fdlg->fileExtensionArray.Append(L".TState");
-		fdlg->defaultFileName=defFn;
+		fdlg->defaultFileName=GetDefaultVMStateFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::State_LoadState_FileSelected,this);
 		AttachModalDialog(fdlg);
 
@@ -1279,18 +1366,13 @@ void FsGuiMainCanvas::State_LoadStateAndPause(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		auto defFn=lastStateFName;
-		if(0==defFn.Strlen())
-		{
-			defFn.MakeFullPathName(GetMutsuProfileDir(),L"*.TState");
-		}
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
 		fdlg->mode=FsGuiFileDialog::MODE_OPEN;
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Load Machine State");
 		fdlg->fileExtensionArray.Append(L".TState");
-		fdlg->defaultFileName=defFn;
+		fdlg->defaultFileName=GetDefaultVMStateFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::State_LoadState_FileSelected,this);
 		AttachModalDialog(fdlg);
 
@@ -1593,16 +1675,13 @@ void FsGuiMainCanvas::VM_SaveScreenshot(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		YsWString path,file;
-		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
-
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
 		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Save Screenshot");
 		fdlg->fileExtensionArray.Append(L".PNG");
-		fdlg->defaultFileName=path;
+		fdlg->defaultFileName=GetDefaultScreenShotFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::VM_SaveScreenshot_FileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -1627,6 +1706,8 @@ void FsGuiMainCanvas::VM_SaveScreenshot_FileSelected(FsGuiDialog *dlg,int return
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
 		VMMustResume=YSTRUE;
+
+		lastScreenShotFName=fName;
 	}
 }
 
@@ -1660,16 +1741,13 @@ void FsGuiMainCanvas::Audio_Save_VGMCapture(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
 	{
-		YsWString path,file;
-		profileDlg->profileFNameTxt->GetWText().SeparatePathFile(path,file);
-
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
 		fdlg->mode=FsGuiFileDialog::MODE_SAVE;
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Select VGM File Name");
 		fdlg->fileExtensionArray.Append(L".vgm");
-		fdlg->defaultFileName=path;
+		fdlg->defaultFileName=GetDefaultVGMFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::Audio_Save_VGMCapture_FileSelected,this);
 		AttachModalDialog(fdlg);
 	}
@@ -1721,7 +1799,7 @@ void FsGuiMainCanvas::Audio_Save_VGMCapture_Save(YsWString fName)
 	SendVMCommand(cmd.data());
 	VMMustResume=YSTRUE;
 
-	lastEventFName=fName;
+	lastVGMFName=fName;
 }
 
 ////////////////////////////////////////////////////////////
@@ -1811,7 +1889,7 @@ void FsGuiMainCanvas::Tape_SelectImageFile(FsGuiPopUpMenuItem *)
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Open Tape Image");
 		fdlg->fileExtensionArray.Append(L".T77");
-		fdlg->defaultFileName=profileDlg->TapeImgTxt->GetWString();
+		fdlg->defaultFileName=GetDefaultTapeImageFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::Tape_ImageFileSelected,this);
 		selectSaveTape=false;
 		AttachModalDialog(fdlg);
@@ -1831,7 +1909,7 @@ void FsGuiMainCanvas::Tape_SelectSaveImageFile(FsGuiPopUpMenuItem *)
 		fdlg->multiSelect=YSFALSE;
 		fdlg->title.Set(L"Open Tape Image");
 		fdlg->fileExtensionArray.Append(L".T77");
-		fdlg->defaultFileName=profileDlg->TapeSaveImgTxt->GetWString();
+		fdlg->defaultFileName=GetDefaultTapeImageFileName();
 		fdlg->BindCloseModalCallBack(&THISCLASS::Tape_ImageFileSelected,this);
 		selectSaveTape=true;
 		AttachModalDialog(fdlg);
@@ -1863,8 +1941,9 @@ void FsGuiMainCanvas::Tape_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\"');
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
-		lastSelectedCDFName=fName;
+		lastSelectedTapeFName=fName;
 		VMMustResume=YSTRUE;
+
 	}
 }
 
