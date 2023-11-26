@@ -392,8 +392,18 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 	}
 	window->shared.scaling=param.scaling;
 	window->windowShift=param.windowShift;
-	window->autoScaling=param.autoScaling;
 	window->windowModeOnStartUp=param.windowModeOnStartUp;
+	if(FM77AVParam::WINDOW_MAXIMIZE==param.windowModeOnStartUp ||
+	   FM77AVParam::WINDOW_FULLSCREEN==param.windowModeOnStartUp)
+	{
+		window->autoScaling=true;
+	}
+	else
+	{
+		window->autoScaling=param.autoScaling;
+	}
+
+
 
 	outside_world->virtualKeys.clear();
 	for(auto vk : param.virtualKeys)
