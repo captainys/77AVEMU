@@ -144,6 +144,10 @@ void ProfileDialog::Make(void)
 
 		AutoStartTapeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start Tape Program",YSTRUE);
 
+		for(auto &ptr : FDImgTxt)
+		{
+			ptr=nullptr;
+		}
 		for(auto &ptr : FDImgBtn)
 		{
 			ptr=nullptr;
@@ -974,6 +978,7 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 
 YsString ProfileDialog::GetDefaultFloppyImageFile(unsigned int drive) const
 {
+printf("%d\n",__LINE__);
 	YsString dir;
 	if(drive<FM77AVProfile::NUM_FDDRIVES && nullptr!=FDImgTxt[drive])
 	{
@@ -983,6 +988,7 @@ YsString ProfileDialog::GetDefaultFloppyImageFile(unsigned int drive) const
 			return dir;
 		}
 	}
+printf("%d\n",__LINE__);
 	for(auto ptr : FDImgTxt)
 	{
 		if(nullptr==ptr)
@@ -1000,6 +1006,7 @@ YsString ProfileDialog::GetDefaultFloppyImageFile(unsigned int drive) const
 			return dir;
 		}
 	}
+printf("%d\n",__LINE__);
 
 	dir=GetAnyKnownDirectory();
 	if(0!=dir.Strcmp(""))
@@ -1008,6 +1015,7 @@ YsString ProfileDialog::GetDefaultFloppyImageFile(unsigned int drive) const
 		ful.MakeFullPathName(dir,"*.D77");
 		return ful;
 	}
+printf("%d\n",__LINE__);
 
 	return "";
 }
@@ -1050,7 +1058,7 @@ YsString ProfileDialog::GetAnyKnownDirectory(void) const
 	std::vector <FsGuiTextBox *> candidates;
 	for(auto ptr : FDImgTxt)
 	{
-		if(nullptr!=FDImgTxt)
+		if(nullptr!=ptr)
 		{
 			candidates.push_back(ptr);
 		}
