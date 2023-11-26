@@ -96,7 +96,7 @@ public:
 	void OnSelectROMFile(FsGuiDialog *dlg,int returnCode);
 
 	FsGuiTextBox *nowBrowsingTxt=nullptr;
-	void Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
+	void Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList,YsString defFileName);
 	void OnSelectFile(FsGuiDialog *dlg,int returnCode);
 
 	void BrowseDir(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList);
@@ -107,6 +107,29 @@ public:
 
 	FM77AVProfile GetProfile(void) const;
 	void SetProfile(const FM77AVProfile &profile);
+
+	/* 1: Same drive same image file.
+	   2: The other drive, same extension.
+	   3: Any known directory, *.D77
+	   4: Empty (Browse function will come up with default)
+	*/
+	YsString GetDefaultFloppyImageFile(unsigned int drive) const;
+
+	/* 1: Currently-selected image file.
+	   2: Any known directory, *.T77
+	   3: Empty (Browse function will come up with default)
+	*/
+	YsString GetDefaultTapeImageFile(void) const;
+
+	/* 1: Currently-selected state file.
+	   2: Any known directory, *.7state
+	   3: Empty (Browse function will come up with default)
+	*/
+	YsString GetDefaultVMStateFile(void) const;
+
+	YsString GetAnyKnownDirectory(void) const;
+
+	YsString GetDirectoryFromTextBox(FsGuiTextBox *txtBox) const;
 };
 
 

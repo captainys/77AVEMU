@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include <set>
 #include "profiledlg.h"
 #include "fsguiapp.h"
@@ -142,6 +143,11 @@ void ProfileDialog::Make(void)
 		TapeSaveImgTxt->SetLengthLimit(PATH_LENGTH);
 
 		AutoStartTapeBtn=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Auto Start Tape Program",YSTRUE);
+
+		for(auto &ptr : FDImgBtn)
+		{
+			ptr=nullptr;
+		}
 
 		FDImgBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"FD0:",YSTRUE);
 		FDWriteProtBtn[0]=AddTextButton(0,FSKEY_NULL,FSGUI_CHECKBOX,"Write Protect",YSFALSE);
@@ -552,23 +558,23 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		if(aliasBrowseBtn[i]==btn)
 		{
 			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".RDD",L".D88",L".T77"};
-			Browse(L"Alias",aliasFileTxt[i],extList);
+			Browse(L"Alias",aliasFileTxt[i],extList,GetDefaultFloppyImageFile(0));
 		}
 	}
 	if(TapeImgBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".T77"};
-		Browse(L"Tape Image",TapeImgTxt,extList);
+		Browse(L"Tape Image",TapeImgTxt,extList,GetDefaultTapeImageFile());
 	}
 	if(TapeSaveImgBtn==btn)
 	{
 		std::vector <const wchar_t *> extList={L".T77"};
-		Browse(L"Tape Image",TapeSaveImgTxt,extList);
+		Browse(L"Tape Image",TapeSaveImgTxt,extList,GetDefaultTapeImageFile());
 	}
 	if(startUpStateFNameBtn==btn)
 	{
-		std::vector <const wchar_t *> extList={L".FState"};
-		Browse(L"Start-Up VM State",startUpStateFNameTxt,extList);
+		std::vector <const wchar_t *> extList={L".FState",L".7state"};
+		Browse(L"Start-Up VM State",startUpStateFNameTxt,extList,GetDefaultVMStateFile());
 	}
 	for(int i=0; i<2; ++i)
 	{
@@ -577,7 +583,7 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 			YsWString label(L"Floppy Drive ");
 			label.push_back('0'+i);
 			std::vector <const wchar_t *> extList={L".BIN",L".D77",L".RDD",L".D88"};
-			Browse(label,FDImgTxt[i],extList);
+			Browse(label,FDImgTxt[i],extList,GetDefaultFloppyImageFile(i));
 		}
 	}
 	if(runBtn==btn)
@@ -608,11 +614,14 @@ void ProfileDialog::OnSelectROMFile(FsGuiDialog *dlg,int returnCode)
 		ROMDirTxt->SetText(pth);
 	}
 }
-void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList)
+void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <const wchar_t *> extList,YsString def)
 {
 	nowBrowsingTxt=txt;
 
-	YsString def=ROMDirTxt->GetString();
+	if(0==def.Strcmp(""))
+	{
+		def=ROMDirTxt->GetString();
+	}
 	if(0==def.Strcmp(""))
 	{
 		YsSpecialPath::GetUserDir(def);
@@ -960,4 +969,129 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 	scrnShotCropTxt[3]->SetInteger(profile.scrnShotHei);
 	mapXYExpressionTxt[0]->SetText(profile.mapXYExpression[0].c_str());
 	mapXYExpressionTxt[1]->SetText(profile.mapXYExpression[1].c_str());
+}
+
+
+YsString ProfileDialog::GetDefaultFloppyImageFile(unsigned int drive) const
+{
+	YsString dir;
+	if(drive<FM77AVProfile::NUM_FDDRIVES && nullptr!=FDImgTxt[drive])
+	{
+		dir=FDImgTxt[drive]->GetString();
+		if(0!=dir.Strcmp(""))
+		{
+			return dir;
+		}
+	}
+	for(auto ptr : FDImgTxt)
+	{
+		if(nullptr==ptr)
+		{
+			continue;
+		}
+		dir=ptr->GetString();
+		if(0!=dir.Strcmp(""))
+		{
+			YsString path,file,ext;
+			dir.SeparatePathFile(path,file);
+			ext=dir.GetExtension();
+			file=YsString("*")+ext;
+			dir.MakeFullPathName(path,file);
+			return dir;
+		}
+	}
+
+	dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(""))
+	{
+		YsString ful;
+		ful.MakeFullPathName(dir,"*.D77");
+		return ful;
+	}
+
+	return "";
+}
+YsString ProfileDialog::GetDefaultTapeImageFile(void) const
+{
+	YsString dir;
+	dir=TapeImgTxt->GetString();
+	if(0!=dir.Strcmp(""))
+	{
+		return dir;
+	}
+
+	dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(""))
+	{
+		YsString ful;
+		ful.MakeFullPathName(dir,"*.T77");
+		return ful;
+	}
+}
+YsString ProfileDialog::GetDefaultVMStateFile(void) const
+{
+	YsString dir;
+	dir=startUpStateFNameTxt->GetString();
+	if(0!=dir.Strcmp(""))
+	{
+		return dir;
+	}
+
+	dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(""))
+	{
+		YsString ful;
+		ful.MakeFullPathName(dir,"*.7state");
+		return ful;
+	}
+}
+YsString ProfileDialog::GetAnyKnownDirectory(void) const
+{
+	std::vector <FsGuiTextBox *> candidates;
+	for(auto ptr : FDImgTxt)
+	{
+		if(nullptr!=FDImgTxt)
+		{
+			candidates.push_back(ptr);
+		}
+	}
+	candidates.push_back(TapeImgTxt);
+	for(auto ptr : aliasFileTxt)
+	{
+		candidates.push_back(ptr);
+	}
+	candidates.push_back(quickStateSaveFNameTxt);
+	candidates.push_back(startUpStateFNameTxt);
+
+	for(auto ptr : candidates)
+	{
+		YsString dir=ROMDirTxt->GetString();
+		if(0!=dir.Strcmp(""))
+		{
+			return dir;
+		}
+	}
+
+	YsString dir=quickSsDirTxt->GetString();
+	if(0!=dir.Strcmp(""))
+	{
+		return dir;
+	}
+
+	return "";
+}
+
+YsString ProfileDialog::GetDirectoryFromTextBox(FsGuiTextBox *txtBox) const
+{
+	YsString dir=quickSsDirTxt->GetString();
+	if(0!=dir.Strcmp(""))
+	{
+		YsString path,file;
+		dir.SeparatePathFile(path,file);
+		if(0!=path.Strcmp("/"))
+		{
+			return path;
+		}
+	}
+	return "";
 }
