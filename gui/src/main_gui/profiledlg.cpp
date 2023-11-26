@@ -3,6 +3,7 @@
 #include <set>
 #include "profiledlg.h"
 #include "fsguiapp.h"
+#include "ysport.h"
 
 #include "ym2612.h"
 
@@ -528,8 +529,13 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 {
 	if(ROMDirBtn==btn)
 	{
+		YsString ROMDir=ROMDirTxt->GetString();
+		if(0==ROMDir.Strcmp(""))
+		{
+			YsSpecialPath::GetUserDir(ROMDir);
+		}
 		YsString def;
-		def.MakeFullPathName(ROMDirTxt->GetString(),"FBASIC30.ROM");
+		def.MakeFullPathName(ROMDir,"FBASIC30.ROM");
 
 		auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 		fdlg->Initialize();
@@ -607,6 +613,21 @@ void ProfileDialog::Browse(const wchar_t label[],FsGuiTextBox *txt,std::vector <
 	nowBrowsingTxt=txt;
 
 	YsString def=ROMDirTxt->GetString();
+	if(0==def.Strcmp(""))
+	{
+		YsSpecialPath::GetUserDir(def);
+		if(0<extList.size())
+		{
+			YsWString wExt(extList[0]);
+			YsString ext;
+			ext.EncodeUTF8(wExt.data());
+			def.MakeFullPathName(def,ext);
+		}
+		else
+		{
+			def.MakeFullPathName(def,"*.*");
+		}
+	}
 
 	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 	fdlg->Initialize();
