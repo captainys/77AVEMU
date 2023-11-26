@@ -54,6 +54,23 @@ static FsGuiMainCanvas *appMainCanvas;
 
 ////////////////////////////////////////////////////////////
 
+void FsGuiMainCanvas::ResumeVMDialog::Make(FsGuiMainCanvas *app)
+{
+	appPtr=app;
+	btn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"RESUME VM",YSTRUE);
+	Fit();
+	SetArrangeType(FSDIALOG_ARRANGE_TOP_LEFT);
+}
+void FsGuiMainCanvas::ResumeVMDialog::OnButtonClick(FsGuiButton *b)
+{
+	if(btn==b)
+	{
+		appPtr->VM_Resume(nullptr);
+	}
+}
+
+////////////////////////////////////////////////////////////
+
 static const FsGuiMainCanvas::HumanReadable gameportEmulationTypes[]
 {
 	{FM77AV_GAMEPORTEMU_NONE,"None"},
@@ -161,6 +178,7 @@ FsGuiMainCanvas::FsGuiMainCanvas()
 	appMustTerminate=YSFALSE;
 	mainMenu=nullptr;
 	profileDlg=new ProfileDialog(this);
+	resumeVMDlg=new ResumeVMDialog;
 }
 
 FsGuiMainCanvas::~FsGuiMainCanvas()
@@ -169,6 +187,7 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 	RemoveDialogAll();
 	PerformScheduledDeletion();
 	delete profileDlg;
+	delete resumeVMDlg;
 
 	DeleteMainMenu();
 }
@@ -179,6 +198,8 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	profileDlg->Make();
 	LoadProfile(GetDefaultProfileFileName());
 	AddDialog(profileDlg);
+
+	resumeVMDlg->Make(this);
 
 	// Pause/Resume key is made a variable.  Need to be checked in OnInterval.
 	// BindKeyCallBack(FSKEY_SCROLLLOCK,YSFALSE,YSFALSE,YSFALSE,&FsGuiMainCanvas::VM_Resume,this);
@@ -382,6 +403,7 @@ void FsGuiMainCanvas::OnInterval(void)
 	if(true!=IsVMRunning() && YSTRUE!=IsDialogUsed(profileDlg))
 	{
 		AddDialog(profileDlg);
+		RemoveDialog(resumeVMDlg);
 	}
 
 	{
@@ -588,12 +610,14 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	}
 
 	RemoveDialog(profileDlg);
+	AddDialog(resumeVMDlg);
 	SetUpImageMenu(VM.profile);
 
 	VM.Run();
 	if(true!=VM.IsRunning())
 	{
 		AddDialog(profileDlg);
+		RemoveDialog(resumeVMDlg);
 	}
 	SetNeedRedraw(YSTRUE);
 
@@ -665,6 +689,7 @@ void FsGuiMainCanvas::ResumeVMIfSameProc(void)
 	if(true!=VM.IsRunning())
 	{
 		AddDialog(profileDlg);
+		RemoveDialog(resumeVMDlg);
 	}
 	SetNeedRedraw(YSTRUE);
 }
@@ -971,6 +996,7 @@ void FsGuiMainCanvas::File_OpenProfile_FileSelected(FsGuiDialog *dlg,int returnC
 	if(nullptr!=fdlg && (int)YSOK==returnCode)
 	{
 		AddDialog(profileDlg);
+		RemoveDialog(resumeVMDlg);
 		profileDlg->profileFNameTxt->SetText(fdlg->selectedFileArray[0]);
 		LoadProfile(fdlg->selectedFileArray[0]);
 		AddRecentlyUsedFile(fdlg->selectedFileArray[0]);
@@ -1267,6 +1293,7 @@ void FsGuiMainCanvas::View_OpenProfileDialog(FsGuiPopUpMenuItem *)
 	if(true!=IsVMRunning())
 	{
 		AddDialog(profileDlg);
+		RemoveDialog(resumeVMDlg);
 	}
 	else
 	{

@@ -38,6 +38,15 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class FsGuiMainCanvas : public FsGuiCanvas
 {
 public:
+	class ResumeVMDialog : public FsGuiDialog
+	{
+	public:
+		FsGuiButton *btn;
+		FsGuiMainCanvas *appPtr;
+		void Make(FsGuiMainCanvas *appPtr);
+		virtual void OnButtonClick(FsGuiButton *) override;
+	};
+
 	/*! Main menu.  MainMenu is created in MakeMainMenu function, which is called 
 	    from the constructor.
 	*/
@@ -87,8 +96,8 @@ public:
 	//   (2) Add an initialization in the constructor of the aplication.
 	//   (3) Add deletion in the destructor of the application.
 	//   (4) Add RemoveDialog in Edit_ClearUIIMode
-	ProfileDialog *profileDlg;
-
+	ProfileDialog *profileDlg=nullptr;
+	ResumeVMDialog *resumeVMDlg=nullptr;
 
 	// [Modal dialogs]
 
