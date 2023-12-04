@@ -634,13 +634,28 @@ void FM77AVKeyboard::WriteD431(uint8_t data)
 		{
 			if(0==data)
 			{
-				state.encoderQueue.push(0); // FM Techknow pp.141 Must return RTC
-				state.encoderQueue.push(0); // Will take it from host clock.
-				state.encoderQueue.push(0);
-				state.encoderQueue.push(0);
-				state.encoderQueue.push(0);
-				state.encoderQueue.push(0);
-				state.encoderQueue.push(0);
+				auto t=time(nullptr);
+				auto tm=localtime(&t);
+
+				unsigned int year=tm->tm_year%100;
+				unsigned int month=tm->tm_mon+1;
+				unsigned int day=tm->tm_mday;
+				unsigned int wday=tm->tm_wday;
+				unsigned int hour24=1;
+
+				unsigned int hour=tm->tm_hour;
+				if(true!=hour24 && 12<hour)
+				{
+					hour-=12;
+				}
+
+				state.encoderQueue.push(((year/10)<<4)|(year%10)); // FM Techknow pp.141 Must return RTC
+				state.encoderQueue.push(((month/10)<<4)|(month%10));
+				state.encoderQueue.push(((day/10)<<4)|(day%10));
+				state.encoderQueue.push((wday<<5)|(hour24<<4)|(hour/10));
+				state.encoderQueue.push(((hour%10)<<4)|(tm->tm_min/10));
+				state.encoderQueue.push(((tm->tm_min%10)<<4)|(tm->tm_sec/10));
+				state.encoderQueue.push((tm->tm_sec%10)<<4);
 				state.nEncoderParam=0;
 				state.encoderCmd=CMD_NULL;
 			}
@@ -692,9 +707,17 @@ void FM77AVKeyboard::AfterReadD431(void)
 {
 	const FM77AV *fm77av=(const FM77AV *)vmPtr;
 	state.encoderDataReadyBy=fm77av->state.fm77avTime+100*FM77AVTIME_MICROSEC;
+	if(true!=state.encoderQueue.empty())
+	{
+		return state.encoderQueue.pop();
+	}
 }
 uint8_t FM77AVKeyboard::NonDestructiveReadD431(void) const
 {
+	if(true!=state.encoderQueue.empty())
+	{
+		return state.encoderQueue.front();
+	}
 	return 0;
 }
 uint8_t FM77AVKeyboard::NonDestructiveReadD432(void) const
