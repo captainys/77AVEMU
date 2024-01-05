@@ -3,7 +3,7 @@ project(MUTSU)
 
 enable_testing()
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_definitions(MUTSU_FM77AV)
