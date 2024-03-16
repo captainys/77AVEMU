@@ -211,7 +211,7 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 	if(2<=version)
 	{
-		state.appSpecificSetting=ReadUint32(data);
+		state.appSpecificSetting=ReadUint16(data);
 	}
 	else
 	{

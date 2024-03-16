@@ -1300,6 +1300,8 @@ bool FM77AV::GetVMMousePosition(int &mx,int &my)
 void FM77AV::ControlMouse(int &diffX,int &diffY,int mx,int my)
 {
 	int vmx,vmy;
+	diffX=0;
+	diffY=0;
 	if(true==GetVMMousePosition(vmx,vmy))
 	{
 		if(FM77AV_APPSPECIFIC_PSY_O_BLADE==state.appSpecificSetting)
