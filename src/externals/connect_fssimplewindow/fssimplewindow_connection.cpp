@@ -560,103 +560,103 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 // 				}
 // 				break;
 // 
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_KEY:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_NUMPAD:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL3:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL4:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL5:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
-// 			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
-// 				{
-// 					{
-// 						const int accel=1;
-// 						const int maxSpeed=80;
-// 						const int div=20;
-// 
-// 						bool upDownLeftRight[4]={false,false,false,false};
-// 						bool button[2]={false,false};
-// 
-// 						mouseEmulationByAnalogAxis=true;
-// 						if(FM77AV_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
-// 						{
-// 							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_UP]);
-// 							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_DOWN]);
-// 							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_LEFT]);
-// 							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_RIGHT]);
-// 							button[0]=(0!=windowEvent.keyState[FSKEY_Z]);
-// 							button[1]=(0!=windowEvent.keyState[FSKEY_X]);
-// 						}
-// 						else if(FM77AV_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
-// 						{
-// 							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_TEN7] || 0!=windowEvent.keyState[FSKEY_TEN8] || 0!=windowEvent.keyState[FSKEY_TEN9]);
-// 							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN2] || 0!=windowEvent.keyState[FSKEY_TEN3]);
-// 							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN4] || 0!=windowEvent.keyState[FSKEY_TEN7]);
-// 							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_TEN3] || 0!=windowEvent.keyState[FSKEY_TEN6] || 0!=windowEvent.keyState[FSKEY_TEN9]);
-// 							button[0]=(0!=windowEvent.keyState[FSKEY_TENSLASH]);
-// 							button[1]=(0!=windowEvent.keyState[FSKEY_TENSTAR]);
-// 						}
-// 						else
-// 						{
-// 							int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
-// 							if(0<=padId && padId<gamePads.size())
-// 							{
-// 								const auto &reading=gamePads[padId];
-// 								upDownLeftRight[0]=(0!=reading.dirs[0].upDownLeftRight[0]);
-// 								upDownLeftRight[1]=(0!=reading.dirs[0].upDownLeftRight[1]);
-// 								upDownLeftRight[2]=(0!=reading.dirs[0].upDownLeftRight[2]);
-// 								upDownLeftRight[3]=(0!=reading.dirs[0].upDownLeftRight[3]);
-// 								button[0]=(0!=reading.buttons[0]);
-// 								button[1]=(0!=reading.buttons[1]);
-// 							}
-// 						}
-// 						if(true==upDownLeftRight[0])
-// 						{
-// 							mouseDY+=accel;
-// 						}
-// 						else if(true==upDownLeftRight[1])
-// 						{
-// 							mouseDY-=accel;
-// 						}
-// 						else
-// 						{
-// 							mouseDY=0;
-// 						}
-// 						if(mouseDY<-maxSpeed)
-// 						{
-// 							mouseDY=-maxSpeed;
-// 						}
-// 						if(mouseDY>maxSpeed)
-// 						{
-// 							mouseDY=maxSpeed;
-// 						}
-// 						if(0!=true==upDownLeftRight[2])
-// 						{
-// 							mouseDX+=accel;
-// 						}
-// 						else if(0!=true==upDownLeftRight[3])
-// 						{
-// 							mouseDX-=accel;
-// 						}
-// 						else
-// 						{
-// 							mouseDX=0;
-// 						}
-// 						if(mouseDX<-maxSpeed)
-// 						{
-// 							mouseDX=-maxSpeed;
-// 						}
-// 						if(mouseDX>maxSpeed)
-// 						{
-// 							mouseDX=maxSpeed;
-// 						}
-// 						fm77av.SetMouseMotion(portId,mouseDX/div,mouseDY/div);
-// 						fm77av.SetMouseButtonState(button[0],button[1]);
-// 					}
-// 				}
-// 				break;
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_KEY:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_NUMPAD:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL0:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL1:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL2:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL3:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL4:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL5:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL6:
+			case FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL7:
+				{
+					{
+						const int accel=1;
+						const int maxSpeed=80;
+						const int div=20;
+
+						bool upDownLeftRight[4]={false,false,false,false};
+						bool button[2]={false,false};
+
+						mouseEmulationByAnalogAxis=true;
+						if(FM77AV_GAMEPORTEMU_MOUSE_BY_KEY==gamePort[portId])
+						{
+							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_UP]);
+							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_DOWN]);
+							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_LEFT]);
+							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_RIGHT]);
+							button[0]=(0!=windowEvent.keyState[FSKEY_Z]);
+							button[1]=(0!=windowEvent.keyState[FSKEY_X]);
+						}
+						else if(FM77AV_GAMEPORTEMU_MOUSE_BY_NUMPAD==gamePort[portId])
+						{
+							upDownLeftRight[0]=(0!=windowEvent.keyState[FSKEY_TEN7] || 0!=windowEvent.keyState[FSKEY_TEN8] || 0!=windowEvent.keyState[FSKEY_TEN9]);
+							upDownLeftRight[1]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN2] || 0!=windowEvent.keyState[FSKEY_TEN3]);
+							upDownLeftRight[2]=(0!=windowEvent.keyState[FSKEY_TEN1] || 0!=windowEvent.keyState[FSKEY_TEN4] || 0!=windowEvent.keyState[FSKEY_TEN7]);
+							upDownLeftRight[3]=(0!=windowEvent.keyState[FSKEY_TEN3] || 0!=windowEvent.keyState[FSKEY_TEN6] || 0!=windowEvent.keyState[FSKEY_TEN9]);
+							button[0]=(0!=windowEvent.keyState[FSKEY_TENSLASH]);
+							button[1]=(0!=windowEvent.keyState[FSKEY_TENSTAR]);
+						}
+						else
+						{
+							int padId=gamePort[portId]-FM77AV_GAMEPORTEMU_MOUSE_BY_PHYSICAL0;
+							if(0<=padId && padId<windowEvent.gamePads.size())
+							{
+								const auto &reading=windowEvent.gamePads[padId];
+								upDownLeftRight[0]=(0!=reading.dirs[0].upDownLeftRight[0]);
+								upDownLeftRight[1]=(0!=reading.dirs[0].upDownLeftRight[1]);
+								upDownLeftRight[2]=(0!=reading.dirs[0].upDownLeftRight[2]);
+								upDownLeftRight[3]=(0!=reading.dirs[0].upDownLeftRight[3]);
+								button[0]=(0!=reading.buttons[0]);
+								button[1]=(0!=reading.buttons[1]);
+							}
+						}
+						if(true==upDownLeftRight[0])
+						{
+							mouseDY+=accel;
+						}
+						else if(true==upDownLeftRight[1])
+						{
+							mouseDY-=accel;
+						}
+						else
+						{
+							mouseDY=0;
+						}
+						if(mouseDY<-maxSpeed)
+						{
+							mouseDY=-maxSpeed;
+						}
+						if(mouseDY>maxSpeed)
+						{
+							mouseDY=maxSpeed;
+						}
+						if(0!=true==upDownLeftRight[2])
+						{
+							mouseDX+=accel;
+						}
+						else if(0!=true==upDownLeftRight[3])
+						{
+							mouseDX-=accel;
+						}
+						else
+						{
+							mouseDX=0;
+						}
+						if(mouseDX<-maxSpeed)
+						{
+							mouseDX=-maxSpeed;
+						}
+						if(mouseDX>maxSpeed)
+						{
+							mouseDX=maxSpeed;
+						}
+						fm77av.SetMouseMotion(portId,mouseDX/div,mouseDY/div);
+						fm77av.SetMouseButtonState(button[0],button[1]);
+					}
+				}
+				break;
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_ANALOG0:
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_ANALOG1:
 // 			case FM77AV_GAMEPORTEMU_MOUSE_BY_ANALOG2:

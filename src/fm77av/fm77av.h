@@ -387,6 +387,14 @@ public:
 	*/
 	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
 
+	/*!
+	*/
+	void SetMouseMotion(int portId,int dx,int dy);
+
+	/*!
+	*/
+	void SetMouseButtonState(bool lButton,bool rButton);
+
 	/*! Should implement this function when adding disk drive, rs232c etc.
 	*/
 	bool ExternalDevicePresent(void) const;

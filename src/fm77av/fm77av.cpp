@@ -983,6 +983,23 @@ void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool r
 	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.fm77avTime);
 }
 
+void FM77AV::SetMouseMotion(int portId,int dx,int dy)
+{
+	auto &p=gameport.state.ports[portId&1];
+	p.mouseMotion.Set(dx,dy);
+}
+void FM77AV::SetMouseButtonState(bool lButton,bool rButton)
+{
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==FM77AVGamePort::MOUSE)
+		{
+			p.button[0]=lButton;
+			p.button[1]=rButton;
+		}
+	}
+}
+
 std::vector <std::string> FM77AV::GetIRQStatusText(void) const
 {
 	std::vector <std::string> text;
