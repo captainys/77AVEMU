@@ -622,9 +622,19 @@ unsigned int StrToKeyboardMode(std::string str)
 
 std::string FM77AVAppToStr(unsigned int app)
 {
+	switch(app)
+	{
+	case FM77AV_APPSPECIFIC_PSY_O_BLADE:
+		return "PSYOBLADE";
+	}
 	return "NONE";
 }
 unsigned int FM77AVStrToApp(std::string str)
 {
+	Capitalize(str);
+	if("PSYOBLADE"==str || "PSY-O-BLADE"==str)
+	{
+		return FM77AV_APPSPECIFIC_PSY_O_BLADE;
+	}
 	return FM77AV_APPSPECIFIC_NONE;
 }

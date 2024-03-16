@@ -163,6 +163,8 @@ public:
 		bool CRTCHaltsSubCPU=false;  // True in FM-7/8 speed mode.
 
 		SystemState main,sub;
+
+		unsigned int appSpecificSetting=0;
 	};
 	State state;
 
@@ -428,6 +430,8 @@ public:
 	bool AutoSaveSymbolTable(void) const;
 
 	int TestSuccess(void) const;
+
+	void IdentifyApplication(void);
 };
 
 /* } */

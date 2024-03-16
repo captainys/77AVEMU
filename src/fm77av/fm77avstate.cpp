@@ -123,7 +123,9 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 {
 	// Version 1
 	//   subSysHaltSoon flag.
-	return 1;
+	// Version 2
+	//   appSpecificSetting
+	return 2;
 }
 
 /* virtual */ void FM77AV::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -160,6 +162,9 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 
 	// Version 1
 	PushBool(data,state.subSysHaltSoon);
+
+	// Version 2
+	PushUint32(data,state.appSpecificSetting);
 }
 /* virtual */ bool FM77AV::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
@@ -202,6 +207,15 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	else
 	{
 		state.subSysHaltSoon=false;
+	}
+
+	if(2<=version)
+	{
+		state.appSpecificSetting=ReadUint32(data);
+	}
+	else
+	{
+		state.appSpecificSetting=0;
 	}
 
 	return true;

@@ -1244,3 +1244,32 @@ int FM77AV::TestSuccess(void) const
 	}
 	return 0;
 }
+
+void FM77AV::IdentifyApplication(void)
+{
+	auto &drv=fdc.state.drive[0];
+	auto imgFilePtr=fdc.GetDriveImageFile(0);
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
+	{
+		imgPtr=&imgFilePtr->img;
+	}
+
+	if(nullptr!=imgPtr)
+	{
+		auto sector=imgPtr->ReadSector(diskIdx,0,0,0,0,1,false);
+		if(256<=sector.data.size())
+		{
+			const unsigned char psyoblade[11]=
+			{
+				0x50,0x53,0x59,0xa5,0x4f,0xa5,0x42,0x4c,0x41,0x44,0x45
+			};
+			if(0==memcmp(sector.data.data()+0xF0,psyoblade,11))
+			{
+				std::cout << "Identified as PSY-O-BLADE (T&E 1988)" << std::endl;
+				state.appSpecificSetting=FM77AV_APPSPECIFIC_PSY_O_BLADE;
+			}
+		}
+	}
+}
