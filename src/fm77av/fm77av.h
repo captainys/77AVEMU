@@ -391,7 +391,7 @@ public:
 
 	/*!
 	*/
-	void SetMouseMotion(int portId,int dx,int dy);
+	void SetMouseMotion(int dx,int dy);
 
 	/*!
 	*/
@@ -432,6 +432,9 @@ public:
 	int TestSuccess(void) const;
 
 	void IdentifyApplication(void);
+	bool GetVMMousePosition(int &mx,int &my);
+	void ControlMouse(int &diffX,int &diffY,int mx,int my);
+	void DontControlMouse(void);
 };
 
 /* } */

@@ -150,6 +150,11 @@ unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 		{
 		case MOUSESTATE_XHIGH:
 			mouseMotionCopy=mouseMotion;
+			if(0<mouseHold)
+			{
+				mouseMotionCopy.Set(0,0);
+				--mouseHold;
+			}
 			data|=((mouseMotionCopy.x()>>4)&0x0F);
 			break;
 		case MOUSESTATE_XLOW:
@@ -160,7 +165,8 @@ unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 			break;
 		case MOUSESTATE_YLOW:
 			data|=((mouseMotionCopy.y()   )&0x0F);
-			mouseMotion.Set(0,0);
+			// mouseMotion.Set(0,0);  Commenting out because PSY-O-BLADE dummy-reads the data all the time,
+			// and mouseMotion set for the mouse integration was cleared.
 			break;
 		default:
 			data|=0x0F;
@@ -557,7 +563,9 @@ void FM77AVGamePort::State::Reset(void)
 }
 /* virtual */ uint32_t FM77AVGamePort::SerializeVersion(void) const
 {
-	return 1;
+	// Version 2:
+	//   mouseHold
+	return 2;
 }
 /* virtual */ void FM77AVGamePort::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
@@ -569,6 +577,7 @@ void FM77AVGamePort::State::Reset(void)
 		PushUint16(data,p.TRIG);
 		PushInt64(data,p.lastAccessTime);
 		PushInt64(data,p.lastStateChangeTime);
+		PushUint16(data,p.mouseHold);
 	}
 }
 /* virtual */ bool FM77AVGamePort::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
@@ -580,9 +589,16 @@ void FM77AVGamePort::State::Reset(void)
 		p.COM=ReadBool(data);
 		p.TRIG=ReadUint16(data);
 		p.lastAccessTime=ReadInt64(data);
+
+		p.lastStateChangeTime=0;
 		if(1<=version)
 		{
 			p.lastStateChangeTime=ReadInt64(data);
+		}
+		p.mouseHold=0;
+		if(2<=version)
+		{
+			p.mouseHold=ReadUint16(data);
 		}
 	}
 	return true;

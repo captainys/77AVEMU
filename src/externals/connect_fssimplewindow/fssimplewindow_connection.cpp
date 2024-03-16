@@ -652,7 +652,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 						{
 							mouseDX=maxSpeed;
 						}
-						fm77av.SetMouseMotion(portId,mouseDX/div,mouseDY/div);
+						fm77av.SetMouseMotion(mouseDX/div,mouseDY/div);
 						fm77av.SetMouseButtonState(button[0],button[1]);
 					}
 				}
@@ -774,7 +774,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
  			}
  		}
 
-//		if(mouseEmulationByAnalogAxis!=true)
+		if(mouseEmulationByAnalogAxis!=true)
 		{
 			struct YsGamePadReading reading;
 			mx-=this->dx;

@@ -983,10 +983,15 @@ void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool r
 	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.fm77avTime);
 }
 
-void FM77AV::SetMouseMotion(int portId,int dx,int dy)
+void FM77AV::SetMouseMotion(int dx,int dy)
 {
-	auto &p=gameport.state.ports[portId&1];
-	p.mouseMotion.Set(dx,dy);
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==FM77AVGamePort::MOUSE)
+		{
+			p.mouseMotion.Set(dx,dy);
+		}
+	}
 }
 void FM77AV::SetMouseButtonState(bool lButton,bool rButton)
 {
@@ -1269,7 +1274,88 @@ void FM77AV::IdentifyApplication(void)
 			{
 				std::cout << "Identified as PSY-O-BLADE (T&E 1988)" << std::endl;
 				state.appSpecificSetting=FM77AV_APPSPECIFIC_PSY_O_BLADE;
+				for(auto &p : gameport.state.ports)
+				{
+					p.mouseHold=8;
+				}
 			}
 		}
 	}
+}
+bool FM77AV::GetVMMousePosition(int &mx,int &my)
+{
+	switch(state.appSpecificSetting)
+	{
+	case FM77AV_APPSPECIFIC_PSY_O_BLADE:
+		mx=physMem.NonDestructiveFetchByte(0x1D0A6);
+		mx<<=8;
+		mx|=physMem.NonDestructiveFetchByte(0x1D0A7);
+		my=physMem.NonDestructiveFetchByte(0x1D0A9);
+		mx*=2; // Scale up to 640x400
+		my*=2; // Scale up to 640x400
+		return true;
+	}
+	return false;
+}
+void FM77AV::ControlMouse(int &diffX,int &diffY,int mx,int my)
+{
+	int vmx,vmy;
+	if(true==GetVMMousePosition(vmx,vmy))
+	{
+		if(FM77AV_APPSPECIFIC_PSY_O_BLADE==state.appSpecificSetting)
+		{
+			mx/=2;
+			my/=2;
+			mx*=2;
+			my*=2;
+		}
+
+		diffX=mx-vmx;
+		diffY=my-vmy;
+
+		auto absDiffX=diffX;
+		auto absDiffY=diffY;
+		if(absDiffX<0)
+		{
+			absDiffX=-absDiffX;
+		}
+		if(absDiffY<0)
+		{
+			absDiffY=-absDiffY;
+		}
+
+		int xLimit=8,yLimit=8;
+		if(64<=absDiffX)
+		{
+			xLimit=16;
+		}
+		else if(16<=absDiffX)
+		{
+			xLimit=8;
+		}
+		else
+		{
+			xLimit=1;
+		}
+		if(64<=absDiffY)
+		{
+			yLimit=16;
+		}
+		else if(16<=absDiffY)
+		{
+			yLimit=8;
+		}
+		else
+		{
+			yLimit=1;
+		}
+
+		diffX=std::min(xLimit,std::max(-xLimit,diffX));
+		diffY=std::min(yLimit,std::max(-yLimit,diffY));
+
+		SetMouseMotion(-diffX,-diffY); //
+	}
+}
+void FM77AV::DontControlMouse(void)
+{
 }

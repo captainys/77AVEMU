@@ -164,7 +164,7 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	PushBool(data,state.subSysHaltSoon);
 
 	// Version 2
-	PushUint32(data,state.appSpecificSetting);
+	PushUint16(data,state.appSpecificSetting);
 }
 /* virtual */ bool FM77AV::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
