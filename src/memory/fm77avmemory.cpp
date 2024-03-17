@@ -667,7 +667,9 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 
 	if(true==var.memAttr[addr].brkOnRead)
 	{
-		auto data=FetchByteConst(addr);
+		auto data=NonDestructiveFetchByte(addr);
+		// Use NonDestructiveFetchByte instead of FetchByteConst.
+		// FetchByteConst will abort if addr is an I/O-address.
 		if(var.memAttr[addr].brkOnReadMinMax[0]<=data && data<=var.memAttr[addr].brkOnReadMinMax[1])
 		{
 			auto dmac=fm77avPtr->ToDMAC(accessFrom);
