@@ -948,7 +948,7 @@ public:
 	}
 	inline uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
 	{
-		if(true!=debugger.enabled || 0==debugger.memRead[addr].flags || 0==debugger.memRead[(addr+1)&0xFFFF].flags)
+		if(true!=debugger.enabled || (0==debugger.memRead[addr].flags && 0==debugger.memRead[(addr+1)&0xFFFF].flags))
 		{
 			return mem.FetchWord(this,addr);
 		}
