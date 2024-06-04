@@ -246,6 +246,19 @@ void MC6809::Debugger::BeforeRunOneInstructionMainBody(MC6809 &cpu,const MemoryA
 	{
 		PCLogPtr=(PCLogPtr+1)&PC_LOG_MASK;
 	}
+
+	if(true==monitorBIOSTapeRead)
+	{
+		if(0xF39C==cpu.state.PC || 0xF4A0==cpu.state.PC)
+		{
+			uint8_t opCode=mem.NonDestructiveFetchByte(cpu.state.PC);
+			uint8_t operand=mem.NonDestructiveFetchByte(cpu.state.PC+1);
+			if(0xA7==opCode && 0x02==operand)
+			{
+				std::cout << cpputil::Ubtox(cpu.state.A()) << std::endl;
+			}
+		}
+	}
 }
 std::vector <MC6809::Debugger::PCLogType> MC6809::Debugger::GetPCLog(void)
 {

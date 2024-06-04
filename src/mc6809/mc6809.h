@@ -660,6 +660,8 @@ public:
 		uint16_t nextDisassemblyAddr=0;
 		std::string externalBreakReason;
 
+		bool monitorBIOSTapeRead=false;
+
 		BreakPoint lastBreakPointInfo;
 		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
 		BreakPoint oneTimeBreakPoints[MEMORY_ADDRESS_SIZE];

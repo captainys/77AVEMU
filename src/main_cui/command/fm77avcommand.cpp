@@ -152,6 +152,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["AUDIOLEVEL"]=ENABLE_AUDIOLEVELMETER;
 	featureMap["LOGDISASM"]=ENABLE_LOG_DISASM;
 	featureMap["LOGALLREGS"]=ENABLE_LOG_ALLREGISTERS;
+	featureMap["BIOSTAPEMON"]=ENABLE_BIOS_TAPE_READ_MONITOR;
 
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
@@ -467,6 +468,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Log disassembly in history." << std::endl;
 	std::cout << "LOGALLREGS" << std::endl;
 	std::cout << "  Log all registers in history." << std::endl;
+	std::cout << "BIOSTAPEMON" << std::endl;
+	std::cout << "  BIOS Tape-Read Monitor." << std::endl;
 
 
 	std::cout << "<< Event that can break or monitor>>" << std::endl;
@@ -1492,6 +1495,10 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.subCPU.debugger.logAllRegisters=true;
 			std::cout << "Enabled logging all registers in history." << std::endl;
 			break;
+		case ENABLE_BIOS_TAPE_READ_MONITOR:
+			fm77av.mainCPU.debugger.monitorBIOSTapeRead=true;
+			std::cout << "Enabled BIOS Tape Read Monitor." << std::endl;
+			break;
 		default:
 			std::cout << "Enable What?" << std::endl;
 			Error_WrongParameter(cmd);
@@ -1589,6 +1596,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 			fm77av.mainCPU.debugger.logAllRegisters=false;
 			fm77av.subCPU.debugger.logAllRegisters=false;
 			std::cout << "Disabled logging all registers in history." << std::endl;
+			break;
+		case ENABLE_BIOS_TAPE_READ_MONITOR:
+			fm77av.mainCPU.debugger.monitorBIOSTapeRead=false;
+			std::cout << "Disabled BIOS Tape Read Monitor." << std::endl;
 			break;
 		default:
 			std::cout << "Disable What?" << std::endl;
