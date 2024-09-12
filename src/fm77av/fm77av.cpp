@@ -303,6 +303,11 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 				fdc.SetWriteProtect(drv,true);
 			}
 		}
+		/*! LoadD77orRDDorRAW sets diskChanged flag, and also make it drive-not-ready for the
+		    at least next I/O check, and for 50ms.
+		    If the disk was inserted on power on, make it immediately ready.
+		*/
+		fdc.CancelDiskChanged(drv);
 	}
 
 
