@@ -163,6 +163,8 @@ public:
 		bool CRTCHaltsSubCPU=false;  // True in FM-7/8 speed mode.
 
 		SystemState main,sub;
+
+		unsigned int appSpecificSetting=0;
 	};
 	State state;
 
@@ -387,6 +389,14 @@ public:
 	*/
 	void SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool right,bool up,bool down,bool run,bool pause);
 
+	/*!
+	*/
+	void SetMouseMotion(int dx,int dy);
+
+	/*!
+	*/
+	void SetMouseButtonState(bool lButton,bool rButton);
+
 	/*! Should implement this function when adding disk drive, rs232c etc.
 	*/
 	bool ExternalDevicePresent(void) const;
@@ -420,6 +430,11 @@ public:
 	bool AutoSaveSymbolTable(void) const;
 
 	int TestSuccess(void) const;
+
+	void IdentifyApplication(void);
+	bool GetVMMousePosition(int &mx,int &my);
+	void ControlMouse(int &diffX,int &diffY,int mx,int my);
+	void DontControlMouse(void);
 };
 
 /* } */

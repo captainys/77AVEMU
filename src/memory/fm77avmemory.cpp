@@ -497,7 +497,7 @@ uint8_t *PhysicalMemory::GetCurrentVRAMBank(void)
 
 uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 {
-	auto fm77avPtr=(const FM77AV *)vmPtr;
+	auto fm77avPtr=(FM77AV *)vmPtr;
 	switch(memType[addr])
 	{
 	case MEMTYPE_RAM:
@@ -587,6 +587,11 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 	case MEMTYPE_MAINSYS_INITIATOR_ROM: // Can be TWR
 		if(true==state.avBootROM)
 		{
+			if(0x6000==fm77avPtr->mainCPU.state.PC)
+			{
+				// Must be a good timing to identify an app.
+				fm77avPtr->IdentifyApplication();
+			}
 			return ROM_INITIATOR[addr&(INITIATOR_ROM_SIZE-1)];
 		}
 		return state.data[addr];
@@ -603,6 +608,11 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 		}
 		return 0xFF;
 	case MEMTYPE_MAINSYS_BOOT_ROM:
+		if(0xFE00==fm77avPtr->mainCPU.state.PC)
+		{
+			// Must be a good timing to identify an app.
+			fm77avPtr->IdentifyApplication();
+		}
 		return state.data[addr];
 	case MEMTYPE_MAIN_RESET_VECTOR:
 		if(true!=state.FE00ROMMode)
@@ -657,7 +667,9 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 
 	if(true==var.memAttr[addr].brkOnRead)
 	{
-		auto data=FetchByteConst(addr);
+		auto data=NonDestructiveFetchByte(addr);
+		// Use NonDestructiveFetchByte instead of FetchByteConst.
+		// FetchByteConst will abort if addr is an I/O-address.
 		if(var.memAttr[addr].brkOnReadMinMax[0]<=data && data<=var.memAttr[addr].brkOnReadMinMax[1])
 		{
 			auto dmac=fm77avPtr->ToDMAC(accessFrom);

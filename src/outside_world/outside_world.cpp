@@ -64,11 +64,11 @@ void Outside_World::ProcessInkey(class FM77AV &fm77av,int fm77avKey)
 }
 void Outside_World::ProcessMouse(class FM77AV &fm77av,int lb,int mb,int rb,int mx,int my)
 {
-	// fm77av.SetMouseButtonState((0!=lb),(0!=rb));
+	fm77av.SetMouseButtonState((0!=lb),(0!=rb));
 	if(true==mouseIntegrationActive)
 	{
 		int diffX=0,diffY=0;
-		// fm77av.ControlMouse(diffX,diffY,mx,my,fm77av.state.biosVersion);  Can I do it like Towns?  I'll see.
+		fm77av.ControlMouse(diffX,diffY,mx,my);
 		if(0==diffX && 0==diffY)
 		{
 			--mouseStationaryCount;
@@ -93,7 +93,7 @@ void Outside_World::ProcessMouse(class FM77AV &fm77av,int lb,int mb,int rb,int m
 			mouseIntegrationActive=true;
 			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 		}
-		// fm77av.DontControlMouse();
+		fm77av.DontControlMouse();
 	}
 	lastMx=mx;
 	lastMy=my;

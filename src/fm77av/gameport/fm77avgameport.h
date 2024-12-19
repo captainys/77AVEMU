@@ -85,6 +85,7 @@ public:
 		bool COM=false;       // COM from CPU.
 		unsigned char TRIG=3; // TRIG from CPU.
 		bool button[2],left,right,up,down,run,pause;
+		int mouseHold=0;  // PSY-O-BLADE expects zero mouse motion for the first reading.
 
 		Vec2i mouseMotion;  // For CyberStick, used as XY position.
 		int zAxis=0; // For CyberStick

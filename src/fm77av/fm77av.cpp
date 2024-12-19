@@ -1,3 +1,4 @@
+#include <string.h>
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -302,6 +303,11 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 				fdc.SetWriteProtect(drv,true);
 			}
 		}
+		/*! LoadD77orRDDorRAW sets diskChanged flag, and also make it drive-not-ready for the
+		    at least next I/O check, and for 50ms.
+		    If the disk was inserted on power on, make it immediately ready.
+		*/
+		fdc.CancelDiskChanged(drv);
 	}
 
 
@@ -983,6 +989,28 @@ void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool r
 	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.fm77avTime);
 }
 
+void FM77AV::SetMouseMotion(int dx,int dy)
+{
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==FM77AVGamePort::MOUSE)
+		{
+			p.mouseMotion.Set(dx,dy);
+		}
+	}
+}
+void FM77AV::SetMouseButtonState(bool lButton,bool rButton)
+{
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==FM77AVGamePort::MOUSE)
+		{
+			p.button[0]=lButton;
+			p.button[1]=rButton;
+		}
+	}
+}
+
 std::vector <std::string> FM77AV::GetIRQStatusText(void) const
 {
 	std::vector <std::string> text;
@@ -1226,4 +1254,116 @@ int FM77AV::TestSuccess(void) const
 		}
 	}
 	return 0;
+}
+
+void FM77AV::IdentifyApplication(void)
+{
+	auto &drv=fdc.state.drive[0];
+	auto imgFilePtr=fdc.GetDriveImageFile(0);
+	auto diskIdx=drv.diskIndex;
+	DiskDrive::DiskImage *imgPtr=nullptr;
+	if(nullptr!=imgFilePtr)
+	{
+		imgPtr=&imgFilePtr->img;
+	}
+
+	if(nullptr!=imgPtr)
+	{
+		auto sector=imgPtr->ReadSector(diskIdx,0,0,0,0,1,false);
+		if(256<=sector.data.size())
+		{
+			const unsigned char psyoblade[11]=
+			{
+				0x50,0x53,0x59,0xa5,0x4f,0xa5,0x42,0x4c,0x41,0x44,0x45
+			};
+			if(0==memcmp(sector.data.data()+0xF0,psyoblade,11))
+			{
+				std::cout << "Identified as PSY-O-BLADE (T&E 1988)" << std::endl;
+				state.appSpecificSetting=FM77AV_APPSPECIFIC_PSY_O_BLADE;
+				for(auto &p : gameport.state.ports)
+				{
+					p.mouseHold=8;
+				}
+			}
+		}
+	}
+}
+bool FM77AV::GetVMMousePosition(int &mx,int &my)
+{
+	switch(state.appSpecificSetting)
+	{
+	case FM77AV_APPSPECIFIC_PSY_O_BLADE:
+		mx=physMem.NonDestructiveFetchByte(0x1D0A6);
+		mx<<=8;
+		mx|=physMem.NonDestructiveFetchByte(0x1D0A7);
+		my=physMem.NonDestructiveFetchByte(0x1D0A9);
+		mx*=2; // Scale up to 640x400
+		my*=2; // Scale up to 640x400
+		return true;
+	}
+	return false;
+}
+void FM77AV::ControlMouse(int &diffX,int &diffY,int mx,int my)
+{
+	int vmx,vmy;
+	diffX=0;
+	diffY=0;
+	if(true==GetVMMousePosition(vmx,vmy))
+	{
+		if(FM77AV_APPSPECIFIC_PSY_O_BLADE==state.appSpecificSetting)
+		{
+			mx/=2;
+			my/=2;
+			mx*=2;
+			my*=2;
+		}
+
+		diffX=mx-vmx;
+		diffY=my-vmy;
+
+		auto absDiffX=diffX;
+		auto absDiffY=diffY;
+		if(absDiffX<0)
+		{
+			absDiffX=-absDiffX;
+		}
+		if(absDiffY<0)
+		{
+			absDiffY=-absDiffY;
+		}
+
+		int xLimit=8,yLimit=8;
+		if(64<=absDiffX)
+		{
+			xLimit=16;
+		}
+		else if(16<=absDiffX)
+		{
+			xLimit=8;
+		}
+		else
+		{
+			xLimit=1;
+		}
+		if(64<=absDiffY)
+		{
+			yLimit=16;
+		}
+		else if(16<=absDiffY)
+		{
+			yLimit=8;
+		}
+		else
+		{
+			yLimit=1;
+		}
+
+		diffX=std::min(xLimit,std::max(-xLimit,diffX));
+		diffY=std::min(yLimit,std::max(-yLimit,diffY));
+
+		SetMouseMotion(-diffX,-diffY); //
+	}
+}
+void FM77AV::DontControlMouse(void)
+{
 }

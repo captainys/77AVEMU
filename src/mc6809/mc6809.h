@@ -660,6 +660,8 @@ public:
 		uint16_t nextDisassemblyAddr=0;
 		std::string externalBreakReason;
 
+		bool monitorBIOSTapeRead=false;
+
 		BreakPoint lastBreakPointInfo;
 		BreakPoint breakPoints[MEMORY_ADDRESS_SIZE];
 		BreakPoint oneTimeBreakPoints[MEMORY_ADDRESS_SIZE];
@@ -948,7 +950,7 @@ public:
 	}
 	inline uint16_t FetchWord(MemoryAccess &mem,uint16_t addr)
 	{
-		if(true!=debugger.enabled || 0==debugger.memRead[addr].flags || 0==debugger.memRead[(addr+1)&0xFFFF].flags)
+		if(true!=debugger.enabled || (0==debugger.memRead[addr].flags && 0==debugger.memRead[(addr+1)&0xFFFF].flags))
 		{
 			return mem.FetchWord(this,addr);
 		}
