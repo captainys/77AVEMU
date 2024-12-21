@@ -98,6 +98,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
+	primaryCmdMap["SAVEMEM"]=CMD_SAVE_MEMORY;
 	primaryCmdMap["AUTOSTOPKEY"]=CMD_AUTOSTOPKEY;
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
 	primaryCmdMap["ADDLAB"]=CMD_ADD_LABEL;
@@ -254,6 +255,10 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "LOADSTATE fileName" << std::endl;
 	std::cout << "  Load machine state (experimental)" << std::endl;
 
+	std::cout << "SAVEMEM filename\n";
+	std::cout << "SAVEMEM filename main/sub/phys\n";
+	std::cout << "  Save memory to file.  With all current memory mappings.\n";
+
 	std::cout << "GAMEPORT 0/1 device" << std::endl;
 	std::cout << "  Connect device to game port." << std::endl;
 
@@ -292,9 +297,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "PRINT info|PRI info|P info" << std::endl;
 	std::cout << "DUMP info|DM info" << std::endl;
 	std::cout << "  Print/Dump information." << std::endl;
-	std::cout << "MEMDUMP or MD seg:address" << std::endl;
-	std::cout << "MEMDUMP or MD seg:address wid hei step" << std::endl;
-	std::cout << "MEMDUMP or MD seg:address wid hei step 1/0" << std::endl;
+	std::cout << "MEMDUMP or MD main_or_sub:address" << std::endl;
+	std::cout << "MEMDUMP or MD main_or_sub:address wid hei step" << std::endl;
+	std::cout << "MEMDUMP or MD main_or_sub:address wid hei step 1/0" << std::endl;
 	std::cout << "  Memory Dump.  If you enter wid,hei,step it will dump non-16x16 columns." << std::endl;
 	std::cout << "  If you enter 1/0, you can control to show or hide ASCII dump." << std::endl;
 	std::cout << "BP EIP|BRK EIP" << std::endl;
@@ -1197,6 +1202,77 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			else
 			{
 				std::cout << "Loaded " << cmd.argv[1] << std::endl;
+			}
+		}
+		else
+		{
+			Error_TooFewArgs(cmd);
+		}
+		break;
+	case CMD_SAVE_MEMORY:
+		if(2<=cmd.argv.size())
+		{
+			std::vector <unsigned char> bin;
+			if(2==cmd.argv.size()) // Save entire memory
+			{
+				for(size_t i=0; i<HasROMImages::PHYSMEM_SIZE; ++i)
+				{
+					bin.push_back(fm77av.physMem.NonDestructiveFetchByte(i));
+				}
+			}
+			else if(3==cmd.argv.size())
+			{
+				std::string ARG=cmd.argv[2];
+				for(auto &c : ARG)
+				{
+					c=toupper(c);
+				}
+				if(ARG=="MAIN")
+				{
+					for(unsigned i=0; i<0x10000; ++i)
+					{
+						bin.push_back(fm77av.mainMemAcc.NonDestructiveFetchByte(i));
+					}
+				}
+				else if(ARG=="SUB")
+				{
+					for(unsigned i=0; i<0x10000; ++i)
+					{
+						bin.push_back(fm77av.subMemAcc.NonDestructiveFetchByte(i));
+					}
+				}
+				else if(ARG=="PHYS")
+				{
+					for(size_t i=0; i<HasROMImages::PHYSMEM_SIZE; ++i)
+					{
+						bin.push_back(fm77av.physMem.NonDestructiveFetchByte(i));
+					}
+				}
+				else
+				{
+					Error_WrongParameter(cmd);
+					return;
+				}
+			}
+			else if(4==cmd.argv.size())
+			{
+			}
+			if(0<bin.size())
+			{
+				std::ofstream ofp(cmd.argv[1],std::ios::binary);
+				if(true==ofp.is_open())
+				{
+					ofp.write((char *)bin.data(),bin.size());
+					std::cout << "Saved\n";
+				}
+				else
+				{
+					Error_CannotSaveFile(cmd);
+				}
+			}
+			else
+			{
+				Error_WrongParameter(cmd);
 			}
 		}
 		else
