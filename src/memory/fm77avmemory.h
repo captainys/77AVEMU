@@ -147,6 +147,29 @@ public:
 
 	uint8_t memType[PHYSMEM_ADDR_SIZE];
 
+	class AccessLog
+	{
+	public:
+		bool read[PHYSMEM_ADDR_SIZE],write[PHYSMEM_ADDR_SIZE];
+		void Clear(void)
+		{
+			for(size_t i=0; i<PHYSMEM_ADDR_SIZE; ++i)
+			{
+				read[i]=false;
+				write[i]=false;
+			}
+		}
+	};
+	AccessLog accessLog;
+	void ClearAccessLog(void)
+	{
+		accessLog.Clear();
+	}
+	const AccessLog &GetAccessLog(void) const
+	{
+		return accessLog;
+	}
+
 	class State
 	{
 	public:

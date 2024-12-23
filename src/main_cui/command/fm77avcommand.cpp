@@ -136,7 +136,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["DOSMODE"]=CMD_DOSMODE;
 	primaryCmdMap["BASMODE"]=CMD_BASMODE;
 	primaryCmdMap["BASICMODE"]=CMD_BASMODE;
-
+	primaryCmdMap["CLEARACCESSLOG"]=CMD_CLEAR_ACCESS_LOG;
+	primaryCmdMap["CLACCLOG"]=CMD_CLEAR_ACCESS_LOG;
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -185,6 +186,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["CAS1"]=DUMP_CAS1;
 	dumpableMap["MEMFILTER"]=DUMP_MEMORY_FILTER;
 	dumpableMap["WHEREIAM"]=DUMP_WHERE_I_AM;
+	dumpableMap["ACCLOG"]=DUMP_MEMORY_ACCESS_LOG;
+	dumpableMap["MEMACCLOG"]=DUMP_MEMORY_ACCESS_LOG;
+	dumpableMap["MEMORYLOG"]=DUMP_MEMORY_ACCESS_LOG;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -332,6 +336,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Enable debugger OS9 mode." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
 	std::cout << "  Save CS:EIP Log to file." << std::endl;
+	std::cout << "CLEARACCESSLOG\n";
+	std::cout << "CLACCLOG\n";
+	std::cout << "  Clear memory-access log.  Memory-access log can be shown by PRI ACCLOG\n";
 
 	std::cout << "STARTAUDIOREC" << std::endl;
 	std::cout << "STOPAUDIOREC / ENDAUDIOREC" << std::endl;
@@ -530,6 +537,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Cassette (Save) files." << std::endl;
 	std::cout << "WHEREIAM" << std::endl;
 	std::cout << "  Print coordinate of the player/map when the coordinate expression is know." << std::endl;
+	std::cout << "ACCLOG\n";
+	std::cout << "MEMACCLOG\n";
+	std::cout << "MEMORYLOG\n";
 }
 
 FM77AVCommandInterpreter::Command FM77AVCommandInterpreter::Interpret(const std::string &cmdline) const
@@ -806,6 +816,10 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_BASMODE:
 		fm77av.physMem.state.DOSMode=false;
 		std::cout << "F-BASIC mode" << std::endl;
+		break;
+	case CMD_CLEAR_ACCESS_LOG:
+		fm77av.physMem.ClearAccessLog();
+		std::cout << "Cleared memory access log.\n";
 		break;
 
 	case CMD_FD0LOAD:
@@ -1901,6 +1915,52 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 					else
 					{
 						std::cout << "Unavailable" << std::endl;
+					}
+				}
+				break;
+			case DUMP_MEMORY_ACCESS_LOG:
+				if(2==cmd.argv.size())
+				{
+					auto &log=fm77av.physMem.GetAccessLog();
+					std::cout << "Read\n";
+					for(size_t base=0; base<0x40000; base+=0x1000)
+					{
+						const size_t step=0x80;
+						std::cout << cpputil::Itox(base) << " ";
+						for(size_t off=0; off<0x1000; off+=step)
+						{
+							bool access=false;
+							for(size_t i=0; i<step; ++i)
+							{
+								if(log.read[base+off+i])
+								{
+									access=true;
+									break;
+								}
+							}
+							std::cout << (access ? "*" : " ");
+						}
+						std::cout << "\n";
+					}
+					std::cout << "Write\n";
+					for(size_t base=0; base<0x40000; base+=0x1000)
+					{
+						const size_t step=0x80;
+						std::cout << cpputil::Itox(base) << " ";
+						for(size_t off=0; off<0x1000; off+=step)
+						{
+							bool access=false;
+							for(size_t i=0; i<step; ++i)
+							{
+								if(log.write[base+off+i])
+								{
+									access=true;
+									break;
+								}
+							}
+							std::cout << (access ? "*" : " ");
+						}
+						std::cout << "\n";
 					}
 				}
 				break;

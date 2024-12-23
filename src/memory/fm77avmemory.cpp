@@ -723,6 +723,8 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 	//                If address-transformation is needed (I hope no more though)
 	//                do it in a separate variable.
 
+	accessLog.read[addr]=true;
+
 	return FetchByteConst(addr);
 }
 uint16_t PhysicalMemory::FetchWord(const CanAccessMemory *accessFrom,uint32_t addr0,uint32_t addr1)
@@ -746,6 +748,8 @@ void PhysicalMemory::StoreByte(const CanAccessMemory *accessFrom,uint32_t addr,u
 			}
 		}
 	}
+
+	accessLog.write[addr]=true;
 
 	switch(memType[addr])
 	{
