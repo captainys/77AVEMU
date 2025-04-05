@@ -1553,6 +1553,16 @@ void FsGuiMainCanvas::State_SaveStateMem9(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::State_SaveStateMem(int slot)
 {
+	if(true==IsVMRunning())
+	{
+		char str[256];
+		sprintf(str,"SAVESTATEM %d",slot);
+		SendVMCommand(str);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 void FsGuiMainCanvas::State_LoadStateMem0(FsGuiPopUpMenuItem *)
 {
@@ -1596,6 +1606,17 @@ void FsGuiMainCanvas::State_LoadStateMem9(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::State_LoadStateMem(int slot)
 {
+	if(true==IsVMRunning())
+	{
+		char str[256];
+		sprintf(str,"LOADSTATEM %d",slot);
+		SendVMCommand(str);
+		VMMustResume=YSTRUE;
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
 }
 
 
