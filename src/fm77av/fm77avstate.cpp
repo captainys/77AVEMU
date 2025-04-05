@@ -10,29 +10,51 @@
 // (5) Try state path+file name
 // (6) If floppy-disk image, use image stored in the state file.
 
+std::vector <const Device *> FM77AV::DevicesToSaveState(void) const
+{
+	std::vector <const Device *> allDevices;
+	allDevices.push_back(this);
+	allDevices.push_back(&physMem);
+	allDevices.push_back(&mainMemAcc);
+	allDevices.push_back(&mainCPU);
+	allDevices.push_back(&subMemAcc);
+	allDevices.push_back(&subCPU);
+	allDevices.push_back(&crtc);
+	allDevices.push_back(&fdc);
+	allDevices.push_back(&keyboard);
+	allDevices.push_back(&dataRecorder);
+	allDevices.push_back(&sound);
+	allDevices.push_back(&gameport);
+	allDevices.push_back(&serialport);
+	allDevices.push_back(&dmac);
+	return allDevices;
+}
+std::vector <Device *> FM77AV::DevicesToLoadState(void)
+{
+	std::vector <Device *> allDevices;
+	allDevices.push_back(this);
+	allDevices.push_back(&physMem);
+	allDevices.push_back(&mainMemAcc);
+	allDevices.push_back(&mainCPU);
+	allDevices.push_back(&subMemAcc);
+	allDevices.push_back(&subCPU);
+	allDevices.push_back(&crtc);
+	allDevices.push_back(&fdc);
+	allDevices.push_back(&keyboard);
+	allDevices.push_back(&dataRecorder);
+	allDevices.push_back(&sound);
+	allDevices.push_back(&gameport);
+	allDevices.push_back(&serialport);
+	allDevices.push_back(&dmac);
+	return allDevices;
+}
 
 bool FM77AV::SaveState(std::string fName) const
 {
 	std::ofstream ofp(fName,std::ios::binary);
 	if(true==ofp.is_open())
 	{
-		std::vector <const Device *> allDevices;
-		allDevices.push_back(this);
-		allDevices.push_back(&physMem);
-		allDevices.push_back(&mainMemAcc);
-		allDevices.push_back(&mainCPU);
-		allDevices.push_back(&subMemAcc);
-		allDevices.push_back(&subCPU);
-		allDevices.push_back(&crtc);
-		allDevices.push_back(&fdc);
-		allDevices.push_back(&keyboard);
-		allDevices.push_back(&dataRecorder);
-		allDevices.push_back(&sound);
-		allDevices.push_back(&gameport);
-		allDevices.push_back(&serialport);
-		allDevices.push_back(&dmac);
-
-		for(auto devPtr : allDevices)
+		for(auto devPtr : DevicesToSaveState())
 		{
 			auto dat=devPtr->Serialize(fName);
 			uint32_t len=(uint32_t)dat.size();
@@ -49,22 +71,6 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	std::ifstream ifp(fName,std::ios::binary);
 	if(true==ifp.is_open())
 	{
-		std::vector <Device *> allDevices;
-		allDevices.push_back(this);
-		allDevices.push_back(&physMem);
-		allDevices.push_back(&mainMemAcc);
-		allDevices.push_back(&mainCPU);
-		allDevices.push_back(&subMemAcc);
-		allDevices.push_back(&subCPU);
-		allDevices.push_back(&crtc);
-		allDevices.push_back(&fdc);
-		allDevices.push_back(&keyboard);
-		allDevices.push_back(&dataRecorder);
-		allDevices.push_back(&sound);
-		allDevices.push_back(&gameport);
-		allDevices.push_back(&serialport);
-		allDevices.push_back(&dmac);
-
 		while(true!=ifp.eof())
 		{
 			uint32_t len=0;
@@ -79,7 +85,7 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 			ifp.read((char *)data.data(),len);
 
 			bool successful=false;
-			for(auto devPtr : allDevices)
+			for(auto devPtr : DevicesToLoadState())
 			{
 				if(true==devPtr->Deserialize(data,fName))
 				{

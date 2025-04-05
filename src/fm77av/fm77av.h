@@ -423,7 +423,11 @@ public:
 	/* virtual */ uint32_t SerializeVersion(void) const;
 	/* virtual */ void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;
 	/* virtual */ bool SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version);
+private:
+	std::vector <const Device *> DevicesToSaveState(void) const;
+	std::vector <Device *> DevicesToLoadState(void);
 
+public:
 	std::vector <std::string> GetIRQStatusText(void) const;
 
 	bool LoadSymbolTable(std::string fName);
