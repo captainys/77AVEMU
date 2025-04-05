@@ -244,6 +244,15 @@ public:
 		std::vector <FM77AVParam::TestCondMem> testCondMem;
 
 		// bool MAGUSAware=true;
+
+		class MemoryStateSave
+		{
+		public:
+			std::vector <uint8_t> data;
+			uint16_t mainPC,subPC;
+			uint64_t vmTime;
+		};
+		std::map <unsigned int,MemoryStateSave> memoryStateSave;
 	};
 	Variable var;
 	MemoryEvaluation mapXY[2];

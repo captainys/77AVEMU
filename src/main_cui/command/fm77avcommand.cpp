@@ -98,6 +98,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["GAMEPORT"]=CMD_GAMEPORT;
 	primaryCmdMap["SAVESTATE"]=CMD_SAVE_STATE;
 	primaryCmdMap["LOADSTATE"]=CMD_LOAD_STATE;
+	primaryCmdMap["SAVESTATEM"]=CMD_SAVE_STATE_MEM;
+	primaryCmdMap["LOADSTATEM"]=CMD_LOAD_STATE_MEM;
 	primaryCmdMap["SAVEMEM"]=CMD_SAVE_MEMORY;
 	primaryCmdMap["AUTOSTOPKEY"]=CMD_AUTOSTOPKEY;
 	primaryCmdMap["ADDSYM"]=CMD_ADD_SYMBOL;
@@ -255,9 +257,14 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save tape image as filename." << std::endl;
 
 	std::cout << "SAVESTATE fileName" << std::endl;
-	std::cout << "  Save machine state (experimental)" << std::endl;
+	std::cout << "  Save machine state." << std::endl;
 	std::cout << "LOADSTATE fileName" << std::endl;
-	std::cout << "  Load machine state (experimental)" << std::endl;
+	std::cout << "  Load machine state." << std::endl;
+
+	std::cout << "SAVESTATEM slot_number" << std::endl;
+	std::cout << "  Save machine state to memory slot.  Slot can be any integer." << std::endl;
+	std::cout << "LOADSTATEM slot_number" << std::endl;
+	std::cout << "  Load machine state from memory slot." << std::endl;
 
 	std::cout << "SAVEMEM filename\n";
 	std::cout << "SAVEMEM filename main/sub/phys\n";
@@ -1221,6 +1228,47 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		else
 		{
 			Error_TooFewArgs(cmd);
+		}
+		break;
+	case CMD_SAVE_STATE_MEM:
+		{
+			unsigned int slot=0;
+			if(2<=cmd.argv.size())
+			{
+				slot=cpputil::Atoi(cmd.argv[1].data());
+			}
+			FM77AV::Variable::MemoryStateSave state;
+			state.data=fm77av.SaveStateMem();
+			state.mainPC=fm77av.mainCPU.state.PC;
+			state.subPC=fm77av.subCPU.state.PC;
+			state.vmTime=fm77av.state.fm77avTime;
+			fm77av.var.memoryStateSave[slot]=state;
+			std::cout << "Saved state to memory slot:" << slot << std::endl;
+		}
+		break;
+	case CMD_LOAD_STATE_MEM:
+		{
+			unsigned int slot=0;
+			if(2<=cmd.argv.size())
+			{
+				slot=cpputil::Atoi(cmd.argv[1].data());
+			}
+			auto found=fm77av.var.memoryStateSave.find(slot);
+			if(fm77av.var.memoryStateSave.end()!=found)
+			{
+				if(true==fm77av.LoadStateMem(found->second.data))
+				{
+					std::cout << "Loaded" << std::endl;
+				}
+				else
+				{
+					std::cout << "Cannot load from slot " << slot << std::endl;
+				}
+			}
+			else
+			{
+				std::cout << "No state saved in slot " << slot << std::endl;
+			}
 		}
 		break;
 	case CMD_SAVE_MEMORY:
