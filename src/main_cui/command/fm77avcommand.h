@@ -215,6 +215,7 @@ public:
 		DUMP_MEMORY_FILTER,
 		DUMP_WHERE_I_AM,
 		DUMP_MEMORY_ACCESS_LOG,
+		DUMP_SAVESTATEM,
 	};
 
 	class Command

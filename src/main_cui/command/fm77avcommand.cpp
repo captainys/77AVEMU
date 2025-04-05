@@ -191,6 +191,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["ACCLOG"]=DUMP_MEMORY_ACCESS_LOG;
 	dumpableMap["MEMACCLOG"]=DUMP_MEMORY_ACCESS_LOG;
 	dumpableMap["MEMORYLOG"]=DUMP_MEMORY_ACCESS_LOG;
+	dumpableMap["SAVESTATEM"]=DUMP_SAVESTATEM;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -544,6 +545,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Cassette (Save) files." << std::endl;
 	std::cout << "WHEREIAM" << std::endl;
 	std::cout << "  Print coordinate of the player/map when the coordinate expression is know." << std::endl;
+	std::cout << "SAVESTATEM" << std::endl;
+	std::cout << "  List of memry-saved states.\n";
 	std::cout << "ACCLOG\n";
 	std::cout << "MEMACCLOG\n";
 	std::cout << "MEMORYLOG\n";
@@ -2008,6 +2011,24 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 							}
 							std::cout << (access ? "*" : " ");
 						}
+						std::cout << "\n";
+					}
+				}
+				break;
+			case DUMP_SAVESTATEM:
+				if(0==fm77av.var.memoryStateSave.size())
+				{
+					std::cout << "No state saved in memory.\n";
+				}
+				else
+				{
+					for(auto iter=fm77av.var.memoryStateSave.begin(); 
+					    fm77av.var.memoryStateSave.end()!=iter;
+					    ++iter)
+					{
+						std::cout << "[" << iter->first << "] ";
+						std::cout << " main-CPU at " << cpputil::Ustox(iter->second.mainPC);
+						std::cout << " sub-CPU at " << cpputil::Ustox(iter->second.subPC);
 						std::cout << "\n";
 					}
 				}
