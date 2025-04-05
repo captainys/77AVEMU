@@ -48,6 +48,24 @@ std::vector <Device *> FM77AV::DevicesToLoadState(void)
 	allDevices.push_back(&dmac);
 	return allDevices;
 }
+void FM77AV::RescheduleAfterLoadingState(std::vector <Device *> devices)
+{
+	// I was first running a loop for unscheduling all devices,
+	// and then a loop for re-scheduling devices that has non-null scheduleTime
+	// only to realize that UnscheduleDeviceCallBack was nullifying the scheduleTime.
+
+	for(auto devPtr : allDevices)
+	{
+		if(TIME_NO_SCHEDULE!=devPtr->commonState.scheduleTime)
+		{
+			ScheduleDeviceCallBack(*devPtr,devPtr->commonState.scheduleTime);
+		}
+		else
+		{
+			UnscheduleDeviceCallBack(*devPtr);
+		}
+	}
+}
 
 bool FM77AV::SaveState(std::string fName) const
 {
@@ -102,21 +120,7 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 			}
 		}
 
-		// I was first running a loop for unscheduling all devices,
-		// and then a loop for re-scheduling devices that has non-null scheduleTime
-		// only to realize that UnscheduleDeviceCallBack was nullifying the scheduleTime.
-
-		for(auto devPtr : allDevices)
-		{
-			if(TIME_NO_SCHEDULE!=devPtr->commonState.scheduleTime)
-			{
-				ScheduleDeviceCallBack(*devPtr,devPtr->commonState.scheduleTime);
-			}
-			else
-			{
-				UnscheduleDeviceCallBack(*devPtr);
-			}
-		}
+		RescheduleAfterLoadingState(DevicesToLoadState());
 
 		var.justLoadedState=true;
 
@@ -124,6 +128,65 @@ bool FM77AV::LoadState(std::string fName,class Outside_World &outsideWorld)
 	}
 	return false;
 }
+
+std::vector <uint8_t> FM77AV::SaveStateMem(void) const
+{
+	std::vector <uint8_t> state;
+	for(auto devPtr : DevicesToSaveState())
+	{
+		auto dat=devPtr->Serialize("MEM");
+		uint32_t len=(uint32_t)dat.size();
+		PushUint32(state,len);
+		state.insert(state.end(),dat.begin(),dat.end());
+	}
+	return state;
+}
+bool FM77AV::LoadStateMem(const std::vector <uint8_t> &state)
+{
+	for(size_t ptr=0; ptr+4<=state.size(); )
+	{
+		const uint8_t *data=state.data()+ptr;
+		uint32_t len=ReadUint32(data); // This increments the pointer.
+		if(0==len)
+		{
+			break;
+		}
+
+		ptr+=4;
+		auto left=state.size()-ptr;
+		if(left<len)
+		{
+			std::cout << "Memory-Saved State is too short." << std::endl;
+			return false;
+		}
+
+		std::vector <uint8_t> DATA;
+		DATA.insert(DATA.end(),data,data+len);
+		ptr+=len;
+
+		bool successful=false;
+		for(auto devPtr : DevicesToLoadState())
+		{
+			if(true==devPtr->Deserialize(DATA,"MEM"))
+			{
+				successful=true;
+				break;
+			}
+		}
+
+		if(true!=successful)
+		{
+			return false;
+		}
+	}
+
+	RescheduleAfterLoadingState(DevicesToLoadState());
+
+	var.justLoadedState=true;
+	return true;
+}
+
+
 
 /* virtual */ uint32_t FM77AV::SerializeVersion(void) const
 {
