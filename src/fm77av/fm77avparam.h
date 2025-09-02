@@ -135,7 +135,7 @@ public:
 
 
 	// autoStart flag is for GUI environment only.
-	bool autoStart=false;
+	bool autoStartOnLoad=false;
 
 	std::string errorMsg;
 

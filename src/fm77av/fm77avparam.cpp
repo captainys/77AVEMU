@@ -73,7 +73,7 @@ FM77AVProfile::FM77AVProfile()
 void FM77AVProfile::CleanUp(void)
 {
 	FM77AVParam::CleanUp();
-	autoStart=false;
+	autoStartOnLoad=false;
 
 	// Expect GUI environment.
 	autoScaling=true;
@@ -145,7 +145,7 @@ std::vector <std::string> FM77AVProfile::Serialize(void) const
 	}
 
 	text.push_back("AUTOSTAR ");
-	text.back()+=(autoStart ? "1" : "0");
+	text.back()+=(autoStartOnLoad ? "1" : "0");
 
 	sstream.str("");
 	sstream << "SCALING_ " << scaling;
@@ -325,7 +325,7 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 		{
 			if(2<=argv.size())
 			{
-				autoStart=(0!=cpputil::Atoi(argv[1].c_str()));
+				autoStartOnLoad=(0!=cpputil::Atoi(argv[1].c_str()));
 			}
 		}
 		else if(ARGV0=="GAMEPORT")

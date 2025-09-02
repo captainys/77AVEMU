@@ -753,7 +753,7 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 
 	profile.machineType=StrToMachineType(machineTypeDrp->GetSelectedString().c_str());
 
-	profile.autoStart=(YSTRUE==autoStartBtn->GetCheck());
+	profile.autoStartOnLoad=(YSTRUE==autoStartBtn->GetCheck());
 
 	profile.scaling=scrnScaleTxt->GetInteger();
 	profile.autoScaling=(YSTRUE==scrnAutoScaleBtn->GetCheck());
@@ -878,7 +878,7 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 		machineTypeDrp->SelectByString(MachineTypeToStr(profile.machineType).c_str());
 	}
 
-	if(true==profile.autoStart)
+	if(true==profile.autoStartOnLoad)
 	{
 		autoStartBtn->SetCheck(YSTRUE);
 	}
