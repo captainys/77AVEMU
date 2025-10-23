@@ -498,3 +498,91 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 	errorMsg="";
 	return true;
 }
+
+void FM77AVProfile::MakeRelativePath(std::string baseDir,std::string alias)
+{
+	MakeRelative(startUpStateFName,baseDir,alias);
+
+	MakeRelative(ROMPath,baseDir,alias);
+	MakeRelative(quickStateSaveFName,baseDir,alias);
+	MakeRelative(quickScrnShotDir,baseDir,alias);;
+
+	for(auto &p : imgSearchPaths)
+	{
+		MakeRelative(p,baseDir,alias);
+	}
+	for(auto p : fileNameAlias)
+	{
+		MakeRelative(p.second,baseDir,alias);
+		fileNameAlias[p.first]=p.second;
+	}
+	MakeRelative(t77Path,baseDir,alias);
+	MakeRelative(t77SavePath,baseDir,alias);
+	for(auto &f : fdImgFName)
+	{
+		MakeRelative(f,baseDir,alias);
+	}
+}
+
+void FM77AVProfile::MakeRelative(std::string &fName,std::string baseDir,std::string alias)
+{
+	auto src=fName;
+	for(auto &c : src)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+	for(auto &c : baseDir)
+	{
+		if('\\'==c)
+		{
+			c='/';
+		}
+	}
+
+	if(0<baseDir.size() && '/'==baseDir.back())
+	{
+		baseDir.pop_back();
+	}
+
+	// Special case baseDir==src
+	if(""!=src && ""!=baseDir && (baseDir==src || (baseDir+"/")==src))
+	{
+		fName=alias;
+		return;
+	}
+
+	// (1) src is longer or equal to than baseDir.
+	// (2) baseDir matches the first part of src, and
+	// (3) subsequent char is '/'.
+
+	// (1)
+	if(src.size()<=baseDir.size())
+	{
+		return;
+	}
+
+	// (2)
+	auto chopOff=src;
+	chopOff.resize(baseDir.size());
+	if(baseDir!=chopOff)
+	{
+		return;
+	}
+
+	// (3)
+	if(src[baseDir.size()]!='/')
+	{
+		return;
+	}
+
+	if(0<=alias.size() && alias.back()=='/')
+	{
+		alias.pop_back();
+	}
+
+	alias.insert(alias.end(),src.begin()+baseDir.size(),src.end());
+	std::swap(fName,alias);
+}

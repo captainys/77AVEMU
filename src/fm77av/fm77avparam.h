@@ -145,6 +145,9 @@ public:
 	void CleanUp(void);
 	std::vector <std::string> Serialize(void) const;
 	bool Deserialize(const std::vector <std::string> &text);
+
+	void MakeRelativePath(std::string baseDir,std::string alias);
+	void MakeRelative(std::string &fName,std::string baseDir,std::string alias);
 };
 
 

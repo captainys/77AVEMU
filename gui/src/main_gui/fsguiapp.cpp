@@ -258,6 +258,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 		subMenu->AddTextItem(0,FSKEY_A,L"Save Profile As")->BindCallBack(&THISCLASS::File_SaveProfileAs,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Save as Default")->BindCallBack(&THISCLASS::File_SaveDefaultProfile,this);
 		subMenu->AddTextItem(0,FSKEY_NULL,L"Reload Default")->BindCallBack(&THISCLASS::File_ReloadDefaultProfile,this);
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Make File/Dir Names Relative to ${profiledir}")->BindCallBack(&THISCLASS::File_MakeRelativePath,this);
 
 		{
 			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_N,L"New")->AddSubMenu();
@@ -1206,6 +1207,23 @@ bool FsGuiMainCanvas::LoadProfile(YsWString fName)
 		}
 	}
 	return loaded;
+}
+
+void FsGuiMainCanvas::File_MakeRelativePath(FsGuiPopUpMenuItem *)
+{
+	if(nullptr!=profileDlg)
+	{
+		auto profile=profileDlg->GetProfile();
+
+		YsWString wPath,wFile;
+		lastSelectedProfileFName.SeparatePathFile(wPath,wFile);
+
+		profile.MakeRelativePath(wPath.GetUTF8String().c_str(),"${profiledir}");
+
+		profileDlg->SetProfile(profile);
+
+		SetNeedRedraw(YSTRUE);
+	}
 }
 
 YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
