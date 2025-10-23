@@ -162,7 +162,6 @@ set(SRCS
 ${platform_SRCS}
 fsguiapp.cpp
 fsguimain.cpp
-profiledlg.h
 profiledlg.cpp
 singleton.cpp
 runvm.cpp
@@ -173,6 +172,7 @@ ${platform_HEADERS}
 fsguiapp.h
 profiledlg.h
 runvm.h
+profiledlg.h
 )
 
 

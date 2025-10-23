@@ -192,8 +192,32 @@ FsGuiMainCanvas::~FsGuiMainCanvas()
 	DeleteMainMenu();
 }
 
+bool FsGuiMainCanvas::GUIOptions::RecognizeArguments(int ac,char *av[])
+{
+	for(int i=1; i<ac; ++i)
+	{
+		std::string arg=av[i];
+		if(("-basedir"==arg || "-BASEDIR"==arg) && i+1<ac)
+		{
+			profileDirSysENC=av[i+1];
+			++i;
+		}
+		else
+		{
+			std::cout << "Unrecognized paramter " << av[i] << "\n";
+			return false;
+		}
+	}
+	return true;
+}
+
 void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 {
+	GUIOptions GUIopt;
+	GUIopt.RecognizeArguments(argc,argv);
+
+	profileDirSysENC=GUIopt.profileDirSysENC;
+
 	MakeMainMenu();
 	profileDlg->Make();
 	LoadProfile(GetDefaultProfileFileName());
@@ -207,6 +231,18 @@ void FsGuiMainCanvas::Initialize(int argc,char *argv[])
 	YsDisregardVariable(argc);
 	YsDisregardVariable(argv);
 	YsGLSLCreateSharedRenderer();
+
+	bool profileLoaded=false;
+	if(2<=argc)
+	{
+		YsWString profileFileName;
+		YsSystemEncodingToUnicode(profileFileName,argv[1]);
+		profileLoaded=LoadProfile(profileFileName);
+	}
+	if(true!=profileLoaded)
+	{
+		File_ReloadDefaultProfile(nullptr);
+	}
 }
 
 void FsGuiMainCanvas::MakeMainMenu(void)
@@ -981,6 +1017,9 @@ void FsGuiMainCanvas::File_SaveDefaultConfirm(FsGuiDialog *dlg,int returnCode)
 void FsGuiMainCanvas::File_ReloadDefaultProfile(FsGuiPopUpMenuItem *)
 {
 	LoadProfile(GetDefaultProfileFileName());
+	lastSelectedProfileFName=GetDefaultProfileFileName();
+	// In this case, update lastSelectedProfile anyway, even if the default profile does not exist yet.
+	// Not doing so may mess up MakeRelativePath.
 }
 
 void FsGuiMainCanvas::File_SaveProfile(FsGuiPopUpMenuItem *)
@@ -1084,8 +1123,9 @@ void FsGuiMainCanvas::SaveProfile(YsWString fName) const
 	fp.Fclose();
 	lastSelectedProfileFName=fName;
 }
-void FsGuiMainCanvas::LoadProfile(YsWString fName)
+bool FsGuiMainCanvas::LoadProfile(YsWString fName)
 {
+	bool loaded=false;
 	std::vector <std::string> text;
 
 	profileDlg->profileFNameTxt->SetText(fName);
@@ -1102,6 +1142,7 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 		FM77AVProfile profile;
 		if(true==profile.Deserialize(text))
 		{
+			loaded=true;
 			profileDlg->SetProfile(profile);
 			if(true==profile.autoStartOnLoad)
 			{
@@ -1134,6 +1175,7 @@ void FsGuiMainCanvas::LoadProfile(YsWString fName)
 			lastSelectedTapeFName.SetUTF8String(profile.t77SavePath.data());
 		}
 	}
+	return loaded;
 }
 
 YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
@@ -1146,8 +1188,24 @@ YsWString FsGuiMainCanvas::GetDefaultProfileFileName(void) const
 YsWString FsGuiMainCanvas::GetMutsuProfileDir(void) const
 {
 	YsWString path;
-	path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Mutsu_FM77AV");
-	YsFileIO::MkDir(path);
+	if(""!=profileDirSysENC)
+	{
+		std::map <std::string,std::string> specialPath;
+
+		std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+		specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+
+		auto expand=cpputil::ExpandFileName(profileDirSysENC.c_str(),specialPath);
+
+		YsSystemEncodingToUnicode(path,expand.c_str());
+
+		YsFileIO::MkDir(path);
+	}
+	else
+	{
+		path.MakeFullPathName(YsSpecialPath::GetUserDocDirW(),L"Mutsu_FM77AV");
+		YsFileIO::MkDir(path);
+	}
 	return path;
 }
 

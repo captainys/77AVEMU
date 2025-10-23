@@ -117,6 +117,7 @@ ProfileDialog::ProfileDialog(FsGuiMainCanvas *canvasPtr)
 
 void ProfileDialog::Make(void)
 {
+printf("%s %d\n",__FUNCTION__,__LINE__);
 	const int nShowPath=PATH_SHOW;
 
 	profileFNameTxt=AddStaticText(0,FSKEY_NULL,L"PROFILE",YSFALSE);
@@ -506,6 +507,7 @@ void ProfileDialog::Make(void)
 
 	FM77AVProfile defaultProfile;
 	SetProfile(defaultProfile);
+printf("%s %d\n",__FUNCTION__,__LINE__);
 }
 
 /* virtual */ void ProfileDialog::OnDropListSelChange(FsGuiDropList *drp,int prevSel)

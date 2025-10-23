@@ -74,7 +74,18 @@ public:
 		std::string label;
 	};
 
+	class GUIOptions
+	{
+	public:
+		std::string profileDirSysENC;
+
+		bool RecognizeArguments(int ac,char *av[]);
+	};
+
+
 	std::vector <std::string> VMLog;
+
+	std::string profileDirSysENC; // In system encoding.  If empty, ~/Documents/Mutsu_FM77AV will be used.
 
 	mutable YsWString lastSelectedProfileFName;
 	mutable YsWString lastSelectedFDFName;
@@ -206,7 +217,7 @@ private:
 	YsWString GetMutsuProfileDir(void) const;
 
 	void SaveProfile(YsWString fName) const;
-	void LoadProfile(YsWString fName);
+	bool LoadProfile(YsWString fName);
 
 	void File_SaveProfile(FsGuiPopUpMenuItem *);
 	void File_OpenProfile(FsGuiPopUpMenuItem *);
