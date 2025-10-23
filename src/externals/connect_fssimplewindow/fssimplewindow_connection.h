@@ -125,15 +125,17 @@ public:
 	virtual std::vector <std::string> MakeKeyMappingText(void) const;
 	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
 
-	virtual void Start(void);
-	virtual void Stop(void);
-	virtual void DevicePolling(class FM77AV &fm77av);
+	std::string GetProgramResourceDirectory(void) const override;
+
+	void Start(void) override;
+	void Stop(void) override;
+	void DevicePolling(class FM77AV &fm77av) override;
 	unsigned int KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey);
 
-	virtual void SetKeyboardLayout(unsigned int layout);
+	void SetKeyboardLayout(unsigned int layout) override;
 
-	virtual void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr);
-	virtual void RegisterPauseResume(std::string hostKeyLabel);
+	void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr) override;
+	void RegisterPauseResume(std::string hostKeyLabel) override;
 
 
 	class WindowConnection : public WindowInterface

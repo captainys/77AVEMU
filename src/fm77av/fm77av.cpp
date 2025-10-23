@@ -250,10 +250,16 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 	exasCompiler.LoadROMFiles(ROMPath);
 #endif
 
+	var.specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+	for(auto p : param.specialPath)
+	{
+		var.specialPath[p.first]=p.second;
+	}
+
 	state.machineType=param.machineType;
 	if(MACHINETYPE_AUTO==state.machineType)
 	{
-		state.machineType=LoadROMFilesAndIdentifyMachineType(ROMPath);
+		state.machineType=LoadROMFilesAndIdentifyMachineType(cpputil::ExpandFileName(ROMPath,var.specialPath));
 		if(MACHINETYPE_UNKNOWN==state.machineType)
 		{
 			std::cout << "Insufficient ROM files." << std::endl;

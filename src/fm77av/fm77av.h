@@ -243,7 +243,15 @@ public:
 		Address powerOffAt;
 		std::vector <FM77AVParam::TestCondMem> testCondMem;
 
-		// bool MAGUSAware=true;
+
+		/*! This special path is initialized in FM77AV::Initialize, and maps
+		      "progdir"
+		    to the resource directory.  It is same as the directory where the executable is stored
+		    in Windows and Linux, and Contents/Resources sub-directory of the application bundle
+		    in macOS.
+		*/
+		std::map <std::string,std::string> specialPath;
+
 
 		class MemoryStateSave
 		{

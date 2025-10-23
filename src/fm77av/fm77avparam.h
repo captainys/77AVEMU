@@ -117,6 +117,7 @@ public:
 	};
 	std::vector <TestCondMem> testCondMem;
 
+	std::unordered_map <std::string,std::string> specialPath;
 
 	// Toward semi-automated 1X RPG map generation.
 	std::string mapXYExpression[2];
