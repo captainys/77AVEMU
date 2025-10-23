@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <map>
 #include "fm77avdef.h"
 #include "fm77avkey.h"
 
@@ -117,7 +118,7 @@ public:
 	};
 	std::vector <TestCondMem> testCondMem;
 
-	std::unordered_map <std::string,std::string> specialPath;
+	std::map <std::string,std::string> specialPath;
 
 	// Toward semi-automated 1X RPG map generation.
 	std::string mapXYExpression[2];

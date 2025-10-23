@@ -268,7 +268,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 	}
 	else
 	{
-		if(true!=LoadROMFiles(ROMPath))
+		if(true!=LoadROMFiles(cpputil::ExpandFileName(ROMPath,var.specialPath)))
 		{
 			std::cout << "Failed to load ROM files." << std::endl;
 			return false;
@@ -483,8 +483,8 @@ unsigned int FM77AV::LoadROMFilesAndIdentifyMachineType(std::string ROMPath)
 	{
 		auto fName=cpputil::MakeFullPathName(param.ROMPath,toLoad.fName);
 		auto fNameAlt=cpputil::MakeFullPathName(param.ROMPath,toLoad.fNameAlt);
-		fName=FindFile(fName,param.fileNameAlias,param.imgSearchPaths);
-		fNameAlt=FindFile(fNameAlt,param.fileNameAlias,param.imgSearchPaths);
+		fName=FindFile(fName,param.fileNameAlias,param.specialPath,param.imgSearchPaths);
+		fNameAlt=FindFile(fNameAlt,param.fileNameAlias,param.specialPath,param.imgSearchPaths);
 		std::ifstream ifp(fName,std::ios::binary);
 		std::ifstream ifpAlt(fNameAlt,std::ios::binary);
 		if(true!=ifp.is_open() && true!=ifpAlt.is_open())
@@ -928,12 +928,17 @@ std::string FM77AV::FileNameAlias(std::string input) const
 
 std::string FM77AV::FindFile(std::string fName) const
 {
-	return FindFile(fName,var.fileNameAlias,var.imgSearchPaths);
+	return FindFile(fName,var.fileNameAlias,var.specialPath,var.imgSearchPaths);
 }
 
-/*static*/ std::string FM77AV::FindFile(std::string fName,const std::unordered_map<std::string,std::string> &aliases,const std::vector <std::string> &imgSearchPaths)
+/*static*/ std::string FM77AV::FindFile(
+    std::string fName,
+    const std::unordered_map<std::string,std::string> &aliases,
+    const std::map<std::string,std::string> &specialPath,
+    const std::vector <std::string> &imgSearchPaths)
 {
 	fName=FileNameAlias(fName,aliases);
+	fName=cpputil::ExpandFileName(fName,specialPath);
 #ifdef _WIN32
 	if(2<=fName.size() && ':'==fName[1])
 	{

@@ -293,7 +293,11 @@ public:
 	/*! Returns a file name found after applying alias and if relative path searching inside
 	    the imgSearchPaths.  If nothing is found, returns either alias or the input. */
 	std::string FindFile(std::string fName) const;
-	static std::string FindFile(std::string fName,const std::unordered_map<std::string,std::string> &aliases,const std::vector <std::string> &imgSearchPaths);
+	static std::string FindFile(
+	    std::string fName,
+	    const std::unordered_map<std::string,std::string> &aliases,
+	    const std::map<std::string,std::string> &specialPath,
+	    const std::vector <std::string> &imgSearchPaths);
 
 	bool NoWait(void) const;
 
