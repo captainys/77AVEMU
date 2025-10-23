@@ -618,6 +618,29 @@ YsWString FsGuiMainCanvas::GetRecentFileListFileName(void) const
 }
 
 
+std::map <std::string,std::string> FsGuiMainCanvas::MakeSpecialPathTable(void) const
+{
+	std::map <std::string,std::string> specialPath;
+
+	std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+	specialPath["progdir"]=outside_world->GetProgramResourceDirectory();
+
+	YsWString wPath,wFile;
+	lastSelectedProfileFName.SeparatePathFile(wPath,wFile);
+	specialPath["profiledir"]=wPath.GetUTF8String();
+
+	return specialPath;
+}
+
+void FsGuiMainCanvas::AddSpecialPathsToProfile(FM77AVParam &profile)
+{
+	std::pair <std::string,std::string> p;
+
+	YsWString wPath,wFile;
+	lastSelectedProfileFName.SeparatePathFile(wPath,wFile);
+
+	profile.specialPath["profiledir"]=wPath.GetUTF8String();
+}
 
 void FsGuiMainCanvas::Run(void)
 {
@@ -648,6 +671,8 @@ bool FsGuiMainCanvas::ReallyRun(bool usePipe)
 	YsString path,file;
 	profileFName.SeparatePathFile(path,file);
 	VM.profile.imgSearchPaths.push_back(path.c_str());
+
+	AddSpecialPathsToProfile(VM.profile);
 
 	printf("Image Search Path: %s\n",path.c_str());
 
@@ -946,22 +971,27 @@ YsWString FsGuiMainCanvas::GetAnyKnownDirectory(void) const
 	return L"";
 }
 
-std::vector <YsWString> FsGuiMainCanvas::CheckMissingROMFiles(void) const
+std::vector <std::string> FsGuiMainCanvas::CheckMissingROMFiles(void) const
 {
-	std::vector <YsWString> missing;
-	const YsWString ROMFName[]=
+	auto specialPath=MakeSpecialPathTable();
+
+	std::vector <std::string> missing;
+	const std::string ROMFName[]=
 	{
-		L"BOOT_BAS.ROM",
-		L"BOOT_DOS.ROM",
-		L"FBASIC30.ROM",
-		// L"SUBSYS.ROM" or L"SUBSYS_C"
+		"BOOT_BAS.ROM",
+		"BOOT_DOS.ROM",
+		"FBASIC30.ROM",
+		// "SUBSYS.ROM" or L"SUBSYS_C"
 	};
-	YsWString path=profileDlg->ROMDirTxt->GetWString();
+	std::string path=profileDlg->ROMDirTxt->GetString().c_str();
 	for(auto file : ROMFName)
 	{
-		YsWString ful;
-		ful.MakeFullPathName(path,file);
-		if(YSTRUE!=YsFileIO::CheckFileExist(ful))
+		std::string ful=cpputil::MakeFullPathName(path,file);
+
+		auto expand=cpputil::ExpandFileName(ful.c_str(),specialPath);
+
+		std::ifstream ifp(expand,std::ios::binary);
+		if(true!=ifp.is_open())
 		{
 			missing.push_back(file);
 		}

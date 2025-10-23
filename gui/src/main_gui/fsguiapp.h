@@ -153,6 +153,11 @@ public:
 	void Draw(void);
 
 
+	/*!
+	*/
+	std::map <std::string,std::string> MakeSpecialPathTable(void) const;
+	void AddSpecialPathsToProfile(FM77AVParam &profile);
+
 	/*! Start Mutsu_CUI with the profile set in the profileDlg.
 	*/
 	void Run(void);
@@ -174,7 +179,7 @@ public:
 
 private:
 	bool ReallyRun(bool usePipe=true);
-	std::vector <YsWString> CheckMissingROMFiles(void) const;
+	std::vector <std::string> CheckMissingROMFiles(void) const;
 
 	YsWString GetDefaultNewDiskImageFileName(void) const;
 	YsWString GetDefaultOpenDiskImageFileName(void) const;
