@@ -145,6 +145,9 @@ enum
 	FM77AVIO_DIGITAL_PALETTE_6=       0xFD3E,
 	FM77AVIO_DIGITAL_PALETTE_7=       0xFD3F,
 
+	FM77AVIO_WYM2203C_CONTROL=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
+	FM77AVIO_WYM2203C_DATA=           0xFD46,
+
 	FM77AVIO_MMR_0=                   0xFD80,
 	FM77AVIO_MMR_1=                   0xFD81,
 	FM77AVIO_MMR_2=                   0xFD82,
