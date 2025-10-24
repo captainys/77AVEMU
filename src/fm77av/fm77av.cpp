@@ -240,6 +240,8 @@ FM77AV::FM77AV() :
 
 bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside_World::WindowInterface *window)
 {
+	state.appSpecificSetting=param.appSpecificSetting;
+
 	var.fileNameAlias=param.fileNameAlias;  // Do it before loading tape and disk images.
 	var.imgSearchPaths=param.imgSearchPaths;  // Do it before loading tape and disk images.
 
@@ -998,6 +1000,12 @@ void FM77AV::SetGamePadState(int port,bool Abutton,bool Bbutton,bool left,bool r
 {
 	auto &p=gameport.state.ports[port&1];
 	p.SetGamePadState(Abutton,Bbutton,left,right,up,down,run,pause,state.fm77avTime);
+	if(FM77AV_APPSPECIFIC_LAYDOCK==state.appSpecificSetting && 0==port)
+	{
+		// Sync button B.
+		gameport.state.ports[1].device=FM77AVGamePort::FM77AVGamePort::GAMEPAD;
+		gameport.state.ports[1].SetGamePadState(Abutton,Bbutton,false,false,false,false,false,false,state.fm77avTime);
+	}
 }
 
 void FM77AV::SetMouseMotion(int dx,int dy)

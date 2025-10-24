@@ -8,6 +8,7 @@ class FM77AVArgv : public FM77AVParam
 {
 public:
 	void Help(void);
+	void PrintApplicationList(void) const;
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
 
 	bool TryLoadProfile(std::string fileName);

@@ -131,6 +131,25 @@ void FM77AVArgv::Help(void)
 	std::cout << "-SYM symbol-file" << std::endl;
 	std::cout << "  Load symbol file, and auto-save when modified." << std::endl;
 }
+
+void FM77AVArgv::PrintApplicationList(void) const
+{
+	std::cout << "PSYOBLADE\n";
+	std::cout << "  Improve mouse controllability.\n";
+	std::cout << "LAYDOCK\n";
+	std::cout << "  Laydock 1-player mode is pretty much unplayable because you cannot use\n";
+	std::cout << "  advanced weapons.  We often used one gamepad to control the fighter,\n";
+	std::cout << "  and pressed the space key with the palm or the wrist to shoot the\n";
+	std::cout << "  advanced weapon.\n";
+	std::cout << "  Let's say you take a friend as Player 2, a gunner.  The problem was\n";
+	std::cout << "  Player 2 was just boring because all Player 2 could do was shoot a\n";
+	std::cout << "  weapon!  Ridiculous!  How did they do that?\n";
+	std::cout << "  Such a poor playability for such a great scrolling shooter.\n";
+	std::cout << "  To solve this 40-year problem, you can select -APP LAYDOCK.  Then,\n";
+	std::cout << "  in the game, gameport 0 button B will also press gameport 1 button B.\n";
+	std::cout << "  You don't have to have your third hand to shoot the advanced weapons.\n";
+}
+
 bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 {
 	if(argc<2)
@@ -513,6 +532,26 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		{
 			symTableFName=argv[i+1];
 			++i;
+		}
+		else if("-APP"==ARG)
+		{
+			if(i+1<argc)
+			{
+				std::string APP=argv[i+1];
+				cpputil::Capitalize(APP);
+				if("?"==APP)
+				{
+					PrintApplicationList();
+					dontStart=true;
+				}
+				appSpecificSetting=FM77AVStrToApp(APP);
+				++i;
+			}
+			else
+			{
+				PrintApplicationList();
+				dontStart=true;
+			}
 		}
 		else
 		{

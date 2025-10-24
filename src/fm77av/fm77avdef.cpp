@@ -626,6 +626,8 @@ std::string FM77AVAppToStr(unsigned int app)
 	{
 	case FM77AV_APPSPECIFIC_PSY_O_BLADE:
 		return "PSYOBLADE";
+	case FM77AV_APPSPECIFIC_LAYDOCK:
+		return "LAYDOCK";
 	}
 	return "NONE";
 }
@@ -635,6 +637,10 @@ unsigned int FM77AVStrToApp(std::string str)
 	if("PSYOBLADE"==str || "PSY-O-BLADE"==str)
 	{
 		return FM77AV_APPSPECIFIC_PSY_O_BLADE;
+	}
+	else if("LAYDOCK"==str)
+	{
+		return FM77AV_APPSPECIFIC_LAYDOCK;
 	}
 	return FM77AV_APPSPECIFIC_NONE;
 }

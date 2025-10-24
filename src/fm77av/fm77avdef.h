@@ -408,6 +408,7 @@ enum
 // If new app is supported, add to the end.
 	FM77AV_APPSPECIFIC_NONE,
 	FM77AV_APPSPECIFIC_PSY_O_BLADE,
+	FM77AV_APPSPECIFIC_LAYDOCK,
 	// If new app, add it here.  Do not change the order of already-supported apps.
 FM77AV_NUM_APPSPECIFIC
 };

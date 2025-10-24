@@ -223,6 +223,7 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 			if(state.ym2203cAddrLatch<=0x0F)
 			{
 				state.ay38910.WriteRegister(state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+				state.ym2203c.WriteRegister(0,state.ym2203cAddrLatch,state.ym2203cDataWrite,fm77avPtr->state.fm77avTime); // Just sync both.
 				if(REG_GAMEPORTENABLE==state.ym2203cAddrLatch)
 				{
 					// Question: Should I care?
