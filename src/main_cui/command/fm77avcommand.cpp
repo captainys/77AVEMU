@@ -1025,9 +1025,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_FMCH:
 		if(4<=cmd.argv.size())
 		{
-			fm77av.sound.state.ym2203c.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
-			fm77av.sound.state.ym2203c.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
-			fm77av.sound.state.ym2203c.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
+			fm77av.sound.state.ym.ym2203c.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
+			fm77av.sound.state.ym.ym2203c.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
+			fm77av.sound.state.ym.ym2203c.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
 		}
 		else
 		{
@@ -1037,9 +1037,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_PSGCH:
 		if(4<=cmd.argv.size())
 		{
-			fm77av.sound.state.ay38910.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
-			fm77av.sound.state.ay38910.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
-			fm77av.sound.state.ay38910.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
+			fm77av.sound.state.ym.ay38910.channelMute[0]=(0==cpputil::Atoi(cmd.argv[1].c_str()));
+			fm77av.sound.state.ym.ay38910.channelMute[1]=(0==cpputil::Atoi(cmd.argv[2].c_str()));
+			fm77av.sound.state.ym.ay38910.channelMute[2]=(0==cpputil::Atoi(cmd.argv[3].c_str()));
 		}
 		else
 		{
@@ -1588,8 +1588,8 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			std::cout << "Enabled COM0 Print." << std::endl;
 			break;
 		case ENABLE_PSG_LOG:
-			fm77av.sound.state.ay38910.registerLog.clear();
-			fm77av.sound.state.ay38910.takeRegisterLog=true;
+			fm77av.sound.state.ym.ay38910.registerLog.clear();
+			fm77av.sound.state.ym.ay38910.takeRegisterLog=true;
 			std::cout << "Enabled PSG AY3-8910 register log." << std::endl;
 			break;
 		case ENABLE_AUTOSTOP:
@@ -1712,7 +1712,7 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 			std::cout << "Disabled COM0 Print." << std::endl;
 			break;
 		case ENABLE_PSG_LOG:
-			fm77av.sound.state.ay38910.takeRegisterLog=false;
+			fm77av.sound.state.ym.ay38910.takeRegisterLog=false;
 			std::cout << "Disabled PSG AY3-8910 register log." << std::endl;
 			break;
 		case ENABLE_AUTOSTOP:
@@ -1909,7 +1909,7 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 				}
 				break;
 			case DUMP_PSG_LOG:
-				for(auto str : fm77av.sound.state.ay38910.FormatRegisterLog())
+				for(auto str : fm77av.sound.state.ym.ay38910.FormatRegisterLog())
 				{
 					std::cout << str << std::endl;
 				}

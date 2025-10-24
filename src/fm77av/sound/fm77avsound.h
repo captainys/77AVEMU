@@ -51,11 +51,9 @@ public:
 		REG_PORTB=15,
 	};
 
-	class State
+	class YM_PLUS_AY
 	{
 	public:
-		bool mute=false;
-
 		YM2612 ym2203c;  // Will use Tsugaru-Ben for emulate YM2203C.
 		uint8_t ym2203cCommand=0;
 		uint8_t ym2203cDataRead=0;
@@ -67,6 +65,16 @@ public:
 		uint8_t ay38910AddrLatch=0;
 		uint8_t ay38910LastControl=0;
 		uint8_t ay38910LastData=0;
+
+		void Reset(void);
+	};
+
+	class State
+	{
+	public:
+		bool mute=false;
+
+		YM_PLUS_AY ym;
 
 		uint8_t beepState=BEEP_OFF;
 		uint64_t beepStopTime=0;
@@ -102,11 +110,11 @@ public:
 
 	inline bool IsFMPlaying(void) const
 	{
-		return 0!=state.ym2203c.state.playingCh || 0<state.ym2203c.regWriteSched.size();
+		return 0!=state.ym.ym2203c.state.playingCh || 0<state.ym.ym2203c.regWriteSched.size();
 	}
 	inline bool IsPSGPlaying(void) const
 	{
-		return state.ay38910.IsPlaying();
+		return state.ym.ay38910.IsPlaying();
 	}
 
 	FM77AVSound(class FM77AV *fm77avPtr);
