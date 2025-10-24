@@ -10,6 +10,8 @@ public:
 	void Help(void);
 	bool AnalyzeCommandParameter(int argc,char *argv[]);
 
+	bool TryLoadProfile(std::string fileName);
+
 	static bool DivideD77(std::string d77FName);
 };
 

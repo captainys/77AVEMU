@@ -10,7 +10,7 @@
 
 void FM77AVArgv::Help(void)
 {
-	std::cout << "Mutsu_CUI ROM-PATH <options>" << std::endl;
+	std::cout << "Mutsu_CUI ROM-PATH|Profile <options>" << std::endl;
 	std::cout << "Options:" << std::endl;
 	std::cout << "-PAUSE" << std::endl;
 	std::cout << "  Pause on start." << std::endl;
@@ -516,7 +516,14 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		}
 		else
 		{
-			if(1!=i) // First arg probably was a ROM dir, if not an option.
+			if(1==i)
+			{
+				if(true!=TryLoadProfile(argv[i]))
+				{
+					ROMPath=argv[i];
+				}
+			}
+			else // First arg probably was a ROM dir, if not an option.
 			{
 				std::cout << "Unknown option " << argv[i] << std::endl;
 				return false;
@@ -529,6 +536,35 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		return false;
 	}
 	return true;
+}
+
+bool FM77AVArgv::TryLoadProfile(std::string fName)
+{
+	auto FNAME=fName;
+	cpputil::Capitalize(FNAME);
+	auto EXT=cpputil::GetExtension(FNAME);
+	if(".MUTSU"==EXT && true==cpputil::FileExists(fName))
+	{
+		auto text=cpputil::ReadTextFile(fName);
+		if(0<text.size())
+		{
+			FM77AVProfile profile;
+			if(true==profile.Deserialize(text))
+			{
+				FM77AVParam *to=this;
+				FM77AVParam *from=&profile;
+				*to=*from;
+
+				std::string path,file;
+				cpputil::SeparatePathFile(path,file,fName);
+
+				this->specialPath["profiledir"]=path;
+
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 /* static */ bool FM77AVArgv::DivideD77(std::string d77FName)
