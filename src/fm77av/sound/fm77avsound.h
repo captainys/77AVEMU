@@ -73,8 +73,9 @@ public:
 	{
 	public:
 		bool mute=false;
+		bool enable_whg=false;
 
-		YM_PLUS_AY ym;
+		YM_PLUS_AY ym,whg;
 
 		uint8_t beepState=BEEP_OFF;
 		uint64_t beepStopTime=0;
@@ -122,6 +123,8 @@ public:
 	virtual void PowerOn(void);
 	virtual void Reset(void);
 
+	void YMWriteControl(YM_PLUS_AY &ym,uint8_t data);
+
 	void IOWrite(unsigned int ioport,unsigned int data);
 	void ProcessFMWrite(unsigned char reg,unsigned char value);
 	void ProcessPSGWrite(unsigned char reg,unsigned char value);
@@ -153,10 +156,10 @@ public:
 	void TrimVGMRecording(void);
 	bool SaveVGMRecording(std::string fName) const;
 
-	void SerializeYM2203CFMPart(std::vector <unsigned char> &data) const;
-	void DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version);
-	void SerializeAY38910(std::vector <unsigned char> &data) const;
-	void DeserializeAY38910(const unsigned char *&data,unsigned int version);
+	void SerializeYM2203CFMPart(std::vector <unsigned char> &data,const YM_PLUS_AY &ym) const;
+	void DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version,YM_PLUS_AY &ym);
+	void SerializeAY38910(std::vector <unsigned char> &data,const YM_PLUS_AY &ym) const;
+	void DeserializeAY38910(const unsigned char *&data,unsigned int version,YM_PLUS_AY &ym);
 
 	virtual uint32_t SerializeVersion(void) const;
 	virtual void SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const;

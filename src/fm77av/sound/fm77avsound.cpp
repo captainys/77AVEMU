@@ -93,6 +93,128 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 	state.beepStopTime=0;
 	state.beepTimeBalance=0;
 }
+
+void FM77AVSound::YMWriteControl(YM_PLUS_AY &ym,uint8_t data)
+{
+	FM77AV *fm77avPtr=(FM77AV *)vmPtr;
+	switch(data&0x0F)
+	{
+	case 0: // High impedance
+		break;
+	case 1: // Data Read
+		if(ym.ym2203cAddrLatch<=0x0F)
+		{
+			ym.ym2203cDataRead=ym.ay38910.ReadRegister(ym.ym2203cAddrLatch);
+		}
+		else if(REG_PORTA==ym.ym2203cAddrLatch)
+		{
+			auto portSel=(ym.ym2203c.ReadRegister(0,REG_PORTB)>>6)&1;
+			ym.ym2203cDataRead=fm77avPtr->gameport.state.ports[portSel].Read(fm77avPtr->state.fm77avTime);
+			ym.ym2203cDataRead|=0xC0;
+		}
+		else
+		{
+			// YM2203C does not have additional 3 channels. Channel base is always 0.
+			ym.ym2203cDataRead=ym.ym2203c.ReadRegister(0,ym.ym2203cAddrLatch);
+			// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
+			if(YM2612::REG_PRESCALER_0==ym.ym2203cAddrLatch)
+			{
+				ym.ay38910.state.preScaler=4;
+				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
+			}
+			if(YM2612::REG_PRESCALER_1==ym.ym2203cAddrLatch)
+			{
+				ym.ay38910.state.preScaler=2;
+				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
+			}
+			if(YM2612::REG_PRESCALER_2==ym.ym2203cAddrLatch)
+			{
+				ym.ay38910.state.preScaler=1;
+				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
+			}
+		}
+		break;
+	case 3: // Address Latch
+		ym.ym2203cAddrLatch=ym.ym2203cDataWrite;
+		break;
+	case 2: // Data Write
+		ProcessFMWrite(ym.ym2203cAddrLatch,ym.ym2203cDataWrite);
+		if(0!=ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
+		{
+			std::cout << "YM2203C Reg[$"+cpputil::Ubtox(ym.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(ym.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
+			if(MC6809::Debugger::BRKPNT_FLAG_BREAK==ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
+			{
+				fm77avPtr->mainCPU.debugger.stop=true;
+			}
+		}
+		if(ym.ym2203cAddrLatch<=0x0F)
+		{
+			ym.ay38910.WriteRegister(ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+			ym.ym2203c.WriteRegister(0,ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime); // Just sync both.
+			if(REG_GAMEPORTENABLE==ym.ym2203cAddrLatch)
+			{
+				// Question: Should I care?
+			}
+			if(REG_PORTB==ym.ym2203cAddrLatch)
+			{
+				auto d=ym.ym2203cDataWrite;
+				fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
+				fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
+			}
+		}
+		else
+		{
+			if(0x2D<=ym.ym2203cAddrLatch && ym.ym2203cAddrLatch<=0x2F)
+			{
+				std::cout << "Pre-Scaler [" << cpputil::Ubtox(ym.ym2203cAddrLatch) << "]=" << cpputil::Ubtox(ym.ym2203cDataWrite) << std::endl;
+			}
+
+			// YM2203C does not have additional 3 channels. Channel base is always 0.
+			ym.ym2203c.WriteRegister(0,ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+
+			// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
+			if(YM2612::REG_PRESCALER_0==ym.ym2203cAddrLatch)
+			{
+				ym.ay38910.state.preScaler=4;
+			}
+			if(YM2612::REG_PRESCALER_1==ym.ym2203cAddrLatch)
+			{
+				ym.ay38910.state.preScaler=2;
+			}
+			if(YM2612::REG_PRESCALER_2==ym.ym2203cAddrLatch)
+			{
+				ym.ay38910.state.preScaler=1;
+			}
+
+			// Make sure to clear IRQ source if reg-write clears timer-up flag.
+			if(true!=(ym.ym2203c.TimerAUp() && true!=ym.ym2203c.TimerBUp()))
+			{
+				fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
+			}
+		}
+		break;
+	case 4: // Status Read
+		ym.ym2203cDataRead=0b01111100;
+		ym.ym2203cDataRead|=(true==ym.ym2203c.TimerAUp() ? 1 : 0);
+		ym.ym2203cDataRead|=(true==ym.ym2203c.TimerBUp() ? 2 : 0);
+		break;
+	case 9: // Joystick Read
+		{
+			auto portSel=(ym.ym2203c.ReadRegister(0,REG_PORTB)>>6)&1;
+			ym.ym2203cDataRead=fm77avPtr->gameport.state.ports[portSel].Read(fm77avPtr->state.fm77avTime);
+
+			// It used to be |=0xC0, but Gambler Jikochushinha by Game Arts expects it to return non-FF.
+			// If it was same as Towns, bit6 should be controled by COM out.
+			ym.ym2203cDataRead|=0x80;
+		}
+		break;
+	default:
+		std::cout << "Warning!  Undefined YM2203C I/O command!  " << cpputil::Ubtox(data&0x0F) << std::endl;
+		break;
+	}
+	ym.ym2203cCommand=data&0x0F;
+}
+
 void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 {
 	FM77AV *fm77avPtr=(FM77AV *)vmPtr;
@@ -175,122 +297,7 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		}
 		break;
 	case FM77AVIO_YM2203C_CONTROL://=         0xFD15,
-		switch(data&0x0F)
-		{
-		case 0: // High impedance
-			break;
-		case 1: // Data Read
-			if(state.ym.ym2203cAddrLatch<=0x0F)
-			{
-				state.ym.ym2203cDataRead=state.ym.ay38910.ReadRegister(state.ym.ym2203cAddrLatch);
-			}
-			else if(REG_PORTA==state.ym.ym2203cAddrLatch)
-			{
-				auto portSel=(state.ym.ym2203c.ReadRegister(0,REG_PORTB)>>6)&1;
-				state.ym.ym2203cDataRead=fm77avPtr->gameport.state.ports[portSel].Read(fm77avPtr->state.fm77avTime);
-				state.ym.ym2203cDataRead|=0xC0;
-			}
-			else
-			{
-				// YM2203C does not have additional 3 channels. Channel base is always 0.
-				state.ym.ym2203cDataRead=state.ym.ym2203c.ReadRegister(0,state.ym.ym2203cAddrLatch);
-				// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
-				if(YM2612::REG_PRESCALER_0==state.ym.ym2203cAddrLatch)
-				{
-					state.ym.ay38910.state.preScaler=4;
-					ProcessFMWrite(state.ym.ym2203cAddrLatch,0xFF);
-				}
-				if(YM2612::REG_PRESCALER_1==state.ym.ym2203cAddrLatch)
-				{
-					state.ym.ay38910.state.preScaler=2;
-					ProcessFMWrite(state.ym.ym2203cAddrLatch,0xFF);
-				}
-				if(YM2612::REG_PRESCALER_2==state.ym.ym2203cAddrLatch)
-				{
-					state.ym.ay38910.state.preScaler=1;
-					ProcessFMWrite(state.ym.ym2203cAddrLatch,0xFF);
-				}
-			}
-			break;
-		case 3: // Address Latch
-			state.ym.ym2203cAddrLatch=state.ym.ym2203cDataWrite;
-			break;
-		case 2: // Data Write
-			ProcessFMWrite(state.ym.ym2203cAddrLatch,state.ym.ym2203cDataWrite);
-			if(0!=ym2203cRegisterMonitor[state.ym.ym2203cAddrLatch])
-			{
-				std::cout << "YM2203C Reg[$"+cpputil::Ubtox(state.ym.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(state.ym.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
-				if(MC6809::Debugger::BRKPNT_FLAG_BREAK==ym2203cRegisterMonitor[state.ym.ym2203cAddrLatch])
-				{
-					fm77avPtr->mainCPU.debugger.stop=true;
-				}
-			}
-			if(state.ym.ym2203cAddrLatch<=0x0F)
-			{
-				state.ym.ay38910.WriteRegister(state.ym.ym2203cAddrLatch,state.ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
-				state.ym.ym2203c.WriteRegister(0,state.ym.ym2203cAddrLatch,state.ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime); // Just sync both.
-				if(REG_GAMEPORTENABLE==state.ym.ym2203cAddrLatch)
-				{
-					// Question: Should I care?
-				}
-				if(REG_PORTB==state.ym.ym2203cAddrLatch)
-				{
-					auto d=state.ym.ym2203cDataWrite;
-					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
-					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
-				}
-			}
-			else
-			{
-				if(0x2D<=state.ym.ym2203cAddrLatch && state.ym.ym2203cAddrLatch<=0x2F)
-				{
-					std::cout << "Pre-Scaler [" << cpputil::Ubtox(state.ym.ym2203cAddrLatch) << "]=" << cpputil::Ubtox(state.ym.ym2203cDataWrite) << std::endl;
-				}
-
-				// YM2203C does not have additional 3 channels. Channel base is always 0.
-				state.ym.ym2203c.WriteRegister(0,state.ym.ym2203cAddrLatch,state.ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
-
-				// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
-				if(YM2612::REG_PRESCALER_0==state.ym.ym2203cAddrLatch)
-				{
-					state.ym.ay38910.state.preScaler=4;
-				}
-				if(YM2612::REG_PRESCALER_1==state.ym.ym2203cAddrLatch)
-				{
-					state.ym.ay38910.state.preScaler=2;
-				}
-				if(YM2612::REG_PRESCALER_2==state.ym.ym2203cAddrLatch)
-				{
-					state.ym.ay38910.state.preScaler=1;
-				}
-
-				// Make sure to clear IRQ source if reg-write clears timer-up flag.
-				if(true!=(state.ym.ym2203c.TimerAUp() && true!=state.ym.ym2203c.TimerBUp()))
-				{
-					fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
-				}
-			}
-			break;
-		case 4: // Status Read
-			state.ym.ym2203cDataRead=0b01111100;
-			state.ym.ym2203cDataRead|=(true==state.ym.ym2203c.TimerAUp() ? 1 : 0);
-			state.ym.ym2203cDataRead|=(true==state.ym.ym2203c.TimerBUp() ? 2 : 0);
-			break;
-		case 9: // Joystick Read
-			{
-				auto portSel=(state.ym.ym2203c.ReadRegister(0,REG_PORTB)>>6)&1;
-				state.ym.ym2203cDataRead=fm77avPtr->gameport.state.ports[portSel].Read(fm77avPtr->state.fm77avTime);
-
-				// It used to be |=0xC0, but Gambler Jikochushinha by Game Arts expects it to return non-FF.
-				// If it was same as Towns, bit6 should be controled by COM out.
-				state.ym.ym2203cDataRead|=0x80;
-			}
-			break;
-		default:
-			std::cout << "Warning!  Undefined YM2203C I/O command!  " << cpputil::Ubtox(data&0x0F) << std::endl;
-			break;
-		}
-		state.ym.ym2203cCommand=data&0x0F;
+		YMWriteControl(state.ym,data);
 		break;
 	case FM77AVIO_YM2203C_DATA://=            0xFD16,
 		state.ym.ym2203cDataWrite=data;
@@ -300,6 +307,19 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		//	std::cout << "Warning!  YM2203C Data Register Written while not High-Impedance state!" << std::endl;
 		//	break;
 		//}
+		break;
+
+	case FM77AVIO_WYM2203C_CONTROL://=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
+		if(true==state.enable_whg)
+		{
+			YMWriteControl(state.whg,data);
+		}
+		break;
+	case FM77AVIO_WYM2203C_DATA://=           0xFD46,
+		if(true==state.enable_whg)
+		{
+			state.whg.ym2203cDataWrite=data;
+		}
 		break;
 
 	case FM77AVIO_BEEP://=                    0xD403,
@@ -376,6 +396,15 @@ uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
 		break;
 	case FM77AVIO_YM2203C_DATA://=            0xFD16,
 		return state.ym.ym2203cDataRead;
+
+	case FM77AVIO_WYM2203C_CONTROL://=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
+		break;
+	case FM77AVIO_WYM2203C_DATA://=           0xFD46,
+		if(true==state.enable_whg)
+		{
+			return state.whg.ym2203cDataRead;
+		}
+		break;
 	}
 	return 0xFF;
 }
@@ -598,9 +627,9 @@ bool FM77AVSound::SaveVGMRecording(std::string fName) const
 
 
 // Difference from Tsugaru is it includes preScaler.
-void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) const
+void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data,const YM_PLUS_AY &ym) const
 {
-	auto ym2203c=state.ym.ym2203c; // Make a copy to flush register schedule.
+	auto ym2203c=ym.ym2203c; // Make a copy to flush register schedule.
 
 	ym2203c.FlushRegisterSchedule();
 
@@ -681,9 +710,9 @@ void FM77AVSound::SerializeYM2203CFMPart(std::vector <unsigned char> &data) cons
 	PushUint32(data,ym2203c.state.playingCh);
 	PushInt32(data,ym2203c.state.volume);
 }
-void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version)
+void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned int version,YM_PLUS_AY &ym)
 {
-	auto &ym2203c=state.ym.ym2203c;
+	auto &ym2203c=ym.ym2203c;
 
 	ym2203c.FlushRegisterSchedule();
 
@@ -775,58 +804,58 @@ void FM77AVSound::DeserializeYM2203CFMPart(const unsigned char *&data,unsigned i
 	ym2203c.state.playingCh=ReadUint32(data);
 	ym2203c.state.volume=ReadInt32(data);
 }
-void FM77AVSound::SerializeAY38910(std::vector <unsigned char> &data) const
+void FM77AVSound::SerializeAY38910(std::vector <unsigned char> &data,const YM_PLUS_AY &ym) const
 {
-	PushUcharArray(data,AY38910::NUM_REGS,state.ym.ay38910.state.regs);
+	PushUcharArray(data,AY38910::NUM_REGS,ym.ay38910.state.regs);
 	for(int i=0; i<AY38910::NUM_CHANNELS; ++i)
 	{
-		PushUint32(data,state.ym.ay38910.state.ch[i].toneSign);
-		PushUint32(data,state.ym.ay38910.state.ch[i].tonePeriodBalance);
+		PushUint32(data,ym.ay38910.state.ch[i].toneSign);
+		PushUint32(data,ym.ay38910.state.ch[i].tonePeriodBalance);
 	}
-	PushUint32(data,state.ym.ay38910.state.envPhase);
-	PushUint32(data,state.ym.ay38910.state.envOut);
-	PushUint32(data,state.ym.ay38910.state.envPeriodBalance);
-	PushUint32(data,state.ym.ay38910.state.envPatternSeg);
-	PushUint32(data,state.ym.ay38910.state.preScaler);
-	PushUint32(data,state.ym.ay38910.state.LFSR);
-	PushUint32(data,state.ym.ay38910.state.noisePeriodBalance);
+	PushUint32(data,ym.ay38910.state.envPhase);
+	PushUint32(data,ym.ay38910.state.envOut);
+	PushUint32(data,ym.ay38910.state.envPeriodBalance);
+	PushUint32(data,ym.ay38910.state.envPatternSeg);
+	PushUint32(data,ym.ay38910.state.preScaler);
+	PushUint32(data,ym.ay38910.state.LFSR);
+	PushUint32(data,ym.ay38910.state.noisePeriodBalance);
 
 }
-void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int version)
+void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int version,YM_PLUS_AY &ym)
 {
-	ReadUcharArray(data,AY38910::NUM_REGS,state.ym.ay38910.state.regs);
+	ReadUcharArray(data,AY38910::NUM_REGS,ym.ay38910.state.regs);
 	for(int i=0; i<AY38910::NUM_CHANNELS; ++i)
 	{
-		state.ym.ay38910.state.ch[i].toneSign=ReadUint32(data);
-		state.ym.ay38910.state.ch[i].tonePeriodBalance=ReadUint32(data);
+		ym.ay38910.state.ch[i].toneSign=ReadUint32(data);
+		ym.ay38910.state.ch[i].tonePeriodBalance=ReadUint32(data);
 	}
-	state.ym.ay38910.state.envPhase=ReadUint32(data);
-	state.ym.ay38910.state.envOut=ReadUint32(data);
-	state.ym.ay38910.state.envPeriodBalance=ReadUint32(data);
-	state.ym.ay38910.state.envPatternSeg=ReadUint32(data);
-	state.ym.ay38910.state.preScaler=ReadUint32(data);
-	state.ym.ay38910.state.LFSR=ReadUint32(data);
-	state.ym.ay38910.state.noisePeriodBalance=ReadUint32(data);
+	ym.ay38910.state.envPhase=ReadUint32(data);
+	ym.ay38910.state.envOut=ReadUint32(data);
+	ym.ay38910.state.envPeriodBalance=ReadUint32(data);
+	ym.ay38910.state.envPatternSeg=ReadUint32(data);
+	ym.ay38910.state.preScaler=ReadUint32(data);
+	ym.ay38910.state.LFSR=ReadUint32(data);
+	ym.ay38910.state.noisePeriodBalance=ReadUint32(data);
 
 	for(int i=0; i<AY38910::NUM_REGS; ++i)
 	{
-		state.ym.ay38910.regCache[i]=state.ym.ay38910.state.regs[i];
+		ym.ay38910.regCache[i]=ym.ay38910.state.regs[i];
 	}
 }
 
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
 {
-	return 0;
+	return 1;
 }
 /* virtual */ void FM77AVSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
 {
-	SerializeYM2203CFMPart(data);
+	SerializeYM2203CFMPart(data,state.ym);
 	PushUint16(data,state.ym.ym2203cCommand);
 	PushUint16(data,state.ym.ym2203cDataRead);
 	PushUint16(data,state.ym.ym2203cDataWrite);
 	PushUint32(data,state.ym.ym2203cAddrLatch);
 
-	SerializeAY38910(data);
+	SerializeAY38910(data,state.ym);
 	PushUint16(data,state.ym.ay38910regMode);
 	PushUint16(data,state.ym.ay38910AddrLatch);
 	PushUint16(data,state.ym.ay38910LastControl);
@@ -836,16 +865,34 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 	PushUint64(data,state.beepStopTime);
 	PushUint32(data,state.beepTimeBalance);
 	PushUint16(data,state.beepWaveOut);
+
+
+	// Version 1
+	PushBool(data,state.enable_whg);
+	if(true==state.enable_whg)
+	{
+		SerializeYM2203CFMPart(data,state.whg);
+		PushUint16(data,state.whg.ym2203cCommand);
+		PushUint16(data,state.whg.ym2203cDataRead);
+		PushUint16(data,state.whg.ym2203cDataWrite);
+		PushUint32(data,state.whg.ym2203cAddrLatch);
+
+		SerializeAY38910(data,state.whg);
+		PushUint16(data,state.whg.ay38910regMode);
+		PushUint16(data,state.whg.ay38910AddrLatch);
+		PushUint16(data,state.whg.ay38910LastControl);
+		PushUint16(data,state.whg.ay38910LastData);
+	}
 }
 /* virtual */ bool FM77AVSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
-	DeserializeYM2203CFMPart(data,version);
+	DeserializeYM2203CFMPart(data,version,state.ym);
 	state.ym.ym2203cCommand=ReadUint16(data);
 	state.ym.ym2203cDataRead=ReadUint16(data);
 	state.ym.ym2203cDataWrite=ReadUint16(data);
 	state.ym.ym2203cAddrLatch=ReadUint32(data);
 
-	DeserializeAY38910(data,version);
+	DeserializeAY38910(data,version,state.ym);
 	state.ym.ay38910regMode=ReadUint16(data);
 	state.ym.ay38910AddrLatch=ReadUint16(data);
 	state.ym.ay38910LastControl=ReadUint16(data);
@@ -855,6 +902,25 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 	state.beepStopTime=ReadUint64(data);
 	state.beepTimeBalance=ReadUint32(data);
 	state.beepWaveOut=ReadUint16(data);
+
+	if(2<=version)
+	{
+		state.enable_whg=ReadBool(data);
+		if(true==state.enable_whg)
+		{
+			DeserializeYM2203CFMPart(data,version,state.whg);
+			state.whg.ym2203cCommand=ReadUint16(data);
+			state.whg.ym2203cDataRead=ReadUint16(data);
+			state.whg.ym2203cDataWrite=ReadUint16(data);
+			state.whg.ym2203cAddrLatch=ReadUint32(data);
+
+			DeserializeAY38910(data,version,state.whg);
+			state.whg.ay38910regMode=ReadUint16(data);
+			state.whg.ay38910AddrLatch=ReadUint16(data);
+			state.whg.ay38910LastControl=ReadUint16(data);
+			state.whg.ay38910LastData=ReadUint16(data);
+		}
+	}
 
 	nextWaveGenTime=0;
 	ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
