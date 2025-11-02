@@ -99,7 +99,76 @@ void FM77AVSound::YMWriteControl(YM_PLUS_AY &ym,uint8_t data)
 	FM77AV *fm77avPtr=(FM77AV *)vmPtr;
 	switch(data&0x0F)
 	{
+	case 3:
+	case 2:
+		// Delay latch and write until high impedance.
+		break;
+
 	case 0: // High impedance
+		// Delay latch/write until high impedance.
+		// Comrade vol. 10 is doing this while checking presence of WHG.
+		switch(ym.ym2203cCommand)
+		{
+		case 3: // Address Latch
+			ym.ym2203cAddrLatch=ym.ym2203cDataWrite;
+			break;
+		case 2: // Data Write
+			ProcessFMWrite(ym.ym2203cAddrLatch,ym.ym2203cDataWrite);
+			if(0!=ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
+			{
+				std::cout << "YM2203C Reg[$"+cpputil::Ubtox(ym.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(ym.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
+				if(MC6809::Debugger::BRKPNT_FLAG_BREAK==ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
+				{
+					fm77avPtr->mainCPU.debugger.stop=true;
+				}
+			}
+			if(ym.ym2203cAddrLatch<=0x0F)
+			{
+				ym.ay38910.WriteRegister(ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+				ym.ym2203c.WriteRegister(0,ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime); // Just sync both.
+				if(REG_GAMEPORTENABLE==ym.ym2203cAddrLatch)
+				{
+					// Question: Should I care?
+				}
+				if(REG_PORTB==ym.ym2203cAddrLatch)
+				{
+					auto d=ym.ym2203cDataWrite;
+					fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
+					fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
+				}
+			}
+			else
+			{
+				if(0x2D<=ym.ym2203cAddrLatch && ym.ym2203cAddrLatch<=0x2F)
+				{
+					std::cout << "Pre-Scaler [" << cpputil::Ubtox(ym.ym2203cAddrLatch) << "]=" << cpputil::Ubtox(ym.ym2203cDataWrite) << std::endl;
+				}
+
+				// YM2203C does not have additional 3 channels. Channel base is always 0.
+				ym.ym2203c.WriteRegister(0,ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
+
+				// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
+				if(YM2612::REG_PRESCALER_0==ym.ym2203cAddrLatch)
+				{
+					ym.ay38910.state.preScaler=4;
+				}
+				if(YM2612::REG_PRESCALER_1==ym.ym2203cAddrLatch)
+				{
+					ym.ay38910.state.preScaler=2;
+				}
+				if(YM2612::REG_PRESCALER_2==ym.ym2203cAddrLatch)
+				{
+					ym.ay38910.state.preScaler=1;
+				}
+
+				// Make sure to clear IRQ source if reg-write clears timer-up flag.
+				if(true!=(ym.ym2203c.TimerAUp() && true!=ym.ym2203c.TimerBUp()))
+				{
+					fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
+				}
+			}
+			break;
+		}
 		break;
 	case 1: // Data Read
 		if(ym.ym2203cAddrLatch<=0x0F)
@@ -131,65 +200,6 @@ void FM77AVSound::YMWriteControl(YM_PLUS_AY &ym,uint8_t data)
 			{
 				ym.ay38910.state.preScaler=1;
 				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
-			}
-		}
-		break;
-	case 3: // Address Latch
-		ym.ym2203cAddrLatch=ym.ym2203cDataWrite;
-		break;
-	case 2: // Data Write
-		ProcessFMWrite(ym.ym2203cAddrLatch,ym.ym2203cDataWrite);
-		if(0!=ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
-		{
-			std::cout << "YM2203C Reg[$"+cpputil::Ubtox(ym.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(ym.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
-			if(MC6809::Debugger::BRKPNT_FLAG_BREAK==ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
-			{
-				fm77avPtr->mainCPU.debugger.stop=true;
-			}
-		}
-		if(ym.ym2203cAddrLatch<=0x0F)
-		{
-			ym.ay38910.WriteRegister(ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
-			ym.ym2203c.WriteRegister(0,ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime); // Just sync both.
-			if(REG_GAMEPORTENABLE==ym.ym2203cAddrLatch)
-			{
-				// Question: Should I care?
-			}
-			if(REG_PORTB==ym.ym2203cAddrLatch)
-			{
-				auto d=ym.ym2203cDataWrite;
-				fm77avPtr->gameport.state.ports[0].Write(fm77avPtr->state.fm77avTime,0!=(d&0x10),d&3);
-				fm77avPtr->gameport.state.ports[1].Write(fm77avPtr->state.fm77avTime,0!=(d&0x20),(d>>2)&3);
-			}
-		}
-		else
-		{
-			if(0x2D<=ym.ym2203cAddrLatch && ym.ym2203cAddrLatch<=0x2F)
-			{
-				std::cout << "Pre-Scaler [" << cpputil::Ubtox(ym.ym2203cAddrLatch) << "]=" << cpputil::Ubtox(ym.ym2203cDataWrite) << std::endl;
-			}
-
-			// YM2203C does not have additional 3 channels. Channel base is always 0.
-			ym.ym2203c.WriteRegister(0,ym.ym2203cAddrLatch,ym.ym2203cDataWrite,fm77avPtr->state.fm77avTime);
-
-			// Pre-scaler also influences SSG part, which is done by AY-3-8910 emulation.
-			if(YM2612::REG_PRESCALER_0==ym.ym2203cAddrLatch)
-			{
-				ym.ay38910.state.preScaler=4;
-			}
-			if(YM2612::REG_PRESCALER_1==ym.ym2203cAddrLatch)
-			{
-				ym.ay38910.state.preScaler=2;
-			}
-			if(YM2612::REG_PRESCALER_2==ym.ym2203cAddrLatch)
-			{
-				ym.ay38910.state.preScaler=1;
-			}
-
-			// Make sure to clear IRQ source if reg-write clears timer-up flag.
-			if(true!=(ym.ym2203c.TimerAUp() && true!=ym.ym2203c.TimerBUp()))
-			{
-				fm77avPtr->state.main.irqSource&=~FM77AV::SystemState::MAIN_IRQ_SOURCE_YM2203C;
 			}
 		}
 		break;

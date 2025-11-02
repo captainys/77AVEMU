@@ -279,6 +279,8 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 
 	var.noWait=param.noWait;
 
+	sound.state.enable_whg=param.enable_whg;
+
 	if(""!=param.t77Path)
 	{
 		if(true==dataRecorder.LoadT77(FindFile(param.t77Path)))

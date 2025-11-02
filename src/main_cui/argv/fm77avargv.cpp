@@ -130,6 +130,10 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Start in F-BASIC mode." << std::endl;
 	std::cout << "-SYM symbol-file" << std::endl;
 	std::cout << "  Load symbol file, and auto-save when modified." << std::endl;
+	std::cout << "-WHG" << std::endl;
+	std::cout << "  Enable WHG (Second YM2203C expansion card.)" << std::endl;
+	std::cout << "-NOWHG" << std::endl;
+	std::cout << "  Disable WHG (Second YM2203C expansion card.)" << std::endl;
 }
 
 void FM77AVArgv::PrintApplicationList(void) const
@@ -552,6 +556,14 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 				PrintApplicationList();
 				dontStart=true;
 			}
+		}
+		else if("-WHG"==ARG)
+		{
+			enable_whg=true;
+		}
+		else if("-NOWHG"==ARG)
+		{
+			enable_whg=false;
 		}
 		else
 		{

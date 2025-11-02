@@ -257,6 +257,9 @@ std::vector <std::string> FM77AVProfile::Serialize(void) const
 		}
 	}
 
+	text.push_back("ENBL_WHG ");
+	text.back()+=(enable_whg ? "1" : "0");
+
 	return text;
 }
 bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
@@ -485,6 +488,13 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 			if(2<=argv.size())
 			{
 				mapXYExpression[1]=argv[1];
+			}
+		}
+		else if(ARGV0=="ENBL_WHG")
+		{
+			if(2<=argv.size())
+			{
+				enable_whg=(0!=cpputil::Atoi(argv[1].c_str()));
 			}
 		}
 		else
