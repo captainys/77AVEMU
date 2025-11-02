@@ -78,6 +78,9 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 	}
 	state.ym.ym2203c.useScheduling=true;
 	state.ym.ay38910.useScheduling=true;
+
+	state.ym.vgm_reg=VGMRecorder::REG_YM2203;
+	state.whg.vgm_reg=VGMRecorder::REG_YM2203_2;
 }
 /* virtual */ void FM77AVSound::PowerOn(void)
 {
@@ -353,7 +356,7 @@ void FM77AVSound::ProcessFMWrite(YM_PLUS_AY &ym,unsigned char reg,unsigned char 
 		}
 		if(true==var.vgmRecorder.enabled)
 		{
-			var.vgmRecorder.WriteRegister(fm77avPtr->state.fm77avTime,VGMRecorder::REG_YM2203,reg,value);
+			var.vgmRecorder.WriteRegister(fm77avPtr->state.fm77avTime,ym.vgm_reg,reg,value);
 		}
 	}
 }

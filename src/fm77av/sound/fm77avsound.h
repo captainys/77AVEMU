@@ -66,6 +66,8 @@ public:
 		uint8_t ay38910LastControl=0;
 		uint8_t ay38910LastData=0;
 
+		uint8_t vgm_reg=VGMRecorder::REG_YM2203;
+
 		void Reset(void);
 	};
 
