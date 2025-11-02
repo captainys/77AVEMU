@@ -117,6 +117,14 @@ public:
 	{
 		return state.ym.ay38910.IsPlaying();
 	}
+	inline bool IsWHG_FMPlaying(void) const
+	{
+		return 0!=state.whg.ym2203c.state.playingCh || 0<state.whg.ym2203c.regWriteSched.size();
+	}
+	inline bool IsWHG_SSGPlaying(void) const
+	{
+		return state.whg.ay38910.IsPlaying();
+	}
 
 	FM77AVSound(class FM77AV *fm77avPtr);
 
@@ -126,7 +134,7 @@ public:
 	void YMWriteControl(YM_PLUS_AY &ym,uint8_t data);
 
 	void IOWrite(unsigned int ioport,unsigned int data);
-	void ProcessFMWrite(unsigned char reg,unsigned char value);
+	void ProcessFMWrite(YM_PLUS_AY &ym,unsigned char reg,unsigned char value);
 	void ProcessPSGWrite(unsigned char reg,unsigned char value);
 
 	unsigned int IORead(unsigned int ioport);

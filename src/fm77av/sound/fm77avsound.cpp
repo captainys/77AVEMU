@@ -113,7 +113,7 @@ void FM77AVSound::YMWriteControl(YM_PLUS_AY &ym,uint8_t data)
 			ym.ym2203cAddrLatch=ym.ym2203cDataWrite;
 			break;
 		case 2: // Data Write
-			ProcessFMWrite(ym.ym2203cAddrLatch,ym.ym2203cDataWrite);
+			ProcessFMWrite(ym,ym.ym2203cAddrLatch,ym.ym2203cDataWrite);
 			if(0!=ym2203cRegisterMonitor[ym.ym2203cAddrLatch])
 			{
 				std::cout << "YM2203C Reg[$"+cpputil::Ubtox(ym.ym2203cAddrLatch)+"]=$"+cpputil::Ubtox(ym.ym2203cDataWrite) << " at " << fm77avPtr->state.fm77avTime << std::endl;
@@ -189,17 +189,17 @@ void FM77AVSound::YMWriteControl(YM_PLUS_AY &ym,uint8_t data)
 			if(YM2612::REG_PRESCALER_0==ym.ym2203cAddrLatch)
 			{
 				ym.ay38910.state.preScaler=4;
-				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
+				ProcessFMWrite(ym,ym.ym2203cAddrLatch,0xFF);
 			}
 			if(YM2612::REG_PRESCALER_1==ym.ym2203cAddrLatch)
 			{
 				ym.ay38910.state.preScaler=2;
-				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
+				ProcessFMWrite(ym,ym.ym2203cAddrLatch,0xFF);
 			}
 			if(YM2612::REG_PRESCALER_2==ym.ym2203cAddrLatch)
 			{
 				ym.ay38910.state.preScaler=1;
-				ProcessFMWrite(ym.ym2203cAddrLatch,0xFF);
+				ProcessFMWrite(ym,ym.ym2203cAddrLatch,0xFF);
 			}
 		}
 		break;
@@ -338,16 +338,16 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		break;
 	}
 }
-void FM77AVSound::ProcessFMWrite(unsigned char reg,unsigned char value)
+void FM77AVSound::ProcessFMWrite(YM_PLUS_AY &ym,unsigned char reg,unsigned char value)
 {
 	if(true==var.vgmRecordingArmed)
 	{
 		FM77AV *fm77avPtr=(FM77AV *)vmPtr;
 		if(true!=var.vgmRecorder.enabled &&
-		   state.ym.ym2203cAddrLatch!=YM2612::REG_TIMER_A_COUNT_HIGH &&
-		   state.ym.ym2203cAddrLatch!=YM2612::REG_TIMER_A_COUNT_LOW &&
-		   state.ym.ym2203cAddrLatch!=YM2612::REG_TIMER_B_COUNT &&
-		   state.ym.ym2203cAddrLatch!=YM2612::REG_TIMER_CONTROL)
+		   ym.ym2203cAddrLatch!=YM2612::REG_TIMER_A_COUNT_HIGH &&
+		   ym.ym2203cAddrLatch!=YM2612::REG_TIMER_A_COUNT_LOW &&
+		   ym.ym2203cAddrLatch!=YM2612::REG_TIMER_B_COUNT &&
+		   ym.ym2203cAddrLatch!=YM2612::REG_TIMER_CONTROL)
 		{
 			StartVGMRecording();
 		}
@@ -448,7 +448,13 @@ std::vector <std::string> FM77AVSound::GetStatusText(void) const
 void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
-	if((true==state.ym.ay38910.IsPlaying() || true==IsFMPlaying() || BEEP_OFF!=state.beepState || 0<ringBufferClearTimeLeft) && nullptr!=soundPtr)
+	if((true==state.ym.ay38910.IsPlaying() ||
+	    true==IsFMPlaying() ||
+	    true==IsWHG_FMPlaying() ||
+	    true==IsWHG_SSGPlaying() ||
+	    BEEP_OFF!=state.beepState ||
+	    0<ringBufferClearTimeLeft) && 
+	    nullptr!=soundPtr)
 	{
 		auto lastWaveGenTime=nextWaveGenTime-MILLISEC_PER_WAVE_GENERATION*1000000;
 		if(nextWaveGenTime<=fm77avPtr->state.fm77avTime)
@@ -478,8 +484,17 @@ void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 				}
 				if(true==state.ym.ay38910.IsPlaying())
 				{
-					unsigned int numSamples=0;
 					state.ym.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
+				}
+				if(true==IsWHG_FMPlaying())
+				{
+					state.whg.ym2203c.AddWaveForNSamples(fillPtr,fillNumSamples,lastWaveGenTime);
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
+				}
+				if(true==IsWHG_SSGPlaying())
+				{
+					state.whg.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
 					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 				}
 				if(BEEP_OFF!=state.beepState)

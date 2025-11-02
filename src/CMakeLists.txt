@@ -8,6 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_definitions(MUTSU_FM77AV)
 
+add_compile_definitions(YS_LITTLE_ENDIAN)
+add_compile_definitions(YS_TWOS_COMPLEMENT)
+
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../TOWNSEMU)
 	set(TSUGARU_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TOWNSEMU/src)
 else()
