@@ -1924,11 +1924,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		{
 			uint8_t reg[2];
 			DecodeExgTfrReg(reg,inst.operand[0]);
-			if(regBits[reg[0]]!=regBits[reg[1]])
-			{
-				Abort("EXG to different size register not supported yet.");
-				inst.length=0;
-			}
 
 			uint16_t value[2]=
 			{
@@ -1945,8 +1940,38 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				value[1]+=inst.length;
 			}
 
-			SetRegisterValue(reg[1],value[0]);
-			SetRegisterValue(reg[0],value[1]);
+			if(regBits[reg[0]]==regBits[reg[1]])
+			{
+				SetRegisterValue(reg[1],value[0]);
+				SetRegisterValue(reg[0],value[1]);
+			}
+			else // Undefined behavior.  Implementation based on the observation of real FM77AV.
+			{
+				if(REG_A==reg[0] && REG_D==reg[1]) // EXG A,D works as EXG A,B
+				{
+					reg[1]=REG_B;
+					SetRegisterValue(reg[1],value[0]);
+					SetRegisterValue(reg[0],value[1]);
+				}
+				else if(REG_B==reg[0] && REG_D==reg[1]) // EXG B,D ORs high 8-bits of D.
+				{
+					state.D|=0xFF00;
+				}
+				else if(REG_D==reg[0] && REG_A==reg[1]) // EXG D,A copies A to B, then A=$FF
+				{
+					state.D>>=8;
+					state.D|=0xFF00;
+				}
+				else if(REG_D==reg[0] && REG_B==reg[1]) // EXG D,B just does A=0xFF;
+				{
+					state.D|=0xFF00;
+				}
+				else // Otherwise, high 8-bits of the 16-bit register will be set, and low 8-bits will be copied to the 8-bit register.
+				{
+					SetRegisterValue(reg[1],value[0]|0xFF00);
+					SetRegisterValue(reg[0],value[1]|0xFF00);
+				}
+			}
 
 			if(REG_S==reg[0] || REG_S==reg[1])
 			{
@@ -3010,11 +3035,6 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 		{
 			uint8_t reg[2];
 			DecodeExgTfrReg(reg,inst.operand[0]);
-			if(regBits[reg[0]]<regBits[reg[1]])
-			{
-				Abort("TFR to larger-size register not supported yet.");
-				inst.length=0;
-			}
 
 			uint16_t value=GetRegisterValue(reg[0]);
 			if(REG_PC==reg[0])
@@ -3022,7 +3042,26 @@ uint32_t MC6809::RunOneInstruction(class MemoryAccess &mem)
 				value+=inst.length;
 			}
 
-			SetRegisterValue(reg[1],value); // If 16bit to 8bit TFR, high byte will be erased in SetRegisterValue.
+			if(regBits[reg[0]]==regBits[reg[1]])
+			{
+				SetRegisterValue(reg[1],value); // If 16bit to 8bit TFR, high byte will be erased in SetRegisterValue.
+			}
+			else // Undefined behavior.  Implementation based on the observation of real FM77AV.
+			{
+				if(REG_B==reg[0] && REG_D==reg[1])
+				{
+					Abort("TFR B,D not supported yet. I don't know what to do yet.");
+					inst.length=0;
+				}
+				else
+				{
+					// If 8bit to 16bit, copy value|0xFF00.
+					// If 16bit to 8bit, just take low 8bit.
+					value|=0xFF00;
+					SetRegisterValue(reg[1],value);
+				}
+			}
+
 			if(REG_S==reg[1])
 			{
 				state.nmiEnabled=true;
