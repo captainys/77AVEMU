@@ -134,6 +134,10 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Enable WHG (Second YM2203C expansion card.)" << std::endl;
 	std::cout << "-NOWHG" << std::endl;
 	std::cout << "  Disable WHG (Second YM2203C expansion card.)" << std::endl;
+	std::cout << "-THG" << std::endl;
+	std::cout << "  Enable THG (Third YM2203C expansion card.)" << std::endl;
+	std::cout << "-NOTHG" << std::endl;
+	std::cout << "  Disable THG (Third YM2203C expansion card.)" << std::endl;
 }
 
 void FM77AVArgv::PrintApplicationList(void) const
@@ -564,6 +568,14 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-NOWHG"==ARG)
 		{
 			enable_whg=false;
+		}
+		else if("-THG"==ARG)
+		{
+			enable_thg=true;
+		}
+		else if("-NOTHG"==ARG)
+		{
+			enable_thg=false;
 		}
 		else
 		{

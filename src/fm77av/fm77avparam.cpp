@@ -497,6 +497,13 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 				enable_whg=(0!=cpputil::Atoi(argv[1].c_str()));
 			}
 		}
+		else if(ARGV0=="ENBL_THG")
+		{
+			if(2<=argv.size())
+			{
+				enable_thg=(0!=cpputil::Atoi(argv[1].c_str()));
+			}
+		}
 		else
 		{
 			errorMsg="Unrecognized keyword:";

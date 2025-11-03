@@ -76,8 +76,9 @@ public:
 	public:
 		bool mute=false;
 		bool enable_whg=false;
+		bool enable_thg=false;
 
-		YM_PLUS_AY ym,whg;
+		YM_PLUS_AY ym,whg,thg;
 
 		uint8_t beepState=BEEP_OFF;
 		uint64_t beepStopTime=0;
@@ -126,6 +127,14 @@ public:
 	inline bool IsWHG_SSGPlaying(void) const
 	{
 		return state.whg.ay38910.IsPlaying();
+	}
+	inline bool IsTHG_FMPlaying(void) const
+	{
+		return 0!=state.thg.ym2203c.state.playingCh || 0<state.thg.ym2203c.regWriteSched.size();
+	}
+	inline bool IsTHG_SSGPlaying(void) const
+	{
+		return state.thg.ay38910.IsPlaying();
 	}
 
 	FM77AVSound(class FM77AV *fm77avPtr);

@@ -123,7 +123,7 @@ public:
 	// Toward semi-automated 1X RPG map generation.
 	std::string mapXYExpression[2];
 
-	bool enable_whg=false;
+	bool enable_whg=false,enable_thg=false;
 };
 
 

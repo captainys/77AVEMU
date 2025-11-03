@@ -81,6 +81,7 @@ FM77AVSound::FM77AVSound(class FM77AV *fm77avPtr) : Device(fm77avPtr)
 
 	state.ym.vgm_reg=VGMRecorder::REG_YM2203;
 	state.whg.vgm_reg=VGMRecorder::REG_YM2203_2;
+	state.thg.vgm_reg=VGMRecorder::REG_YM2203_3;
 }
 /* virtual */ void FM77AVSound::PowerOn(void)
 {
@@ -335,6 +336,19 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		}
 		break;
 
+	case FM77AVIO_TYM2203C_CONTROL://=        0xFD51,
+		if(true==state.enable_whg)
+		{
+			YMWriteControl(state.thg,data);
+		}
+		break;
+	case FM77AVIO_TYM2203C_DATA://=           0xFD52,
+		if(true==state.enable_whg)
+		{
+			state.thg.ym2203cDataWrite=data;
+		}
+		break;
+
 	case FM77AVIO_BEEP://=                    0xD403,
 		state.beepState=BEEP_ONE_SHOT;
 		state.beepStopTime=fm77avPtr->state.fm77avTime+SINGLE_BEEP_DURATION;
@@ -418,6 +432,15 @@ uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
 			return state.whg.ym2203cDataRead;
 		}
 		break;
+
+	case FM77AVIO_TYM2203C_CONTROL://=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
+		break;
+	case FM77AVIO_TYM2203C_DATA://=           0xFD46,
+		if(true==state.enable_thg)
+		{
+			return state.thg.ym2203cDataRead;
+		}
+		break;
 	}
 	return 0xFF;
 }
@@ -455,6 +478,8 @@ void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 	    true==IsFMPlaying() ||
 	    true==IsWHG_FMPlaying() ||
 	    true==IsWHG_SSGPlaying() ||
+	    true==IsTHG_FMPlaying() ||
+	    true==IsTHG_SSGPlaying() ||
 	    BEEP_OFF!=state.beepState ||
 	    0<ringBufferClearTimeLeft) && 
 	    nullptr!=soundPtr)
@@ -490,6 +515,7 @@ void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 					state.ym.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
 					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 				}
+
 				if(true==IsWHG_FMPlaying())
 				{
 					state.whg.ym2203c.AddWaveForNSamples(fillPtr,fillNumSamples,lastWaveGenTime);
@@ -500,6 +526,18 @@ void FM77AVSound::ProcessSound(Outside_World::Sound *soundPtr)
 					state.whg.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
 					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
 				}
+
+				if(true==IsTHG_FMPlaying())
+				{
+					state.thg.ym2203c.AddWaveForNSamples(fillPtr,fillNumSamples,lastWaveGenTime);
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
+				}
+				if(true==IsTHG_SSGPlaying())
+				{
+					state.thg.ay38910.AddWaveAllChannelsForNumSamples(fillPtr,fillNumSamples,lastWaveGenTime);
+					ringBufferClearTimeLeft=RINGBUFFER_CLEAR_TIME;
+				}
+
 				if(BEEP_OFF!=state.beepState)
 				{
 					// 1200Hz Square Wave.  Sign flips at 2400 times per sec.
@@ -873,6 +911,7 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 
 /* virtual */ uint32_t FM77AVSound::SerializeVersion(void) const
 {
+	// Version 1 WHG,THG
 	return 1;
 }
 /* virtual */ void FM77AVSound::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -895,7 +934,7 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 	PushUint16(data,state.beepWaveOut);
 
 
-	// Version 1
+	// Version 1 WHG,THG
 	PushBool(data,state.enable_whg);
 	if(true==state.enable_whg)
 	{
@@ -910,6 +949,21 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 		PushUint16(data,state.whg.ay38910AddrLatch);
 		PushUint16(data,state.whg.ay38910LastControl);
 		PushUint16(data,state.whg.ay38910LastData);
+	}
+	PushBool(data,state.enable_thg);
+	if(true==state.enable_thg)
+	{
+		SerializeYM2203CFMPart(data,state.thg);
+		PushUint16(data,state.thg.ym2203cCommand);
+		PushUint16(data,state.thg.ym2203cDataRead);
+		PushUint16(data,state.thg.ym2203cDataWrite);
+		PushUint32(data,state.thg.ym2203cAddrLatch);
+
+		SerializeAY38910(data,state.thg);
+		PushUint16(data,state.thg.ay38910regMode);
+		PushUint16(data,state.thg.ay38910AddrLatch);
+		PushUint16(data,state.thg.ay38910LastControl);
+		PushUint16(data,state.thg.ay38910LastData);
 	}
 }
 /* virtual */ bool FM77AVSound::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
@@ -931,7 +985,7 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 	state.beepTimeBalance=ReadUint32(data);
 	state.beepWaveOut=ReadUint16(data);
 
-	if(2<=version)
+	if(1<=version)
 	{
 		state.enable_whg=ReadBool(data);
 		if(true==state.enable_whg)
@@ -947,6 +1001,22 @@ void FM77AVSound::DeserializeAY38910(const unsigned char *&data,unsigned int ver
 			state.whg.ay38910AddrLatch=ReadUint16(data);
 			state.whg.ay38910LastControl=ReadUint16(data);
 			state.whg.ay38910LastData=ReadUint16(data);
+		}
+
+		state.enable_thg=ReadBool(data);
+		if(true==state.enable_thg)
+		{
+			DeserializeYM2203CFMPart(data,version,state.thg);
+			state.thg.ym2203cCommand=ReadUint16(data);
+			state.thg.ym2203cDataRead=ReadUint16(data);
+			state.thg.ym2203cDataWrite=ReadUint16(data);
+			state.thg.ym2203cAddrLatch=ReadUint32(data);
+
+			DeserializeAY38910(data,version,state.thg);
+			state.thg.ay38910regMode=ReadUint16(data);
+			state.thg.ay38910AddrLatch=ReadUint16(data);
+			state.thg.ay38910LastControl=ReadUint16(data);
+			state.thg.ay38910LastData=ReadUint16(data);
 		}
 	}
 
