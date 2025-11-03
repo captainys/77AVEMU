@@ -839,6 +839,9 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 	profile.mapXYExpression[0]=mapXYExpressionTxt[0]->GetString().c_str();
 	profile.mapXYExpression[1]=mapXYExpressionTxt[1]->GetString().c_str();
 
+	profile.enable_whg=true; // Tenuki
+	profile.enable_thg=true; // Tenuki
+
 	return profile;
 }
 void ProfileDialog::SetProfile(const FM77AVProfile &profile)
@@ -980,7 +983,6 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 
 YsString ProfileDialog::GetDefaultFloppyImageFile(unsigned int drive) const
 {
-printf("%d\n",__LINE__);
 	YsString dir;
 	if(drive<FM77AVProfile::NUM_FDDRIVES && nullptr!=FDImgTxt[drive])
 	{
@@ -990,7 +992,6 @@ printf("%d\n",__LINE__);
 			return dir;
 		}
 	}
-printf("%d\n",__LINE__);
 	for(auto ptr : FDImgTxt)
 	{
 		if(nullptr==ptr)
@@ -1008,7 +1009,6 @@ printf("%d\n",__LINE__);
 			return dir;
 		}
 	}
-printf("%d\n",__LINE__);
 
 	dir=GetAnyKnownDirectory();
 	if(0!=dir.Strcmp(""))
@@ -1017,7 +1017,6 @@ printf("%d\n",__LINE__);
 		ful.MakeFullPathName(dir,"*.D77");
 		return ful;
 	}
-printf("%d\n",__LINE__);
 
 	return "";
 }
