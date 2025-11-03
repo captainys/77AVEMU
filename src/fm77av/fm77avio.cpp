@@ -178,6 +178,8 @@ void FM77AV::IOWrite(const CanAccessMemory *accessFrom,uint16_t ioAddr,uint8_t v
 	case FM77AVIO_WYM2203C_DATA://=           0xFD46,
 	case FM77AVIO_TYM2203C_CONTROL://=        0xFD51
 	case FM77AVIO_TYM2203C_DATA://=           0xFD51
+	case FM77AVIO_TYM2203C_CONTROL_ALT://=    0xFD55
+	case FM77AVIO_TYM2203C_DATA_ALT://=       0xFD56
 		sound.IOWrite(ioAddr,value);
 		break;
 
@@ -704,7 +706,9 @@ uint8_t FM77AV::IORead(const CanAccessMemory *accessFrom,uint16_t ioAddr)
 	case FM77AVIO_WYM2203C_CONTROL://=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
 	case FM77AVIO_WYM2203C_DATA://=           0xFD46,
 	case FM77AVIO_TYM2203C_CONTROL://=        0xFD51
-	case FM77AVIO_TYM2203C_DATA://=           0xFD51
+	case FM77AVIO_TYM2203C_DATA://=           0xFD52
+	case FM77AVIO_TYM2203C_CONTROL_ALT://=    0xFD55
+	case FM77AVIO_TYM2203C_DATA_ALT://=       0xFD56
 		// Probably Reading sound I/O won't change anything.
 		break;
 	case FM77AVIO_INT_YM2203C_MOUSE://=       0xFD17,
@@ -886,6 +890,8 @@ uint8_t FM77AV::NonDestructiveIORead(uint16_t ioAddr) const
 	case FM77AVIO_WYM2203C_DATA://=           0xFD46,
 	case FM77AVIO_TYM2203C_CONTROL://=        0xFD51
 	case FM77AVIO_TYM2203C_DATA://=           0xFD51
+	case FM77AVIO_TYM2203C_CONTROL_ALT://=    0xFD55
+	case FM77AVIO_TYM2203C_DATA_ALT://=       0xFD56
 		byteData=sound.NonDestructiveIOReadByte(ioAddr);
 		break;
 	case FM77AVIO_INT_YM2203C_MOUSE://=       0xFD17,

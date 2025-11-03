@@ -148,8 +148,10 @@ enum
 	FM77AVIO_WYM2203C_CONTROL=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
 	FM77AVIO_WYM2203C_DATA=           0xFD46,
 
-	FM77AVIO_TYM2203C_CONTROL=        0xFD51, // TRIPLE YM2203C Unconfirmed.
+	FM77AVIO_TYM2203C_CONTROL=        0xFD51, // TRIPLE YM2203C.
 	FM77AVIO_TYM2203C_DATA=           0xFD52,
+	FM77AVIO_TYM2203C_CONTROL_ALT=    0xFD55, // TRIPLE YM2203C Alternative. (Looks like it's not checking bit 2)
+	FM77AVIO_TYM2203C_DATA_ALT=       0xFD56, // TRIPLE YM2203C Alternative. (Looks like it's not checking bit 2)
 
 	FM77AVIO_MMR_0=                   0xFD80,
 	FM77AVIO_MMR_1=                   0xFD81,

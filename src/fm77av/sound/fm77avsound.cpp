@@ -337,12 +337,14 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		break;
 
 	case FM77AVIO_TYM2203C_CONTROL://=        0xFD51,
+	case FM77AVIO_TYM2203C_CONTROL_ALT://=    0xFD55
 		if(true==state.enable_whg)
 		{
 			YMWriteControl(state.thg,data);
 		}
 		break;
 	case FM77AVIO_TYM2203C_DATA://=           0xFD52,
+	case FM77AVIO_TYM2203C_DATA_ALT://=       0xFD56
 		if(true==state.enable_whg)
 		{
 			state.thg.ym2203cDataWrite=data;
@@ -433,9 +435,11 @@ uint8_t FM77AVSound::NonDestructiveIOReadByte(unsigned int ioport) const
 		}
 		break;
 
-	case FM77AVIO_TYM2203C_CONTROL://=        0xFD45, // WHGPLAY Oh!FM May 1988 Issue
+	case FM77AVIO_TYM2203C_CONTROL:
+	case FM77AVIO_TYM2203C_CONTROL_ALT:
 		break;
-	case FM77AVIO_TYM2203C_DATA://=           0xFD46,
+	case FM77AVIO_TYM2203C_DATA:
+	case FM77AVIO_TYM2203C_DATA_ALT:
 		if(true==state.enable_thg)
 		{
 			return state.thg.ym2203cDataRead;
