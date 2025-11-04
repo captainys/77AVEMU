@@ -140,6 +140,9 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["BASICMODE"]=CMD_BASMODE;
 	primaryCmdMap["CLEARACCESSLOG"]=CMD_CLEAR_ACCESS_LOG;
 	primaryCmdMap["CLACCLOG"]=CMD_CLEAR_ACCESS_LOG;
+	primaryCmdMap["LOADM"]=CMD_LOADM;
+	primaryCmdMap["UNUNLIST"]=CMD_UNUNLIST;
+
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
 	featureMap["FDCMON"]=ENABLE_FDCMONITOR;
@@ -192,6 +195,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	dumpableMap["MEMACCLOG"]=DUMP_MEMORY_ACCESS_LOG;
 	dumpableMap["MEMORYLOG"]=DUMP_MEMORY_ACCESS_LOG;
 	dumpableMap["SAVESTATEM"]=DUMP_SAVESTATEM;
+	dumpableMap["EXEC"]=DUMP_EXEC;
 }
 
 void FM77AVCommandInterpreter::PrintHelp(void) const
@@ -270,6 +274,12 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVEMEM filename\n";
 	std::cout << "SAVEMEM filename main/sub/phys\n";
 	std::cout << "  Save memory to file.  With all current memory mappings.\n";
+
+	std::cout << "LOADM filename.srec\n";
+	std::cout << "LOADM filename.bin addr\n";
+	std::cout << "  Load binary into main CPU memory space.  If it is SREC file and no address is given,\n";
+	std::cout << "  it loads into the address specified in the SREC.\n";
+	std::cout << "  Address is in hexadecimal number.\n";
 
 	std::cout << "GAMEPORT 0/1 device" << std::endl;
 	std::cout << "  Connect device to game port." << std::endl;
@@ -522,6 +532,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Use 0x to specify a sector by hexa-decimal." << std::endl;
 	std::cout << "FDCIRQ" << std::endl;
 	std::cout << "  Break when FDC IRQ is set." << std::endl;
+	std::cout << "UNUNLIST\n";
+	std::cout << "  Cancel F-BASIC unlist and protect.\n";
 
 
 	std::cout << "<< Printable >>" << std::endl;
@@ -547,6 +559,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Print coordinate of the player/map when the coordinate expression is know." << std::endl;
 	std::cout << "SAVESTATEM" << std::endl;
 	std::cout << "  List of memry-saved states.\n";
+	std::cout << "EXEC\n";
+	std::cout << "  F-BASIC Exec address.\n";
 	std::cout << "ACCLOG\n";
 	std::cout << "MEMACCLOG\n";
 	std::cout << "MEMORYLOG\n";
@@ -1446,6 +1460,13 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			std::cout << "Set display page to " << fm77av.crtc.state.displayPage << std::endl;
 		}
 		break;
+
+	case CMD_LOADM:
+		Execute_LOADM(fm77av,cmd);
+		break;
+	case CMD_UNUNLIST:
+		Execute_Ununlist(fm77av,cmd);
+		break;
 	}
 }
 
@@ -2032,6 +2053,11 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 						std::cout << "\n";
 					}
 				}
+				break;
+			case DUMP_EXEC:
+				// Exec addr at main RAM $0217  Back Up No.1 p.39
+				std::cout << "EXEC Addr (at main RAM $0217)\n";
+				std::cout << "  $" << cpputil::Ustox(fm77av.physMem.NonDestructiveFetchWord(0x30217)) <<"\n";
 				break;
 			}
 		}
@@ -4091,4 +4117,18 @@ void FM77AVCommandInterpreter::FoundAt(FM77AV &fm77av,unsigned int physAddr)
 	}
 
 	std::cout << std::endl;
+}
+
+void FM77AVCommandInterpreter::Execute_Ununlist(FM77AV &fm77av,Command &cmd)
+{
+	// Back Up No.1 p.37
+	std::cout << "Write 00 to main RAM $00D1\n";
+	fm77av.physMem.StoreByte(nullptr,0x300D1,0); // Unprotect.
+	std::cout << "Write FFFF to main RAM $01E7\n";
+	fm77av.physMem.StoreWord(nullptr,0x301E7,0x301E8,0xFFFF); // Ununlist.
+}
+
+void FM77AVCommandInterpreter::Execute_LOADM(FM77AV &fm77av,Command &cmd)
+{
+
 }

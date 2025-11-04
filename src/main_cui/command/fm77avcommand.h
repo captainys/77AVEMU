@@ -163,6 +163,9 @@ public:
 
 		CMD_DOSMODE,
 		CMD_BASMODE,
+
+		CMD_LOADM,
+		CMD_UNUNLIST,
 	};
 
 	enum
@@ -216,6 +219,7 @@ public:
 		DUMP_WHERE_I_AM,
 		DUMP_MEMORY_ACCESS_LOG,
 		DUMP_SAVESTATEM,
+		DUMP_EXEC,
 	};
 
 	class Command
@@ -315,6 +319,8 @@ public:
 	void Execute_Search_String(FM77AV &fm77av,Command &cmd);
 	void Execute_Search_ByteSequence(FM77AV &fm77av,const std::vector <unsigned char> &bytes);
 	void FoundAt(FM77AV &fm77av,unsigned int physAddr);
+	void Execute_Ununlist(FM77AV &fm77av,Command &cmd);
+	void Execute_LOADM(FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
