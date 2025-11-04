@@ -53,5 +53,7 @@ add_subdirectory(${MUTSU_SOURCE_DIR}/tests tests)
 add_subdirectory(${MUTSU_SOURCE_DIR}/resources resources)
 add_subdirectory(${MUTSU_SOURCE_DIR}/outside_world outside_world)
 add_subdirectory(${MUTSU_SOURCE_DIR}/externals externals)
+add_subdirectory(${MUTSU_SOURCE_DIR}/srec srec)
+
 
 add_subdirectory(main_gui)

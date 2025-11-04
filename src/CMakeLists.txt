@@ -46,5 +46,6 @@ add_subdirectory(outside_world)
 add_subdirectory(externals)
 add_subdirectory(t77lib)
 add_subdirectory(fm7lib)
+add_subdirectory(srec)
 
 add_subdirectory(exas_compiler)
