@@ -8,7 +8,7 @@
 #include "fm77avlineparser.h"
 #include "outside_world.h"
 #include "yspngenc.h"
-
+#include "srec.h"
 
 FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 {
@@ -4130,5 +4130,70 @@ void FM77AVCommandInterpreter::Execute_Ununlist(FM77AV &fm77av,Command &cmd)
 
 void FM77AVCommandInterpreter::Execute_LOADM(FM77AV &fm77av,Command &cmd)
 {
+	bool isSREC=false;
+	uint16_t loadAddr;
+	if(2<=cmd.argv.size())
+	{
+		auto fileName=cmd.argv[1];
+		auto ext=cpputil::GetExtension(fileName);
+		cpputil::Capitalize(ext);
+		if(".SREC"==ext)
+		{
+			isSREC=true;
+		}
 
+		uint16_t addr=0;
+		std::vector <uint8_t> data;
+		if(true==isSREC)
+		{
+			SREC srec;
+			srec.Open(fileName);
+			data=srec.GetData();
+			addr=srec.GetFirstAddress();
+		}
+		else
+		{
+			data=cpputil::ReadBinaryFile(fileName);
+		}
+
+		if(0==data.size())
+		{
+			Error_CannotOpenFile(cmd);
+			return;
+		}
+
+		if(true!=isSREC && cmd.argv.size()<3)
+		{
+			Error_TooFewArgs(cmd);
+			return;
+		}
+
+		if(3<=cmd.argv.size())
+		{
+			auto addrStr=cmd.argv[2];
+			if('$'==addrStr[0])
+			{
+				addrStr.erase(addrStr.begin());
+			}
+			if(('&'==addrStr[0] && ('h'==addrStr[1] || 'H'==addrStr[1])) ||
+			   ('0'==addrStr[0] && 'x'==addrStr[1]))
+			{
+				addrStr.erase(addrStr.begin());
+				addrStr.erase(addrStr.begin());
+			}
+			addr=cpputil::Xtoi(addrStr);
+		}
+
+		std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr) << "\n";
+
+		for(auto d : data)
+		{
+			fm77av.physMem.StoreByte(nullptr,0x30000+addr,d);
+			++addr;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
 }

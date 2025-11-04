@@ -175,7 +175,7 @@ std::vector <uint8_t> SREC::GetData(void) const
 	return data;
 }
 
-uint32_t SREC::GetFirstAddres(void) const
+uint32_t SREC::GetFirstAddress(void) const
 {
 	for(auto &b : blocks)
 	{

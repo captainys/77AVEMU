@@ -30,7 +30,7 @@ public:
 	bool VerifyCheckSum(void) const;
 
 	std::vector <uint8_t> GetData(void) const;
-	uint32_t GetFirstAddres(void) const;
+	uint32_t GetFirstAddress(void) const;
 };
 
 #endif
