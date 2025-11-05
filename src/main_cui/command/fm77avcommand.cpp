@@ -141,6 +141,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CLEARACCESSLOG"]=CMD_CLEAR_ACCESS_LOG;
 	primaryCmdMap["CLACCLOG"]=CMD_CLEAR_ACCESS_LOG;
 	primaryCmdMap["LOADM"]=CMD_LOADM;
+	primaryCmdMap["SAVEM"]=CMD_SAVEM;
 	primaryCmdMap["UNUNLIST"]=CMD_UNUNLIST;
 
 
@@ -274,6 +275,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "SAVEMEM filename\n";
 	std::cout << "SAVEMEM filename main/sub/phys\n";
 	std::cout << "  Save memory to file.  With all current memory mappings.\n";
+
+	std::cout << "SAVEM filename.bin addr0 addr1\n";
+	std::cout << "  Save main CPU memory to file.\n";
+	std::cout << "  SAVEMEM is for dumping the entire memory.\n";
+	std::cout << "  SAVEM is for saving part of the memory.\n";
 
 	std::cout << "LOADM filename.srec\n";
 	std::cout << "LOADM filename.bin addr\n";
@@ -1463,6 +1469,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 
 	case CMD_LOADM:
 		Execute_LOADM(fm77av,cmd);
+		break;
+	case CMD_SAVEM:
+		Execute_SAVEM(fm77av,cmd);
 		break;
 	case CMD_UNUNLIST:
 		Execute_Ununlist(fm77av,cmd);
@@ -4170,18 +4179,7 @@ void FM77AVCommandInterpreter::Execute_LOADM(FM77AV &fm77av,Command &cmd)
 
 		if(3<=cmd.argv.size())
 		{
-			auto addrStr=cmd.argv[2];
-			if('$'==addrStr[0])
-			{
-				addrStr.erase(addrStr.begin());
-			}
-			if(('&'==addrStr[0] && ('h'==addrStr[1] || 'H'==addrStr[1])) ||
-			   ('0'==addrStr[0] && 'x'==addrStr[1]))
-			{
-				addrStr.erase(addrStr.begin());
-				addrStr.erase(addrStr.begin());
-			}
-			addr=cpputil::Xtoi(addrStr);
+			addr=MakeAddressForCPU(fm77av,fm77av.mainCPU,cmd.argv[2]);
 		}
 
 		std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr) << "\n";
@@ -4191,6 +4189,53 @@ void FM77AVCommandInterpreter::Execute_LOADM(FM77AV &fm77av,Command &cmd)
 			fm77av.physMem.StoreByte(nullptr,0x30000+addr,d);
 			++addr;
 		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+
+void FM77AVCommandInterpreter::Execute_SAVEM(FM77AV &fm77av,Command &cmd)
+{
+	bool isSREC=false;
+	uint16_t loadAddr;
+	if(4<=cmd.argv.size())
+	{
+		auto fileName=cmd.argv[1];
+		auto ext=cpputil::GetExtension(fileName);
+		cpputil::Capitalize(ext);
+		if(".SREC"==ext)
+		{
+			isSREC=true;
+		}
+
+		auto addr0=MakeAddressForCPU(fm77av,fm77av.mainCPU,cmd.argv[2]);
+		auto addr1=MakeAddressForCPU(fm77av,fm77av.mainCPU,cmd.argv[3]);
+		if(addr1<addr0)
+		{
+			std::cout << "The end address must be after the Start address.\n";
+			return;
+		}
+
+		if(true==isSREC)
+		{
+			// Will support srec out soon.
+		}
+
+		std::vector <uint8_t> data;
+		for(size_t addr=addr0; addr<=addr1; ++addr)
+		{
+			data.push_back(fm77av.physMem.FetchByte(nullptr,0x30000+addr));
+		}
+
+		if(true!=cpputil::WriteBinaryFile(fileName,data.size(),data.data()))
+		{
+			Error_CannotSaveFile(cmd);
+			return;
+		}
+
+		std::cout << "Saveed " << fileName << " from main RAM $" << cpputil::Ustox(addr0) << " to " << cpputil::Ustox(addr1) << "\n";
 	}
 	else
 	{

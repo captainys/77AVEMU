@@ -165,6 +165,7 @@ public:
 		CMD_BASMODE,
 
 		CMD_LOADM,
+		CMD_SAVEM,
 		CMD_UNUNLIST,
 	};
 
@@ -321,6 +322,7 @@ public:
 	void FoundAt(FM77AV &fm77av,unsigned int physAddr);
 	void Execute_Ununlist(FM77AV &fm77av,Command &cmd);
 	void Execute_LOADM(FM77AV &fm77av,Command &cmd);
+	void Execute_SAVEM(FM77AV &fm77av,Command &cmd);
 };
 
 /* } */
