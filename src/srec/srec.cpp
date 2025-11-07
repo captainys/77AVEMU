@@ -144,19 +144,21 @@ uint8_t SREC::Block::RecalculateCheckSum(void) const
 	{
 		checkSum+=bc;
 	}
-	auto addr=b.address;
+	auto addr=this->address;
 	while(0!=addr)
 	{
 		checkSum+=(addr&0xff);
 		addr>>=8;
 	}
-	for(auto d : b.data)
+	for(auto d : this->data)
 	{
 		checkSum+=d;
 	}
 
 	checkSum&=0xFF;
 	checkSum=0xFF-checkSum;
+
+	return checkSum;
 }
 
 bool SREC::VerifyCheckSum(void) const
@@ -204,23 +206,51 @@ uint32_t SREC::GetFirstAddress(void) const
 void SREC::Make(uint32_t addr,const std::vector <uint8_t> &data)
 {
 	Clear();
-	if(startAddr<0x10000) // Type '1'
+	if(addr<0x10000) // Type '1'
 	{
 		const size_t blockSize=0x20;
-		for(size_t i=0; i<data.size(); i+=0x20)
+		char type='1';
+		if(0x10000<=addr)
+		{
+			type='2';
+		}
+		else if(0x1000000<=addr)
+		{
+			type='3';
+		}
+		for(size_t i=0; i<data.size(); i+=blockSize)
 		{
 			Block b;
-			b.type='1';
-			b.byteCount=std::min(data.size()-i,0x20);
+			b.type=type;
+			b.byteCount=std::min(data.size()-i,blockSize);
 			b.address=addr;
 
-			
+			for(size_t j=0; j<blockSize; ++j)
+			{
+				b.data.push_back(data[i+j]);
+			}
 
-			addr+=0x20
+			addr+=blockSize;
+
+			blocks.push_back(b);
 		}
 	}
 }
 
-void SREC::Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t startAddr)
+void SREC::Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t execAddr)
 {
+	Make(startAddr,data);
+
+	Block b;
+	b.type='9';
+	if(0x10000<=startAddr)
+	{
+		b.type='8';
+	}
+	else if(0x1000000<=startAddr)
+	{
+		b.type='7';
+	}
+	b.address=execAddr;
+	blocks.push_back(b);
 }

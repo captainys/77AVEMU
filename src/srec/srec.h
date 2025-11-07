@@ -39,7 +39,7 @@ public:
 	uint32_t GetFirstAddress(void) const;
 
 	void Make(uint32_t startAddr,const std::vector <uint8_t> &data);
-	void Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t startAddr);
+	void Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t execAddr);
 };
 
 #endif
