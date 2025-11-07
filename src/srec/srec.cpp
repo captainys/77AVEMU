@@ -33,6 +33,11 @@ uint32_t SREC::Xtoi(const char *str)
 	return i;
 }
 
+void SREC::Clear(void)
+{
+	blocks.clear();
+}
+
 bool SREC::Open(std::string fileName)
 {
 	std::vector <uint8_t> bin;
@@ -132,25 +137,33 @@ bool SREC::Open(std::string fileName)
 	return false;
 }
 
+uint8_t SREC::Block::RecalculateCheckSum(void) const
+{
+	unsigned int checkSum=0;
+	for(auto bc=byteCount; 0!=bc; bc>>=8) // SREC spec implies the byte count is 8-bit, but is it true?
+	{
+		checkSum+=bc;
+	}
+	auto addr=b.address;
+	while(0!=addr)
+	{
+		checkSum+=(addr&0xff);
+		addr>>=8;
+	}
+	for(auto d : b.data)
+	{
+		checkSum+=d;
+	}
+
+	checkSum&=0xFF;
+	checkSum=0xFF-checkSum;
+}
+
 bool SREC::VerifyCheckSum(void) const
 {
 	for(auto &b : blocks)
 	{
-		unsigned int checkSum=0;
-		checkSum+=b.byteCount;
-		auto addr=b.address;
-		while(0!=addr)
-		{
-			checkSum+=(addr&0xff);
-			addr>>=8;
-		}
-		for(auto d : b.data)
-		{
-			checkSum+=d;
-		}
-
-		checkSum&=0xFF;
-		checkSum=0xFF-checkSum;
+		auto checkSum=b.RecalculateCheckSum();
 
 		printf("%x %x\n",b.checkSum,checkSum);
 		if(checkSum!=b.checkSum && checkSum+3!=b.checkSum) // asm6809 calculates checksum wrong.  Need +3.
@@ -185,4 +198,29 @@ uint32_t SREC::GetFirstAddress(void) const
 		}
 	}
 	return ~0;
+}
+
+
+void SREC::Make(uint32_t addr,const std::vector <uint8_t> &data)
+{
+	Clear();
+	if(startAddr<0x10000) // Type '1'
+	{
+		const size_t blockSize=0x20;
+		for(size_t i=0; i<data.size(); i+=0x20)
+		{
+			Block b;
+			b.type='1';
+			b.byteCount=std::min(data.size()-i,0x20);
+			b.address=addr;
+
+			
+
+			addr+=0x20
+		}
+	}
+}
+
+void SREC::Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t startAddr)
+{
 }

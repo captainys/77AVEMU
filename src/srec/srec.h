@@ -19,7 +19,11 @@ public:
 		size_t address;
 		std::vector <uint8_t> data;
 		uint8_t checkSum;
+
+		uint8_t RecalculateCheckSum(void) const;
 	};
+
+	void Clear(void);
 
 	std::vector <Block> blocks;
 
@@ -29,8 +33,13 @@ public:
 
 	bool VerifyCheckSum(void) const;
 
+	uint8_t RecalculateCheckSum(void) const;
+
 	std::vector <uint8_t> GetData(void) const;
 	uint32_t GetFirstAddress(void) const;
+
+	void Make(uint32_t startAddr,const std::vector <uint8_t> &data);
+	void Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t startAddr);
 };
 
 #endif
