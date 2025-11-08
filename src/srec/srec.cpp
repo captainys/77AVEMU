@@ -33,6 +33,28 @@ uint32_t SREC::Xtoi(const char *str)
 	return i;
 }
 
+std::string SREC::ToHexString32(uint32_t i)
+{
+	unsigned int shift=28;
+	unsigned char chr[17]="0123456789ABCDEF";
+	std::string str;
+	while(shift<32)
+	{
+		auto digit=(i>>shift);
+		digit&=0x0F;
+		str.push_back(chr[digit]);
+		shift-=4;
+	}
+	return str;
+}
+
+void SREC::ToHexString8(char data[2],uint32_t i)
+{
+	unsigned char chr[17]="0123456789ABCDEF";
+	data[0]=chr[(i>>4)&0x0F];
+	data[1]=chr[i&0x0F];
+}
+
 void SREC::Clear(void)
 {
 	blocks.clear();
@@ -208,21 +230,24 @@ void SREC::Make(uint32_t addr,const std::vector <uint8_t> &data)
 	Clear();
 	if(addr<0x10000) // Type '1'
 	{
-		const size_t blockSize=0x20;
+		const size_t blockSize=0x20,checksumByte=1;
+		size_t sizeBytes=2;
 		char type='1';
 		if(0x10000<=addr)
 		{
 			type='2';
+			sizeBytes=3;
 		}
 		else if(0x1000000<=addr)
 		{
 			type='3';
+			sizeBytes=4;
 		}
 		for(size_t i=0; i<data.size(); i+=blockSize)
 		{
 			Block b;
 			b.type=type;
-			b.byteCount=std::min(data.size()-i,blockSize);
+			b.byteCount=std::min(data.size()-i,blockSize)+sizeBytes+checksumByte;
 			b.address=addr;
 
 			for(size_t j=0; j<blockSize; ++j)
@@ -231,6 +256,8 @@ void SREC::Make(uint32_t addr,const std::vector <uint8_t> &data)
 			}
 
 			addr+=blockSize;
+
+			b.checkSum=b.RecalculateCheckSum();
 
 			blocks.push_back(b);
 		}
@@ -242,15 +269,85 @@ void SREC::Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t ex
 	Make(startAddr,data);
 
 	Block b;
+	size_t sizeBytes=2;
 	b.type='9';
 	if(0x10000<=startAddr)
 	{
 		b.type='8';
+		sizeBytes=3;
 	}
 	else if(0x1000000<=startAddr)
 	{
 		b.type='7';
+		sizeBytes=4;
 	}
+	b.byteCount=sizeBytes+1;
 	b.address=execAddr;
+	b.checkSum=b.RecalculateCheckSum();
 	blocks.push_back(b);
+}
+
+std::vector <char> SREC::Encode(void) const
+{
+	std::vector <char> data;
+	for(auto &b : blocks)
+	{
+		data.push_back('S');
+		data.push_back(b.type);
+
+		unsigned int sizeBytes=3;
+		switch(b.type)
+		{
+		case '3': // 32-bit address
+		case '7': // 32-bit start address
+			sizeBytes=5;
+			break;
+		case '2': // 24-bit address
+		case '8': // 24-bit start address
+			sizeBytes=4;
+			break;
+		}
+
+		auto hexStr=ToHexString32(b.data.size()+sizeBytes); // Always 8 hex digits.
+		data.push_back(hexStr[6]);
+		data.push_back(hexStr[7]);
+
+		hexStr=ToHexString32(b.address);
+		switch(b.type)
+		{
+		case '3': // 32-bit address
+		case '7': // 32-bit start address
+			data.push_back(hexStr[0]);
+			data.push_back(hexStr[1]);
+			// Let it fall down to '2' and '8'
+		case '2': // 24-bit address
+		case '8': // 24-bit start address
+			data.push_back(hexStr[2]);
+			data.push_back(hexStr[3]);
+			// Let it fall down to '1' and '9'
+		case '1': // 16-bit address
+		case '9': // 24-bit start address
+			data.push_back(hexStr[4]);
+			data.push_back(hexStr[5]);
+			data.push_back(hexStr[6]);
+			data.push_back(hexStr[7]);
+			break;
+		}
+
+		for(auto d : b.data)
+		{
+			char digits[2];
+			ToHexString8(digits,d);
+			data.push_back(digits[0]);
+			data.push_back(digits[1]);
+		}
+
+		char digits[2];
+		ToHexString8(digits,b.checkSum);
+		data.push_back(digits[0]);
+		data.push_back(digits[1]);
+
+		data.push_back('\n');
+	}
+	return data;
 }

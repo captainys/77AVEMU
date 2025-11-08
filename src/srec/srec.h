@@ -30,6 +30,8 @@ public:
 	bool Open(std::string fileName);
 	static uint8_t HexDigitToI(char c);
 	static uint32_t Xtoi(const char str[]);
+	static std::string ToHexString32(uint32_t i); // Always returns 8 hex digits.
+	static void ToHexString8(char data[2],uint32_t i);
 
 	bool VerifyCheckSum(void) const;
 
@@ -40,6 +42,8 @@ public:
 
 	void Make(uint32_t startAddr,const std::vector <uint8_t> &data);
 	void Make(uint32_t startAddr,const std::vector <uint8_t> &data,uint32_t execAddr);
+
+	std::vector <char> Encode(void) const;
 };
 
 #endif

@@ -277,9 +277,11 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Save memory to file.  With all current memory mappings.\n";
 
 	std::cout << "SAVEM filename.bin addr0 addr1\n";
+	std::cout << "SAVEM filename.srec addr0 addr1\n";
 	std::cout << "  Save main CPU memory to file.\n";
 	std::cout << "  SAVEMEM is for dumping the entire memory.\n";
 	std::cout << "  SAVEM is for saving part of the memory.\n";
+	std::cout << "  If the file name extension is .srec or .SREC, it saves to a .SREC file.\n";
 
 	std::cout << "LOADM filename.srec\n";
 	std::cout << "LOADM filename.bin addr\n";
@@ -4229,10 +4231,24 @@ void FM77AVCommandInterpreter::Execute_SAVEM(FM77AV &fm77av,Command &cmd)
 			data.push_back(fm77av.physMem.FetchByte(nullptr,0x30000+addr));
 		}
 
-		if(true!=cpputil::WriteBinaryFile(fileName,data.size(),data.data()))
+		if(true==isSREC)
 		{
-			Error_CannotSaveFile(cmd);
-			return;
+			SREC srec;
+			srec.Make(addr0,data);
+			auto encoded=srec.Encode();
+			if(true!=cpputil::WriteBinaryFile(fileName,encoded.size(),(unsigned char *)encoded.data()))
+			{
+				Error_CannotSaveFile(cmd);
+				return;
+			}
+		}
+		else
+		{
+			if(true!=cpputil::WriteBinaryFile(fileName,data.size(),data.data()))
+			{
+				Error_CannotSaveFile(cmd);
+				return;
+			}
 		}
 
 		std::cout << "Saveed " << fileName << " from main RAM $" << cpputil::Ustox(addr0) << " to " << cpputil::Ustox(addr1) << "\n";
