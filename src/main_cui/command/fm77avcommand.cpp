@@ -4184,7 +4184,8 @@ void FM77AVCommandInterpreter::Execute_LOADM(FM77AV &fm77av,Command &cmd)
 			addr=MakeAddressForCPU(fm77av,fm77av.mainCPU,cmd.argv[2]);
 		}
 
-		std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr) << "\n";
+		std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr);
+		std::cout << " to " << cpputil::Ustox(addr+data.size()-1) << "\n";
 
 		for(auto d : data)
 		{
