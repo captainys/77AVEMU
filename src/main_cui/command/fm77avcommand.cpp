@@ -3517,6 +3517,7 @@ void FM77AVCommandInterpreter::Execute_TypeTextFile(FM77AV &fm77av,Command &cmd)
 				{
 					fm77av.keyboard.Type(c);
 				}
+				fm77av.keyboard.Type(0x0D);
 			}
 		}
 		else
