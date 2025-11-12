@@ -61,6 +61,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["CBRKON"]=CMD_DONT_BREAK_ON;
 	primaryCmdMap["MON"]=CMD_MONITOR;
 	primaryCmdMap["CMON"]=CMD_DONT_MONITOR;
+	primaryCmdMap["FINDCALLER"]=CMD_FINDCALLER;
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
@@ -362,6 +363,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Monitor event." << std::endl;
 	std::cout << "CMON event" << std::endl;
 	std::cout << "  Don't monitor event. (It works the same way as CBRKON)" << std::endl;
+	std::cout << "FINDCALLER addr\n";
+	std::cout << "  Find where the procedure is called from.\n";
 	std::cout << "OS9MODE" << std::endl;
 	std::cout << "  Enable debugger OS9 mode." << std::endl;
 	std::cout << "SAVEHIST filename.txt" << std::endl;
@@ -1130,6 +1133,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_DONT_MONITOR:
 		Execute_DontBreakOn(thr,fm77av,cmd);
+		break;
+	case CMD_FINDCALLER:
+		Execute_FindCaller(thr,fm77av,cmd);
 		break;
 	case CMD_OS9MODE:
 		fm77av.mainCPU.debugger.OS9Mode=true;
@@ -2083,6 +2089,81 @@ void FM77AVCommandInterpreter::Execute_Dump(FM77AVThread &thr,FM77AV &fm77av,Com
 		{
 			// Dump memory version 1.
 		}
+	}
+}
+void FM77AVCommandInterpreter::Execute_FindCaller(const FM77AVThread &thr,FM77AV &av,Command &cmd)
+{
+	// JSR		$BD xx xx
+	// JMP		$7E xx xx
+	// BSR		$8D xx
+	// LBSR		$17 xx xx
+
+	if(2<=cmd.argv.size())
+	{
+		auto ptr=MakeCPUandAddress(thr,av,cmd.argv[1]);
+		if(CPU_UNKNOWN!=ptr.cpu)
+		{
+			auto &memAccess=av.MemAccess(ptr.cpu);
+			for(unsigned int i=0; i<0xffff; ++i)
+			{
+				auto instByte=memAccess.NonDestructiveFetchByte(i);
+				unsigned int jumpTo=0;
+				std::string inst;
+				if(0xBD==instByte || 0x7E==instByte)
+				{
+					jumpTo=memAccess.NonDestructiveFetchWord(i+1);
+				}
+				else if(0x8D==instByte)
+				{
+					unsigned int offset=memAccess.NonDestructiveFetchByte(i+1);
+					if(0!=(offset&0x80))
+					{
+						offset|=0xFFFFFF00;
+					}
+					jumpTo=i+2+offset;
+				}
+				else if(0x17==instByte)
+				{
+					unsigned int offset=memAccess.NonDestructiveFetchWord(i+1);
+					jumpTo=i+3+offset;
+				}
+				else
+				{
+					continue;
+				}
+				jumpTo&=0xFFFF;
+				if(jumpTo==ptr.addr)
+				{
+					std::cout << "Called from ";
+					std::cout << cpputil::Ustox(i);
+					std::cout << " ";
+					switch(instByte)
+					{
+					case 0xBD:
+						std::cout << "JSR ";
+						break;
+					case 0x7E:
+						std::cout << "JMP ";
+						break;
+					case 0x8D:
+						std::cout << "BSR ";
+						break;
+					case 0x17:
+						std::cout << "LBSR";
+						break;
+					}
+					std::cout << " " << cpputil::Ustox(ptr.addr) << "\n";
+				}
+			}
+		}
+		else
+		{
+			Error_UnknownCPU(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }
 void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av,Command &cmd)
