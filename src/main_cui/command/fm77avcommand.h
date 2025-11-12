@@ -120,6 +120,7 @@ public:
 		CMD_PRINT_SYMBOL_FIND,
 
 		CMD_TYPE_KEYBOARD,
+		CMD_TYPE_TEXT_FILE,
 		CMD_KEYBOARD,
 
 		CMD_LOAD_EVENTLOG,
@@ -300,6 +301,7 @@ public:
 	void Execute_DisableCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_PrintCallStack(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);
 	void Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd);
+	void Execute_TypeTextFile(FM77AV &fm77av,Command &cmd);
 	void Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd);
 	void Execute_ClearCom0Out(FM77AV &fm77av,Command &cmd);
 	void Execute_Let(FM77AVThread &thr,FM77AV &fm77av,Command &cmd);

@@ -64,6 +64,8 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["SAVEHIST"]=CMD_SAVE_HISTORY;
 	primaryCmdMap["KEYBOARD"]=CMD_KEYBOARD;
 	primaryCmdMap["TYPE"]=CMD_TYPE_KEYBOARD;
+	primaryCmdMap["TYPETEXT"]=CMD_TYPE_TEXT_FILE;
+	primaryCmdMap["TYPETXT"]=CMD_TYPE_TEXT_FILE;
 	primaryCmdMap["TAPELOAD"]=CMD_TAPE_LOAD;
 	primaryCmdMap["TAPEFORSAVE"]=CMD_TAPE_SAVETAPE,
 	primaryCmdMap["TAPEEJECT"]=CMD_TAPE_EJECT;
@@ -234,7 +236,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Set display page.  Valid only in 640x200 mode and machine type is FM77AV or newer." << std::endl;
 	std::cout << "TYPE string" << std::endl;
 	std::cout << "  Virtually type string." << std::endl;
-
+	std::cout << "TYPETEXT fileName\n";
+	std::cout << "TYPETXT fileName\n";
+	std::cout << "  Virtual type a text file.\n";
 	std::cout << "FD0LOAD filename" << std::endl;
 	std::cout << "FD1LOAD filename" << std::endl;
 	std::cout << "  Load FD image.  The number 0 or 1 is the drive number." << std::endl;
@@ -1134,6 +1138,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_TYPE_KEYBOARD:
 		Execute_TypeKeyboard(fm77av,cmd);
+		break;
+	case CMD_TYPE_TEXT_FILE:
+		Execute_TypeTextFile(fm77av,cmd);
 		break;
 	case CMD_KEYBOARD:
 		if (cmd.argv.size() < 2) {
@@ -3495,6 +3502,31 @@ void FM77AVCommandInterpreter::Execute_TypeKeyboard(FM77AV &fm77av,Command &cmd)
 	if(true==start)
 	{
 		fm77av.keyboard.Type(0x0D);
+	}
+}
+void FM77AVCommandInterpreter::Execute_TypeTextFile(FM77AV &fm77av,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		auto txt=cpputil::ReadTextFile(cmd.argv[1]);
+		if(0!=txt.size())
+		{
+			for(auto line : txt)
+			{
+				for(auto c : line)
+				{
+					fm77av.keyboard.Type(c);
+				}
+			}
+		}
+		else
+		{
+			Error_CannotOpenFile(cmd);
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
 	}
 }
 void FM77AVCommandInterpreter::Execute_SaveCOM0Out(FM77AV &fm77av,Command &cmd)
