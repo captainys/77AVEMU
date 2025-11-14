@@ -172,16 +172,28 @@ void FM77AVThread::VMMainLoop(FM77AV *fm77avPtr,class Outside_World *outside_wor
 			}
 			break;
 		case RUNMODE_ONE_INSTRUCTION:
-			if(true!=fm77avPtr->CheckAbort())
 			{
-				fm77avPtr->RunOneInstruction();
-				fm77avPtr->ProcessInterrupts();
-				fm77avPtr->RunFastDevicePolling();
-				fm77avPtr->RunScheduledTasks(fm77avPtr->state.fm77avTime);
+				auto mainPC=fm77avPtr->mainCPU.state.PC;
+				auto subPC=fm77avPtr->subCPU.state.PC;
+
+				if(true!=fm77avPtr->CheckAbort())
+				{
+					fm77avPtr->RunOneInstruction();
+					fm77avPtr->ProcessInterrupts();
+					fm77avPtr->RunFastDevicePolling();
+					fm77avPtr->RunScheduledTasks(fm77avPtr->state.fm77avTime);
+				}
+
+				if((true==output.main.mute && true==output.sub.mute) || // If both CPUs are muted, just stop.
+				   (true!=output.main.mute && mainPC!=fm77avPtr->mainCPU.state.PC) ||
+				   (true!=output.sub.mute && subPC!=fm77avPtr->subCPU.state.PC))
+				{
+					PrintStatus(*fm77avPtr);
+					std::cout << ">";
+					runMode=RUNMODE_PAUSE;
+				}
+				// else continue running until the PC of the unmuted CPU changes.
 			}
-			PrintStatus(*fm77avPtr);
-			std::cout << ">";
-			runMode=RUNMODE_PAUSE;
 			break;
 		case RUNMODE_EXIT:
 			terminate=true;
