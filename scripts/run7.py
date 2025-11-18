@@ -46,6 +46,7 @@ def Run(argv):
 	subprocess.Popen([
 		MutsuExe(),
 		ROMDIR,
+		"-FM7",
 		"-SYM",
 		os.path.join(SYMTABLEDIR,"RUN"+MACHINETYPE+".txt"),
 		#"-DEBUG",
@@ -53,6 +54,7 @@ def Run(argv):
 		"-AUTOSCALE",
 		"-INITCMD","ena cst",
 		"-INITCMD","mute sub",
+		"-INITCMD","brkon vramflag",
 	]+argv).wait()
 
 

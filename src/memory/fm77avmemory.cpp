@@ -506,6 +506,13 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 	case MEMTYPE_NOT_EXIST:
 		return 0xFF;
 	case MEMTYPE_SUBSYS_VRAM:
+		if(fm77avPtr->state.machineType<=MACHINETYPE_FM7 &&
+		   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
+		   true!=fm77avPtr->crtc.InBlank(fm77avPtr->state.fm77avTime))
+		{
+			return state.data[addr]^0b11000101; // Just destroy the data.  Some bits flip randomly.
+		}
+
 		addr=fm77avPtr->crtc.TransformVRAMAddress(addr);
 		// Question: Is the VRAM Access Mask valid in non-640x200-singlePage mode?
 		{
@@ -705,6 +712,13 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 		{
 			fm77avPtr->crtc.VRAMDummyRead(fm77avPtr->crtc.TransformVRAMAddress(addr));
 		}
+
+		if(true==var.brkOnVRAMAccessWithoutFlag &&
+		   true!=fm77avPtr->crtc.state.VRAMAccessFlag)
+		{
+			fm77avPtr->subCPU.debugger.stop=true;
+			std::cout << "VRAM access without VRAM-access flag is set.\n";
+		}
 		break;
 	case MEMTYPE_SUBSYS_IO:
 		return fm77avPtr->IORead(accessFrom,addr&0xFFFF);
@@ -794,6 +808,21 @@ void PhysicalMemory::StoreByte(const CanAccessMemory *accessFrom,uint32_t addr,u
 				}
 			}
 		}
+
+		if(true==var.brkOnVRAMAccessWithoutFlag &&
+		   true!=fm77avPtr->crtc.state.VRAMAccessFlag)
+		{
+			fm77avPtr->subCPU.debugger.stop=true;
+			std::cout << "VRAM access without VRAM-access flag is set.\n";
+		}
+		if(fm77avPtr->state.machineType<=MACHINETYPE_FM7 &&
+		   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
+		   true!=fm77avPtr->crtc.InBlank(fm77avPtr->state.fm77avTime))
+		{
+			state.data[addr]=d^0b01011001;
+			return;
+		}
+
 		if(0==state.VRAMBank)
 		{
 			state.data[addr]=d;

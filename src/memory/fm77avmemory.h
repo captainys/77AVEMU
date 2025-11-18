@@ -228,6 +228,7 @@ public:
 	{
 	public:
 		MemoryAttribute memAttr[PHYSMEM_SIZE];
+		bool brkOnVRAMAccessWithoutFlag=false;
 	};
 	Variable var;
 

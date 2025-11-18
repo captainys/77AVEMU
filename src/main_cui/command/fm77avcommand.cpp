@@ -179,6 +179,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	breakEventMap["FMWRITE"]=BREAK_ON_YM2203C_WRITE;
 	breakEventMap["READSECTOR"]=BREAK_ON_READ_SECTOR;
 	breakEventMap["FDCIRQ"]=BREAK_ON_FDC_IRQ;
+	breakEventMap["VRAMFLAG"]=BREAK_ON_VRAM_ACCESS_WITHOUT_FLAG;
 
 
 	dumpableMap["FDC"]=DUMP_FDC;
@@ -481,7 +482,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Show ASCII code of the characters in the string." << std::endl;
 	std::cout << "CHR ASCIICode ASCIICode ASCIICode ..." << std::endl;
 	std::cout << "  Show characters of ASCII code." << std::endl;
-
+	std::cout << "UNUNLIST\n";
+	std::cout << "  Cancel F-BASIC unlist and protect.\n";
 
 
 	std::cout << "<< Features that can be enabled|disabled >>" << std::endl;
@@ -547,8 +549,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Use 0x to specify a sector by hexa-decimal." << std::endl;
 	std::cout << "FDCIRQ" << std::endl;
 	std::cout << "  Break when FDC IRQ is set." << std::endl;
-	std::cout << "UNUNLIST\n";
-	std::cout << "  Cancel F-BASIC unlist and protect.\n";
+	std::cout << "VRAMFLAG\n";
+	std::cout << "  If sub-CPU accesses VRAM without setting the VRAM-access flag (by reading $D409)\n";
 
 
 	std::cout << "<< Printable >>" << std::endl;
@@ -2527,6 +2529,10 @@ void FM77AVCommandInterpreter::Execute_BreakOnOrMonitor(FM77AVThread &thr,FM77AV
 				std::cout << "Break on FDC IRQ." << std::endl;
 				av.fdc.debugBreakOnFDCIRQ=true;
 				break;
+			case BREAK_ON_VRAM_ACCESS_WITHOUT_FLAG:
+				std::cout << "Break on VRAM access without setting VRAM-access flag.\n";
+				av.physMem.var.brkOnVRAMAccessWithoutFlag=true;
+				break;
 			}
 		}
 		else
@@ -2650,6 +2656,10 @@ void FM77AVCommandInterpreter::Execute_DontBreakOn(FM77AVThread &thr,FM77AV &av,
 			case BREAK_ON_FDC_IRQ:
 				std::cout << "Don't break on FDC IRQ." << std::endl;
 				av.fdc.debugBreakOnFDCIRQ=false;
+				break;
+			case BREAK_ON_VRAM_ACCESS_WITHOUT_FLAG:
+				std::cout << "Don't break on VRAM access without setting VRAM-access flag.\n";
+				av.physMem.var.brkOnVRAMAccessWithoutFlag=false;
 				break;
 			}
 		}
