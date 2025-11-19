@@ -66,6 +66,8 @@ public:
 		CMD_FD1WRITEPROTECT,
 		CMD_FD1WRITEUNPROTECT,
 
+		CMD_FILES,
+
 		CMD_START_AUDIO_RECORDING,
 		CMD_END_AUDIO_RECORDING,
 		CMD_SAVE_AUDIO_RECORDING,
@@ -328,6 +330,7 @@ public:
 	void Execute_Ununlist(FM77AV &fm77av,Command &cmd);
 	void Execute_LOADM(FM77AV &fm77av,Command &cmd);
 	void Execute_SAVEM(FM77AV &fm77av,Command &cmd);
+	void Execute_Files(FM77AV &fm77av,Command &cmd);
 };
 
 /* } */

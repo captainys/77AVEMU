@@ -9,6 +9,7 @@
 #include "outside_world.h"
 #include "yspngenc.h"
 #include "srec.h"
+#include "d77filesystem.h"
 
 FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 {
@@ -146,6 +147,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["LOADM"]=CMD_LOADM;
 	primaryCmdMap["SAVEM"]=CMD_SAVEM;
 	primaryCmdMap["UNUNLIST"]=CMD_UNUNLIST;
+	primaryCmdMap["FILES"]=CMD_FILES;
 
 
 	featureMap["IOMON"]=ENABLE_IOMONITOR;
@@ -1494,6 +1496,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 		break;
 	case CMD_UNUNLIST:
 		Execute_Ununlist(fm77av,cmd);
+		break;
+	case CMD_FILES:
+		Execute_Files(fm77av,cmd);
 		break;
 	}
 }
@@ -4383,5 +4388,146 @@ void FM77AVCommandInterpreter::Execute_SAVEM(FM77AV &fm77av,Command &cmd)
 	else
 	{
 		Error_TooFewArgs(cmd);
+	}
+}
+
+void FM77AVCommandInterpreter::Execute_Files(FM77AV &fm77av,Command &cmd)
+{
+	int drive=0; // -1 for tape.
+
+	if(2<=cmd.argv.size())
+	{
+		auto cap=cmd.argv[1];
+		cpputil::Capitalize(cap);
+		if("0"==cap || "0:"==cap)
+		{
+			drive=0;
+		}
+		else if("1"==cap || "1:"==cap)
+		{
+			drive=1;
+		}
+		else if("CAS0"==cap || "CAS0:"==cap)
+		{
+			drive=-1;
+		}
+		else
+		{
+			std::cout << "Unknown drive.\n";
+			return;
+		}
+	}
+
+	if(0<=drive && drive<2)
+	{
+		auto imgFile=fm77av.fdc.GetDriveImageFile(drive);
+		if(nullptr!=imgFile && nullptr!=imgFile->img.d77.GetDisk(0))
+		{
+			const auto &d77=*imgFile->img.d77.GetDisk(0);
+			D77FileSystem fileSys;
+			if(true==fileSys.ReadDirectory(d77))
+			{
+				int idx=0;
+				for(auto file : fileSys.Files(d77))
+				{
+					if(D77FileSystem::STATE_USED==file.state)
+					{
+						auto chain=fileSys.GetClusterChain(d77,file);
+						std::cout << file.FormatInfo() << "  ";
+
+						auto nClustStr=cpputil::Itoa(chain.size());
+						while(nClustStr.size()<3)
+						{
+							nClustStr.insert(nClustStr.begin(),' ');
+						}
+						std::cout << nClustStr << " clusters ";
+
+						switch(file.fType)
+						{
+						case FM7File::FTYPE_BASIC_BINARY:
+							break;
+						case FM7File::FTYPE_BASIC_ASCII:
+							break;
+						case FM7File::FTYPE_BINARY:
+							{
+								auto rawFile=fileSys.RawFileRead(d77,idx);
+								if(11<=rawFile.size())
+								{
+									int rawSize=(int)rawFile[1]*256+rawFile[2];
+									int startAddr=(int)rawFile[3]*256+rawFile[4];
+									printf("From=$%04x ",startAddr);
+									printf("To=$%04x ",startAddr+rawSize-1);
+									printf("Size=$%04x ",rawSize,rawSize);
+
+									if(11+rawSize<=rawFile.size())
+									{
+										int tailInfoIdx=5+rawSize;
+										int execAddr=(int)rawFile[tailInfoIdx+3]*256+rawFile[tailInfoIdx+4];
+										printf("Exec=$%04x",execAddr);
+									}
+								}
+							}
+							break;
+						};
+
+
+						std::cout << "\n";
+					}
+					++idx;
+				}
+			}
+			else
+			{
+				std::cout << "Bad File Structure\n";
+			}
+		}
+		else
+		{
+			std::cout << "Drive Not Ready\n";
+		}
+	}
+	else if(-1==drive)
+	{
+		T77Decoder t77Dec;
+		const auto &t77=fm77av.dataRecorder.state.primary.t77;
+
+		auto rawT77=t77.data; // Make a copy.
+		if(0==rawT77.size())
+		{
+			std::cout << "No tape\n";
+			return;
+		}
+		t77Dec.DumpT77((std::vector <unsigned char> &&)rawT77);
+
+		if(true!=t77Dec.Decode())
+		{
+			std::cout << "Device I/O Error\n";
+			return;
+		}
+
+		printf("%d files found.\n",(int)t77Dec.fileDump.size());
+		for(auto &dump : t77Dec.fileDump)
+		{
+			auto fmDat=t77Dec.DumpToFMFormat(dump);
+			if(16<=fmDat.size())
+			{
+				auto fName=t77Dec.GetDumpFileName(dump);
+				printf("%-8s  ",fName.c_str());
+				printf("RawSize:%-8d",fmDat.size());
+
+				auto fType=FM7File::DecodeFMHeaderFileType(fmDat[10],fmDat[11]);
+				printf("%-12s  ",FM7File::FileTypeToString(fType));
+				if(fType==FM7File::FTYPE_BINARY)
+				{
+					FM7BinaryFile binFile;
+					binFile.Decode2B0(fmDat);
+					printf("LEN:0x%04x FRM:0x%04x EXE:0x%04x",
+					    (int)binFile.dat.size(),
+					    binFile.storeAddr,
+					    binFile.execAddr);
+				}
+				printf("\n");
+			}
+		}
 	}
 }
