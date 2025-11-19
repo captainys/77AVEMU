@@ -307,6 +307,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "RUN addr" << std::endl;
 	std::cout << "  If one of the CPUs is muted (by MUTE command), run to the address" <<std::endl;
 	std::cout << "  in the unmuted CPU." << std::endl;
+	std::cout << "RESET\n";
+	std::cout << "  Reset the virtual machine.\n";
 	std::cout << "T" << std::endl;
 	std::cout << "  Trace.  Run one instruction." << std::endl;
 	std::cout << "PAUSE|PAU" << std::endl;
