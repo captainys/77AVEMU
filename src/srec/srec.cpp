@@ -92,7 +92,7 @@ bool SREC::Open(std::string fileName)
 			{
 				Block blk;
 				blk.type=bin[i++];
-				char byteCountTxt[3]={bin[i],bin[i+1],0};
+				char byteCountTxt[3]={(char)bin[i],(char)bin[i+1],(char)0};
 				i+=2;
 
 				blk.byteCount=Xtoi(byteCountTxt);
