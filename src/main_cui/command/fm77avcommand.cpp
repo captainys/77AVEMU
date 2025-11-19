@@ -256,6 +256,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "FD1UP" << std::endl;
 	std::cout << "  Write un-protect floppy disk." << std::endl;
 
+	std::cout << "FILES 0/1/CAS0/CAS1\n";
+	std::cout << "  Show directory listing of floppy disk 0, 1 or cassette tape (CAS0) or save cassette (CAS1).\n";
+
 	std::cout << "TAPEWP" << std::endl;
 	std::cout << "  Write protect tape." << std::endl;
 	std::cout << "TAPEUP" << std::endl;
@@ -4393,7 +4396,7 @@ void FM77AVCommandInterpreter::Execute_SAVEM(FM77AV &fm77av,Command &cmd)
 
 void FM77AVCommandInterpreter::Execute_Files(FM77AV &fm77av,Command &cmd)
 {
-	int drive=0; // -1 for tape.
+	int drive=0; // -1/-2 for tape.
 
 	if(2<=cmd.argv.size())
 	{
@@ -4411,9 +4414,13 @@ void FM77AVCommandInterpreter::Execute_Files(FM77AV &fm77av,Command &cmd)
 		{
 			drive=-1;
 		}
+		else if("CAS1"==cap || "CAS1:"==cap)
+		{
+			drive=-1;
+		}
 		else
 		{
-			std::cout << "Unknown drive.\n";
+			std::cout << "Device Unavailable.\n";
 			return;
 		}
 	}
@@ -4486,10 +4493,10 @@ void FM77AVCommandInterpreter::Execute_Files(FM77AV &fm77av,Command &cmd)
 			std::cout << "Drive Not Ready\n";
 		}
 	}
-	else if(-1==drive)
+	else if(-1==drive || -2==drive)
 	{
 		T77Decoder t77Dec;
-		const auto &t77=fm77av.dataRecorder.state.primary.t77;
+		const auto &t77=(-1==drive ? fm77av.dataRecorder.state.primary.t77 : fm77av.dataRecorder.state.toSave.t77);
 
 		auto rawT77=t77.data; // Make a copy.
 		if(0==rawT77.size())
