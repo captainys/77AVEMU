@@ -4287,44 +4287,68 @@ void FM77AVCommandInterpreter::Execute_LOADM(FM77AV &fm77av,Command &cmd)
 			isSREC=true;
 		}
 
-		uint16_t addr=0;
-		std::vector <uint8_t> data;
 		if(true==isSREC)
 		{
 			SREC srec;
 			srec.Open(fileName);
-			data=srec.GetData();
-			addr=srec.GetFirstAddress();
+			auto blocks=srec.GetBlocks();
+
+			if(0==blocks.size())
+			{
+				Error_CannotOpenFile(cmd);
+				return;
+			}
+
+			uint16_t addr0=blocks[0].address;
+			for(size_t i=0; i<blocks.size(); ++i)
+			{
+				auto blk=blocks[i];
+				uint16_t addr=blk.address;
+
+				for(auto d : blk.data)
+				{
+					fm77av.physMem.StoreByte(nullptr,0x30000+addr,d);
+					++addr;
+				}
+
+				if(i+1==blocks.size() ||                            // Last block?
+				   (i+1<blocks.size() && addr!=blocks[i+1].address)) // Discontinuous blocks?
+				{
+					std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr0);
+					std::cout << " to " << cpputil::Ustox(addr-1) << "\n";
+					if(i+1<blocks.size())
+					{
+						addr0=blocks[i+1].address;
+					}
+				}
+			}
 		}
 		else
 		{
-			data=cpputil::ReadBinaryFile(fileName);
-		}
+			std::vector <uint8_t> data=cpputil::ReadBinaryFile(fileName);
 
-		if(0==data.size())
-		{
-			Error_CannotOpenFile(cmd);
-			return;
-		}
+			if(0==data.size())
+			{
+				Error_CannotOpenFile(cmd);
+				return;
+			}
 
-		if(true!=isSREC && cmd.argv.size()<3)
-		{
-			Error_TooFewArgs(cmd);
-			return;
-		}
+			if(cmd.argv.size()<3)
+			{
+				Error_TooFewArgs(cmd);
+				return;
+			}
 
-		if(3<=cmd.argv.size())
-		{
-			addr=MakeAddressForCPU(fm77av,fm77av.mainCPU,cmd.argv[2]);
-		}
+			uint16_t addr=MakeAddressForCPU(fm77av,fm77av.mainCPU,cmd.argv[2]);
 
-		std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr);
-		std::cout << " to " << cpputil::Ustox(addr+data.size()-1) << "\n";
+			std::cout << "Loaded " << fileName << " from main RAM $" << cpputil::Ustox(addr);
+			std::cout << " to " << cpputil::Ustox(addr+data.size()-1) << "\n";
 
-		for(auto d : data)
-		{
-			fm77av.physMem.StoreByte(nullptr,0x30000+addr,d);
-			++addr;
+			for(auto d : data)
+			{
+				fm77av.physMem.StoreByte(nullptr,0x30000+addr,d);
+				++addr;
+			}
 		}
 	}
 	else

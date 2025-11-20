@@ -351,3 +351,8 @@ std::vector <char> SREC::Encode(void) const
 	}
 	return data;
 }
+
+std::vector <SREC::Block> SREC::GetBlocks(void) const
+{
+	return blocks;
+}

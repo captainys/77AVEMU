@@ -37,7 +37,13 @@ public:
 
 	uint8_t RecalculateCheckSum(void) const;
 
+	std::vector<Block> GetBlocks(void) const;
+
+	/*! This function only looks at the address of the first block.
+	    All bytes are concatenated even if blocks are not continuous.
+	*/
 	std::vector <uint8_t> GetData(void) const;
+
 	uint32_t GetFirstAddress(void) const;
 
 	void Make(uint32_t startAddr,const std::vector <uint8_t> &data);
