@@ -644,6 +644,8 @@ void FM77AV::Reset(void)
 	fdc.Reset();
 	keyboard.Reset();
 	dataRecorder.Reset();
+
+	VMBase::ClearAbortFlag();
 }
 bool FM77AV::SubCPUHalt(void) const
 {
