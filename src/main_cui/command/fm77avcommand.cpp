@@ -4464,14 +4464,15 @@ void FM77AVCommandInterpreter::Execute_Files(FM77AV &fm77av,Command &cmd)
 									int startAddr=(int)rawFile[3]*256+rawFile[4];
 									printf("From=$%04x ",startAddr);
 									printf("To=$%04x ",startAddr+rawSize-1);
-									printf("Size=$%04x ",rawSize,rawSize);
 
 									if(11+rawSize<=rawFile.size())
 									{
 										int tailInfoIdx=5+rawSize;
 										int execAddr=(int)rawFile[tailInfoIdx+3]*256+rawFile[tailInfoIdx+4];
-										printf("Exec=$%04x",execAddr);
+										printf("Exec=$%04x ",execAddr);
 									}
+
+									printf("(Size=$%04x)",rawSize,rawSize);
 								}
 							}
 							break;
@@ -4528,10 +4529,11 @@ void FM77AVCommandInterpreter::Execute_Files(FM77AV &fm77av,Command &cmd)
 				{
 					FM7BinaryFile binFile;
 					binFile.Decode2B0(fmDat);
-					printf("LEN:0x%04x FRM:0x%04x EXE:0x%04x",
-					    (int)binFile.dat.size(),
-					    binFile.storeAddr,
-					    binFile.execAddr);
+
+					printf("From=$%04x ",binFile.storeAddr);
+					printf("To=$%04x ",binFile.storeAddr+binFile.dat.size()-1);
+					printf("Exec=$%04x ",binFile.execAddr);
+					printf("(Size=$%04x)",binFile.dat.size());
 				}
 				printf("\n");
 			}
