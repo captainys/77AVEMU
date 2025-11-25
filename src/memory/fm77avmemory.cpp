@@ -705,6 +705,13 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 		}
 	}
 
+	if(0x10000<=addr && addr<0x20000 && // Sub-CPU space
+	   true!=fm77avPtr->state.subSysHalt && // Sub-CPU working and
+	   fm77avPtr->ToCPU(accessFrom)==&fm77avPtr->mainCPU) // Accessed from the main CPU
+	{
+		return 0xFF;
+	}
+
 	switch(memType[addr])
 	{
 	case MEMTYPE_SUBSYS_VRAM:
@@ -764,6 +771,13 @@ void PhysicalMemory::StoreByte(const CanAccessMemory *accessFrom,uint32_t addr,u
 	}
 
 	accessLog.write[addr]=true;
+
+	if(0x10000<=addr && addr<0x20000 && // Sub-CPU space
+	   true!=fm77avPtr->state.subSysHalt && // Sub-CPU working and
+	   fm77avPtr->ToCPU(accessFrom)==&fm77avPtr->mainCPU) // Accessed from the main CPU
+	{
+		return;
+	}
 
 	switch(memType[addr])
 	{
