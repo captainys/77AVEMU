@@ -285,9 +285,19 @@ bool PhysicalMemory::VRAMAccessCRTCConflict(uint32_t addr) const
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
 	auto VRAMAddr=addr&0xFFFF;
-	return ((VRAMAddr<0x4000 && 0==(fm77avPtr->crtc.state.VRAMAccessMask&1)) ||
-		    (VRAMAddr<0x8000 && 0==(fm77avPtr->crtc.state.VRAMAccessMask&2)) ||
-		    (VRAMAddr<0xC000 && 0==(fm77avPtr->crtc.state.VRAMAccessMask&4)));
+	if(VRAMAddr<0x4000)
+	{
+		return 0==(fm77avPtr->crtc.state.VRAMAccessMask&1);
+	}
+	else if(VRAMAddr<0x8000)
+	{
+		return 0==(fm77avPtr->crtc.state.VRAMAccessMask&2);
+	}
+	else if(VRAMAddr<0xC000)
+	{
+		return 0==(fm77avPtr->crtc.state.VRAMAccessMask&4);
+	}
+	return false;
 }
 
 bool PhysicalMemory::VRAMAccessViolation(uint32_t addr) const

@@ -54,6 +54,58 @@ add_test(
 )
 
 add_test(
+	NAME FM7_VRAM_ACCESS_TEST
+	COMMAND
+		${TARGET_NAME}
+		"${FM7ROMDIR}"
+		-TAPE
+		${CMAKE_SOURCE_DIR}/../testasm/fm7_vramaccess/vram_access_test.t77
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		215B
+		-TESTCONDMEM
+		MAIN
+		FC00
+		00
+		-TESTCONDMEM
+		MAIN
+		FC01
+		0F
+		-TESTCONDMEM
+		MAIN
+		FC02
+		22
+)
+
+add_test(
+	NAME FM77_VRAM_ACCESS_TEST
+	COMMAND
+		${TARGET_NAME}
+		"${FM77AVROMDIR}"
+		-TAPE
+		${CMAKE_SOURCE_DIR}/../testasm/fm7_vramaccess/vram_access_test.t77
+		-AUTOSTARTTAPE
+		-UNITTEST
+		-POWEROFFAT
+		MAIN
+		215B
+		-TESTCONDMEM
+		MAIN
+		FC00
+		3F
+		-TESTCONDMEM
+		MAIN
+		FC01
+		3F
+		-TESTCONDMEM
+		MAIN
+		FC02
+		3F
+)
+
+add_test(
 	NAME FM7DEMO_2017_BY_CAPTAINYS
 	COMMAND
 		${TARGET_NAME}
