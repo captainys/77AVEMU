@@ -375,7 +375,7 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 				srcColor|=(0!=((*VRAMByte[1])&bit) ? 2 : 0);
 				srcColor|=(0!=((*VRAMByte[2])&bit) ? 4 : 0);
 
-				srcColor|=fm77avPtr->physMem.state.VRAMAccessMask;
+				srcColor|=fm77avPtr->physMem.state.VRAMAccessMaskFromCPU;
 
 				bool match=false;
 				for(auto cmpColor : state.hardDraw.compareColor) // Should it work this way?
@@ -408,7 +408,7 @@ void FM77AVCRTC::VRAMDummyRead(uint16_t VRAMAddrIn)
 		}
 
 		// 2022/08/05 Experiment on a real FM77AV showed that the hardware-drawing is affected by multi-page ($FD37), which is stored as VRAMAccessMask.
-		uint8_t bankMask=state.hardDraw.bankMask|fm77avPtr->physMem.state.VRAMAccessMask;
+		uint8_t bankMask=state.hardDraw.bankMask|fm77avPtr->physMem.state.VRAMAccessMaskFromCPU;
 		uint8_t col=state.hardDraw.color;
 		for(int i=0; i<3; ++i,bankMask>>=1,col>>=1)
 		{
@@ -880,7 +880,7 @@ void FM77AVCRTC::PutDot(uint8_t *VRAMPlane[3],unsigned int VRAMAddr,uint8_t bit,
 
 	uint8_t writeBit=(1<<(7-bit));
 	// 2022/08/05 Experiment on a real FM77AV showed that the hardware-drawing is affected by multi-page ($FD37), which is stored as VRAMAccessMask.
-	uint8_t bankMask=state.hardDraw.bankMask|fm77avPtr->physMem.state.VRAMAccessMask;
+	uint8_t bankMask=state.hardDraw.bankMask|fm77avPtr->physMem.state.VRAMAccessMaskFromCPU;
 	uint8_t col=state.hardDraw.color;
 	for(int i=0; i<3; ++i,bankMask>>=1,col>>=1)
 	{

@@ -281,6 +281,27 @@ bool PhysicalMemory::LoadROMFiles(std::string ROMPath)
 	return HasROMImages::LoadROMFiles(ROMPath,fm77avPtr->state.machineType);
 }
 
+bool PhysicalMemory::VRAMAccessCRTCConflict(uint32_t addr) const
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	auto VRAMAddr=addr&0xFFFF;
+	return ((VRAMAddr<0x4000 && 0==(fm77avPtr->crtc.state.VRAMAccessMask&1)) ||
+		    (VRAMAddr<0x8000 && 0==(fm77avPtr->crtc.state.VRAMAccessMask&2)) ||
+		    (VRAMAddr<0xC000 && 0==(fm77avPtr->crtc.state.VRAMAccessMask&4)));
+}
+
+bool PhysicalMemory::VRAMAccessViolation(uint32_t addr) const
+{
+	auto fm77avPtr=(FM77AV *)vmPtr;
+	if(fm77avPtr->state.machineType<=MACHINETYPE_FM7 &&
+	   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
+	   true!=fm77avPtr->crtc.InBlank(fm77avPtr->state.fm77avTime))
+	{
+		return VRAMAccessCRTCConflict(addr);
+	}
+	return false;
+}
+
 void PhysicalMemory::WriteFD04(uint8_t data)
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
@@ -420,7 +441,7 @@ uint8_t PhysicalMemory::NonDestructiveReadD407(void) const
 void PhysicalMemory::Reset(void)
 {
 	Device::Reset();
-	state.VRAMAccessMask=0;
+	state.VRAMAccessMaskFromCPU=0;
 	state.FE00ROMMode=true;
 	state.shadowRAMEnabled=state.DOSMode;
 	state.avBootROM=false;
@@ -506,9 +527,7 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 	case MEMTYPE_NOT_EXIST:
 		return 0xFF;
 	case MEMTYPE_SUBSYS_VRAM:
-		if(fm77avPtr->state.machineType<=MACHINETYPE_FM7 &&
-		   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
-		   true!=fm77avPtr->crtc.InBlank(fm77avPtr->state.fm77avTime))
+		if(true==VRAMAccessViolation(addr))
 		{
 			return state.data[addr]^0b11000101; // Just destroy the data.  Some bits flip randomly.
 		}
@@ -519,21 +538,21 @@ uint8_t PhysicalMemory::FetchByteConst(uint32_t addr) const
 			uint16_t addr16=addr;
 			if(addr16<0x4000)
 			{
-				if(0!=(state.VRAMAccessMask&1))
+				if(0!=(state.VRAMAccessMaskFromCPU&1))
 				{
 					return 0xFF;
 				}
 			}
 			else if(addr16<0x8000)
 			{
-				if(0!=(state.VRAMAccessMask&2))
+				if(0!=(state.VRAMAccessMaskFromCPU&2))
 				{
 					return 0xFF;
 				}
 			}
 			else
 			{
-				if(0!=(state.VRAMAccessMask&4))
+				if(0!=(state.VRAMAccessMaskFromCPU&4))
 				{
 					return 0xFF;
 				}
@@ -721,10 +740,11 @@ uint8_t PhysicalMemory::FetchByte(const CanAccessMemory *accessFrom,uint32_t add
 		}
 
 		if(true==var.brkOnVRAMAccessWithoutFlag &&
-		   true!=fm77avPtr->crtc.state.VRAMAccessFlag)
+		   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
+		   true==VRAMAccessCRTCConflict(addr))
 		{
 			fm77avPtr->subCPU.debugger.stop=true;
-			std::cout << "VRAM access without VRAM-access flag is set.\n";
+			std::cout << "VRAM access no VRAM-access flag and no CRTC access mask.\n";
 		}
 		break;
 	case MEMTYPE_SUBSYS_IO:
@@ -802,21 +822,21 @@ void PhysicalMemory::StoreByte(const CanAccessMemory *accessFrom,uint32_t addr,u
 			uint16_t addr16=addr;
 			if(addr16<0x4000)
 			{
-				if(0!=(state.VRAMAccessMask&1))
+				if(0!=(state.VRAMAccessMaskFromCPU&1))
 				{
 					return;
 				}
 			}
 			else if(addr16<0x8000)
 			{
-				if(0!=(state.VRAMAccessMask&2))
+				if(0!=(state.VRAMAccessMaskFromCPU&2))
 				{
 					return;
 				}
 			}
 			else
 			{
-				if(0!=(state.VRAMAccessMask&4))
+				if(0!=(state.VRAMAccessMaskFromCPU&4))
 				{
 					return;
 				}
@@ -824,14 +844,13 @@ void PhysicalMemory::StoreByte(const CanAccessMemory *accessFrom,uint32_t addr,u
 		}
 
 		if(true==var.brkOnVRAMAccessWithoutFlag &&
-		   true!=fm77avPtr->crtc.state.VRAMAccessFlag)
+		   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
+		   true==VRAMAccessCRTCConflict(addr))
 		{
 			fm77avPtr->subCPU.debugger.stop=true;
-			std::cout << "VRAM access without VRAM-access flag is set.\n";
+			std::cout << "VRAM access no VRAM-access flag and no CRTC access mask.\n";
 		}
-		if(fm77avPtr->state.machineType<=MACHINETYPE_FM7 &&
-		   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
-		   true!=fm77avPtr->crtc.InBlank(fm77avPtr->state.fm77avTime))
+		if(true==VRAMAccessViolation(addr))
 		{
 			state.data[addr]=d^0b01011001;
 			return;
@@ -995,7 +1014,7 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 		text.back()+="RAM ";
 	}
 	text.back()+="VRAM Access Mask:";
-	text.back()+=cpputil::Ubtox(state.VRAMAccessMask);
+	text.back()+=cpputil::Ubtox(state.VRAMAccessMaskFromCPU);
 
 	text.push_back("");
 	text.back()+="SubSysROM:";
@@ -1073,7 +1092,7 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	PushBool(data,state.DOSMode);
 
 	PushBool(data,state.FE00ROMMode);
-	PushUint16(data,state.VRAMAccessMask);
+	PushUint16(data,state.VRAMAccessMaskFromCPU);
 	PushBool(data,state.shadowRAMEnabled);
 	PushUint16(data,state.VRAMBank);
 	PushBool(data,state.avBootROM);
@@ -1103,7 +1122,7 @@ std::vector <std::string> PhysicalMemory::GetStatusText(void) const
 	state.DOSMode=ReadBool(data);
 
 	state.FE00ROMMode=ReadBool(data);
-	state.VRAMAccessMask=ReadUint16(data);
+	state.VRAMAccessMaskFromCPU=ReadUint16(data);
 	state.shadowRAMEnabled=ReadBool(data);
 	state.VRAMBank=ReadUint16(data);
 	state.avBootROM=ReadBool(data);

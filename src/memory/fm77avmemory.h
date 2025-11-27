@@ -181,7 +181,7 @@ public:
 		// Once I set to RAM mode, change bytes in FE00 to FFE0, change back to ROM mode,
 		// the changed bytes stays.  Original DOS or BASIC BOOT ROM won't re-appear.
 		bool FE00ROMMode=true;
-		uint8_t VRAMAccessMask=0;
+		uint8_t VRAMAccessMaskFromCPU=0;
 		bool shadowRAMEnabled=false;  // true->RAM mode,  false->F-BASIC ROM mode.
 		uint8_t VRAMBank=0;
 		bool avBootROM=false;
@@ -245,6 +245,15 @@ public:
 	PhysicalMemory(VMBase *vmBase);
 
 	bool LoadROMFiles(std::string ROMPath);
+
+	/*! Check if the bit plane specified by addr conflicts with CRTC access.
+	*/
+	bool VRAMAccessCRTCConflict(uint32_t addr) const;
+
+	/*! Check if sub-CPU is accessing the VRAM when the CRTC may also access the VRAM
+	    at the same time.
+	*/
+	bool VRAMAccessViolation(uint32_t addr) const;
 
 	void Reset(void);
 

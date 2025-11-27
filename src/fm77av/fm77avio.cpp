@@ -245,7 +245,7 @@ void FM77AV::IOWrite(const CanAccessMemory *accessFrom,uint16_t ioAddr,uint8_t v
 
 	case FM77AVIO_DISPLAY_PAGE://=            0xFD37,
 		crtc.state.VRAMAccessMask=((value>>4)&7);
-		physMem.state.VRAMAccessMask=(value&7);
+		physMem.state.VRAMAccessMaskFromCPU=(value&7);
 		break;
 
 	case FM77AVIO_DIGITAL_PALETTE_0: //=       0xFD38,
