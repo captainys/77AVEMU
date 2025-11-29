@@ -305,7 +305,15 @@ void FM77AVSound::IOWrite(unsigned int ioport,unsigned int data)
 		}
 		break;
 	case FM77AVIO_PSG_DATA://                0xFD0E,
-		if(0==state.ym.ay38910LastControl)
+		// The official sequence of writing data to PSG was:
+		//   (1) Write data register
+		//   (2) Write control register
+		//   (3) Clear control register.
+		// However, Counter Attack 2 does STD $FD0D to write command and data at the same time.
+		// Unless 6809 writes B register then A register, the order (1) and (2) is reversed.
+		// So, apparently the order can be (1)->(2)->(3) or (2)->(1)->(3).
+		// Therefore, data register seems to be written when lastControl is non-zero.
+		// if(0==state.ym.ay38910LastControl)
 		{
 			state.ym.ay38910LastData=data;
 		}
