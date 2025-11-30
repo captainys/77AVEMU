@@ -1466,11 +1466,12 @@ add_test(
 		-NOWAIT
 )
 
+# Realized The Return of Ishtar for FM-77 does not set VRAM-access flag and therefore FM-77D1/D2 and later only.
 add_test(
 	NAME THE_RETURN_OF_ISHTAR
 	COMMAND
 		${TARGET_NAME}
-		"${FM7ROMDIR}"
+		"${FM77AVROMDIR}"
 		-FD0
 		"${DISKIMAGE_DIR}/ISHTAR_A.RDD"
 		-FD1
@@ -1484,6 +1485,8 @@ add_test(
 		18D0
 		BD
 		-NOWAIT
+		-EVTLOG
+		"${EVENTLOG_DIR}/BANG_A_BUTTON_3SEC.evt"
 )
 
 add_test(
