@@ -604,12 +604,19 @@ void FM77AV::Reset(void)
 	//   F-BASIC Analysis Manual Phase III Sub-System, Fig. 2.2.1, pp. 31, Shuwa System Trading, 
 	switch(state.machineType)
 	{
+	case MACHINETYPE_FM8:
 	case MACHINETYPE_FM7:
+	case MACHINETYPE_FMNEW7:
+	case MACHINETYPE_FM77D2:
+	case MACHINETYPE_FM77L2:
+	case MACHINETYPE_FM77L4:
 		mainCPU.state.PC=0xFE00;
 		subCPU.state.PC=0xE000;
 		break;
 	case MACHINETYPE_FM77AV:
 	case MACHINETYPE_FM77AV40:
+	case MACHINETYPE_FM77AV40EX:
+	case MACHINETYPE_FM77AV40SX:
 		mainCPU.state.PC=0x6000;
 		subCPU.state.PC=0xE000;
 		break;

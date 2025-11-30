@@ -194,7 +194,9 @@ bool FM77AV::LoadStateMem(const std::vector <uint8_t> &state)
 	//   subSysHaltSoon flag.
 	// Version 2
 	//   appSpecificSetting
-	return 2;
+	// Version 3
+	//   Machine ID changed.
+	return 3;
 }
 
 /* virtual */ void FM77AV::SpecificSerialize(std::vector <unsigned char> &data,std::string stateFName) const
@@ -238,6 +240,27 @@ bool FM77AV::LoadStateMem(const std::vector <uint8_t> &state)
 /* virtual */ bool FM77AV::SpecificDeserialize(const unsigned char *&data,std::string stateFName,uint32_t version)
 {
 	state.machineType=ReadUint32(data);
+	if(version<=2)
+	{
+		switch(state.machineType)
+		{
+		default:
+			state.machineType=MACHINETYPE_UNKNOWN;
+			break;
+		case OLDVER_MACHINETYPE_FM7:
+			state.machineType=MACHINETYPE_FM7;
+			break;
+		case OLDVER_MACHINETYPE_FM77:
+			state.machineType=MACHINETYPE_FM77D2;
+			break;
+		case OLDVER_MACHINETYPE_FM77AV:
+			state.machineType=MACHINETYPE_FM77AV;
+			break;
+		case OLDVER_MACHINETYPE_FM77AV40:
+			state.machineType=MACHINETYPE_FM77AV40;
+			break;
+		}
+	}
 	state.keyboardIRQHandler=ReadUint32(data);
 	state.fm77avTime=ReadUint64(data);
 	state.nextDevicePollingTime=ReadUint64(data);

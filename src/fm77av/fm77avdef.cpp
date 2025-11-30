@@ -19,14 +19,26 @@ std::string MachineTypeToStr(unsigned int machineType)
 	{
 	case MACHINETYPE_AUTO:
 		return "AUTO";
+	case MACHINETYPE_FM8:
+		return "FM-8";
 	case MACHINETYPE_FM7:
 		return "FM-7";
-	case MACHINETYPE_FM77:
+	case MACHINETYPE_FMNEW7:
+		return "FM-NEW7";
+	case MACHINETYPE_FM77D2:
 		return "FM-77";
-	case MACHINETYPE_FM77AV:
+	case MACHINETYPE_FM77L2:
+		return "FM-77L2";
+	case MACHINETYPE_FM77L4:
+		return "FM-77L4";
+	case MACHINETYPE_FM77AV: // Trivia: Fujitsu dropped hyphen since the first-gen FM77AV.
 		return "FM77AV";
 	case MACHINETYPE_FM77AV40:
 		return "FM77AV40";
+	case MACHINETYPE_FM77AV40EX:
+		return "FM77AV40EX";
+	case MACHINETYPE_FM77AV40SX:
+		return "FM77AV40SX";
 	}
 	return "UNKNOWN";
 }
@@ -37,13 +49,25 @@ unsigned int StrToMachineType(std::string str)
 	{
 		return MACHINETYPE_AUTO;
 	}
+	if("FM8"==str || "FM-8"==str)
+	{
+		return MACHINETYPE_FM8;
+	}
 	if("FM7"==str || "FM-7"==str)
 	{
 		return MACHINETYPE_FM7;
 	}
-	if("FM77"==str || "FM-77"==str)
+	if("FM77"==str || "FM-77"==str || "FM77D2"==str || "FM-77D2"==str)
 	{
-		return MACHINETYPE_FM7;
+		return MACHINETYPE_FM77D2;
+	}
+	if("FM77L2"==str || "FM-77L2"==str)
+	{
+		return MACHINETYPE_FM77L2;
+	}
+	if("FM77L4"==str || "FM-77L4"==str)
+	{
+		return MACHINETYPE_FM77L4;
 	}
 	if("FM77AV"==str)
 	{
@@ -52,6 +76,14 @@ unsigned int StrToMachineType(std::string str)
 	if("FM77AV40"==str)
 	{
 		return MACHINETYPE_FM77AV40;
+	}
+	if("FM77AV40EX"==str)
+	{
+		return MACHINETYPE_FM77AV40EX;
+	}
+	if("FM77AV40SX"==str)
+	{
+		return MACHINETYPE_FM77AV40SX;
 	}
 	return MACHINETYPE_UNKNOWN;
 }

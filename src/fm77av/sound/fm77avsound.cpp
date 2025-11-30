@@ -667,8 +667,17 @@ void FM77AVSound::StartVGMRecording(void)
 	case MACHINETYPE_FM7:
 		var.vgmRecorder.systemName="FM-7";
 		break;
-	case MACHINETYPE_FM77:
-		var.vgmRecorder.systemName="FM-77";
+	case MACHINETYPE_FMNEW7:
+		var.vgmRecorder.systemName="FM-new7";
+		break;
+	case MACHINETYPE_FM77D2:
+		var.vgmRecorder.systemName="FM-77D2";
+		break;
+	case MACHINETYPE_FM77L2:
+		var.vgmRecorder.systemName="FM-77L2";
+		break;
+	case MACHINETYPE_FM77L4:
+		var.vgmRecorder.systemName="FM-77L4";
 		break;
 	default:
 	case MACHINETYPE_FM77AV:
@@ -676,6 +685,12 @@ void FM77AVSound::StartVGMRecording(void)
 		break;
 	case MACHINETYPE_FM77AV40:
 		var.vgmRecorder.systemName="FM77AV40";
+		break;
+	case MACHINETYPE_FM77AV40EX:
+		var.vgmRecorder.systemName="FM77AV40EX";
+		break;
+	case MACHINETYPE_FM77AV40SX:
+		var.vgmRecorder.systemName="FM77AV40SX";
 		break;
 	}
 	var.vgmRecorder.notes="Recorded using FM77AV Emulator Mutsu.";

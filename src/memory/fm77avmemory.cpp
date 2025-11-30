@@ -303,7 +303,7 @@ bool PhysicalMemory::VRAMAccessCRTCConflict(uint32_t addr) const
 bool PhysicalMemory::VRAMAccessViolation(uint32_t addr) const
 {
 	auto fm77avPtr=(FM77AV *)vmPtr;
-	if(fm77avPtr->state.machineType<=MACHINETYPE_FM7 &&
+	if(fm77avPtr->state.machineType<=MACHINETYPE_FMNEW7 &&
 	   true!=fm77avPtr->crtc.state.VRAMAccessFlag &&
 	   true!=fm77avPtr->crtc.InBlank(fm77avPtr->state.fm77avTime))
 	{
