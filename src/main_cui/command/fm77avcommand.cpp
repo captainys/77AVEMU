@@ -43,6 +43,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["PSGCH"]=CMD_PSGCH;
 	primaryCmdMap["STA"]=CMD_PRINT_STATUS;
 	primaryCmdMap["HIST"]=CMD_PRINT_HISTORY;
+	primaryCmdMap["ONEHIST"]=CMD_SHARE_MAIN_SUB_HISTORY;
 	primaryCmdMap["U"]=CMD_DISASM;
 	primaryCmdMap["UM"]=CMD_DISASM_MAIN;
 	primaryCmdMap["US"]=CMD_DISASM_SUB;
@@ -330,6 +331,9 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Print CPU status." << std::endl;
 	std::cout << "HIST / HIST m(ain) / HIST s(ub)" << std::endl;
 	std::cout << "  Same as PRI HIST command." << std::endl;
+	std::cout << "ONEHIST\n";
+	std::cout << "  Use one history for main- and sub-CPUs.  Useful for debugging main/sub timing issues.\n";
+	std::cout << "  Also for trouble with CLR $D40A problem.\n";
 	std::cout << "U cpu:addr" << std::endl;
 	std::cout << "UM addr" << std::endl;
 	std::cout << "US addr" << std::endl;
@@ -1096,6 +1100,10 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 			cmd.argv.insert(cmd.argv.end(),argvCopy.begin(),argvCopy.end());
 			Execute_PrintHistory(thr,fm77av,cmd);
 		}
+		break;
+	case CMD_SHARE_MAIN_SUB_HISTORY:
+		fm77av.subCPU.debugger.usingPCLog=fm77av.mainCPU.debugger.usingPCLog;
+		std::cout << "Use one log for main- and sub-CPUs\n";
 		break;
 
 	case CMD_DISASM:
@@ -2212,6 +2220,11 @@ void FM77AVCommandInterpreter::Execute_PrintHistory(FM77AVThread &thr,FM77AV &av
 	// auto &symTable=av.debugger.GetSymTable();
 	for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 	{
+		if(av.mainCPU.debugger.usingPCLog==av.subCPU.debugger.usingPCLog)
+		{
+			std::cout << iter->mainOrSub << " ";
+		}
+
 		std::cout << cpputil::Ustox(iter->regs.PC);
 		if(true==av.CPU(mainOrSub).debugger.logAllRegisters)
 		{
@@ -2269,6 +2282,11 @@ void FM77AVCommandInterpreter::Execute_SaveHistory(FM77AVThread &thr,FM77AV &av,
 				// auto &symTable=av.debugger.GetSymTable();
 				for(auto iter=list.rbegin(); iter!=list.rend(); ++iter)
 				{
+					if(av.mainCPU.debugger.usingPCLog==av.subCPU.debugger.usingPCLog)
+					{
+						ofp << iter->mainOrSub << " ";
+					}
+
 					ofp << cpputil::Ustox(iter->regs.PC);
 					if(true==av.CPU(mainOrSub).debugger.logAllRegisters)
 					{

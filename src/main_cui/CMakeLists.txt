@@ -1782,11 +1782,21 @@ add_test(
 		-NOWAIT
 )
 
+# If I use -autostarttape with FM77AV40 ROMs, it steps on a very rare situation that
+# Lizard crashes during the initialization.  The reason is because its sub-CPU code
+# uses CLR $D40A at $CF00.  First of all, it is not necessary because the sub-CPU
+# automatically becomes BUSY as soon as the main CPU unhalts it.  And, I recently
+# learned from MAGUS's bug that CLR once dummy-reads and then writes zero to the
+# destination.  This makes a single-clock or two moment that the sub-CPU clears the
+# BUSY flag letting the main CPU think the sub-CPU is ready to accept the next
+# command.  There is a possibility that Lizard did crash one in ten or twenty starts.
+# But, probably the users thought there was a tape read error, and just tried to
+# start again.
 add_test(
 	NAME LIZARD_ON_FM77AV
 	COMMAND
 		${TARGET_NAME}
-		"${FM77AV40ROMDIR}"
+		"${FM77AVROMDIR}"
 		-TAPE
 		"${TAPEIMAGE_DIR}/Lizard.t77"
 		-AUTOSTARTTAPE

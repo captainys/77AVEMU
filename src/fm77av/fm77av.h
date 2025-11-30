@@ -30,13 +30,19 @@ public:
 	{
 	public:
 		virtual const char *DeviceName(void) const{return "mainCPU";}
-		MainCPU(FM77AV *vmBase) : MC6809(vmBase){};
+		MainCPU(FM77AV *vmBase) : MC6809(vmBase)
+		{
+			debugger.mainOrSub=CPU_MAIN;
+		};
 	};
 	class SubCPU : public MC6809
 	{
 	public:
 		virtual const char *DeviceName(void) const{return "subCPU";}
-		SubCPU(FM77AV *vmBase) : MC6809(vmBase){};
+		SubCPU(FM77AV *vmBase) : MC6809(vmBase)
+		{
+			debugger.mainOrSub=CPU_SUB;
+		};
 	};
 
 	// Devices >>

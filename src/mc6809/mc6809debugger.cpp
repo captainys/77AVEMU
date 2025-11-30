@@ -16,8 +16,7 @@ void MC6809::Debugger::CleanUp(void)
 		f.flags=0;
 	}
 
-	PCLog.resize(PC_LOG_SIZE);
-	for(auto &log : PCLog)
+	for(auto &log : usingPCLog->log)
 	{
 		log.regs.PC=0;
 		log.regs.X=0;
@@ -28,7 +27,7 @@ void MC6809::Debugger::CleanUp(void)
 		log.regs.DP=0;
 		log.count=0;
 	}
-	PCLogPtr=0;
+	usingPCLog->ptr=0;
 }
 
 void MC6809::Debugger::ClearStopFlag(void)
@@ -172,6 +171,11 @@ void MC6809::Debugger::StoreWord(uint16_t addr,uint16_t data)
 
 void MC6809::Debugger::BeforeRunOneInstructionMainBody(MC6809 &cpu,const MemoryAccess &mem)
 {
+	auto PCLog=usingPCLog->log;
+	auto &PCLogPtr=usingPCLog->ptr;
+
+	PCLog[PCLogPtr].mainOrSub=this->mainOrSub;
+
 	if(true==logAllRegisters)
 	{
 		PCLog[PCLogPtr].regs=static_cast<RegisterSet>(cpu.state);
@@ -262,14 +266,17 @@ void MC6809::Debugger::BeforeRunOneInstructionMainBody(MC6809 &cpu,const MemoryA
 }
 std::vector <MC6809::Debugger::PCLogType> MC6809::Debugger::GetPCLog(void)
 {
-	return GetPCLog((unsigned int)PCLog.size());
+	return GetPCLog((unsigned int)PC_LOG_SIZE);
 }
 
 std::vector <MC6809::Debugger::PCLogType> MC6809::Debugger::GetPCLog(unsigned int steps)
 {
+	auto PCLog=usingPCLog->log;
+	auto &PCLogPtr=usingPCLog->ptr;
+
 	std::vector <PCLogType> list;
 	unsigned int offset=PC_LOG_MASK;
-	for(unsigned int i=0; i<steps && i<PCLog.size(); ++i)
+	for(unsigned int i=0; i<steps && i<PC_LOG_SIZE; ++i)
 	{
 		auto idx=(PCLogPtr+offset)&PC_LOG_MASK;
 		list.push_back(PCLog[idx]);

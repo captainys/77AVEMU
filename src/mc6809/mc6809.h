@@ -625,9 +625,15 @@ public:
 			unsigned int passed=0,passCount=0;
 		};
 
+		int mainOrSub=0;
+
 		class PCLogType
 		{
 		public:
+			/*! When main- and sub-CPU logs are combined, used for identifying which CPU it is.
+			*/
+			int mainOrSub=0;
+
 			/*! If logAllRegisters!=true, only S and CC will be logged.
 			*/
 			RegisterSet regs;
@@ -637,15 +643,21 @@ public:
 			uint32_t count=0;
 			bool operator==(const PCLogType &from)
 			{
-				return from.regs.PC==regs.PC;
+				return from.regs.PC==regs.PC && from.mainOrSub==mainOrSub;
 			}
 			bool operator!=(const PCLogType &from)
 			{
-				return from.regs.PC!=regs.PC;
+				return from.regs.PC!=regs.PC && from.mainOrSub==mainOrSub;
 			}
 		};
-		size_t PCLogPtr;
-		std::vector <PCLogType> PCLog;
+		class PCLog
+		{
+		public:
+			size_t ptr=0;
+			PCLogType log[PC_LOG_SIZE];
+		};
+		PCLog ownPCLog;
+		PCLog *usingPCLog=&ownPCLog;
 		bool logAllRegisters=false;
 		bool logDisassembly=false;
 
