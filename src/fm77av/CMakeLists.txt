@@ -7,7 +7,7 @@ add_subdirectory(gameport)
 add_subdirectory(eventlog)
 add_subdirectory(serialport)
 add_subdirectory(dma)
-
+add_subdirectory(tests)
 
 
 set(TARGET_NAME fm77av)

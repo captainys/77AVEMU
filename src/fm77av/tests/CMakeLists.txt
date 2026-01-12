@@ -1,0 +1,5 @@
+add_executable(fm77avparam_serialize_test test_profile_serialize.cpp)
+target_link_libraries(fm77avparam_serialize_test fm77avparam)
+add_test(
+  NAME FM77AVParam_Serialize
+  COMMAND fm77avparam_serialize_test)
