@@ -1173,6 +1173,20 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		{
 			sharedEx.readyToSend=winThrEx.primary;
 			winThrEx.primary.CleanUpEvents();
+
+			if(true==shared.differentialMouseIntegration)
+			{
+				const int mx=winThrEx.primary.winWid/2;
+				const int my=winThrEx.primary.winHei/2;
+				winThrEx.primary.lastKnownMouse.mx=mx;
+				winThrEx.primary.lastKnownMouse.my=my;
+				FsShowMouseCursor(0);
+				FsSetMousePosition(mx,my);
+			}
+			else
+			{
+				FsShowMouseCursor(0);
+			}
 		}
 		winThr.statusBarInfo=shared.currentStatusBarInfo;
 	}
