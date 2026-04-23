@@ -99,7 +99,7 @@ void Outside_World::ProcessMouse(class FM77AV &fm77av,int lb,int mb,int rb,int m
 	lastMy=my;
 }
 
-void Outside_World::ProcessMouseDifferential(class FM77AV &fm77av,int lb,int mb,int rb,int mx,int my,int winWid,int winHei)
+void Outside_World::ProcessMouseDifferential(class FM77AV &fm77av,int lb,int mb,int rb,int dx,int dy,int winWid,int winHei)
 {
 	fm77av.SetMouseButtonState((0!=lb),(0!=rb));
 	if(true==mouseIntegrationActive)

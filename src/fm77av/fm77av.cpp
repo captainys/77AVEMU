@@ -1405,4 +1405,11 @@ void FM77AV::ControlMouseByDiffDirect(int diffX,int diffY)
 
 void FM77AV::DontControlMouse(void)
 {
+	for(auto &p : gameport.state.ports)
+	{
+		if(p.device==FM77AVGamePort::MOUSE)
+		{
+			p.mouseMotion.Set(0,0);
+		}
+	}
 }
