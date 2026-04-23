@@ -58,6 +58,7 @@ public:
 		MOUSE_STATIONARY_COUNT=4
 	};
 	bool mouseIntegrationActive=false;
+	bool differentialMouseIntegration=false;
 	int lastMx,lastMy,mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 
 	bool visualizeAudioOut=false; // Implementation should consider showing output level from audio channels if true.
