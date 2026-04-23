@@ -200,6 +200,7 @@ public:
 			StatusBarInfo currentStatusBarInfo;   // Copied from Outside::World::currentStatusBarInfo in the VM Thread
 			bool VMClosedFromVMThread=false;
 			std::vector <unsigned int> gamePadsNeedUpdate;  // Copy of Outside_World's gamePadsNeedUpdate.
+			bool differentialMouseIntegration=false;
 
 			// Locked by rendererLock
 			unsigned int dx=0,dy=0;  // Screen (0,0) will be window (dx,dy)

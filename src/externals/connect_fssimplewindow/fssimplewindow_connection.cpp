@@ -801,12 +801,12 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 
 		if(mouseEmulationByAnalogAxis!=true)
 		{
-			struct YsGamePadReading reading;
+			const int wid=windowEvent.winWid;
+			const int hei=windowEvent.winHei;
 			mx-=this->dx;
 			my-=this->dy;
+			if(true!=differentialMouseIntegration)
 			{
-				int wid,hei;
-				FsGetWindowSize(wid,hei);
 				if(mx<0)
 				{
 					mx=0;
@@ -829,6 +829,12 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 					my=my*100/scaling;
 				}
 				this->ProcessMouse(fm77av,lb,mb,rb,mx,my);
+			}
+			else
+			{
+				int dx=windowEvent.mouseMoveXY[0];
+				int dy=windowEvent.mouseMoveXY[1];
+				// this->ProcessMouseDifferential(fm77av,lb,mb,rb,dx,dy,wid/2,hei/2);
 			}
 		}
 	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
@@ -1141,12 +1147,20 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	}
 	for(;;)
 	{
+		int lastXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
+
 		winThrEx.primary.lastKnownMouse.Read();
 		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
 		{
 			break;
 		}
 		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
+
+		int newXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
+		int diffXY[2]={newXY[0]-lastXY[0],newXY[1]-lastXY[1]};
+
+		winThrEx.primary.mouseMoveXY[0]+=diffXY[0];
+		winThrEx.primary.mouseMoveXY[1]+=diffXY[1];
 	}
 
 	PollGamePads();
@@ -1190,6 +1204,7 @@ void FsSimpleWindowConnection::WindowConnection::Communicate(Outside_World *ow)
 		shared.lowerRightIcon=outside_world->lowerRightIcon;
 		shared.visualizeAudioOut=outside_world->visualizeAudioOut;
 		shared.currentStatusBarInfo=outside_world->currentStatusBarInfo;
+		shared.differentialMouseIntegration=outside_world->differentialMouseIntegration;
 
 		// Kind of want to use swap, but Communicate can be called more than once before the
 		// next Interval is called, in which case state can go back and force between two
