@@ -186,6 +186,14 @@ public:
 	*/
 	virtual void RegisterPauseResume(std::string hostKeyLabel);
 
+	/*!
+	*/
+	virtual void EnableDiffMouse(bool enable)=0;
+
+	/*!
+	*/
+	virtual void ToggleDiffMouse(void)=0;
+
 
 
 public:

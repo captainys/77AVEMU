@@ -190,6 +190,11 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 				this->pauseKey=true;
 			}
 		}
+
+		if(FSMOUSEEVENT_MBUTTONDOWN==mos.evt)
+		{
+			this->commandQueue.push("TOGGLE DIFFMOUSE");
+		}
 	}
 	int lb=windowEvent.lastKnownMouse.lb;
 	int mb=windowEvent.lastKnownMouse.mb;
@@ -834,7 +839,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 			{
 				int dx=windowEvent.mouseMoveXY[0];
 				int dy=windowEvent.mouseMoveXY[1];
-				// this->ProcessMouseDifferential(fm77av,lb,mb,rb,dx,dy,wid/2,hei/2);
+				this->ProcessMouseDifferential(fm77av,lb,mb,rb,dx,dy,wid/2,hei/2);
 			}
 		}
 	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
@@ -1015,6 +1020,15 @@ unsigned int FsSimpleWindowConnection::KeyFlagsFilter(unsigned int keyFlags,unsi
 	}
 }
 
+void FsSimpleWindowConnection::EnableDiffMouse(bool enable)
+{
+	differentialMouseIntegration=enable; // Most likely to get away, but should lock by deviceStateLock.
+}
+void FsSimpleWindowConnection::ToggleDiffMouse(void)
+{
+	differentialMouseIntegration=(true!=differentialMouseIntegration); // Most likely to get away, but should lock by deviceStateLock.
+}
+
 ////////////////////////////////////////////////////////////
 
 void FsSimpleWindowConnection::WindowConnection::Start(void)
@@ -1185,7 +1199,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 			}
 			else
 			{
-				FsShowMouseCursor(0);
+				FsShowMouseCursor(1);
 			}
 		}
 		winThr.statusBarInfo=shared.currentStatusBarInfo;

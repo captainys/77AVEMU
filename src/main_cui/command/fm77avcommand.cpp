@@ -32,6 +32,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	primaryCmdMap["ENA"]=CMD_ENABLE;
 	primaryCmdMap["DISABLE"]=CMD_DISABLE;
 	primaryCmdMap["DIS"]=CMD_DISABLE;
+	primaryCmdMap["TOGGLE"]=CMD_TOGGLE;
 	primaryCmdMap["STARTAUDIOREC"]=CMD_START_AUDIO_RECORDING;
 	primaryCmdMap["ENDAUDIOREC"]=CMD_END_AUDIO_RECORDING;
 	primaryCmdMap["STOPAUDIOREC"]=CMD_END_AUDIO_RECORDING;
@@ -167,6 +168,7 @@ FM77AVCommandInterpreter::FM77AVCommandInterpreter()
 	featureMap["LOGDISASM"]=ENABLE_LOG_DISASM;
 	featureMap["LOGALLREGS"]=ENABLE_LOG_ALLREGISTERS;
 	featureMap["BIOSTAPEMON"]=ENABLE_BIOS_TAPE_READ_MONITOR;
+	featureMap["DIFFMOUSE"]=ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION;
 
 
 	breakEventMap["SUBUNHALT"]=BREAK_ON_SUBCPU_UNHALT;
@@ -327,6 +329,8 @@ void FM77AVCommandInterpreter::PrintHelp(void) const
 	std::cout << "  Enable a feature." << std::endl;
 	std::cout << "DIS feature|DISABLE feature" << std::endl;
 	std::cout << "  Disable a feature." << std::endl;
+	std::cout << "TOGGLE feature\n";
+	std::cout << "  Toggle a feature.\n";
 	std::cout << "STA / STA m(ain) / STA s(ub)" << std::endl;
 	std::cout << "  Print CPU status." << std::endl;
 	std::cout << "HIST / HIST m(ain) / HIST s(ub)" << std::endl;
@@ -1027,6 +1031,9 @@ void FM77AVCommandInterpreter::Execute(FM77AVThread &thr,FM77AV &fm77av,class Ou
 	case CMD_DISABLE:
 		Execute_Disable(thr,fm77av,outside_world,cmd);
 		break;
+	case CMD_TOGGLE:
+		Execute_Toggle(thr,fm77av,outside_world,cmd);
+		break;
 
 	case CMD_START_AUDIO_RECORDING:
 		fm77av.sound.StartRecording();
@@ -1705,6 +1712,10 @@ void FM77AVCommandInterpreter::Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,c
 			fm77av.mainCPU.debugger.monitorBIOSTapeRead=true;
 			std::cout << "Enabled BIOS Tape Read Monitor." << std::endl;
 			break;
+		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
+			outside_world->EnableDiffMouse(true);
+			std::cout << "Enabled differential mouse integration.\n";
+			break;
 		default:
 			std::cout << "Enable What?" << std::endl;
 			Error_WrongParameter(cmd);
@@ -1807,6 +1818,10 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 			fm77av.mainCPU.debugger.monitorBIOSTapeRead=false;
 			std::cout << "Disabled BIOS Tape Read Monitor." << std::endl;
 			break;
+		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
+			outside_world->EnableDiffMouse(false);
+			std::cout << "Disabled differential mouse integration.\n";
+			break;
 		default:
 			std::cout << "Disable What?" << std::endl;
 			Error_WrongParameter(cmd);
@@ -1818,6 +1833,34 @@ void FM77AVCommandInterpreter::Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,
 		Error_TooFewArgs(cmd);
 	}
 }
+void FM77AVCommandInterpreter::Execute_Toggle(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
+{
+	if(2<=cmd.argv.size())
+	{
+		cpputil::Capitalize(cmd.argv[1]);
+		auto foundFeature=featureMap.find(cmd.argv[1]);
+		if(featureMap.end()==foundFeature)
+		{
+			Error_UnknownFeature(cmd);
+			return;
+		}
+		switch(foundFeature->second)
+		{
+		case ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION:
+			outside_world->ToggleDiffMouse();
+			break;
+		default:
+			std::cout << "This feature does not support toggle yet." << std::endl;
+			Error_WrongParameter(cmd);
+			break;
+		}
+	}
+	else
+	{
+		Error_TooFewArgs(cmd);
+	}
+}
+
 void FM77AVCommandInterpreter::Execute_Disassemble(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd)
 {
 	if(2<=cmd.argv.size())
