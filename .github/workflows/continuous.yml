@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: checkout_Tsugaru
       run: git clone https://github.com/captainys/TOWNSEMU.git
     - name: mkdir
@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: checkout_Tsugaru
       run: git clone https://github.com/captainys/TOWNSEMU.git
     - name: mkdir
@@ -95,7 +95,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
     - name: checkout_Tsugaru
       run: git clone https://github.com/captainys/TOWNSEMU.git
     - name: mkdir
