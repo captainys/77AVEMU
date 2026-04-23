@@ -1395,6 +1395,14 @@ void FM77AV::ControlMouse(int &diffX,int &diffY,int mx,int my)
 		SetMouseMotion(-diffX,-diffY); //
 	}
 }
+
+void FM77AV::ControlMouseByDiffDirect(int diffX,int diffY)
+{
+	diffX=std::max(std::min(diffX,127),-127);
+	diffY=std::max(std::min(diffY,127),-127);
+	SetMouseMotion(-diffX,-diffY);
+}
+
 void FM77AV::DontControlMouse(void)
 {
 }

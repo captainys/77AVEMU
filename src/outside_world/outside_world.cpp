@@ -98,6 +98,40 @@ void Outside_World::ProcessMouse(class FM77AV &fm77av,int lb,int mb,int rb,int m
 	lastMx=mx;
 	lastMy=my;
 }
+
+void Outside_World::ProcessMouseDifferential(class FM77AV &fm77av,int lb,int mb,int rb,int mx,int my,int winWid,int winHei)
+{
+	fm77av.SetMouseButtonState((0!=lb),(0!=rb));
+	if(true==mouseIntegrationActive)
+	{
+		fm77av.ControlMouseByDiffDirect(dx,dy);
+
+		if(-1<=dx && dx<=1 && -1<=dy && dy<=1) // Added tolerance.
+		{
+			--mouseStationaryCount;
+			if(mouseStationaryCount<=0)
+			{
+				mouseIntegrationActive=false;
+				// std::cout << "Mouse Integration Paused" << std::endl;
+			}
+		}
+		else
+		{
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+		}
+	}
+	else
+	{
+		if(dx<-1 || 1<dx || dy<-1 || 1<dy)
+		{
+			// std::cout << "Mouse Integration Active" << std::endl;
+			mouseIntegrationActive=true;
+			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
+		}
+		fm77av.DontControlMouse();
+	}
+}
+
 void Outside_World::ProcessAppSpecific(class FM77AV &fm77av)
 {
 }

@@ -152,6 +152,10 @@ public:
 	*/
 	void ProcessMouse(class FM77AV &fm77av,int lb,int mb,int rb,int mx,int my);
 
+	/*! 
+	*/
+	void ProcessMouseDifferential(class FM77AV &fm77av,int lb,int mb,int rb,int mx,int my,int winWid,int winHei);
+
 	/*! Right now it updates mouse neutral position for Wing Commander 1 if app-specific augumentation is enabled.
 	*/
 	void ProcessAppSpecific(class FM77AV &fm77av);
