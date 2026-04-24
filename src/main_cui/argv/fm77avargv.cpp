@@ -73,6 +73,7 @@ void FM77AVArgv::Help(void)
 	std::cout << "-GAMEPORT1 KEY|PHYSx|ANAx|NONE" << std::endl;
 	std::cout << "  Specify game-port emulation.  By keyboard (Arrow,Z,X,A,S), or physical gamepad." << std::endl;
 	std::cout << "  PHYS0,PHYS1,PHYS2,PHYS3 use physical game pad direction button (or hat switch) as up/down/left/right." << std::endl;
+	std::cout << "  MOUSE use host mouse as a mouse connected to the game port.\n";
 	std::cout << "  ANA0,ANA1,ANA2,ANA3 use physical game pad analog stick as up/down/left/right." << std::endl;
 	std::cout << "  KEYMOUSE use arrow keys and ZX keys for mouse cursor and buttons." << std::endl;
 	std::cout << "  NUMPADMOUSE use NUMPAD number keys and /* keys for mouse cursor and buttons." << std::endl;
