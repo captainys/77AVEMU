@@ -1183,18 +1183,34 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 			winThrEx.primary.mouseMoveXY[0]=dx;
 			winThrEx.primary.mouseMoveXY[1]=dy;
 
-			int mx=winThrEx.primary.winWid/2;
-			int my=winThrEx.primary.winHei/2;
-			FsSetMousePosition(mx,my);
+			int minX=winThrEx.primary.winWid/4;
+			int minY=winThrEx.primary.winHei/4;
+			int maxX=winThrEx.primary.winWid*3/4;
+			int maxY=winThrEx.primary.winHei*3/4;
 
-		#ifdef __APPLE__
-			// Doesn't macOS allow setting mouse y to be an odd number?
-			int b;
-			FsGetMouseState(b,b,b,mx,my);
-		#endif
+			if(winThrEx.primary.lastKnownMouse.mx<minX ||
+			   winThrEx.primary.lastKnownMouse.my<minY ||
+			   winThrEx.primary.lastKnownMouse.mx>maxX ||
+			   winThrEx.primary.lastKnownMouse.my>maxY)
+			{
+				int mx=winThrEx.primary.winWid/2;
+				int my=winThrEx.primary.winHei/2;
+				FsSetMousePosition(mx,my);
 
-			winThrEx.diffMouseXY[0]=mx;
-			winThrEx.diffMouseXY[1]=my;
+			#ifdef __APPLE__
+				// Doesn't macOS allow setting mouse y to be an odd number?
+				int b;
+				FsGetMouseState(b,b,b,mx,my);
+			#endif
+
+				winThrEx.diffMouseXY[0]=mx;
+				winThrEx.diffMouseXY[1]=my;
+			}
+			else
+			{
+				winThrEx.diffMouseXY[0]=winThrEx.primary.lastKnownMouse.mx;
+				winThrEx.diffMouseXY[1]=winThrEx.primary.lastKnownMouse.my;
+			}
 		}
 		FsShowMouseCursor(0);
 	}
