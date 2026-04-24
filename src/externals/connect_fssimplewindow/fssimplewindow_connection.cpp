@@ -12,8 +12,11 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 << LICENSE */
+#define GL_SILENCE_DEPRECATION
+
 #include <stdio.h>
 #include <iostream>
+#include <cmath>
 
 #ifdef _WIN32
 	#include <direct.h>
@@ -1161,20 +1164,43 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 	}
 	for(;;)
 	{
-		int lastXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
-
 		winThrEx.primary.lastKnownMouse.Read();
 		if(FSMOUSEEVENT_NONE==winThrEx.primary.lastKnownMouse.evt)
 		{
 			break;
 		}
 		winThrEx.primary.mouseEvents.push_back(winThrEx.primary.lastKnownMouse);
+	}
 
-		int newXY[2]={winThrEx.primary.lastKnownMouse.mx,winThrEx.primary.lastKnownMouse.my};
-		int diffXY[2]={newXY[0]-lastXY[0],newXY[1]-lastXY[1]};
+	if(true==shared.differentialMouseIntegration)
+	{
+		const int thr=1;
+		const int dx=winThrEx.primary.lastKnownMouse.mx-winThrEx.diffMouseXY[0];
+		const int dy=winThrEx.primary.lastKnownMouse.my-winThrEx.diffMouseXY[1];
 
-		winThrEx.primary.mouseMoveXY[0]+=diffXY[0];
-		winThrEx.primary.mouseMoveXY[1]+=diffXY[1];
+		if(thr<=std::abs(dx) || thr<=std::abs(dy))
+		{
+			winThrEx.primary.mouseMoveXY[0]=dx;
+			winThrEx.primary.mouseMoveXY[1]=dy;
+
+			int mx=winThrEx.primary.winWid/2;
+			int my=winThrEx.primary.winHei/2;
+			FsSetMousePosition(mx,my);
+
+		#ifdef __APPLE__
+			// Doesn't macOS allow setting mouse y to be an odd number?
+			int b;
+			FsGetMouseState(b,b,b,mx,my);
+		#endif
+
+			winThrEx.diffMouseXY[0]=mx;
+			winThrEx.diffMouseXY[1]=my;
+		}
+		FsShowMouseCursor(0);
+	}
+	else
+	{
+		FsShowMouseCursor(1);
 	}
 
 	PollGamePads();
@@ -1187,20 +1213,6 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 		{
 			sharedEx.readyToSend=winThrEx.primary;
 			winThrEx.primary.CleanUpEvents();
-
-			if(true==shared.differentialMouseIntegration)
-			{
-				const int mx=winThrEx.primary.winWid/2;
-				const int my=winThrEx.primary.winHei/2;
-				winThrEx.primary.lastKnownMouse.mx=mx;
-				winThrEx.primary.lastKnownMouse.my=my;
-				FsShowMouseCursor(0);
-				FsSetMousePosition(mx,my);
-			}
-			else
-			{
-				FsShowMouseCursor(1);
-			}
 		}
 		winThr.statusBarInfo=shared.currentStatusBarInfo;
 	}

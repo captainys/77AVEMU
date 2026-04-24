@@ -163,6 +163,8 @@ public:
 			unsigned int prevTapePosition=0;
 			DeviceAndEvent primary;
 
+			int diffMouseXY[2]={0,0};
+
 			GLuint mainTexId,statusTexId,pauseIconTexId,menuIconTexId;
 			std::vector <unsigned char> PAUSEicon,MENUicon,FD_IDLEicon,FD_BUSYicon,TAPE_IDLEicon,TAPE_LOADINGicon,TAPE_SAVINGicon,CAPSicon,KANAicon,INSicon;
 

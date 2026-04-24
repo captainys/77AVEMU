@@ -150,6 +150,7 @@ unsigned char FM77AVGamePort::Port::Read(long long int fm77avTime)
 		{
 		case MOUSESTATE_XHIGH:
 			mouseMotionCopy=mouseMotion;
+			motionConsumed=true;
 			if(0<mouseHold)
 			{
 				mouseMotionCopy.Set(0,0);

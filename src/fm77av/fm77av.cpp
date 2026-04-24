@@ -1026,7 +1026,19 @@ void FM77AV::SetMouseMotion(int dx,int dy)
 	{
 		if(p.device==FM77AVGamePort::MOUSE)
 		{
-			p.mouseMotion.Set(dx,dy);
+			// Deal with the situation that SetMouseMotion comes in multiple times before the previous
+			// motion was consumed.  I don't want to use a flag, and just add motion, but it does not 
+			// work well with Psy-O-Blade.  See comments in FM77AVGamePort::Port::Read.
+			if(true==p.motionConsumed)
+			{
+				p.mouseMotion.Set(dx,dy);
+				p.motionConsumed=false;
+			}
+			else
+			{
+				p.mouseMotion.x()+=dx;
+				p.mouseMotion.y()+=dy;
+			}
 		}
 	}
 }

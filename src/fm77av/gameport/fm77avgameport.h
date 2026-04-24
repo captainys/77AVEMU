@@ -88,6 +88,11 @@ public:
 		int mouseHold=0;  // PSY-O-BLADE expects zero mouse motion for the first reading.
 
 		Vec2i mouseMotion;  // For CyberStick, used as XY position.
+
+		bool motionConsumed=false;
+		// Well, I don't want to make it a flag, but clearing the motion for signaling doesn't seem to work well with Psy-O-Blade.
+		// See comments in FM77AVGamePort::Port::Read.
+
 		int zAxis=0; // For CyberStick
 		int wAxis=0; // For CyberStick
 		int trig=0;  // For CyberStick and CAPCOM CPSF
