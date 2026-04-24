@@ -140,6 +140,9 @@ public:
 	void RegisterHostShortCut(std::string hostKeyLabel,bool ctrl,bool shift,std::string cmdStr) override;
 	void RegisterPauseResume(std::string hostKeyLabel) override;
 
+	void EnableDiffMouse(bool enable) override;
+	void ToggleDiffMouse(void) override;
+
 
 	class WindowConnection : public WindowInterface
 	{

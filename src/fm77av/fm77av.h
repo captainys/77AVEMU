@@ -468,6 +468,7 @@ public:
 	void IdentifyApplication(void);
 	bool GetVMMousePosition(int &mx,int &my);
 	void ControlMouse(int &diffX,int &diffY,int mx,int my);
+	void ControlMouseByDiffDirect(int diffX,int diffY);
 	void DontControlMouse(void);
 };
 

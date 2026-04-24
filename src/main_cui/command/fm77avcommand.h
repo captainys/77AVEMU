@@ -46,6 +46,7 @@ public:
 
 		CMD_ENABLE,
 		CMD_DISABLE,
+		CMD_TOGGLE,
 
 		CMD_TAPE_LOAD,
 		CMD_TAPE_SAVETAPE,
@@ -190,6 +191,7 @@ public:
 		ENABLE_LOG_DISASM,
 		ENABLE_LOG_ALLREGISTERS,
 		ENABLE_BIOS_TAPE_READ_MONITOR,
+		ENABLE_DIFFERENTIAL_MOUSE_INTEGRATION,
 	};
 
 	enum
@@ -276,6 +278,7 @@ public:
 	void Execute_Run(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Enable(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disable(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
+	void Execute_Toggle(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Main(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
 	void Execute_Disassemble_Sub(FM77AVThread &thr,FM77AV &fm77av,class Outside_World *outside_world,Command &cmd);
