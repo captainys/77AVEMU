@@ -124,11 +124,15 @@ void Outside_World::ProcessMouseDifferential(class FM77AV &fm77av,int lb,int mb,
 	{
 		if(dx<-1 || 1<dx || dy<-1 || 1<dy)
 		{
+			fm77av.ControlMouseByDiffDirect(dx,dy);
 			// std::cout << "Mouse Integration Active" << std::endl;
 			mouseIntegrationActive=true;
 			mouseStationaryCount=MOUSE_STATIONARY_COUNT;
 		}
-		fm77av.DontControlMouse();
+		else
+		{
+			fm77av.DontControlMouse();
+		}
 	}
 }
 

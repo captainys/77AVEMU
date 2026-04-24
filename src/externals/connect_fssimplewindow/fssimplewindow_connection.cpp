@@ -1174,7 +1174,7 @@ void FsSimpleWindowConnection::WindowConnection::Interval(void)
 
 	if(true==shared.differentialMouseIntegration)
 	{
-		const int thr=1;
+		const int thr=2;
 		const int dx=winThrEx.primary.lastKnownMouse.mx-winThrEx.diffMouseXY[0];
 		const int dy=winThrEx.primary.lastKnownMouse.my-winThrEx.diffMouseXY[1];
 
