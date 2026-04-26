@@ -386,6 +386,9 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 
 	{
 		auto *subMenu=mainMenu->AddTextItem(0,FSKEY_D,"Devices")->GetSubMenu();
+
+		subMenu->AddTextItem(0,FSKEY_NULL,"Capture Mouse")->BindCallBack(&THISCLASS::Device_CaptureMouse,this);
+
 		subMenu->AddTextItem(0,FSKEY_0,"Game Port 0")->BindCallBack(&THISCLASS::Device_GamePort0,this);
 		subMenu->AddTextItem(0,FSKEY_1,"Game Port 1")->BindCallBack(&THISCLASS::Device_GamePort1,this);
 
@@ -2451,6 +2454,14 @@ void FsGuiMainCanvas::GamePortDialog::Make(int port)
 	{
 		CloseModalDialog(YSERR);
 	}
+}
+
+void FsGuiMainCanvas::Device_CaptureMouse(FsGuiPopUpMenuItem *)
+{
+	auto msgDlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+	const wchar_t *msg=L"You can use mouse middle button to capture/release mouse.";
+	msgDlg->Make(L"Mouse Capture",msg,L"OK",nullptr);
+	AttachModalDialog(msgDlg);
 }
 
 void FsGuiMainCanvas::Device_GamePort0(FsGuiPopUpMenuItem *)

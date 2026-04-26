@@ -345,6 +345,7 @@ private:
 	void FD1_Eject(FsGuiPopUpMenuItem *);
 
 	class GamePortDialog;
+	void Device_CaptureMouse(FsGuiPopUpMenuItem *);
 	void Device_GamePort0(FsGuiPopUpMenuItem *);
 	void Device_GamePort1(FsGuiPopUpMenuItem *);
 	void Device_GamePort_DeviceSelected(FsGuiDialog *dlg,int returnCode);

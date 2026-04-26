@@ -1038,6 +1038,12 @@ void FM77AV::SetMouseMotion(int dx,int dy)
 			{
 				p.mouseMotion.x()+=dx;
 				p.mouseMotion.y()+=dy;
+
+				p.mouseMotion.x()=std::max<int>(-127,p.mouseMotion.x());
+				p.mouseMotion.y()=std::max<int>(-127,p.mouseMotion.y());
+
+				p.mouseMotion.x()=std::min<int>( 127,p.mouseMotion.x());
+				p.mouseMotion.y()=std::min<int>( 127,p.mouseMotion.y());
 			}
 		}
 	}
