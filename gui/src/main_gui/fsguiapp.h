@@ -94,6 +94,7 @@ public:
 	mutable YsWString lastScreenShotFName;
 	mutable YsWString lastVGMFName;
 	mutable YsWString lastEventFName;
+	mutable YsWString lastSelectedFName;
 
 	// separateProcess flag may only be changed when starting the VM.
 	bool separateProcess=false;
@@ -297,6 +298,9 @@ private:
 	void VM_FM8Speed(FsGuiPopUpMenuItem *);
 	void VM_FM7Speed(FsGuiPopUpMenuItem *);
 	void VM_FM77Speed(FsGuiPopUpMenuItem *);
+
+	class LoadBinaryDialog;
+	void VM_LoadBinary(FsGuiPopUpMenuItem *);
 
 	void VM_Keyboard_Direct(FsGuiPopUpMenuItem *);
 	void VM_Keyboard_Translation1(FsGuiPopUpMenuItem *);

@@ -327,6 +327,8 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 			freqSubMenu->AddTextItem(0,FSKEY_A,L"FM-77 (2MHz Cycle Steal)")->BindCallBack(&THISCLASS::VM_FM77Speed,this);
 		}
 
+		subMenu->AddTextItem(0,FSKEY_NULL,L"Hot Load Binary")->BindCallBack(&THISCLASS::VM_LoadBinary,this);
+
 		{
 			auto *keyboardSubMenu=subMenu->AddTextItem(0,FSKEY_K,L"Keyboard Mode")->AddSubMenu();
 			keyboardSubMenu->AddTextItem(0,FSKEY_D,L"Direct (for Gaming)")->BindCallBack(&THISCLASS::VM_Keyboard_Direct,this);
@@ -955,6 +957,7 @@ YsWString FsGuiMainCanvas::GetAnyKnownDirectory(void) const
 
 	YsWString candidates[]=
 	{
+		lastSelectedFName,
 		lastSelectedProfileFName,
 		lastSelectedFDFName,
 		lastSelectedHDFName,
@@ -1052,6 +1055,7 @@ void FsGuiMainCanvas::File_ReloadDefaultProfile(FsGuiPopUpMenuItem *)
 {
 	LoadProfile(GetDefaultProfileFileName());
 	lastSelectedProfileFName=GetDefaultProfileFileName();
+	lastSelectedFName=lastSelectedProfileFName;
 	// In this case, update lastSelectedProfile anyway, even if the default profile does not exist yet.
 	// Not doing so may mess up MakeRelativePath.
 }
@@ -1156,6 +1160,7 @@ void FsGuiMainCanvas::SaveProfile(YsWString fName) const
 	}
 	fp.Fclose();
 	lastSelectedProfileFName=fName;
+	lastSelectedFName=fName;
 }
 bool FsGuiMainCanvas::LoadProfile(YsWString fName)
 {
@@ -1193,6 +1198,7 @@ bool FsGuiMainCanvas::LoadProfile(YsWString fName)
 		}
 
 		lastSelectedProfileFName=fName;
+		lastSelectedFName=fName;
 		for(auto imgFName : profile.fdImgFName)
 		{
 			if(""!=imgFName)
@@ -1334,6 +1340,7 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 			if(true==genFloppyDisk)
 			{
 				lastSelectedFDFName=fName;
+				lastSelectedFName==fName;
 				int diskId=-1;
 				D77File d77;
 
@@ -1377,6 +1384,7 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 			else
 			{
 				lastSelectedHDFName=fName;
+				lastSelectedFName=fName;
 
 				bool result=false;
 				YsFileIO::File ofp(fName,"wb");
@@ -1836,6 +1844,101 @@ void FsGuiMainCanvas::VM_FM77Speed(FsGuiPopUpMenuItem *)
 	}
 }
 
+////////////////////////////////////////////////////////////
+
+class FsGuiMainCanvas::LoadBinaryDialog : public FsGuiDialog
+{
+public:
+	FsGuiButton *browseBtn;
+	FsGuiTextBox *fileNameTxt;
+	FsGuiTextBox *addrTxt;
+	FsGuiMainCanvas *owner;
+
+	FsGuiButton *okBtn,*cancelBtn;
+	void Make(FsGuiMainCanvas *owner)
+	{
+		this->owner=owner;
+
+		AddStaticText(0,FSKEY_NULL,"File:",YSTRUE);
+		browseBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSFALSE);
+		fileNameTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",32,YSFALSE);
+		fileNameTxt->SetLengthLimit(1024);
+
+		AddStaticText(0,FSKEY_NULL,"Address:",YSTRUE);
+		addrTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",8,YSFALSE);
+		AddStaticText(0,FSKEY_NULL,"(Required unless the file is .SREC)",YSFALSE);
+
+		okBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"OK",YSTRUE);
+		cancelBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Cancel",YSFALSE);
+
+		Fit();
+	}
+	void OnSelectFile(FsGuiDialog *dlg,int returnCode)
+	{
+		auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
+		if((int)YSOK==returnCode && nullptr!=fdlg)
+		{
+			YsWString ful(fdlg->selectedFileArray[0]);
+			fileNameTxt->SetText(ful);
+			owner->lastSelectedFName=ful;
+		}
+	}
+	void OnButtonClick(FsGuiButton *btn) override
+	{
+		if(btn==browseBtn)
+		{
+			YsWString def;
+			def.MakeFullPathName(owner->GetAnyKnownDirectory(),L"*.*");
+
+			auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+			fdlg->Initialize();
+			fdlg->mode=FsGuiFileDialog::MODE_OPEN;
+			fdlg->multiSelect=YSFALSE;
+			fdlg->title.Set(L"Select a ROM file (like FBASIC30.ROM)");
+			fdlg->fileExtensionArray.Append(L".*");
+			fdlg->defaultFileName=def;
+			fdlg->BindCloseModalCallBack(&LoadBinaryDialog::OnSelectFile,this);
+			AttachModalDialog(fdlg);
+		}
+		if(btn==okBtn)
+		{
+			YsString file,addr;
+			fileNameTxt->GetText(file);
+			addrTxt->GetText(addr);
+
+			std::string cmd;
+			cmd="LOADM ";
+			cmd.push_back('\"');
+			cmd+=file.c_str();
+			cmd.push_back('\"');
+			cmd.push_back(' ');
+			cmd+=addr.c_str();
+			owner->SendVMCommand(cmd);
+
+			CloseModalDialog(YSOK);
+		}
+		if(btn==cancelBtn)
+		{
+			CloseModalDialog(YSERR);
+		}
+	}
+};
+void FsGuiMainCanvas::VM_LoadBinary(FsGuiPopUpMenuItem *)
+{
+	if(true==IsVMRunning())
+	{
+		auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <LoadBinaryDialog>();
+		dlg->Make(this);
+		AttachModalDialog(dlg);
+	}
+	else
+	{
+		VM_Not_Running_Error();
+	}
+}
+
+////////////////////////////////////////////////////////////
+
 void FsGuiMainCanvas::VM_Keyboard_Direct(FsGuiPopUpMenuItem *)
 {
 	if(true==IsVMRunning())
@@ -2210,6 +2313,7 @@ void FsGuiMainCanvas::Tape_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		cmd.push_back('\n');
 		SendVMCommand(cmd);
 		lastSelectedTapeFName=fName;
+		lastSelectedFName=fName;
 		VMMustResume=YSTRUE;
 
 	}
@@ -2271,6 +2375,7 @@ void FsGuiMainCanvas::FD0_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		FD0_writeUnprotectMenu->SetCheck(YSTRUE);
 
 		lastSelectedFDFName=fName;
+		lastSelectedFName=fName;
 	}
 }
 void FsGuiMainCanvas::FD0_WriteProtect(FsGuiPopUpMenuItem *)
@@ -2362,6 +2467,7 @@ void FsGuiMainCanvas::FD1_ImageFileSelected(FsGuiDialog *dlg,int returnCode)
 		FD1_writeUnprotectMenu->SetCheck(YSTRUE);
 
 		lastSelectedFDFName=fName;
+		lastSelectedFName=fName;
 	}
 }
 void FsGuiMainCanvas::FD1_WriteProtect(FsGuiPopUpMenuItem *)
