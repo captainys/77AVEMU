@@ -27,7 +27,16 @@ add_subdirectory(${TSUGARU_SOURCE_DIR}/i8251 ${CMAKE_BINARY_DIR}/i8251)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/diskdrive ${CMAKE_BINARY_DIR}/diskdrive)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/osdependent/gamepad ${CMAKE_BINARY_DIR}/gamepad)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/externals/yssimplesound/src ${CMAKE_BINARY_DIR}/yssimplesound)
-add_subdirectory(${TSUGARU_SOURCE_DIR}/externals/fssimplewindow/src ${CMAKE_BINARY_DIR}/fssimplewindow)
+# Mac key mapping lives in gui/src/public/.../fsmacosxwrapperobjc.m.
+# Use that tree for the CUI build so `cmake ../src` and `cmake ../gui/src` compile the same fssimplewindow.
+set(FSSIMPLEWINDOW_SRC ${TSUGARU_SOURCE_DIR}/externals/fssimplewindow/src)
+if(APPLE)
+	set(MUTSU_GUI_FSSIMPLEWINDOW ${CMAKE_CURRENT_SOURCE_DIR}/../gui/src/public/src/fssimplewindow/src)
+	if(EXISTS ${MUTSU_GUI_FSSIMPLEWINDOW}/macosx/fsmacosxwrapperobjc.m)
+		set(FSSIMPLEWINDOW_SRC ${MUTSU_GUI_FSSIMPLEWINDOW})
+	endif()
+endif()
+add_subdirectory(${FSSIMPLEWINDOW_SRC} ${CMAKE_BINARY_DIR}/fssimplewindow)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/externals/yspng ${CMAKE_BINARY_DIR}/yspng)
 add_subdirectory(${TSUGARU_SOURCE_DIR}/externals/d77 ${CMAKE_BINARY_DIR}/d77)
 
