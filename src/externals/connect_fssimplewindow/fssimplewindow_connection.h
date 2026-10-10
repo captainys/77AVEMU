@@ -133,6 +133,7 @@ public:
 	void Start(void) override;
 	void Stop(void) override;
 	void DevicePolling(class FM77AV &fm77av) override;
+	bool IsDebuggerBreakKey(int fsKey) const;
 	unsigned int KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey);
 
 	void SetKeyboardLayout(unsigned int layout) override;
