@@ -263,7 +263,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		}
 		for(auto c : windowEvent.keyCode)
 		{
-			if(PAUSE_KEY_CODE==c)
+			if(true==IsDebuggerBreakKey(c))
 			{
 				this->pauseKey=true;
 			}
@@ -353,7 +353,7 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		{
 			unsigned char byteData=0;
 			this->ProcessInkey(fm77av,FSKEYtoFM77AVKEY[c]);
-			if(PAUSE_KEY_CODE==c)
+			if(true==IsDebuggerBreakKey(c))
 			{
 				this->pauseKey=true;
 			}
@@ -848,6 +848,22 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 	} // if(fm77av.eventLog.mode!=FM77AVEventLog::MODE_PLAYBACK)
 
 	prevGamePads=windowEvent.gamePads;
+}
+bool FsSimpleWindowConnection::IsDebuggerBreakKey(int fsKey) const
+{
+	if(PAUSE_KEY_CODE==(unsigned int)fsKey)
+	{
+		return true;
+	}
+#ifdef __APPLE__
+	/* Mac keyboards have no Scroll Lock, which is the default break key.
+	   F12 enters the CUI debugger instead. */
+	if(FSKEY_F12==fsKey)
+	{
+		return true;
+	}
+#endif
+	return false;
 }
 unsigned int FsSimpleWindowConnection::KeyFlagsFilter(unsigned int keyFlags,unsigned int fsKey)
 {
