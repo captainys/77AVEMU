@@ -264,6 +264,7 @@ void FsGuiMainCanvas::MakeMainMenu(void)
 			auto subSubMenu=subMenu->AddTextItem(0,FSKEY_N,L"New")->AddSubMenu();
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"2D (320KB) Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_320KB,this);
 			subSubMenu->AddTextItem(0,FSKEY_NULL,L"2DD (640KB) Floppy Disk Image")->BindCallBack(&THISCLASS::File_New_640KB,this);
+			subSubMenu->AddTextItem(0,FSKEY_NULL,L"Make Default Key Mapping File")->BindCallBack(&THISCLASS::File_MakeDefaultKeyMappingFile,this);
 		}
 
 		fileRecentProfile=subMenu->AddTextItem(0,FSKEY_R,L"Recent")->AddSubMenu();
@@ -836,6 +837,23 @@ YsWString FsGuiMainCanvas::GetDefaultNewHardDiskImageFileName(void) const
 	return ful;
 }
 
+YsWString FsGuiMainCanvas::GetDefaultNewKeyMappingFileName(void) const
+{
+	YsWString path,file;
+	if(0<lastSelectedHDFName.Strlen())
+	{
+		lastSelectedHDFName.SeparatePathFile(path,file);
+	}
+	else
+	{
+		path=GetAnyKnownDirectory();
+	}
+
+	YsWString ful;
+	ful.MakeFullPathName(path,L"fm77avkeymap.txt");
+	return ful;
+}
+
 YsWString FsGuiMainCanvas::GetDefaultNewEventLogFileName(void) const
 {
 	YsWString path,file;
@@ -1293,8 +1311,7 @@ void FsGuiMainCanvas::File_Exit_ReallyExit(void)
 
 void FsGuiMainCanvas::File_New_320KB(FsGuiPopUpMenuItem *)
 {
-	genFloppyDisk=true;
-	genDiskSize=320;
+	gen=GEN_FDIMG320;
 
 	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 	fdlg->Initialize();
@@ -1309,8 +1326,7 @@ void FsGuiMainCanvas::File_New_320KB(FsGuiPopUpMenuItem *)
 }
 void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 {
-	genFloppyDisk=true;
-	genDiskSize=640;
+	gen=GEN_FDIMG640;
 
 	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
 	fdlg->Initialize();
@@ -1323,6 +1339,22 @@ void FsGuiMainCanvas::File_New_640KB(FsGuiPopUpMenuItem *)
 	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
 	AttachModalDialog(fdlg);
 }
+
+void FsGuiMainCanvas::File_MakeDefaultKeyMappingFile(FsGuiPopUpMenuItem *)
+{
+	gen=GEN_KEYMAPFILE;
+
+	auto fdlg=FsGuiDialog::CreateSelfDestructiveDialog<FsGuiFileDialog>();
+	fdlg->Initialize();
+	fdlg->mode=FsGuiFileDialog::MODE_SAVE;
+	fdlg->multiSelect=YSFALSE;
+	fdlg->title.Set(L"Create Default Key-Mapping File");
+	fdlg->fileExtensionArray.Append(L".txt");
+	fdlg->defaultFileName=GetDefaultNewKeyMappingFileName();
+	fdlg->BindCloseModalCallBack(&THISCLASS::File_New_FileSelected,this);
+	AttachModalDialog(fdlg);
+}
+
 void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 {
 	auto fdlg=dynamic_cast <FsGuiFileDialog *>(dlg);
@@ -1337,19 +1369,19 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 		}
 		else
 		{
-			if(true==genFloppyDisk)
+			if(GEN_FDIMG320==gen || GEN_FDIMG640==gen)
 			{
 				lastSelectedFDFName=fName;
 				lastSelectedFName==fName;
 				int diskId=-1;
 				D77File d77;
 
-				switch(genDiskSize)
+				switch(gen)
 				{
-				case 320:
+				case GEN_FDIMG320:
 					diskId=d77.CreateUnformatted(40,"2D Disk");
 					break;
-				case 640:
+				case GEN_FDIMG640:
 					diskId=d77.CreateUnformatted(80,"2DD Disk");
 					break;
 				}
@@ -1378,6 +1410,30 @@ void FsGuiMainCanvas::File_New_FileSelected(FsGuiDialog *dlg,int returnCode)
 				{
 					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
 					dlg->Make(L"Success.",L"Created a floppy disk image.",L"OK",nullptr);
+					AttachModalDialog(dlg);
+				}
+			}
+			else if(GEN_KEYMAPFILE==gen)
+			{
+				std::unique_ptr <FsSimpleWindowConnection> outside_world(new FsSimpleWindowConnection);
+				YsFileIO::File ofp(fName,"wb");
+				if(nullptr!=ofp.Fp())
+				{
+					fprintf(ofp.Fp(),"#HOST                   FM77AV\n");
+					for(auto t : outside_world->MakeKeyMappingText())
+					{
+						fprintf(ofp.Fp(),"%s\n",t.c_str());
+					}
+					ofp.Fclose();
+
+					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+					dlg->Make(L"Success.",L"Created a default key-mapping file.",L"OK",nullptr);
+					AttachModalDialog(dlg);
+				}
+				else
+				{
+					auto dlg=FsGuiDialog::CreateSelfDestructiveDialog <FsGuiMessageBoxDialog>();
+					dlg->Make(L"Error",L"Failed to write file.",L"OK",nullptr);
 					AttachModalDialog(dlg);
 				}
 			}

@@ -279,10 +279,20 @@ private:
 	void State_LoadStateMem(int slot);
 
 
-	bool genFloppyDisk=true;
+	enum
+	{
+		GEN_NONE,
+		GEN_FDIMG320,
+		GEN_FDIMG640,
+		GEN_KEYMAPFILE
+	};
+
+	unsigned int gen=GEN_NONE;
 	unsigned int genDiskSize=0;
 	void File_New_320KB(FsGuiPopUpMenuItem *);
 	void File_New_640KB(FsGuiPopUpMenuItem *);
+
+	void File_MakeDefaultKeyMappingFile(FsGuiPopUpMenuItem *);
 
 	void File_New_FileSelected(FsGuiDialog *dlg,int returnCode);
 
@@ -399,6 +409,10 @@ private:
 	/*! Any known directory of the file used by the VM + "*.vgm"
 	*/
 	YsWString GetDefaultVGMFileName(void) const;
+
+	/*!
+	*/
+	YsWString GetDefaultNewKeyMappingFileName(void) const;
 
 	/*!
 	*/
