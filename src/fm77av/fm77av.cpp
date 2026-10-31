@@ -407,6 +407,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 	{
 		outside_world->RegisterHostShortCut(hsc.hostKey,hsc.ctrl,hsc.shift,hsc.cmdStr);
 	}
+	outside_world->RegisterPauseResume(param.pauseResumeKeyLabel);
 	window->shared.scaling=param.scaling;
 	window->windowShift=param.windowShift;
 	window->windowModeOnStartUp=param.windowModeOnStartUp;
