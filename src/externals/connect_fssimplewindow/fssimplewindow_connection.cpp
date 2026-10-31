@@ -158,9 +158,25 @@ static std::vector <unsigned char> MakeIcon(const unsigned char src[],int wid,in
 		prevGamePads=windowEvent.gamePads;
 	}
 
-	bool ctrlKey=(0!=windowEvent.keyState[FSKEY_CTRL]);
-	bool shiftKey=(0!=windowEvent.keyState[FSKEY_SHIFT]);
-	bool graphKey=(0!=windowEvent.keyState[GRAPH_KEY_CODE]);
+	bool ctrlKey=false,shiftKey=false,graphKey=false;
+	for(int k=0; k<FSKEY_NUM_KEYCODE; ++k)
+	{
+		if(0!=windowEvent.keyState[k])
+		{
+			if(FSKEYtoFM77AVKEY[k]==AVKEY_LEFT_SHIFT || FSKEYtoFM77AVKEY[k]==AVKEY_RIGHT_SHIFT)
+			{
+				shiftKey=true;
+			}
+			else if(FSKEYtoFM77AVKEY[k]==AVKEY_CTRL)
+			{
+				ctrlKey=true;
+			}
+			else if(FSKEYtoFM77AVKEY[k]==AVKEY_GRAPH)
+			{
+				graphKey=true;
+			}
+		}
+	}
 
 	uint16_t keyFlags=
 	    (ctrlKey==true ? FM77AVKeyboard::KEYFLAG_CTRL : 0)|

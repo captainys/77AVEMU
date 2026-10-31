@@ -58,6 +58,10 @@ void FM77AVArgv::Help(void)
 	std::cout << "  eg. You can use -ALIAS DISKA \"full-path-to-game-diskA\" to ease disk swap from command." << std::endl;
 	std::cout << "-KEYBOARD DIRECT/TRANS/TRANS2/TRANS3" << std::endl;
 	std::cout << "  Keyboard mode.  DIRECT is good for gaming.  TRANS/TRANS2/TRANS3 is good for typing." << std::endl;
+	std::cout << "-KEYMAP filename" << std::endl;
+	std::cout << "  Load Key-Mapping file." << std::endl;
+	std::cout << "-GENKEYMAP filename\n";
+	std::cout << "  Generate default key-mapping file.\n";
 	std::cout << "-AUTOSTOP autoStopType" << std::endl;
 	std::cout << "  FM-7 seriew before FM77AV could not detect key-release.  Therefore, game programs" << std::endl;
 	std::cout << "  could start moving a character by a key stroke, but did not know when the key was" << std::endl;
@@ -390,6 +394,16 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 				std::cout << "Undefined keyboard emulation." << std::endl;
 				return false;
 			}
+			++i;
+		}
+		else if("-KEYMAP"==ARG && i+1<argc)
+		{
+			keyMapFName=argv[i+1];
+			++i;
+		}
+		else if("-GENKEYMAP"==ARG && i+1<argc)
+		{
+			genKeyMapFName=argv[i+1];
 			++i;
 		}
 		else if("-AUTOSTOP"==ARG && i+1<argc)

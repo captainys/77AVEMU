@@ -125,8 +125,8 @@ public:
 	int winWid=640,winHei=480;
 
 
-	virtual std::vector <std::string> MakeKeyMappingText(void) const;
-	virtual void LoadKeyMappingFromText(const std::vector <std::string> &text);
+	std::vector <std::string> MakeKeyMappingText(void) const override;
+	void LoadKeyMappingFromText(const std::vector <std::string> &text) override;
 
 	std::string GetProgramResourceDirectory(void) const override;
 

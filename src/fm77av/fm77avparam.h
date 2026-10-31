@@ -67,6 +67,7 @@ public:
 	std::string quickStateSaveFName;
 
 	std::string symTableFName;
+	std::string keyMapFName,genKeyMapFName;
 
 	bool pauseOnStart=false;
 	unsigned int keyboardMode=FM77AV_KEYBOARD_MODE_DIRECT;

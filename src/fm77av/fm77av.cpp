@@ -240,6 +240,8 @@ FM77AV::FM77AV() :
 
 bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside_World::WindowInterface *window)
 {
+	bool result=true;
+
 	state.appSpecificSetting=param.appSpecificSetting;
 
 	var.fileNameAlias=param.fileNameAlias;  // Do it before loading tape and disk images.
@@ -421,7 +423,38 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 		window->autoScaling=param.autoScaling;
 	}
 
-
+	if(""!=param.keyMapFName)
+	{
+		std::ifstream ifp(param.keyMapFName);
+		if(ifp.is_open())
+		{
+			std::vector <std::string> text;
+			while(true!=ifp.eof())
+			{
+				std::string str;
+				std::getline(ifp,str);
+				text.push_back(str);
+			}
+			outside_world->LoadKeyMappingFromText(text);
+		}
+		else
+		{
+			std::cout << "Cannot load key-mapping file." << std::endl;
+			result=false; // In the GUI environment, it shouldn't be a fatal error.  Just continue the initialization process.
+		}
+	}
+	if(""!=param.genKeyMapFName)
+	{
+		std::ofstream ofp(param.genKeyMapFName);
+		if(ofp.is_open())
+		{
+			ofp << "#HOST                   FM77AV\n";
+			for(auto t : outside_world->MakeKeyMappingText())
+			{
+				ofp << t << '\n';
+			}
+		}
+	}
 
 	outside_world->virtualKeys.clear();
 	for(auto vk : param.virtualKeys)
@@ -446,7 +479,7 @@ bool FM77AV::SetUp(const FM77AVParam &param,Outside_World *outside_world,Outside
 	}
 
 	Reset();
-	return true;
+	return result;
 }
 
 bool FM77AV::LoadROMFiles(std::string ROMPath)
