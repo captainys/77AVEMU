@@ -61,6 +61,9 @@ public:
 	FsGuiDropList *autoStopTypeDrp;
 	FsGuiDropList *autoStopKeyDrp;
 
+	FsGuiTextBox *keyMapFileTxt=nullptr;
+	FsGuiButton *selectKeyMapFileBtn=nullptr;
+
 
 	FsGuiTextBox *scrnShotCropTxt[4];
 	FsGuiTextBox *mapXYExpressionTxt[2];
@@ -126,6 +129,8 @@ public:
 	   3: Empty (Browse function will come up with default)
 	*/
 	YsString GetDefaultVMStateFile(void) const;
+
+	YsString GetDefaultKeyMappingFile(void) const;
 
 	YsString GetAnyKnownDirectory(void) const;
 

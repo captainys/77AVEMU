@@ -334,6 +334,10 @@ void ProfileDialog::Make(void)
 			virtualKeyButtonDrp[row]->AddString("P",YSFALSE);
 		}
 
+		AddStaticText(0,FSKEY_NULL,"Key-Mapping File (See File->New for Generating a Template)",YSTRUE);
+		selectKeyMapFileBtn=AddTextButton(0,FSKEY_NULL,FSGUI_PUSHBUTTON,"Browse",YSTRUE);
+		keyMapFileTxt=AddTextBox(0,FSKEY_NULL,FsGuiTextBox::HORIZONTAL,"",nShowPath,YSFALSE);
+
 		EndAddTabItem();
 	}
 	
@@ -581,6 +585,11 @@ void ProfileDialog::OnSliderPositionChange(FsGuiSlider *slider,const double &pre
 		std::vector <const wchar_t *> extList={L".FState",L".7state"};
 		Browse(L"Start-Up VM State",startUpStateFNameTxt,extList,GetDefaultVMStateFile());
 	}
+	if(selectKeyMapFileBtn==btn)
+	{
+		std::vector <const wchar_t *> extList={L".txt"};
+		Browse(L"Select A Key-Mapping File",keyMapFileTxt,extList,GetDefaultKeyMappingFile());
+	}
 	for(int i=0; i<2; ++i)
 	{
 		if(FDImgBtn[i]==btn)
@@ -775,6 +784,7 @@ FM77AVProfile ProfileDialog::GetProfile(void) const
 
 
 	profile.keyboardMode=StrToKeyboardMode(keyboardModeDrp->GetSelectedString().c_str());
+	profile.keyMapFName=keyMapFileTxt->GetString().data();
 	for(int row=0; row<FM77AVProfile::MAX_NUM_VIRTUALKEYS; ++row)
 	{
 		auto FM77AVKeyStr=virtualKeyFM77AVKeyDrp[row]->GetSelectedString();
@@ -855,6 +865,9 @@ void ProfileDialog::SetProfile(const FM77AVProfile &profile)
 
 	str.SetUTF8String(profile.t77SavePath.data());
 	TapeSaveImgTxt->SetText(str);
+
+	str.SetUTF8String(profile.keyMapFName.data());
+	keyMapFileTxt->SetText(str);
 
 	AutoStartTapeBtn->SetCheck(true==profile.autoLoadTapeFile ? YSTRUE : YSFALSE);
 
@@ -1033,6 +1046,23 @@ YsString ProfileDialog::GetDefaultTapeImageFile(void) const
 	{
 		YsString ful;
 		ful.MakeFullPathName(dir,"*.T77");
+		return ful;
+	}
+}
+YsString ProfileDialog::GetDefaultKeyMappingFile(void) const
+{
+	YsString dir;
+	dir=keyMapFileTxt->GetString();
+	if(0!=dir.Strcmp(""))
+	{
+		return dir;
+	}
+
+	dir=GetAnyKnownDirectory();
+	if(0!=dir.Strcmp(""))
+	{
+		YsString ful;
+		ful.MakeFullPathName(dir,"*.txt");
 		return ful;
 	}
 }

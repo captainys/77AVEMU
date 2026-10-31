@@ -188,6 +188,13 @@ std::vector <std::string> FM77AVProfile::Serialize(void) const
 		}
 	}
 
+	if(""!=keyMapFName)
+	{
+		sstream.str("");
+		sstream << "KEYMAPFN " << keyMapFName;
+		text.push_back(sstream.str());
+	}
+
 	// if(""!=startUpStateFName)
 	// {
 	// 	sstream.str("");
@@ -399,6 +406,13 @@ bool FM77AVProfile::Deserialize(const std::vector <std::string> &text)
 				virtualKeys[nVirtualKey].physicalId=cpputil::Atoi(argv[2].c_str());
 				virtualKeys[nVirtualKey].button=cpputil::Atoi(argv[3].c_str());
 				++nVirtualKey;
+			}
+		}
+		else if(argv[0]=="KEYMAPFN")
+		{
+			if(2<=argv.size())
+			{
+				keyMapFName=argv[1].c_str();
 			}
 		}
 		else if(ARGV0=="KYBDMODE")
