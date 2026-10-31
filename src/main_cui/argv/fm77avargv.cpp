@@ -115,6 +115,8 @@ void FM77AVArgv::Help(void)
 	std::cout << "  Assign host short cut key (hot key)." << std::endl;
 	std::cout << "-INITCMD cmd" << std::endl;
 	std::cout << "  Specify initial command." << std::endl;
+	std::cout << "-PAUSEKEY keyLabel" << std::endl;
+	std::cout << "  Specify a hot key for pause/resume.  Default is SCROLLLOCK" << std::endl;
 	std::cout << "-EVTLOG filename.evt" << std::endl;
 	std::cout << "  Specify event-log file to play back." << std::endl;
 	std::cout << "-SCALE X" << std::endl;
@@ -502,6 +504,11 @@ bool FM77AVArgv::AnalyzeCommandParameter(int argc,char *argv[])
 		else if("-INITCMD"==ARG && i+1<argc)
 		{
 			initialCmd.push_back(argv[i+1]);
+			++i;
+		}
+		else if("-PAUSEKEY"==ARG && i+1<argc)
+		{
+			pauseResumeKeyLabel=argv[i+1];
 			++i;
 		}
 		else if("-EVTLOG"==ARG && i+1<argc)
