@@ -343,6 +343,7 @@ void FM77AVFDC::MakeReady(void)
 				if(true==imgPtr->WriteProtected(diskIdx))
 				{
 					// Write protected.
+					MakeReady();
 				}
 				else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
@@ -554,6 +555,7 @@ void FM77AVFDC::MakeReady(void)
 				if(true==imgPtr->WriteProtected(diskIdx))
 				{
 					// Write protected.
+					MakeReady();
 				}
 				else if(true==CheckMediaTypeAndDriveModeCompatible(drv.mediaType,GetDriveMode()))
 				{
