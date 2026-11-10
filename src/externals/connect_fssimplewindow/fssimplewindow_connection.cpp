@@ -89,7 +89,7 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 /* virtual */ std::vector <std::string> FsSimpleWindowConnection::MakeKeyMappingText(void) const
 {
 	std::vector <std::string> text;
-	for(int i=0; i<FSKEY_NUM_KEYCODE; ++i)
+	for(int i=1; i<FSKEY_NUM_KEYCODE; ++i) // skip 0 (FSKEY_NULL)
 	{
 		text.push_back("");
 		text.back()+=FsKeyCodeToString(i);
@@ -99,6 +99,28 @@ std::string FsSimpleWindowConnection::GetProgramResourceDirectory(void) const
 			text.back()+=" ";
 		}
 		text.back()+=FM77AVKeyCodeToKeyLabel(FSKEYtoFM77AVKEY[i]);
+	}
+
+	for(int i=1; i<AVKEY_NUM_KEYCODE; ++i) // skip i=0 (AVKEY_NULL)
+	{
+		bool used=false;
+		for(int j=1; j<FSKEY_NUM_KEYCODE; ++j)
+		{
+			if(i==FSKEYtoFM77AVKEY[j])
+			{
+				used=true;
+				break;
+			}
+		}
+		if(true!=used)
+		{
+			text.push_back("#Unmapped");
+			while(text.back().size()<24)
+			{
+				text.back()+=" ";
+			}
+			text.back()+=FM77AVKeyCodeToKeyLabel(i);
+		}
 	}
 	return text;
 }
@@ -947,9 +969,9 @@ unsigned int FsSimpleWindowConnection::KeyFlagsFilter(unsigned int keyFlags,unsi
 	FSKEYtoFM77AVKEY[FSKEY_INS]=         AVKEY_INS;
 	FSKEYtoFM77AVKEY[FSKEY_DEL]=         AVKEY_DEL;
 	FSKEYtoFM77AVKEY[FSKEY_HOME]=        AVKEY_HOME;
-	FSKEYtoFM77AVKEY[FSKEY_END]=         AVKEY_NULL; // Should be translated as SHIFT+DEL
-	FSKEYtoFM77AVKEY[FSKEY_PAGEUP]=      AVKEY_NULL;
-	FSKEYtoFM77AVKEY[FSKEY_PAGEDOWN]=    AVKEY_NULL;
+	FSKEYtoFM77AVKEY[FSKEY_END]=         AVKEY_EL; // Should be translated as SHIFT+DEL
+	FSKEYtoFM77AVKEY[FSKEY_PAGEUP]=      AVKEY_DUP;
+	FSKEYtoFM77AVKEY[FSKEY_PAGEDOWN]=    AVKEY_CLS;
 	FSKEYtoFM77AVKEY[FSKEY_UP]=          AVKEY_UP;
 	FSKEYtoFM77AVKEY[FSKEY_DOWN]=        AVKEY_DOWN;
 	FSKEYtoFM77AVKEY[FSKEY_LEFT]=        AVKEY_LEFT;
